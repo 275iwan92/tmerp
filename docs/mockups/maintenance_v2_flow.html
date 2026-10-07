@@ -79,7 +79,7 @@
       <div class="card p-3"><div class="lbl">Breakdowns, last 90 days</div><div class="text-2xl font-bold text-navy">3</div><div class="note">komponen yang sama</div></div>
       <div class="card p-3"><div class="lbl">Downtime</div><div class="text-2xl font-bold text-navy">7,5 <span class="text-sm">h</span></div><div class="note">total, 90 hari</div></div>
       <div class="card p-3"><div class="lbl">Cost</div><div class="text-2xl font-bold text-navy">2.1 <span class="text-sm">jt IDR</span></div><div class="note">part + teknisi + jasa</div></div>
-      <div class="card p-3"><div class="lbl">Linked work orders</div><div class="text-2xl font-bold text-navy">3</div><div class="note">klik untuk buka</div></div>
+      <div class="card p-3"><div class="lbl">Linked order perawatan</div><div class="text-2xl font-bold text-navy">3</div><div class="note">klik untuk buka</div></div>
     </div>
     <div class="note mt-2"><span class="tag">1</span>Sistem menyarankan Improvement bila kode kerusakan yang sama pada komponen yang sama muncul berulang (3× dalam 90 hari). Ambang diatur di Settings › Constants.</div>
   </div>
@@ -132,19 +132,19 @@
         <tr><td><span class="d">12</span></td><td><span class="d">13</span><span class="pm">LAM-01 Heater</span></td><td><span class="d">14</span></td><td><span class="d">15</span></td><td><span class="d">16</span><span class="insp">FKL-01 K3 check</span></td><td><span class="d">17</span></td><td><span class="d">18</span></td></tr>
       </tbody>
     </table>
-    <div class="note mt-2"><span class="tag">7</span>Klik kotak PM membuka Work Order-nya. Kotak bergaris (machine blocked) juga tampil di Scheduling Board sebagai blok "MTN" (rencana M2). Geser jadwal = usulan, kepala maintenance mengonfirmasi.</div>
+    <div class="note mt-2"><span class="tag">7</span>Klik kotak PM membuka Maintenance Order-nya. Kotak bergaris (machine blocked) juga tampil di Scheduling Board sebagai blok "MTN" (rencana M2). Geser jadwal = usulan, kepala maintenance mengonfirmasi.</div>
   </div>
 </div>
 
 <div class="cap">Legenda</div>
 <div class="card p-3 grid grid-cols-2 gap-x-6 gap-y-2">
   <div class="flex"><span class="tag">1</span><div><b>Kerusakan berulang disarankan jadi Improvement.</b> Ambang (3× dalam 90 hari) ada di Constants, bisa diubah.</div></div>
-  <div class="flex"><span class="tag">2</span><div><b>Evidence dihitung sistem</b> dari WO dan downtime yang sudah ada, tidak diketik.</div></div>
+  <div class="flex"><span class="tag">2</span><div><b>Evidence dihitung sistem</b> dari order dan downtime yang sudah ada, tidak diketik.</div></div>
   <div class="flex"><span class="tag">3</span><div><b>Apply to master dikerjakan orang.</b> Sesuai aturan: master hanya diubah user, sistem hanya mengubah transaksi.</div></div>
   <div class="flex"><span class="tag">4</span><div><b>Persetujuan dua tingkat.</b> Biaya di atas ambang (Constants) butuh Direksi juga, di bawahnya cukup Kepala Maintenance.</div></div>
   <div class="flex"><span class="tag">5</span><div><b>Review otomatis dijadwalkan</b> 60 hari setelah selesai. Angka sebelum dan sesudah diisi sistem, orang hanya menyimpulkan.</div></div>
-  <div class="flex"><span class="tag">6</span><div><b>Daily Check Not OK</b> otomatis membuka Maintenance Request, bukan Work Order, supaya kepala maintenance yang menilai.</div></div>
-  <div class="flex"><span class="tag">7</span><div><b>PM Calendar.</b> Tampilan kalender dari Work Order PREVENTIVE dan INSPECTION yang sudah ada, bukan data baru.</div></div>
+  <div class="flex"><span class="tag">6</span><div><b>Daily Check Not OK</b> otomatis membuka Maintenance Request, bukan Maintenance Order, supaya kepala maintenance yang menilai.</div></div>
+  <div class="flex"><span class="tag">7</span><div><b>PM Calendar.</b> Tampilan kalender dari Maintenance Order PREVENTIVE dan INSPECTION yang sudah ada, bukan data baru.</div></div>
 </div>
 
 </main>

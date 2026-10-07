@@ -37,7 +37,7 @@
       "en": "Four recording habits that keep maintenance reports correct: pick from lists, record downtime and labour separately, never delete history, keep reports apart from jobs.",
       "id": "Empat kebiasaan pencatatan agar laporan maintenance benar: pilih dari daftar, catat downtime dan jam kerja terpisah, jangan hapus riwayat, pisahkan laporan dari pekerjaan."
     },
-    "keywords": "aturan pencatatan, downtime, jam kerja teknisi, riwayat, work order, request, laporan masalah, catat maintenance",
+    "keywords": "aturan pencatatan, downtime, jam kerja teknisi, riwayat, order perawatan, request, laporan masalah, catat maintenance",
     "steps": [
       {
         "en": "Pick locations and cost centres from the list instead of typing them. Free text cannot be added up in reports.",
@@ -52,8 +52,8 @@
         "id": "Jangan hapus catatan. Ubah statusnya dan biarkan barisnya, karena riwayat dipakai untuk menghitung keandalan."
       },
       {
-        "en": "A problem report (Request) is kept apart from the job (Work Order), so rejected or duplicate reports do not pollute the job data.",
-        "id": "Laporan masalah (Request) dipisah dari pekerjaannya (Work Order), sehingga laporan yang ditolak atau dobel tidak mengotori data pekerjaan."
+        "en": "A problem report (Request) is kept apart from the job (Maintenance Order), so rejected or duplicate reports do not pollute the job data.",
+        "id": "Laporan masalah (Request) dipisah dari pekerjaannya (Maintenance Order), sehingga laporan yang ditolak atau dobel tidak mengotori data pekerjaan."
       }
     ]
   },
@@ -180,8 +180,8 @@
         "id": "Fase 2 Preventive: plan, kalender PM, pembacaan meter, Daily Check dan slot mesin terblokir di Scheduling Board."
       },
       {
-        "en": "Phase 3 Breakdown: requests, work orders, spare part issue and purchase request, and the reliability report.",
-        "id": "Fase 3 Breakdown: request, work order, pengeluaran spare part dan permintaan pembelian, serta laporan keandalan."
+        "en": "Phase 3 Breakdown: requests, maintenance orders, spare part issue and purchase request, and the reliability report.",
+        "id": "Fase 3 Breakdown: request, order perawatan, pengeluaran spare part dan permintaan pembelian, serta laporan keandalan."
       },
       {
         "en": "Phase 4 Improvement: proposals, recurrence suggestion, review before and after, and master changes approved by a person.",
@@ -235,8 +235,8 @@
         "id": "Modul punya empat kelompok: Preventive Maintenance, Breakdown Maintenance, Improvement dan Master Data. Kelompok kecil Report ada di bawahnya."
       },
       {
-        "en": "PM Work Order and Breakdown Work Order are the same Work Order screen with a different type filter. They are not two separate screens.",
-        "id": "PM Work Order dan Breakdown Work Order adalah layar Work Order yang sama dengan saringan jenis berbeda. Bukan dua layar terpisah."
+        "en": "PM Order and Breakdown Order are the same Maintenance Order screen with a different type filter. They are not two separate screens.",
+        "id": "PM Order dan Breakdown Order adalah layar Maintenance Order yang sama dengan saringan jenis berbeda. Bukan dua layar terpisah."
       },
       {
         "en": "The menu shows only screens that already exist. A screen appears the day its phase is delivered.",
@@ -250,13 +250,13 @@
     "fields": [
       {
         "label": "Preventive Maintenance",
-        "en": "Preventive Plan, PM Calendar, PM Work Order, Daily Check, Meter Readings. Delivered in Phase 2.",
-        "id": "Preventive Plan, PM Calendar, PM Work Order, Daily Check, Meter Readings. Dikirim di Fase 2."
+        "en": "Preventive Plan, PM Calendar, PM Order, Daily Check, Meter Readings. Delivered in Phase 2.",
+        "id": "Preventive Plan, PM Calendar, PM Order, Daily Check, Meter Readings. Dikirim di Fase 2."
       },
       {
         "label": "Breakdown Maintenance",
-        "en": "Maintenance Request, Breakdown Work Order, My Work for technicians. Delivered in Phase 3.",
-        "id": "Maintenance Request, Breakdown Work Order, My Work untuk teknisi. Dikirim di Fase 3."
+        "en": "Maintenance Request, Breakdown Order, My Work for technicians. Delivered in Phase 3.",
+        "id": "Maintenance Request, Breakdown Order, My Work untuk teknisi. Dikirim di Fase 3."
       },
       {
         "label": "Improvement",
@@ -270,8 +270,8 @@
       },
       {
         "label": "Report",
-        "en": "Maintenance WO Report, Machine Reliability, PM Compliance. Delivered with the phase whose data they read.",
-        "id": "Maintenance WO Report, Machine Reliability, PM Compliance. Dikirim bersama fase yang datanya mereka baca."
+        "en": "Maintenance Order Report, Machine Reliability, PM Compliance. Delivered with the phase whose data they read.",
+        "id": "Maintenance Order Report, Machine Reliability, PM Compliance. Dikirim bersama fase yang datanya mereka baca."
       }
     ]
   },
@@ -284,7 +284,7 @@
       "en": "What each planned Maintenance feature is for, who uses it, and which phase delivers it.",
       "id": "Fungsi tiap fitur Maintenance yang direncanakan, siapa pemakainya, dan fase mana yang mengirimnya."
     },
-    "keywords": "fitur maintenance, fungsi fitur, watch point, daily check, pm calendar, meter, request, work order, improvement, laporan",
+    "keywords": "fitur maintenance, fungsi fitur, watch point, daily check, pm calendar, meter, request, order perawatan, improvement, laporan",
     "steps": [
       {
         "en": "Features are grouped like the menu. Master Data features describe the machine, Preventive features keep machines healthy, Breakdown features fix failures, Improvement features stop repeats.",
@@ -347,7 +347,7 @@
         "id": "Fase 3. Laporan singkat masalah yang bisa dibuat siapa pun. Menjaga laporan ditolak atau dobel keluar dari data pekerjaan."
       },
       {
-        "label": "Work Order",
+        "label": "Maintenance Order",
         "en": "Phase 3. The authorised job with schedule, technician, checklist, parts, hours, downtime and cost. All three kinds use it.",
         "id": "Fase 3. Pekerjaan resmi dengan jadwal, teknisi, checklist, part, jam, downtime dan biaya. Ketiga jenis memakainya."
       },
@@ -368,8 +368,8 @@
       },
       {
         "label": "Reports",
-        "en": "Maintenance WO Report, Machine Reliability (MTBF, MTTR, Availability) and PM Compliance. Each is delivered with the phase whose data it reads.",
-        "id": "Maintenance WO Report, Machine Reliability (MTBF, MTTR, Availability) dan PM Compliance. Masing-masing dikirim bersama fase yang datanya dibaca."
+        "en": "Maintenance Order Report, Machine Reliability (MTBF, MTTR, Availability) and PM Compliance. Each is delivered with the phase whose data it reads.",
+        "id": "Maintenance Order Report, Machine Reliability (MTBF, MTTR, Availability) dan PM Compliance. Masing-masing dikirim bersama fase yang datanya dibaca."
       }
     ]
   },
@@ -385,8 +385,8 @@
     "keywords": "peran maintenance, user journey, operator, teknisi, kepala maintenance, ppic, manajemen, hak akses, grup",
     "steps": [
       {
-        "en": "Operator: opens Daily Check at the start of the shift, marks each point, and reports a problem as a Request. Gets a request number and, for a stopped critical machine, a work order at once.",
-        "id": "Operator: membuka Daily Check di awal shift, menandai tiap titik, dan melapor masalah sebagai Request. Mendapat nomor request dan, untuk mesin kritis berhenti, work order langsung."
+        "en": "Operator: opens Daily Check at the start of the shift, marks each point, and reports a problem as a Request. Gets a request number and, for a stopped critical machine, a maintenance order at once.",
+        "id": "Operator: membuka Daily Check di awal shift, menandai tiap titik, dan melapor masalah sebagai Request. Mendapat nomor request dan, untuk mesin kritis berhenti, order perawatan langsung."
       },
       {
         "en": "Head of maintenance: opens the Request list sorted by priority and age, then presses Accept or Reject. Sets schedule and technician on Confirm, and presses Close when a job is Done.",
@@ -405,8 +405,8 @@
         "id": "Manajemen: membuka laporan, menyaring menurut mesin dan bulan, lalu memutuskan memperbaiki, memperbaiki lebih jauh atau mengganti."
       },
       {
-        "en": "System: every morning it turns due plans into Draft work orders and checks for repeated failures. It only creates drafts and suggestions.",
-        "id": "Sistem: tiap pagi mengubah plan jatuh tempo menjadi work order Draft dan memeriksa kerusakan berulang. Hanya membuat draft dan saran."
+        "en": "System: every morning it turns due plans into Draft maintenance orders and checks for repeated failures. It only creates drafts and suggestions.",
+        "id": "Sistem: tiap pagi mengubah plan jatuh tempo menjadi order perawatan Draft dan memeriksa kerusakan berulang. Hanya membuat draft dan saran."
       }
     ],
     "fields": [
@@ -446,31 +446,31 @@
       "en": "Step by step work flow of the three kinds of maintenance, with the status of the documents at each step.",
       "id": "Alur kerja langkah demi langkah dari tiga jenis maintenance, dengan status dokumen pada tiap langkah."
     },
-    "keywords": "work flow maintenance, alur kerja, status work order, request, draft confirmed in progress waiting part done closed, prioritas p1 p2 p3 p4",
+    "keywords": "work flow maintenance, alur kerja, status order perawatan, request, draft confirmed in progress waiting part done closed, prioritas p1 p2 p3 p4",
     "steps": [
       {
-        "en": "Preventive: Plan, Generate, Confirm, Start, Done, Close. A scheduled command turns due plans into Draft work orders. The head sets schedule and technician and presses Confirm.",
-        "id": "Preventive: Plan, Generate, Confirm, Start, Done, Close. Perintah terjadwal mengubah plan jatuh tempo menjadi work order Draft. Kepala mengatur jadwal dan teknisi lalu menekan Confirm."
+        "en": "Preventive: Plan, Generate, Confirm, Start, Done, Close. A scheduled command turns due plans into Draft maintenance orders. The head sets schedule and technician and presses Confirm.",
+        "id": "Preventive: Plan, Generate, Confirm, Start, Done, Close. Perintah terjadwal mengubah plan jatuh tempo menjadi order perawatan Draft. Kepala mengatur jadwal dan teknisi lalu menekan Confirm."
       },
       {
         "en": "Preventive: the technician presses Start, fills the checklist, uses parts and records hours, then Done. The head checks cost and findings and presses Close. The next due date is recalculated.",
         "id": "Preventive: teknisi menekan Start, mengisi checklist, memakai part dan mencatat jam, lalu Done. Kepala memeriksa biaya dan temuan lalu menekan Close. Jatuh tempo berikutnya dihitung ulang."
       },
       {
-        "en": "Breakdown: Request, Accept, Start, Done, Close. Anyone files a Request. The head presses Accept, which creates a Confirmed work order, or Reject with a reason.",
-        "id": "Breakdown: Request, Accept, Start, Done, Close. Siapa pun membuat Request. Kepala menekan Accept sehingga work order Confirmed dibuat, atau Reject dengan alasan."
+        "en": "Breakdown: Request, Accept, Start, Done, Close. Anyone files a Request. The head presses Accept, which creates a Confirmed maintenance order, or Reject with a reason.",
+        "id": "Breakdown: Request, Accept, Start, Done, Close. Siapa pun membuat Request. Kepala menekan Accept sehingga order perawatan Confirmed dibuat, atau Reject dengan alasan."
       },
       {
-        "en": "Breakdown: priority P1 on a machine that stopped goes straight to a work order. The technician can press Hold when a part is missing and Resume when it arrives.",
-        "id": "Breakdown: prioritas P1 pada mesin berhenti langsung menjadi work order. Teknisi bisa menekan Hold saat part kurang dan Resume saat part tiba."
+        "en": "Breakdown: priority P1 on a machine that stopped goes straight to a maintenance order. The technician can press Hold when a part is missing and Resume when it arrives.",
+        "id": "Breakdown: prioritas P1 pada mesin berhenti langsung menjadi order perawatan. Teknisi bisa menekan Hold saat part kurang dan Resume saat part tiba."
       },
       {
         "en": "Breakdown: Done closes the downtime and returns the machine to ready. The head presses Close after checking cost, problem, cause and action codes.",
         "id": "Breakdown: Done menutup downtime dan mengembalikan mesin ke ready. Kepala menekan Close setelah memeriksa biaya serta kode masalah, penyebab dan tindakan."
       },
       {
-        "en": "Improvement: Proposal, Confirm, Implement, Done, Review, Apply. The head confirms, a work order of type IMPROVEMENT is created, and after the review period the review is filled and changes are applied by a person.",
-        "id": "Improvement: Proposal, Confirm, Implement, Done, Review, Apply. Kepala mengonfirmasi, work order jenis IMPROVEMENT dibuat, dan setelah masa review, review diisi dan perubahan diterapkan oleh orang."
+        "en": "Improvement: Proposal, Confirm, Implement, Done, Review, Apply. The head confirms, a maintenance order of type IMPROVEMENT is created, and after the review period the review is filled and changes are applied by a person.",
+        "id": "Improvement: Proposal, Confirm, Implement, Done, Review, Apply. Kepala mengonfirmasi, order perawatan jenis IMPROVEMENT dibuat, dan setelah masa review, review diisi dan perubahan diterapkan oleh orang."
       }
     ],
     "fields": [
@@ -496,13 +496,13 @@
       },
       {
         "label": "Request statuses",
-        "en": "Open, Accepted (a work order was created) and Rejected (with a reason).",
-        "id": "Open, Accepted (work order dibuat) dan Rejected (dengan alasan)."
+        "en": "Open, Accepted (a maintenance order was created) and Rejected (with a reason).",
+        "id": "Open, Accepted (order perawatan dibuat) dan Rejected (dengan alasan)."
       },
       {
         "label": "P1 Emergency",
-        "en": "A critical machine has stopped. Becomes a work order at once.",
-        "id": "Mesin kritis berhenti. Langsung menjadi work order."
+        "en": "A critical machine has stopped. Becomes a maintenance order at once.",
+        "id": "Mesin kritis berhenti. Langsung menjadi order perawatan."
       },
       {
         "label": "P2 High",
@@ -527,58 +527,58 @@
     "module": "MAINT",
     "title": "Technical Plan: Maintenance Data Flow",
     "purpose": {
-      "en": "Shows how a report, a plan or a repeated failure becomes a work order, and what each work order writes to other modules.",
-      "id": "Menunjukkan bagaimana laporan, plan atau kerusakan berulang menjadi work order, dan apa yang ditulis tiap work order ke modul lain."
+      "en": "Shows how a report, a plan or a repeated failure becomes a maintenance order, and what each maintenance order writes to other modules.",
+      "id": "Menunjukkan bagaimana laporan, plan atau kerusakan berulang menjadi order perawatan, dan apa yang ditulis tiap order perawatan ke modul lain."
     },
-    "keywords": "alur data maintenance, data flow, request, work order, daily check, improvement, downtime, spare part",
+    "keywords": "alur data maintenance, data flow, request, order perawatan, daily check, improvement, downtime, spare part",
     "steps": [
       {
-        "en": "An operator Daily Check with a NOT_OK result opens a Maintenance Request, not a work order, so the head of maintenance judges it.",
-        "id": "Daily Check operator dengan hasil NOT_OK membuka Maintenance Request, bukan work order, sehingga kepala maintenance yang menilai."
+        "en": "An operator Daily Check with a NOT_OK result opens a Maintenance Request, not a maintenance order, so the head of maintenance judges it.",
+        "id": "Daily Check operator dengan hasil NOT_OK membuka Maintenance Request, bukan order perawatan, sehingga kepala maintenance yang menilai."
       },
       {
-        "en": "Anyone can also report a problem as a Maintenance Request. The head accepts it, which creates a work order, or rejects it with a reason.",
-        "id": "Siapa pun juga bisa melapor masalah sebagai Maintenance Request. Kepala menerimanya sehingga work order dibuat, atau menolak dengan alasan."
+        "en": "Anyone can also report a problem as a Maintenance Request. The head accepts it, which creates a maintenance order, or rejects it with a reason.",
+        "id": "Siapa pun juga bisa melapor masalah sebagai Maintenance Request. Kepala menerimanya sehingga order perawatan dibuat, atau menolak dengan alasan."
       },
       {
-        "en": "A request about a machine that stopped, on a critical machine, becomes a work order at once without waiting for approval.",
-        "id": "Request tentang mesin berhenti pada mesin kritis langsung menjadi work order tanpa menunggu persetujuan."
+        "en": "A request about a machine that stopped, on a critical machine, becomes a maintenance order at once without waiting for approval.",
+        "id": "Request tentang mesin berhenti pada mesin kritis langsung menjadi order perawatan tanpa menunggu persetujuan."
       },
       {
-        "en": "Every morning a scheduled command turns due preventive plans into draft work orders. The head sets the schedule and confirms them.",
-        "id": "Tiap pagi perintah terjadwal mengubah plan preventive yang jatuh tempo menjadi draft work order. Kepala mengatur jadwal dan mengonfirmasinya."
+        "en": "Every morning a scheduled command turns due preventive plans into draft maintenance orders. The head sets the schedule and confirms them.",
+        "id": "Tiap pagi perintah terjadwal mengubah plan preventive yang jatuh tempo menjadi draft order perawatan. Kepala mengatur jadwal dan mengonfirmasinya."
       },
       {
-        "en": "Starting a work order that needs the machine stopped opens a downtime row and sets the machine status. Done closes the downtime and sets the status back to ready.",
-        "id": "Memulai work order yang butuh mesin berhenti membuka baris downtime dan mengatur status mesin. Done menutup downtime dan mengembalikan status ke ready."
+        "en": "Starting a maintenance order that needs the machine stopped opens a downtime row and sets the machine status. Done closes the downtime and sets the status back to ready.",
+        "id": "Memulai order perawatan yang butuh mesin berhenti membuka baris downtime dan mengatur status mesin. Done menutup downtime dan mengembalikan status ke ready."
       },
       {
-        "en": "Spare parts of a work order are issued from Inventory. A missing part creates a purchase request and the work order waits for the part.",
-        "id": "Spare part sebuah work order dikeluarkan dari Inventory. Part yang kurang membuat permintaan pembelian dan work order menunggu part."
+        "en": "Spare parts of a maintenance order are issued from Inventory. A missing part creates a purchase request and the maintenance order waits for the part.",
+        "id": "Spare part sebuah order perawatan dikeluarkan dari Inventory. Part yang kurang membuat permintaan pembelian dan order perawatan menunggu part."
       },
       {
-        "en": "A repeated failure on the same component raises an Improvement suggestion. An accepted proposal becomes a work order of type IMPROVEMENT.",
-        "id": "Kerusakan berulang pada komponen yang sama memunculkan saran Improvement. Usulan yang diterima menjadi work order jenis IMPROVEMENT."
+        "en": "A repeated failure on the same component raises an Improvement suggestion. An accepted proposal becomes a maintenance order of type IMPROVEMENT.",
+        "id": "Kerusakan berulang pada komponen yang sama memunculkan saran Improvement. Usulan yang diterima menjadi order perawatan jenis IMPROVEMENT."
       },
       {
         "en": "Some days after an improvement is done, the review compares downtime and cost before and after. A person decides which master changes to apply.",
         "id": "Beberapa hari setelah improvement selesai, review membandingkan downtime dan biaya sebelum dan sesudah. Orang yang memutuskan perubahan master mana yang diterapkan."
       },
       {
-        "en": "Master data feeds the rest: Daily Check reads watch points, work orders read spare parts and codes, and reports read all of them.",
-        "id": "Master data memberi makan fitur lain: Daily Check membaca watch point, work order membaca spare part dan kode, dan laporan membaca semuanya."
+        "en": "Master data feeds the rest: Daily Check reads watch points, maintenance orders read spare parts and codes, and reports read all of them.",
+        "id": "Master data memberi makan fitur lain: Daily Check membaca watch point, order perawatan membaca spare part dan kode, dan laporan membaca semuanya."
       }
     ],
     "fields": [
       {
         "label": "Writes to Master",
-        "en": "Machine downtime rows and machine status, only through the work order service.",
-        "id": "Baris downtime mesin dan status mesin, hanya lewat service work order."
+        "en": "Machine downtime rows and machine status, only through the maintenance order service.",
+        "id": "Baris downtime mesin dan status mesin, hanya lewat service order perawatan."
       },
       {
         "label": "Writes to Inventory",
-        "en": "Stock issue document for spare parts, referenced to the work order.",
-        "id": "Dokumen pengeluaran stok untuk spare part, merujuk ke work order."
+        "en": "Stock issue document for spare parts, referenced to the maintenance order.",
+        "id": "Dokumen pengeluaran stok untuk spare part, merujuk ke order perawatan."
       },
       {
         "label": "Writes to Procurement",
@@ -587,18 +587,18 @@
       },
       {
         "label": "Reads from Production",
-        "en": "Production output for meters, and breakdown events of work orders.",
-        "id": "Output produksi untuk meter, dan kejadian breakdown pada work order."
+        "en": "Production output for meters, and breakdown events of maintenance orders.",
+        "id": "Output produksi untuk meter, dan kejadian breakdown pada order perawatan."
       },
       {
         "label": "Reads from Scheduling",
-        "en": "Confirmed preventive work orders block the machine on the Scheduling Board.",
-        "id": "Work order preventive yang Confirmed memblokir mesin di Scheduling Board."
+        "en": "Confirmed preventive maintenance orders block the machine on the Scheduling Board.",
+        "id": "Maintenance order preventive yang Confirmed memblokir mesin di Scheduling Board."
       },
       {
         "label": "Master data readers",
-        "en": "Daily Check reads mnt_watch_point. Work orders read mnt_machine_part and mnt_code. Reports read everything. Stock is read from Inventory.",
-        "id": "Daily Check membaca mnt_watch_point. Work order membaca mnt_machine_part dan mnt_code. Laporan membaca semuanya. Stok dibaca dari Inventory."
+        "en": "Daily Check reads mnt_watch_point. Maintenance orders read mnt_machine_part and mnt_code. Reports read everything. Stock is read from Inventory.",
+        "id": "Daily Check membaca mnt_watch_point. Maintenance order membaca mnt_machine_part dan mnt_code. Laporan membaca semuanya. Stok dibaca dari Inventory."
       }
     ]
   },
@@ -611,19 +611,19 @@
       "en": "Lists the tables planned for Maintenance in tm2mnt, phase by phase, and how they relate to other databases.",
       "id": "Daftar tabel yang direncanakan untuk Maintenance di tm2mnt, per fase, dan hubungannya dengan database lain."
     },
-    "keywords": "tabel maintenance, mnt_code, mnt_watch_point, mnt_machine_part, mnt_wo, mnt_request, skema, tm2mnt, kolom",
+    "keywords": "tabel maintenance, mnt_code, mnt_watch_point, mnt_machine_part, mnt_order, mnt_request, skema, tm2mnt, kolom",
     "steps": [
       {
         "en": "All tables live in tm2mnt. Relations to machines, materials, employees and production records point to other databases and are checked by Laravel, never by foreign keys.",
         "id": "Semua tabel ada di tm2mnt. Relasi ke mesin, material, pegawai dan data produksi mengarah ke database lain dan dicek oleh Laravel, bukan foreign key."
       },
       {
-        "en": "Machine downtime and machine status stay in the Master database (prod_machine_downtime, prod_machine). Work orders write to them through one service, so there is no second downtime table.",
-        "id": "Downtime dan status mesin tetap di database Master (prod_machine_downtime, prod_machine). Work order menulis ke sana lewat satu service, jadi tidak ada tabel downtime kedua."
+        "en": "Machine downtime and machine status stay in the Master database (prod_machine_downtime, prod_machine). Maintenance orders write to them through one service, so there is no second downtime table.",
+        "id": "Downtime dan status mesin tetap di database Master (prod_machine_downtime, prod_machine). Maintenance order menulis ke sana lewat satu service, jadi tidak ada tabel downtime kedua."
       },
       {
-        "en": "A request or work order about a production breakdown keeps breakdown_event_id, a logical link to prd_breakdown_event in Production.",
-        "id": "Request atau work order tentang kerusakan produksi menyimpan breakdown_event_id, tautan logis ke prd_breakdown_event di Production."
+        "en": "A request or maintenance order about a production breakdown keeps breakdown_event_id, a logical link to prd_breakdown_event in Production.",
+        "id": "Request atau order perawatan tentang kerusakan produksi menyimpan breakdown_event_id, tautan logis ke prd_breakdown_event di Production."
       },
       {
         "en": "Phase 1 tables are listed first. Tables of later phases are listed with the phase that creates them.",
@@ -672,14 +672,14 @@
         "id": "Fase 2. Satu lembar cek per mesin per shift, dan satu baris hasil per watch point (OK, NOT_OK, NA, nilai ukur)."
       },
       {
-        "label": "mnt_request, mnt_wo",
-        "en": "Phase 3. Maintenance request and work order. Work order types: PREVENTIVE, BREAKDOWN, CORRECTIVE, INSPECTION, IMPROVEMENT.",
-        "id": "Fase 3. Request dan work order maintenance. Jenis work order: PREVENTIVE, BREAKDOWN, CORRECTIVE, INSPECTION, IMPROVEMENT."
+        "label": "mnt_request, mnt_order",
+        "en": "Phase 3. Maintenance request and maintenance order. Maintenance order types: PREVENTIVE, BREAKDOWN, CORRECTIVE, INSPECTION, IMPROVEMENT.",
+        "id": "Fase 3. Request dan order perawatan maintenance. Jenis order perawatan: PREVENTIVE, BREAKDOWN, CORRECTIVE, INSPECTION, IMPROVEMENT."
       },
       {
-        "label": "mnt_wo_task, mnt_wo_part, mnt_wo_labor",
-        "en": "Phase 3. Checklist copy, parts used and technician hours of a work order.",
-        "id": "Fase 3. Salinan checklist, part terpakai dan jam teknisi sebuah work order."
+        "label": "mnt_order_task, mnt_order_part, mnt_order_labor",
+        "en": "Phase 3. Checklist copy, parts used and technician hours of a maintenance order.",
+        "id": "Fase 3. Salinan checklist, part terpakai dan jam teknisi sebuah order perawatan."
       },
       {
         "label": "mnt_log",
@@ -728,13 +728,13 @@
     "fields": [
       {
         "label": "MTBF",
-        "en": "Operating hours in the period divided by the number of breakdown work orders.",
-        "id": "Jam operasi dalam periode dibagi jumlah work order breakdown."
+        "en": "Operating hours in the period divided by the number of breakdown maintenance orders.",
+        "id": "Jam operasi dalam periode dibagi jumlah order perawatan breakdown."
       },
       {
         "label": "MTTR",
-        "en": "Total time from machine stop to Done of breakdown work orders divided by their number.",
-        "id": "Total waktu dari mesin berhenti sampai Done pada work order breakdown dibagi jumlahnya."
+        "en": "Total time from machine stop to Done of breakdown maintenance orders divided by their number.",
+        "id": "Total waktu dari mesin berhenti sampai Done pada order perawatan breakdown dibagi jumlahnya."
       },
       {
         "label": "Availability",
@@ -743,8 +743,8 @@
       },
       {
         "label": "PM Compliance",
-        "en": "Preventive and inspection work orders done on time divided by those due in the period.",
-        "id": "Work order preventive dan inspeksi yang selesai tepat waktu dibagi yang jatuh tempo dalam periode."
+        "en": "Preventive and inspection maintenance orders done on time divided by those due in the period.",
+        "id": "Maintenance order preventive dan inspeksi yang selesai tepat waktu dibagi yang jatuh tempo dalam periode."
       },
       {
         "label": "MNT_RECURRENCE_COUNT",
@@ -950,24 +950,24 @@
         "id": "Titik NOT_OK membuka Maintenance Request dengan prioritas dari kritikalitas mesin. Nilai ukur di luar batas normal ditandai NOT_OK, dan operator bisa mengubahnya."
       },
       {
-        "en": "PM Calendar shows preventive and inspection work orders by day: on schedule, inspection with fixed date, overdue, and machine blocked. A click opens the work order.",
-        "id": "PM Calendar menampilkan work order preventive dan inspeksi per hari: sesuai jadwal, inspeksi tanggal tetap, terlambat, dan mesin terblokir. Klik membuka work order."
+        "en": "PM Calendar shows preventive and inspection maintenance orders by day: on schedule, inspection with fixed date, overdue, and machine blocked. A click opens the maintenance order.",
+        "id": "PM Calendar menampilkan order perawatan preventive dan inspeksi per hari: sesuai jadwal, inspeksi tanggal tetap, terlambat, dan mesin terblokir. Klik membuka order perawatan."
       },
       {
         "en": "Improvement starts from a request of kind IMPROVEMENT, from a repeated-failure suggestion, or from a person. The proposal states the problem, solution, estimated cost and saving.",
         "id": "Improvement dimulai dari request jenis IMPROVEMENT, dari saran kerusakan berulang, atau dari seseorang. Usulan memuat masalah, solusi, estimasi biaya dan penghematan."
       },
       {
-        "en": "Evidence (breakdowns, downtime, cost and linked work orders for the same component) is calculated by the system and is read only.",
-        "id": "Evidence (jumlah breakdown, downtime, biaya dan work order terkait untuk komponen yang sama) dihitung sistem dan hanya dibaca."
+        "en": "Evidence (breakdowns, downtime, cost and linked maintenance orders for the same component) is calculated by the system and is read only.",
+        "id": "Evidence (jumlah breakdown, downtime, biaya dan order perawatan terkait untuk komponen yang sama) dihitung sistem dan hanya dibaca."
       },
       {
         "en": "The head of maintenance confirms the proposal. Above the cost limit set in Constants the director confirms too.",
         "id": "Kepala maintenance mengonfirmasi usulan. Di atas batas biaya di Constants, direksi juga mengonfirmasi."
       },
       {
-        "en": "An approved proposal creates a work order of type IMPROVEMENT. When it is Done, the system schedules the review.",
-        "id": "Usulan yang disetujui membuat work order jenis IMPROVEMENT. Saat Done, sistem menjadwalkan review."
+        "en": "An approved proposal creates a maintenance order of type IMPROVEMENT. When it is Done, the system schedules the review.",
+        "id": "Usulan yang disetujui membuat order perawatan jenis IMPROVEMENT. Saat Done, sistem menjadwalkan review."
       },
       {
         "en": "At review the system fills downtime and cost before and after over periods of equal length. A person concludes: Effective, Partial or Not effective.",
@@ -991,8 +991,8 @@
       },
       {
         "label": "Evidence",
-        "en": "Read only figures calculated from work orders and downtime already recorded.",
-        "id": "Angka yang hanya dibaca, dihitung dari work order dan downtime yang sudah tercatat."
+        "en": "Read only figures calculated from maintenance orders and downtime already recorded.",
+        "id": "Angka yang hanya dibaca, dihitung dari order perawatan dan downtime yang sudah tercatat."
       },
       {
         "label": "Review",
@@ -1026,8 +1026,8 @@
         "id": "Fase 3 Breakdown: tombol Breakdown di worklist produksi membuat request prioritas P1, pengeluaran spare part ke stok, permintaan pembelian dengan status Waiting Part, dan laporan Machine Reliability."
       },
       {
-        "en": "Phase 4 Improvement: tables and service, repeated-failure detector, Proposal and Review screens, work order type IMPROVEMENT, and Apply to master with manual approval.",
-        "id": "Fase 4 Improvement: tabel dan service, detektor kerusakan berulang, layar Proposal dan Review, work order jenis IMPROVEMENT, dan Apply to master dengan persetujuan manual."
+        "en": "Phase 4 Improvement: tables and service, repeated-failure detector, Proposal and Review screens, maintenance order type IMPROVEMENT, and Apply to master with manual approval.",
+        "id": "Fase 4 Improvement: tabel dan service, detektor kerusakan berulang, layar Proposal dan Review, order perawatan jenis IMPROVEMENT, dan Apply to master dengan persetujuan manual."
       },
       {
         "en": "Master Data comes first because the other phases read its data. Each phase is done when its tests pass and its data is checked in the database.",
@@ -1049,18 +1049,18 @@
     "fields": [
       {
         "label": "Planned percentage",
-        "en": "Planned work orders divided by all work orders. Shown in the reliability and compliance reports.",
-        "id": "Work order terencana dibagi semua work order. Tampil di laporan keandalan dan kepatuhan."
+        "en": "Planned maintenance orders divided by all maintenance orders. Shown in the reliability and compliance reports.",
+        "id": "Maintenance order terencana dibagi semua order perawatan. Tampil di laporan keandalan dan kepatuhan."
       },
       {
         "label": "Scheduling Board",
-        "en": "A confirmed preventive work order blocks its machine. Production can only suggest moving the window, and the head of maintenance confirms.",
-        "id": "Work order preventive Confirmed memblokir mesinnya. Produksi hanya bisa mengusulkan menggeser jendela, kepala maintenance yang mengonfirmasi."
+        "en": "A confirmed preventive maintenance order blocks its machine. Production can only suggest moving the window, and the head of maintenance confirms.",
+        "id": "Maintenance order preventive Confirmed memblokir mesinnya. Produksi hanya bisa mengusulkan menggeser jendela, kepala maintenance yang mengonfirmasi."
       },
       {
         "label": "Inventory and Procurement",
-        "en": "Spare parts are issued from Inventory against the work order. A missing part creates a purchase request.",
-        "id": "Spare part dikeluarkan dari Inventory terhadap work order. Part yang kurang membuat permintaan pembelian."
+        "en": "Spare parts are issued from Inventory against the maintenance order. A missing part creates a purchase request.",
+        "id": "Spare part dikeluarkan dari Inventory terhadap order perawatan. Part yang kurang membuat permintaan pembelian."
       },
       {
         "label": "Backlog items still open",
@@ -1085,16 +1085,16 @@
         "id": "Aturan proyek adalah satu database per modul fungsional. Maintenance kini modul sendiri (MAINT) dengan menu dan grup akses sendiri, seperti HRM, Recruitment dan Payroll."
       },
       {
-        "en": "Production keeps work orders, scheduling and output. Maintenance has its own life cycle of requests, work orders, plans and improvements, so the two do not share tables.",
-        "id": "Production menyimpan work order, scheduling dan output. Maintenance punya siklus sendiri berupa request, work order, plan dan improvement, jadi keduanya tidak berbagi tabel."
+        "en": "Production keeps maintenance orders, scheduling and output. Maintenance has its own life cycle of requests, maintenance orders, plans and improvements, so the two do not share tables.",
+        "id": "Production menyimpan order perawatan, scheduling dan output. Maintenance punya siklus sendiri berupa request, order perawatan, plan dan improvement, jadi keduanya tidak berbagi tabel."
       },
       {
         "en": "No foreign key crosses databases anyway, so separating them gives up no integrity. Relations stay logical and are checked in Laravel.",
         "id": "Tidak ada foreign key lintas database, jadi pemisahan tidak mengorbankan integritas. Relasi tetap logis dan dicek di Laravel."
       },
       {
-        "en": "Machine downtime and status stay in the Master database because Master Mesin owns them and scheduling and OEE read them. Work orders write there through one service.",
-        "id": "Downtime dan status mesin tetap di database Master karena Master Mesin pemiliknya dan scheduling serta OEE membacanya. Work order menulis ke sana lewat satu service."
+        "en": "Machine downtime and status stay in the Master database because Master Mesin owns them and scheduling and OEE read them. Maintenance orders write there through one service.",
+        "id": "Downtime dan status mesin tetap di database Master karena Master Mesin pemiliknya dan scheduling serta OEE membacanya. Maintenance order menulis ke sana lewat satu service."
       },
       {
         "en": "A separate server is not needed. Maintenance uses the same MySQL server with one more database.",
@@ -1144,8 +1144,8 @@
         "id": "Komponen berupa kode, bukan pohon. Daftar 45 mesin tidak butuh tingkat mesin, unit dan komponen."
       },
       {
-        "en": "Request and Work Order stay two documents. Daily Check and repeated failures enter through a Request so the head of maintenance does the judging.",
-        "id": "Request dan Work Order tetap dua dokumen. Daily Check dan kerusakan berulang masuk lewat Request supaya penilaian ada di kepala maintenance."
+        "en": "Request and Maintenance Order stay two documents. Daily Check and repeated failures enter through a Request so the head of maintenance does the judging.",
+        "id": "Request dan Maintenance Order tetap dua dokumen. Daily Check dan kerusakan berulang masuk lewat Request supaya penilaian ada di kepala maintenance."
       },
       {
         "en": "Thresholds and rates are settings in Constants so a user can change them without code. The values in this plan are starting proposals.",
