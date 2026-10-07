@@ -49,6 +49,8 @@ final class Summary
         $unread = AgentHistory::unread();
         $items[] = ['code' => 'S-history', 'label' => 'Agent History', 'icon' => 'fa-solid fa-clock-rotate-left', 'url' => route('history'), 'type' => 'grid'] + ($unread ? ['badge' => (string) $unread, 'badgeTone' => 'partial'] : []);
 
+        $items[] = ['code' => 'S-agent-log', 'label' => 'Agent Log', 'icon' => 'fa-solid fa-list-check', 'url' => route('agent-log'), 'type' => 'grid'];
+
         return ['code' => LayerShell::REPORT_MODULE, 'short' => 'EX', 'label' => 'Executive Summary', 'icon' => 'fa-solid fa-chart-line', 'children' => $items];
     }
 

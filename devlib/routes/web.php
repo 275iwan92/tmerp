@@ -123,6 +123,9 @@ Route::middleware('devlib.auth')->group(function () {
         return $out + ['meta' => $user['login'].' · '.Locale::date(now()).($out['ratings'] > 1 ? ' · '.$out['ratings'].'x' : '')];
     })->name('summary.rate');
 
+    // Agent Log (user 2026-10-07): log pekerjaan agen Iwan / Jo dari git, dengan saringan.
+    Route::get('/agent-log', fn () => view('agent-log'))->name('agent-log');
+
     // Agent History (user 2026-10-07): catatan pengingat user; aturan = App\Support\AgentHistory. Hanya akun developer yang boleh menulis.
     Route::get('/history', function (Request $r) {
         $ready = AgentHistory::ready();
