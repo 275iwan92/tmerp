@@ -73,7 +73,7 @@ class DeliveryTrack extends DevlibComponent
     {
         return <<<'BLADE'
             <div {{ $attributes->class(['dl-track', 'dl-track--'.$stage]) }} {!! $dl() !!} data-dl-track data-target="{{ $target() }}" data-moving="{{ $moving() ? 1 : 0 }}">
-                @if ($title || $subtitle)<div class="dl-track__head">@if ($title)<b>{{ $title }}</b>@endif @if ($subtitle)<span>{{ $subtitle }}</span>@endif</div>@endif
+                <div class="dl-track__head">@if ($title)<b>{{ $title }}</b>@endif @if ($subtitle)<span>{{ $subtitle }}</span>@endif<x-dl::icon-button icon="refresh" title="Replay" data-dl-track-replay /></div>
                 <svg viewBox="0 0 600 170" role="img" aria-label="{{ $from }} → {{ $to }}: {{ $stage === 'cancelled' ? 'Cancelled' : \Devlib\Components\DeliveryTrack::STAGES[$stage] }}">
                     <path class="dl-track__road" data-dl-track-road d="M60 120 C160 120 170 45 300 62 S450 140 540 52"/>
                     <path class="dl-track__trail" data-dl-track-trail d="M60 120 C160 120 170 45 300 62 S450 140 540 52"/>

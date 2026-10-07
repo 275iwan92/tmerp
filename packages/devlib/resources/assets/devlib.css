@@ -3514,3 +3514,8 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-qc textarea{width:100%;box-sizing:border-box}
 .dl-qc__err{display:block;min-height:18px;color:var(--dl-danger,#c0392b);font-style:normal;font-size:12px;margin-top:4px}
 .dl-qc__rel{padding:2px 10px;border-radius:8px;background:var(--dl-accent,#2563eb);color:var(--dl-on-dark,#fff);white-space:nowrap}
+
+.dl-track__head{align-items:center}.dl-track__head .dl-iconbtn{margin-left:auto}
+.dl-track--confirmed .dl-track__truck circle{animation:dl-track-ready 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes dl-track-ready{50%{transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){.dl-track--confirmed .dl-track__truck circle{animation:none}}

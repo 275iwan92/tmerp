@@ -28,6 +28,7 @@ class DeliveryTrackTest extends TestCase
         $this->assertStringContainsString('data-dl-track', $html);
         $this->assertStringContainsString('data-moving="1"', $html);
         $this->assertStringContainsString('data-dl-track-truck', $html);
+        $this->assertStringContainsString('data-dl-track-replay', $html);
         $this->assertStringContainsString('PT Maju', $html);
         $this->assertStringContainsString('is-done', $html);
         $this->assertStringContainsString('is-current', $html);
