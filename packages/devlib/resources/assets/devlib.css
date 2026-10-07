@@ -2650,6 +2650,8 @@ html.dl-locked body{overflow:hidden}
 .dl-lm__n{font-size:calc(10.5px * var(--dl-font-scale));font-weight:700;padding:1px 7px;border-radius:9px;background:var(--dl-side-hover);color:var(--dl-side-ink)}
 .dl-lm__chev{font-size:.72em;color:var(--dl-side-muted)}
 .dl-lm__badge{font-style:normal;font-size:calc(10.5px * var(--dl-font-scale));font-weight:800;padding:1px 7px;border-radius:9px;background:var(--dl-accent);color:var(--dl-white)}
+.dl-lm__badge--icon{background:none!important;padding:0;font-size:calc(15px * var(--dl-font-scale))}
+.dl-lm__badge--icon.is-success{color:var(--dl-green)}.dl-lm__badge--icon.is-warn{color:var(--dl-amber-2)}.dl-lm__badge--icon.is-danger{color:var(--dl-danger)}
 .dl-lm__badge.is-danger{background:var(--dl-danger)}.dl-lm__badge.is-warn{background:var(--dl-amber-2)}.dl-lm__badge.is-success{background:var(--dl-green)}
 .dl-lm__title{display:flex;align-items:center;gap:10px;padding:8px 10px 10px;margin-bottom:4px;border-bottom:1px solid var(--dl-side-hover);color:var(--dl-white);font-size:calc(15px * var(--dl-font-scale))}
 .dl-lm__title i{color:var(--dl-accent);font-size:1.1em}

@@ -32,7 +32,7 @@ class LayerShell extends Shell
 
             return array_filter([
                 'key' => $it['code'], 'label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $group,
-                'badge' => $it['badge'] ?? null, 'tone' => $tone[$it['badgeTone'] ?? ''] ?? null,
+                'badge' => $it['badge'] ?? null, 'badgeTitle' => $it['badgeTitle'] ?? null, 'tone' => $tone[$it['badgeTone'] ?? ''] ?? null,
             ]);
         };
 

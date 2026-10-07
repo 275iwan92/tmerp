@@ -390,11 +390,18 @@ final class Catalog
     public static function modules(): array
     {
         $modules = [];
+        // Ikon status saja (tanpa teks), selaras dengan bilah QC: keputusan QC terakhir; konstanta APPROVED tetap dihormati.
+        $qcStatus = Qc::store()->statusMap();
+        $mark = fn (string $slug) => match (true) {
+            isset(self::APPROVED[$slug]), ($qcStatus[$slug] ?? null) === 'APPROVED' => ['badge' => 'icon:fa-solid fa-circle-check', 'badgeTone' => 'done', 'badgeTitle' => 'Approved'],
+            ($qcStatus[$slug] ?? null) === 'NEEDS_IMPROVEMENT' => ['badge' => 'icon:fa-solid fa-pen-to-square', 'badgeTone' => 'danger', 'badgeTitle' => 'Need improvement'],
+            default => ['badge' => 'icon:fa-regular fa-eye', 'badgeTone' => 'partial', 'badgeTitle' => 'Review'],
+        };
         foreach (self::groups() as $g) {
             $items = [];
             foreach ($g['pages'] as $slug => $p) {
                 $item = ['code' => 'P-'.$slug, 'label' => $p['label'], 'icon' => $p['icon'], 'url' => route('lib', ['slug' => $slug]),
-                    'type' => 'form'] + (isset(self::APPROVED[$slug]) ? ['badge' => 'Approved', 'badgeTone' => 'done'] : ['badge' => 'Review', 'badgeTone' => 'partial']);
+                    'type' => 'form'] + $mark($slug);
                 if (! isset($p['folder'])) {
                     $items[] = $item;
 

@@ -146,7 +146,10 @@
       let g = null;
       this.nodes(d).forEach((n, x) => {
         if (n.group && n.group !== g) { g = n.group; h += `<div class="dl-lm__cap">${esc(g)}</div>`; }
-        const badge = n.badge ? `<em class="dl-lm__badge is-${esc(n.tone || 'accent')}">${esc(n.badge)}</em>` : '';
+        // badge "icon:<kelas fa>" = ikon saja (tanpa teks), mis. status QC.
+        const badge = n.badge ? (String(n.badge).startsWith('icon:')
+          ? `<em class="dl-lm__badge dl-lm__badge--icon is-${esc(n.tone || 'accent')}" title="${esc(n.badgeTitle || '')}"><i class="${esc(String(n.badge).slice(5))}"></i></em>`
+          : `<em class="dl-lm__badge is-${esc(n.tone || 'accent')}">${esc(n.badge)}</em>`) : '';
         const lbl = `<span class="dl-lm__ico"><i class="${esc(n.icon)}"></i></span><span class="dl-lm__t">${esc(n.label)}</span>${badge}`;
         h += n.items
           ? `<button type="button" class="dl-lm__a" data-lm-x="${x}" title="${esc(n.label)}">${lbl}${counts ? `<span class="dl-lm__n">${this.count(n)}</span>` : ''}<i class="fa-solid fa-chevron-right dl-lm__chev"></i></button>`

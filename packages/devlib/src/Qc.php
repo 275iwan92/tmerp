@@ -47,6 +47,16 @@ class Qc
         return $this->lastPerStage()->where('r.item_key', $key)->get()->keyBy('stage')->map(fn ($r) => (array) $r)->all();
     }
 
+    // Keputusan berlaku satu tahap untuk semua item: [item_key => status]. Dipakai ikon status di menu.
+    public function statusMap(string $stage = 'QC'): array
+    {
+        if (! $this->ready()) {
+            return [];
+        }
+
+        return $this->lastPerStage()->where('r.stage', $stage)->pluck('r.status', 'r.item_key')->all();
+    }
+
     // Prop bilah untuk satu item; $stage = tahap yang diputuskan akun ini (sekarang selalu QC).
     public function bar(string $key, string $name, string $action, string $csrf, bool $canReview, string $stage = 'QC'): array
     {
