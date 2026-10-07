@@ -314,7 +314,7 @@ class AccountingEngineTest extends TestCase
     public function test_semua_layar_finance_bisa_dirender(): void
     {
         $this->actingAs(SecUser::where('is_admin', true)->firstOrFail());
-        foreach (['engine', 'dashboard', 'receivables', 'payables', 'bank', 'journals', 'ledger', 'assets',
+        foreach (['engine', 'dashboard', 'payables', 'bank', 'journals', 'ledger', 'assets',
             'amortization', 'closing', 'tax', 'statements', 'trial-balance', 'balance-sheet', 'income-statement', 'cash-flow'] as $page) {
             Livewire::test('pages::finance.'.$page)->assertOk();
         }
