@@ -1,0 +1,3559 @@
+{
+  "_note": "DRAFT generated 2026-10-08. Generic practice only; every limit, interval and specification must come from the manufacturer manual. Approval by the head of maintenance is required. Language: English base, Indonesian through the dictionary.",
+  "sets": [
+    {
+      "code": "OFF",
+      "title": "Offset Printing Press"
+    },
+    {
+      "code": "DIE",
+      "title": "Die Cutting Machine"
+    },
+    {
+      "code": "LAM",
+      "title": "Laminating Machine"
+    },
+    {
+      "code": "CUT",
+      "title": "Paper Cutting Machine (Guillotine)"
+    },
+    {
+      "code": "FGL",
+      "title": "Folder Gluer"
+    },
+    {
+      "code": "AGL",
+      "title": "Animal Glue Applicator"
+    },
+    {
+      "code": "STI",
+      "title": "Stitching Machine"
+    },
+    {
+      "code": "STR",
+      "title": "Stripping Machine"
+    },
+    {
+      "code": "PRS",
+      "title": "Pressing Machine"
+    },
+    {
+      "code": "SHR",
+      "title": "Shrink Wrapping Machine"
+    },
+    {
+      "code": "SEA",
+      "title": "Seaming Machine"
+    },
+    {
+      "code": "WBC",
+      "title": "Water-Based Coating Machine"
+    },
+    {
+      "code": "UVC",
+      "title": "UV Coating Machine"
+    },
+    {
+      "code": "WAX",
+      "title": "Waxing Machine"
+    },
+    {
+      "code": "CTP",
+      "title": "CTP Plate Setter"
+    },
+    {
+      "code": "PLT",
+      "title": "Cutting Plotter"
+    },
+    {
+      "code": "DIG",
+      "title": "Digital Printing Machine"
+    },
+    {
+      "code": "HTR",
+      "title": "Heater / Dryer Unit (Support)"
+    },
+    {
+      "code": "CMP",
+      "title": "Screw Air Compressor (Pressure Equipment)"
+    },
+    {
+      "code": "FKL",
+      "title": "Forklift Truck (Support)"
+    }
+  ],
+  "documents": [
+    {
+      "doc_no": "SOP-MNT-OFF-01",
+      "kind": "SOP",
+      "title": "Maintenance of Offset Printing Press",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the offset printing press safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "OFF-01 Sakurai Oliver 58",
+        "OFF-02 Komori GL440"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: OFF-01 Sakurai Oliver 58, OFF-02 Komori GL440. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-OFF-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-OFF-02, WI-MNT-OFF-03) and breakdown repair (WI-MNT-OFF-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Rollers, cylinders and grippers can trap hands: never reach in while the press is turning.",
+            "Wash-up solvents are flammable and irritating: use only in ventilated areas, keep away from flame.",
+            "Compressed air and hydraulic leaks can injure: do not check leaks with bare hands.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-OFF-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-OFF-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-OFF-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-OFF-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-OFF-01",
+      "kind": "WI",
+      "title": "Daily check of Offset Printing Press",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Clean the area around the press and remove loose paper and tools.",
+        "Check the feeder and delivery for paper dust and for anything caught in the grippers.",
+        "Look at the inking and dampening units for leaks, drips and unusual smell.",
+        "Check the oil level and look for hydraulic or air leaks (sight glass, hoses, fittings).",
+        "Check that guards, safety covers and emergency stops are in place and work.",
+        "Listen while running idle for noise or vibration that is new.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-OFF-02",
+      "kind": "WI",
+      "title": "Weekly care of Offset Printing Press",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean and inspect dampening and inking rollers for glazing, nicks and hardness.",
+        "Clean and lubricate the grippers and chain or belt points listed in the lubrication chart (per manufacturer manual).",
+        "Check chain and belt tension (per manufacturer manual).",
+        "Clean the feeder suction heads and check the vacuum filter.",
+        "Check air pressure at the feeder and the pump condition (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-OFF-03",
+      "kind": "WI",
+      "title": "Monthly care of Offset Printing Press",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Replace or clean the vacuum pump filter and air filters (per manufacturer manual).",
+        "Inspect cylinder bearers, blankets and plate clamps for wear and damage.",
+        "Check ink key and fountain function; clean doctor or ink ducts.",
+        "Check electrical cabinet: dust, loose terminals, fan operation (power off and locked out).",
+        "Lubricate all points of the monthly chart (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-OFF-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Offset Printing Press",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Stop feeding sheets and press the normal stop. Do not clear a jam while the cylinders turn.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "For a feeder fault (double sheet, misfeed), check suction heads, blowers and the double-sheet sensor after isolation.",
+        "For a register or colour fault, record the symptom and call the technician; do not adjust gripper timing without the manual.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-DIE-01",
+      "kind": "SOP",
+      "title": "Maintenance of Die Cutting Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the die cutting machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "DIE-01 Ruian Die Cutter",
+        "DIE-02 Shanghai Die Cutter",
+        "DIE-03 Daxiang Die Cutter",
+        "DIE-04 Daxiang Auto Die Cutter"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: DIE-01 Ruian Die Cutter, DIE-02 Shanghai Die Cutter, DIE-03 Daxiang Die Cutter, DIE-04 Daxiang Auto Die Cutter. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-DIE-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-DIE-02, WI-MNT-DIE-03) and breakdown repair (WI-MNT-DIE-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Cutting and creasing platen closes with very high force: never put hands between the platens.",
+            "Two-hand or light-curtain safety devices must never be bridged.",
+            "Die plates and stripping tools are sharp: handle with cut-resistant gloves.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-DIE-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-DIE-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-DIE-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-DIE-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-DIE-01",
+      "kind": "WI",
+      "title": "Daily check of Die Cutting Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Clear the delivery and feeding area and remove paper scraps and tools.",
+        "Test the emergency stop and the two-hand or safety device before the shift.",
+        "Check that the die and make-ready plate are locked and the cover is closed.",
+        "Look for oil or air leaks and for loose guards.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-DIE-02",
+      "kind": "WI",
+      "title": "Weekly care of Die Cutting Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Lubricate the points on the lubrication chart (per manufacturer manual).",
+        "Check the chain, belt or crank drive for play and noise.",
+        "Check the feeder and gripper bars for wear and cleanliness.",
+        "Inspect the platen surface and die lock-up for damage.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-DIE-03",
+      "kind": "WI",
+      "title": "Monthly care of Die Cutting Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check clutch and brake function and stopping distance (per manufacturer manual).",
+        "Check bolts and fasteners of the crank, platen and frame.",
+        "Check the air system: filter, regulator, lubricator and fittings.",
+        "Check electrical cabinet and motor condition with power locked out.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-DIE-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Die Cutting Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Press the emergency stop and keep hands out of the platen area.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Do not remove a jammed sheet or die piece until the machine is isolated and the platen is blocked open.",
+        "Record whether the fault came with a particular die or paper, then call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-LAM-01",
+      "kind": "SOP",
+      "title": "Maintenance of Laminating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the laminating machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "LAM-01 Small Laminator",
+        "LAM-03 Daxiang Laminator",
+        "LAM-04 Daxiang Auto Laminator"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: LAM-01 Small Laminator, LAM-03 Daxiang Laminator, LAM-04 Daxiang Auto Laminator. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-LAM-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-LAM-02, WI-MNT-LAM-03) and breakdown repair (WI-MNT-LAM-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Heated rollers can burn: let them cool before cleaning and wear heat-resistant gloves.",
+            "Nip points between rollers can trap hands and clothing.",
+            "Adhesive and film vapour: keep the area ventilated.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-LAM-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-LAM-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-LAM-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-LAM-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-LAM-01",
+      "kind": "WI",
+      "title": "Daily check of Laminating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Clear the area and remove film offcuts and paper from rollers and feed table.",
+        "Check roller surfaces for glue build-up and for damage.",
+        "Check the heater warm-up and the temperature display against the job settings (per manufacturer manual).",
+        "Check film and glue supply and the film core holders.",
+        "Check guards and emergency stop.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-LAM-02",
+      "kind": "WI",
+      "title": "Weekly care of Laminating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the rollers with the approved cleaner when cold and dry them.",
+        "Lubricate the bearings and chains on the chart (per manufacturer manual).",
+        "Check belt and chain tension.",
+        "Check pressure setting mechanism and the sheet separation and counter.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-LAM-03",
+      "kind": "WI",
+      "title": "Monthly care of Laminating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the heater and thermostat or controller accuracy (per manufacturer manual).",
+        "Inspect the glue unit and pump for leaks (where fitted).",
+        "Check the electrical cabinet and wiring with power locked out.",
+        "Inspect roller coating for wear; plan recoating or replacement if needed.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-LAM-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Laminating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Stop the machine and let the heated parts cool before touching them.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Do not cut film with a knife inside the nip; stop, isolate and open the rollers if the manual allows.",
+        "For a temperature fault, record the displayed and measured values and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-CUT-01",
+      "kind": "SOP",
+      "title": "Maintenance of Paper Cutting Machine (Guillotine)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the paper cutting machine (guillotine) safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "CUT-01 Robdcut ERC-115",
+        "CUT-02 Echo Guillotine",
+        "CUT-03 Guoxin Guillotine"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: CUT-01 Robdcut ERC-115, CUT-02 Echo Guillotine, CUT-03 Guoxin Guillotine. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-CUT-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-CUT-02, WI-MNT-CUT-03) and breakdown repair (WI-MNT-CUT-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "The blade is extremely sharp and the clamp is powerful: never reach past the light curtain or into the cutting area.",
+            "Blade changes are for trained people only, with the blade carrier and blade handled as the manual shows.",
+            "Never cut with the safety device disabled.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-CUT-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-CUT-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-CUT-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-CUT-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CUT-01",
+      "kind": "WI",
+      "title": "Daily check of Paper Cutting Machine (Guillotine)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Test the emergency stop and the two-hand control or light curtain before the first cut.",
+        "Check that the blade guard and side covers are in place.",
+        "Check the clamp, the back gauge and the cutting stick condition.",
+        "Clean the table and the back gauge area; remove paper dust and offcuts.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CUT-02",
+      "kind": "WI",
+      "title": "Weekly care of Paper Cutting Machine (Guillotine)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Lubricate the back gauge spindle and guides as on the chart (per manufacturer manual).",
+        "Check the clamp pressure indication and the hydraulic oil level.",
+        "Check the blade for chips and dullness; plan a change or grind if needed.",
+        "Check the cutting stick and turn or replace it.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CUT-03",
+      "kind": "WI",
+      "title": "Monthly care of Paper Cutting Machine (Guillotine)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the safety devices with a test as the manual describes (per manufacturer manual).",
+        "Check hydraulic hoses and fittings for leaks and wear.",
+        "Check the electrical cabinet and the brake function with power locked out.",
+        "Check blade fixing bolts and the blade carrier (only by a trained technician).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CUT-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Paper Cutting Machine (Guillotine)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Press the emergency stop and keep hands away from the blade.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "A blade that does not return or a clamp fault: isolate the machine and lock out before looking inside.",
+        "Call the technician; do not change the blade unless you are trained.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-FGL-01",
+      "kind": "SOP",
+      "title": "Maintenance of Folder Gluer",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the folder gluer safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "FGL-03 Daxiang Folder Gluer",
+        "FGL-04 YDM Folder Gluer"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: FGL-03 Daxiang Folder Gluer, FGL-04 YDM Folder Gluer. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-FGL-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-FGL-02, WI-MNT-FGL-03) and breakdown repair (WI-MNT-FGL-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Belts, rollers and folding tools can trap hands: use the guards and stop the machine before clearing.",
+            "Hot or cold glue systems can splash: wear gloves and eye protection when working on the glue unit.",
+            "Moving belts and gates can pull clothing.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-FGL-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-FGL-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-FGL-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-FGL-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-FGL-01",
+      "kind": "WI",
+      "title": "Daily check of Folder Gluer",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Clear the feeder, belts and delivery of paper and carton pieces.",
+        "Check the glue tank level and glue nozzles for clogging.",
+        "Check the belts for wear and tracking, and the pressure of the delivery.",
+        "Check guards and the emergency stop.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-FGL-02",
+      "kind": "WI",
+      "title": "Weekly care of Folder Gluer",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the glue unit, nozzles and rollers with the approved cleaner.",
+        "Lubricate the points on the chart (per manufacturer manual).",
+        "Check the belt tension, tracking and condition (per manufacturer manual).",
+        "Check the feeder suction and the vacuum filter.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-FGL-03",
+      "kind": "WI",
+      "title": "Monthly care of Folder Gluer",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the glue pump and hoses for leaks and the heater if fitted (per manufacturer manual).",
+        "Check bearings of the belt rollers for noise and play.",
+        "Check the electrical cabinet and sensors with power locked out.",
+        "Inspect folding rods and plows for wear.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-FGL-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Folder Gluer",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Stop the machine and clear the jam only after isolation.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "For gluing faults, check the nozzle, glue level and glue temperature (per manufacturer manual).",
+        "Record the product being run when the fault appeared and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-AGL-01",
+      "kind": "SOP",
+      "title": "Maintenance of Animal Glue Applicator",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the animal glue applicator safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "AGL-01 Daxiang Animal Glue Applicator"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: AGL-01 Daxiang Animal Glue Applicator. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-AGL-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-AGL-02, WI-MNT-AGL-03) and breakdown repair (WI-MNT-AGL-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Heated glue can burn and splash: wear gloves and eye protection.",
+            "Hot surfaces: do not touch the tank and rollers until cooled.",
+            "Rollers and gears can trap hands.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-AGL-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-AGL-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-AGL-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-AGL-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-AGL-01",
+      "kind": "WI",
+      "title": "Daily check of Animal Glue Applicator",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the glue tank level and the glue temperature on the display (per manufacturer manual).",
+        "Check that the application roller turns freely and the glue film is even.",
+        "Clean glue splashes from the machine and the area.",
+        "Check guards and the emergency stop.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-AGL-02",
+      "kind": "WI",
+      "title": "Weekly care of Animal Glue Applicator",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the application roller and the scraper with the approved method.",
+        "Check the heater and the temperature controller (per manufacturer manual).",
+        "Lubricate the gear and bearing points on the chart (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-AGL-03",
+      "kind": "WI",
+      "title": "Monthly care of Animal Glue Applicator",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Drain, clean and refill the glue tank as the manual describes (per manufacturer manual).",
+        "Check the heater element, thermostat and wiring with power locked out.",
+        "Inspect hoses, seals and the pump for leaks.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-AGL-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Animal Glue Applicator",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Switch off the heater and let the glue cool before opening the unit.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the glue temperature shown when the fault occurred, then call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-STI-01",
+      "kind": "SOP",
+      "title": "Maintenance of Stitching Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the stitching machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "STI-01 Daxiang Stitcher #1",
+        "STI-02 Daxiang Book Stitcher",
+        "STI-03 Daxiang Stitcher #2"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: STI-01 Daxiang Stitcher #1, STI-02 Daxiang Book Stitcher, STI-03 Daxiang Stitcher #2. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-STI-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-STI-02, WI-MNT-STI-03) and breakdown repair (WI-MNT-STI-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Stitching heads move fast and wire ends are sharp: keep hands out of the head area while running.",
+            "Wire spool and cutter blades can cause cuts.",
+            "Never remove the head guard while the machine is powered.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-STI-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-STI-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-STI-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-STI-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-STI-01",
+      "kind": "WI",
+      "title": "Daily check of Stitching Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the wire spool and the wire feed path.",
+        "Check the stitching heads for wire dust and bent or broken parts.",
+        "Clear paper dust from the table and the delivery.",
+        "Check guards and the emergency stop.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-STI-02",
+      "kind": "WI",
+      "title": "Weekly care of Stitching Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Lubricate the stitching heads and moving parts on the chart (per manufacturer manual).",
+        "Check the wire cutter and the clincher for wear.",
+        "Check belt and chain tension (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-STI-03",
+      "kind": "WI",
+      "title": "Monthly care of Stitching Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Replace worn forming and clinching parts (per manufacturer manual).",
+        "Check the pneumatic parts and the vacuum if fitted.",
+        "Check the electrical cabinet and the sensors with power locked out.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-STI-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Stitching Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Stop the machine and clear a wire jam only after isolation.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "If stitches are loose or missing, record the product and wire type and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-STR-01",
+      "kind": "SOP",
+      "title": "Maintenance of Stripping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the stripping machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "STR-01 Daxiang Stripper",
+        "STR-02 Daxiang Blanking Stripper"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: STR-01 Daxiang Stripper, STR-02 Daxiang Blanking Stripper. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-STR-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-STR-02, WI-MNT-STR-03) and breakdown repair (WI-MNT-STR-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Stripping tools and die plates are sharp: wear cut-resistant gloves when setting up.",
+            "Pressing parts can trap fingers: never reach in while the machine is powered.",
+            "Do not bypass safety devices.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-STR-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-STR-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-STR-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-STR-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-STR-01",
+      "kind": "WI",
+      "title": "Daily check of Stripping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Clear the feeder and delivery of paper and waste pieces.",
+        "Check that the stripping tools and the upper and lower dies are locked.",
+        "Test the emergency stop and the safety device.",
+        "Check guards and covers.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-STR-02",
+      "kind": "WI",
+      "title": "Weekly care of Stripping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Lubricate the moving parts and guides on the chart (per manufacturer manual).",
+        "Check the drive belts and chains for play and noise.",
+        "Clean the tooling and check for wear.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-STR-03",
+      "kind": "WI",
+      "title": "Monthly care of Stripping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the pneumatic parts and the air filter, regulator and lubricator (per manufacturer manual).",
+        "Check bearings and fixing bolts of the frame.",
+        "Check the electrical cabinet with power locked out.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-STR-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Stripping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Stop the machine and clear a jam only after isolation.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the product and tool when the fault appeared and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-PRS-01",
+      "kind": "SOP",
+      "title": "Maintenance of Pressing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the pressing machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "PRS-01 Daxiang Press"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: PRS-01 Daxiang Press. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-PRS-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-PRS-02, WI-MNT-PRS-03) and breakdown repair (WI-MNT-PRS-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Pressing force is very high: never put hands in the press area.",
+            "Safety devices must never be bridged.",
+            "Hydraulic leaks under pressure can inject oil: do not check with bare hands.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-PRS-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-PRS-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-PRS-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-PRS-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-PRS-01",
+      "kind": "WI",
+      "title": "Daily check of Pressing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Test the emergency stop and the two-hand or safety device before the shift.",
+        "Check the hydraulic oil level and look for leaks.",
+        "Clear the area of tools and scraps.",
+        "Check guards and covers.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-PRS-02",
+      "kind": "WI",
+      "title": "Weekly care of Pressing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Lubricate the guides and moving parts on the chart (per manufacturer manual).",
+        "Check the press plates for damage and cleanliness.",
+        "Check hoses and fittings for leaks and wear.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-PRS-03",
+      "kind": "WI",
+      "title": "Monthly care of Pressing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check hydraulic oil condition and filter (per manufacturer manual).",
+        "Check the pressure indication and the relief function by a trained technician only (per manufacturer manual).",
+        "Check the electrical cabinet with power locked out.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-PRS-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Pressing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Press the emergency stop and keep hands out of the press area.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Do not open the press or loosen any hose while it is under pressure.",
+        "Record the fault and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-SHR-01",
+      "kind": "SOP",
+      "title": "Maintenance of Shrink Wrapping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the shrink wrapping machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "SHR-01 Daxiang Shrink Wrapper"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: SHR-01 Daxiang Shrink Wrapper. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-SHR-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-SHR-02, WI-MNT-SHR-03) and breakdown repair (WI-MNT-SHR-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "The heat tunnel and sealing bar are very hot: use heat-resistant gloves and do not touch until cooled.",
+            "Moving conveyors and cutters can trap hands.",
+            "Film burning produces fumes: keep ventilation on.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-SHR-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-SHR-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-SHR-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-SHR-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-SHR-01",
+      "kind": "WI",
+      "title": "Daily check of Shrink Wrapping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the film roll and the film path.",
+        "Check the sealing bar and the tunnel for film residue.",
+        "Check the heater warm-up and the temperature display against the job settings (per manufacturer manual).",
+        "Check the conveyor belt for wear and tracking.",
+        "Check guards and the emergency stop.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-SHR-02",
+      "kind": "WI",
+      "title": "Weekly care of Shrink Wrapping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the sealing bar and the Teflon covering.",
+        "Lubricate the conveyor and the bearings as the chart shows (per manufacturer manual).",
+        "Check the blower and the air flow of the tunnel.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-SHR-03",
+      "kind": "WI",
+      "title": "Monthly care of Shrink Wrapping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the heater elements and the thermostat (per manufacturer manual).",
+        "Check the conveyor drive, belt tension and the bearings.",
+        "Check the electrical cabinet with power locked out.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-SHR-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Shrink Wrapping Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Switch off the heater and let the tunnel cool before clearing film.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the temperature shown when the fault occurred and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-SEA-01",
+      "kind": "SOP",
+      "title": "Maintenance of Seaming Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the seaming machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "SEA-01 Innovatec FR-900 #1",
+        "SEA-02 Innovatec FR-900 #2"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: SEA-01 Innovatec FR-900 #1, SEA-02 Innovatec FR-900 #2. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-SEA-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-SEA-02, WI-MNT-SEA-03) and breakdown repair (WI-MNT-SEA-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Heated parts and hot air can burn: wear heat-resistant gloves and let them cool before cleaning.",
+            "Rollers and pressure parts can trap fingers.",
+            "Welding fumes from some materials: keep the area ventilated.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-SEA-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-SEA-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-SEA-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-SEA-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-SEA-01",
+      "kind": "WI",
+      "title": "Daily check of Seaming Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the seaming nozzle and rollers for residue and wear.",
+        "Check the heating display against the job settings (per manufacturer manual).",
+        "Check the material feed and the roller pressure.",
+        "Check guards and the emergency stop.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-SEA-02",
+      "kind": "WI",
+      "title": "Weekly care of Seaming Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the nozzle and the pressure rollers with the approved method.",
+        "Lubricate the moving parts on the chart (per manufacturer manual).",
+        "Check belts and drive for play and noise.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-SEA-03",
+      "kind": "WI",
+      "title": "Monthly care of Seaming Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the heater and temperature control accuracy (per manufacturer manual).",
+        "Check the air system and the blower if fitted.",
+        "Check the electrical cabinet with power locked out.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-SEA-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Seaming Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Switch off the heater and let it cool before opening.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the temperature and the material when the fault occurred and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-WBC-01",
+      "kind": "SOP",
+      "title": "Maintenance of Water-Based Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the water-based coating machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "WBC-01 Daxiang Water-Based Coater"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: WBC-01 Daxiang Water-Based Coater. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-WBC-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-WBC-02, WI-MNT-WBC-03) and breakdown repair (WI-MNT-WBC-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Coating splashes can irritate skin and eyes: wear gloves and eye protection.",
+            "Rollers can trap hands.",
+            "Dryer parts can be hot.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-WBC-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-WBC-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-WBC-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-WBC-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-WBC-01",
+      "kind": "WI",
+      "title": "Daily check of Water-Based Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the coating supply and the pump and hoses for leaks.",
+        "Check the anilox or coating roller and the doctor blade for build-up and damage.",
+        "Check the dryer warm-up and the temperature display against the job settings (per manufacturer manual).",
+        "Clean coating splashes from the machine and the floor.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-WBC-02",
+      "kind": "WI",
+      "title": "Weekly care of Water-Based Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Wash the coating unit and the rollers; check roller surfaces for wear.",
+        "Check the pump and the filters (per manufacturer manual).",
+        "Lubricate the bearings and the drive on the chart (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-WBC-03",
+      "kind": "WI",
+      "title": "Monthly care of Water-Based Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the dryer fans and the heaters (per manufacturer manual).",
+        "Check the pump seals and the hoses for aging.",
+        "Check the electrical cabinet with power locked out.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-WBC-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Water-Based Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Stop the machine and wash the coating unit if the coating starts to dry in the lines.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the product and coating type when the fault occurred and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-UVC-01",
+      "kind": "SOP",
+      "title": "Maintenance of UV Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the uv coating machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "UVC-01 UV Coating"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: UVC-01 UV Coating. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-UVC-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-UVC-02, WI-MNT-UVC-03) and breakdown repair (WI-MNT-UVC-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "UV light harms eyes and skin: never look at an on lamp and keep the shielding in place.",
+            "UV lamps get very hot and some produce ozone: keep the extraction running.",
+            "UV coating and cleaner are irritants: wear gloves and eye protection.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-UVC-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-UVC-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-UVC-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-UVC-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-UVC-01",
+      "kind": "WI",
+      "title": "Daily check of UV Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the shielding and covers around the UV lamp are in place.",
+        "Check the extraction and cooling air are running.",
+        "Check the coating supply, the pump and hoses for leaks.",
+        "Check the roller and the doctor blade for build-up and damage.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-UVC-02",
+      "kind": "WI",
+      "title": "Weekly care of UV Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the reflectors and the lamp housing with the lamp off and cool (per manufacturer manual).",
+        "Wash the coating unit and check roller surfaces.",
+        "Lubricate the drive and bearings on the chart (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-UVC-03",
+      "kind": "WI",
+      "title": "Monthly care of UV Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the lamp hours and the lamp output; plan a lamp replacement (per manufacturer manual).",
+        "Check the shutters and the interlocks by a trained technician (per manufacturer manual).",
+        "Check the electrical cabinet and the power supply of the lamp with power locked out.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-UVC-04",
+      "kind": "WI",
+      "title": "Breakdown first response for UV Coating Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Switch off the UV lamp and let it cool before opening the housing.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "For poor curing, record the product, speed and lamp hours and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-WAX-01",
+      "kind": "SOP",
+      "title": "Maintenance of Waxing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the waxing machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "WAX-01 Waxing Machine (DIY)"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: WAX-01 Waxing Machine (DIY). Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-WAX-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-WAX-02, WI-MNT-WAX-03) and breakdown repair (WI-MNT-WAX-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Melted wax is hot and burns: wear heat-resistant gloves and eye protection.",
+            "Wax and vapour are flammable: keep flames and sparks away and keep a fire extinguisher ready.",
+            "This machine is built in-house: no manufacturer manual exists, so any change needs approval.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-WAX-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-WAX-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-WAX-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-WAX-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-WAX-01",
+      "kind": "WI",
+      "title": "Daily check of Waxing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the wax level and the heater display (per manufacturer manual or the setting approved by the head of maintenance).",
+        "Check for wax leaks around the tank and the rollers.",
+        "Check the fire extinguisher is in place.",
+        "Check guards and the emergency stop.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-WAX-02",
+      "kind": "WI",
+      "title": "Weekly care of Waxing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the rollers and the scraper when cold.",
+        "Check the heater wiring and the thermostat condition.",
+        "Lubricate the moving parts that need it.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-WAX-03",
+      "kind": "WI",
+      "title": "Monthly care of Waxing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the temperature control with a calibrated thermometer.",
+        "Check the electrical cabinet and the wiring with power locked out.",
+        "Check the tank and the pipes for damage and leaks.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-WAX-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Waxing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Switch off the heater and keep the area clear of flames.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "If wax spills, make safe and clean up with the approved method; call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-CTP-01",
+      "kind": "SOP",
+      "title": "Maintenance of CTP Plate Setter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the ctp plate setter safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "CTP-01 AGFA Avalon C"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: CTP-01 AGFA Avalon C. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-CTP-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-CTP-02, WI-MNT-CTP-03) and breakdown repair (WI-MNT-CTP-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Laser radiation inside the unit: never open the laser housing; service only by the vendor.",
+            "Plate edges are sharp: wear gloves when loading plates.",
+            "Processor chemicals irritate skin and eyes: wear gloves and eye protection.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-CTP-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-CTP-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-CTP-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-CTP-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CTP-01",
+      "kind": "WI",
+      "title": "Daily check of CTP Plate Setter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the plate loading area is clean and free from dust.",
+        "Check the plate stock and the interleaf paper handling.",
+        "Check the processor chemistry level and temperature display (per manufacturer manual).",
+        "Check for error messages on the screen and write them in the Daily Check.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CTP-02",
+      "kind": "WI",
+      "title": "Weekly care of CTP Plate Setter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the loading table and the plate transport (per manufacturer manual).",
+        "Clean the processor rollers and the brush (per manufacturer manual).",
+        "Check the exhaust and the filters.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CTP-03",
+      "kind": "WI",
+      "title": "Monthly care of CTP Plate Setter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Replace chemistry and clean the processor tank as the manual describes (per manufacturer manual).",
+        "Run the vendor test or calibration when due (per manufacturer manual).",
+        "Check the cooling fans and the dust filters.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CTP-04",
+      "kind": "WI",
+      "title": "Breakdown first response for CTP Plate Setter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Record the error message and the time, then call the vendor technician for any laser or optics fault.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Do not open the laser housing.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-PLT-01",
+      "kind": "SOP",
+      "title": "Maintenance of Cutting Plotter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the cutting plotter safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "PLT-01 Summa D60R #1",
+        "PLT-02 Summa D60R #2",
+        "PLT-03 IECHO BK4",
+        "PLT-04 SAGA SG-SC A3+ II Pro #1",
+        "PLT-05 SAGA SG-SC A3+ II Pro #2",
+        "PLT-06 Summa S1 D60",
+        "PLT-07 SAGA SG-SC A3+ II Pro #3",
+        "PLT-08 SAGA SG-SC A3+ II Pro #4",
+        "PLT-09 SAGA Back Creasing"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: PLT-01 Summa D60R #1, PLT-02 Summa D60R #2, PLT-03 IECHO BK4, PLT-04 SAGA SG-SC A3+ II Pro #1, PLT-05 SAGA SG-SC A3+ II Pro #2, PLT-06 Summa S1 D60, PLT-07 SAGA SG-SC A3+ II Pro #3, PLT-08 SAGA SG-SC A3+ II Pro #4, PLT-09 SAGA Back Creasing. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-PLT-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-PLT-02, WI-MNT-PLT-03) and breakdown repair (WI-MNT-PLT-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "The cutting blade and the tool carriage are sharp and move quickly: keep hands out of the cutting area while running.",
+            "Pay attention to the vacuum table and the moving gantry.",
+            "Never bypass the safety sensors.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-PLT-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-PLT-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-PLT-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-PLT-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-PLT-01",
+      "kind": "WI",
+      "title": "Daily check of Cutting Plotter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the cutting blade or tool for wear and breakage.",
+        "Clean the cutting mat or table and the sensor window.",
+        "Check the vacuum or the media hold-down (per manufacturer manual).",
+        "Check the origin and the registration mark sensor works.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-PLT-02",
+      "kind": "WI",
+      "title": "Weekly care of Cutting Plotter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the guide rails and lubricate them as the manual shows (per manufacturer manual).",
+        "Check the drive belts and the carriage for play.",
+        "Check the cutting depth and the blade pressure test (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-PLT-03",
+      "kind": "WI",
+      "title": "Monthly care of Cutting Plotter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the vacuum motor and the filters (per manufacturer manual).",
+        "Check the cables and the cable chain for wear.",
+        "Check the sensors and the home position; run the test cut.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-PLT-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Cutting Plotter",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Stop the machine and remove power before touching the tool.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the material and the job when the fault appeared and call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-DIG-01",
+      "kind": "SOP",
+      "title": "Maintenance of Digital Printing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the digital printing machine safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "DIG-01 Hanway 2500B",
+        "DIG-02 Heidelberg Versafire",
+        "DIG-03 Sunthink SC645",
+        "DIG-04 Taimes T5S-512i-8H",
+        "DIG-06 Xenons"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: DIG-01 Hanway 2500B, DIG-02 Heidelberg Versafire, DIG-03 Sunthink SC645, DIG-04 Taimes T5S-512i-8H, DIG-06 Xenons. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-DIG-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-DIG-02, WI-MNT-DIG-03) and breakdown repair (WI-MNT-DIG-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Toner, ink and cleaners can irritate skin and eyes: wear gloves and follow the safety data sheet.",
+            "Fuser and drying parts can be very hot.",
+            "Do not open covers marked with a warning label while the machine is powered.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-DIG-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-DIG-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-DIG-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-DIG-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-DIG-01",
+      "kind": "WI",
+      "title": "Daily check of Digital Printing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the consumable levels (toner, ink, fuser oil, waste container).",
+        "Check the media path for paper dust and jam residue.",
+        "Check the error messages on the screen and write them in the Daily Check.",
+        "Run the standard test print and check for streaks and colour (per manufacturer manual).",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-DIG-02",
+      "kind": "WI",
+      "title": "Weekly care of Digital Printing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the media path, rollers and sensors with the approved cleaner (per manufacturer manual).",
+        "Clean the dust filters of the intake and the exhaust.",
+        "Run the vendor cleaning or calibration routine (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-DIG-03",
+      "kind": "WI",
+      "title": "Monthly care of Digital Printing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Replace the parts that the manual lists as periodic (per manufacturer manual).",
+        "Check the print head or the drum condition and the waste system (per manufacturer manual).",
+        "Check the cooling fans and the electrical connections.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-DIG-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Digital Printing Machine",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Write down the error code and the time, then switch the machine off in the normal way.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Call the technician or the vendor for any print engine fault; do not open warning-labelled covers.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-HTR-01",
+      "kind": "SOP",
+      "title": "Maintenance of Heater / Dryer Unit (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the heater / dryer unit (support) safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "DIG-05 Taimes Heater"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: DIG-05 Taimes Heater. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-HTR-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-HTR-02, WI-MNT-HTR-03) and breakdown repair (WI-MNT-HTR-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Surfaces and exhaust air are hot: wear heat-resistant gloves and let the unit cool before cleaning.",
+            "Heater elements carry mains voltage: only electrical technicians open the cover.",
+            "Keep paper and flammable materials away from the heater.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-HTR-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-HTR-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-HTR-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-HTR-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-HTR-01",
+      "kind": "WI",
+      "title": "Daily check of Heater / Dryer Unit (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the heater switches on and reaches the display temperature (per manufacturer manual).",
+        "Check the fan runs and the air vents are free of dust.",
+        "Check the cable and the plug for damage.",
+        "Check that nothing flammable is next to the unit.",
+        "Record each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-HTR-02",
+      "kind": "WI",
+      "title": "Weekly care of Heater / Dryer Unit (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the air intake and the exhaust grille.",
+        "Check the thermostat reading against a calibrated thermometer.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-HTR-03",
+      "kind": "WI",
+      "title": "Monthly care of Heater / Dryer Unit (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Check the heater element, the fan and the wiring with power locked out.",
+        "Check the safety cut-out works (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-HTR-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Heater / Dryer Unit (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Switch off the unit and unplug it.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the fault and call the electrical technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-CMP-01",
+      "kind": "SOP",
+      "title": "Maintenance of Screw Air Compressor (Pressure Equipment)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the screw air compressor (pressure equipment) safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "CMP-01 Daxiang Screw Compressor"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: CMP-01 Daxiang Screw Compressor. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-CMP-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-CMP-02, WI-MNT-CMP-03) and breakdown repair (WI-MNT-CMP-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "The receiver and the pipes hold compressed air under pressure: never loosen fittings while pressurised.",
+            "Hot parts and noise: wear hearing protection and gloves.",
+            "Safety valves must never be blocked or adjusted except by an authorised person.",
+            "Legal inspection of pressure vessels applies: keep the certificates current.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-CMP-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-CMP-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-CMP-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-CMP-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CMP-01",
+      "kind": "WI",
+      "title": "Daily check of Screw Air Compressor (Pressure Equipment)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Check the oil level and look for oil or air leaks.",
+        "Drain the condensate from the receiver and the filters (per manufacturer manual).",
+        "Check the pressure and the temperature displays are in the normal range (per manufacturer manual).",
+        "Listen for abnormal noise or vibration.",
+        "Record the running hours and each point in Daily Check. Report any Not OK as a Maintenance Request."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CMP-02",
+      "kind": "WI",
+      "title": "Weekly care of Screw Air Compressor (Pressure Equipment)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the intake filter and the cooler fins.",
+        "Check the belts or the coupling, if fitted (per manufacturer manual).",
+        "Check the drains and the dryer for correct function.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CMP-03",
+      "kind": "WI",
+      "title": "Monthly care of Screw Air Compressor (Pressure Equipment)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Replace the oil, the oil filter and the separator at the interval in the manual (per manufacturer manual).",
+        "Check the safety valve and the pressure switch by a trained technician (per manufacturer manual).",
+        "Check the electrical cabinet and the motor with power locked out.",
+        "Check that the legal inspection certificate of the pressure vessel is valid.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-CMP-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Screw Air Compressor (Pressure Equipment)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Press the emergency stop and let the system depressurise before opening anything.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the pressure, the temperature, and the running hours, then call the technician or the vendor.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "SOP-MNT-FKL-01",
+      "kind": "SOP",
+      "title": "Maintenance of Forklift Truck (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the forklift truck (support) safe and available by defining who does which maintenance task, how often, and how it is recorded.",
+      "steps": [],
+      "applies_to": [
+        "FKL-01 Doosan Forklift 3 Ton"
+      ],
+      "sections": [
+        [
+          "Scope",
+          "Applies to: FKL-01 Doosan Forklift 3 Ton. Machine specifics (limits, intervals, lubrication charts) follow each manufacturer manual."
+        ],
+        [
+          "Responsibilities",
+          [
+            "Operator: does the Daily Check (WI-MNT-FKL-01) every shift and reports problems as a Maintenance Request.",
+            "Technician: carries out the weekly and monthly care (WI-MNT-FKL-02, WI-MNT-FKL-03) and breakdown repair (WI-MNT-FKL-04) through a Preventive or Breakdown Maintenance Order.",
+            "Head of maintenance: approves orders, closes them, and keeps this procedure and its work instructions current."
+          ]
+        ],
+        [
+          "Safety",
+          [
+            "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop.",
+            "Only trained and licensed operators may drive the forklift.",
+            "Never carry people on the forks and never exceed the load rating plate.",
+            "A damaged forklift must be tagged out of service until repaired.",
+            "Legal inspection of lifting equipment applies: keep the certificates current.",
+            "Before any work inside the machine, isolate it with lock-out and tag-out as in the work instructions."
+          ]
+        ],
+        [
+          "Procedure",
+          [
+            "Daily: WI-MNT-FKL-01 by the operator, recorded in Daily Check.",
+            "Weekly: WI-MNT-FKL-02 by the technician, recorded in a Preventive Maintenance Order (PMO).",
+            "Monthly: WI-MNT-FKL-03 by the technician, recorded in a PMO.",
+            "Breakdown: WI-MNT-FKL-04, recorded in a Breakdown Maintenance Order (BMO) started from a Maintenance Request."
+          ]
+        ],
+        [
+          "Records",
+          [
+            "Daily Check sheet, Preventive Maintenance Order, Breakdown Maintenance Order, Maintenance Request.",
+            "Machine documents (manual, vendor contact) in the Machine Maintenance Profile."
+          ]
+        ],
+        [
+          "Review",
+          "This procedure is reviewed at least once a year and after every serious breakdown or accident."
+        ]
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-FKL-01",
+      "kind": "WI",
+      "title": "Daily check of Forklift Truck (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Find small problems early, before they stop the machine.",
+      "steps": [
+        "Walk around: check the tyres, the forks, the chains, the mast and the overhead guard for damage.",
+        "Check the oil, the hydraulic fluid and the coolant or battery level (per manufacturer manual).",
+        "Check the brakes, the steering, the horn, the lights and the alarm work.",
+        "Check for leaks under the truck.",
+        "Check the seat belt and the load backrest.",
+        "Record the hour meter and each point in Daily Check. Report any Not OK as a Maintenance Request and do not use the truck."
+      ],
+      "doer": "Operator",
+      "frequency": "Every shift",
+      "before": [
+        "Machine at rest or running idle as the check says. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-FKL-02",
+      "kind": "WI",
+      "title": "Weekly care of Forklift Truck (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Keep the machine clean, lubricated and adjusted.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Clean the truck and check the fork wear and the chain lubrication (per manufacturer manual).",
+        "Check the hydraulic hoses and the cylinders for leaks.",
+        "Check the tyre condition and pressure if pneumatic (per manufacturer manual).",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Weekly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-FKL-03",
+      "kind": "WI",
+      "title": "Monthly care of Forklift Truck (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Replace and inspect the parts that wear over weeks.",
+      "steps": [
+        "Stop the machine with the normal stop and wait until all moving parts have stopped.",
+        "Switch off and lock out the main power (and air or hydraulic supply where fitted). Attach your personal lock and tag.",
+        "Release stored energy: bleed air or hydraulic pressure, let heated parts cool, secure parts that can fall.",
+        "Try to start the machine to prove it is isolated, then return the controls to off.",
+        "Service at the hour interval of the manual (per manufacturer manual).",
+        "Check the mast rollers, the chains and the tilt cylinders by a trained technician.",
+        "Check the battery and the charger, or the engine and the filters (per manufacturer manual).",
+        "Check that the legal inspection certificate for lifting equipment is valid.",
+        "Check that tools, rags and people are clear of the machine and all guards are back in place.",
+        "Remove your own lock and tag, restore power, and run the machine without load while you watch and listen."
+      ],
+      "doer": "Technician",
+      "frequency": "Monthly",
+      "before": [
+        "Open a PMO. Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    },
+    {
+      "doc_no": "WI-MNT-FKL-04",
+      "kind": "WI",
+      "title": "Breakdown first response for Forklift Truck (Support)",
+      "revision": "00",
+      "status": "DRAFT",
+      "purpose": "Make the machine safe, report it fast, and record the repair so the history is useful.",
+      "steps": [
+        "Lower the forks, apply the parking brake, switch off and tag the truck out of service.",
+        "Report the stop as a Maintenance Request (priority P1 when a critical machine is stopped).",
+        "Record the fault and the hour meter, then call the technician.",
+        "Technician: isolate the machine with lock-out and tag-out, diagnose, repair, and record the problem, cause and action codes, the parts used and the hours.",
+        "Test run, let the operator verify, then set the machine back to ready and close the downtime."
+      ],
+      "doer": "Operator, then Technician",
+      "frequency": "On breakdown",
+      "before": [
+        "Wear the protective equipment required for this machine. Never bypass a guard, interlock or emergency stop."
+      ]
+    }
+  ],
+  "assignment": [
+    {
+      "machine_code": "CTP-01",
+      "machine_name": "AGFA Avalon C",
+      "set": "CTP",
+      "documents": [
+        "SOP-MNT-CTP-01",
+        "WI-MNT-CTP-01",
+        "WI-MNT-CTP-02",
+        "WI-MNT-CTP-03",
+        "WI-MNT-CTP-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-01",
+      "machine_name": "Summa D60R #1",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-02",
+      "machine_name": "Summa D60R #2",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-03",
+      "machine_name": "IECHO BK4",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-04",
+      "machine_name": "SAGA SG-SC A3+ II Pro #1",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-05",
+      "machine_name": "SAGA SG-SC A3+ II Pro #2",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-06",
+      "machine_name": "Summa S1 D60",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-07",
+      "machine_name": "SAGA SG-SC A3+ II Pro #3",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-08",
+      "machine_name": "SAGA SG-SC A3+ II Pro #4",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "PLT-09",
+      "machine_name": "SAGA Back Creasing",
+      "set": "PLT",
+      "documents": [
+        "SOP-MNT-PLT-01",
+        "WI-MNT-PLT-01",
+        "WI-MNT-PLT-02",
+        "WI-MNT-PLT-03",
+        "WI-MNT-PLT-04"
+      ]
+    },
+    {
+      "machine_code": "DIE-01",
+      "machine_name": "Ruian Die Cutter",
+      "set": "DIE",
+      "documents": [
+        "SOP-MNT-DIE-01",
+        "WI-MNT-DIE-01",
+        "WI-MNT-DIE-02",
+        "WI-MNT-DIE-03",
+        "WI-MNT-DIE-04"
+      ]
+    },
+    {
+      "machine_code": "DIE-02",
+      "machine_name": "Shanghai Die Cutter",
+      "set": "DIE",
+      "documents": [
+        "SOP-MNT-DIE-01",
+        "WI-MNT-DIE-01",
+        "WI-MNT-DIE-02",
+        "WI-MNT-DIE-03",
+        "WI-MNT-DIE-04"
+      ]
+    },
+    {
+      "machine_code": "DIE-03",
+      "machine_name": "Daxiang Die Cutter",
+      "set": "DIE",
+      "documents": [
+        "SOP-MNT-DIE-01",
+        "WI-MNT-DIE-01",
+        "WI-MNT-DIE-02",
+        "WI-MNT-DIE-03",
+        "WI-MNT-DIE-04"
+      ]
+    },
+    {
+      "machine_code": "DIE-04",
+      "machine_name": "Daxiang Auto Die Cutter",
+      "set": "DIE",
+      "documents": [
+        "SOP-MNT-DIE-01",
+        "WI-MNT-DIE-01",
+        "WI-MNT-DIE-02",
+        "WI-MNT-DIE-03",
+        "WI-MNT-DIE-04"
+      ]
+    },
+    {
+      "machine_code": "DIG-01",
+      "machine_name": "Hanway 2500B",
+      "set": "DIG",
+      "documents": [
+        "SOP-MNT-DIG-01",
+        "WI-MNT-DIG-01",
+        "WI-MNT-DIG-02",
+        "WI-MNT-DIG-03",
+        "WI-MNT-DIG-04"
+      ]
+    },
+    {
+      "machine_code": "DIG-02",
+      "machine_name": "Heidelberg Versafire",
+      "set": "DIG",
+      "documents": [
+        "SOP-MNT-DIG-01",
+        "WI-MNT-DIG-01",
+        "WI-MNT-DIG-02",
+        "WI-MNT-DIG-03",
+        "WI-MNT-DIG-04"
+      ]
+    },
+    {
+      "machine_code": "DIG-03",
+      "machine_name": "Sunthink SC645",
+      "set": "DIG",
+      "documents": [
+        "SOP-MNT-DIG-01",
+        "WI-MNT-DIG-01",
+        "WI-MNT-DIG-02",
+        "WI-MNT-DIG-03",
+        "WI-MNT-DIG-04"
+      ]
+    },
+    {
+      "machine_code": "DIG-04",
+      "machine_name": "Taimes T5S-512i-8H",
+      "set": "DIG",
+      "documents": [
+        "SOP-MNT-DIG-01",
+        "WI-MNT-DIG-01",
+        "WI-MNT-DIG-02",
+        "WI-MNT-DIG-03",
+        "WI-MNT-DIG-04"
+      ]
+    },
+    {
+      "machine_code": "DIG-05",
+      "machine_name": "Taimes Heater",
+      "set": "HTR",
+      "documents": [
+        "SOP-MNT-HTR-01",
+        "WI-MNT-HTR-01",
+        "WI-MNT-HTR-02",
+        "WI-MNT-HTR-03",
+        "WI-MNT-HTR-04"
+      ]
+    },
+    {
+      "machine_code": "DIG-06",
+      "machine_name": "Xenons",
+      "set": "DIG",
+      "documents": [
+        "SOP-MNT-DIG-01",
+        "WI-MNT-DIG-01",
+        "WI-MNT-DIG-02",
+        "WI-MNT-DIG-03",
+        "WI-MNT-DIG-04"
+      ]
+    },
+    {
+      "machine_code": "FGL-03",
+      "machine_name": "Daxiang Folder Gluer",
+      "set": "FGL",
+      "documents": [
+        "SOP-MNT-FGL-01",
+        "WI-MNT-FGL-01",
+        "WI-MNT-FGL-02",
+        "WI-MNT-FGL-03",
+        "WI-MNT-FGL-04"
+      ]
+    },
+    {
+      "machine_code": "FGL-04",
+      "machine_name": "YDM Folder Gluer",
+      "set": "FGL",
+      "documents": [
+        "SOP-MNT-FGL-01",
+        "WI-MNT-FGL-01",
+        "WI-MNT-FGL-02",
+        "WI-MNT-FGL-03",
+        "WI-MNT-FGL-04"
+      ]
+    },
+    {
+      "machine_code": "AGL-01",
+      "machine_name": "Daxiang Animal Glue Applicator",
+      "set": "AGL",
+      "documents": [
+        "SOP-MNT-AGL-01",
+        "WI-MNT-AGL-01",
+        "WI-MNT-AGL-02",
+        "WI-MNT-AGL-03",
+        "WI-MNT-AGL-04"
+      ]
+    },
+    {
+      "machine_code": "LAM-01",
+      "machine_name": "Small Laminator",
+      "set": "LAM",
+      "documents": [
+        "SOP-MNT-LAM-01",
+        "WI-MNT-LAM-01",
+        "WI-MNT-LAM-02",
+        "WI-MNT-LAM-03",
+        "WI-MNT-LAM-04"
+      ]
+    },
+    {
+      "machine_code": "LAM-03",
+      "machine_name": "Daxiang Laminator",
+      "set": "LAM",
+      "documents": [
+        "SOP-MNT-LAM-01",
+        "WI-MNT-LAM-01",
+        "WI-MNT-LAM-02",
+        "WI-MNT-LAM-03",
+        "WI-MNT-LAM-04"
+      ]
+    },
+    {
+      "machine_code": "LAM-04",
+      "machine_name": "Daxiang Auto Laminator",
+      "set": "LAM",
+      "documents": [
+        "SOP-MNT-LAM-01",
+        "WI-MNT-LAM-01",
+        "WI-MNT-LAM-02",
+        "WI-MNT-LAM-03",
+        "WI-MNT-LAM-04"
+      ]
+    },
+    {
+      "machine_code": "OFF-01",
+      "machine_name": "Sakurai Oliver 58",
+      "set": "OFF",
+      "documents": [
+        "SOP-MNT-OFF-01",
+        "WI-MNT-OFF-01",
+        "WI-MNT-OFF-02",
+        "WI-MNT-OFF-03",
+        "WI-MNT-OFF-04"
+      ]
+    },
+    {
+      "machine_code": "OFF-02",
+      "machine_name": "Komori GL440",
+      "set": "OFF",
+      "documents": [
+        "SOP-MNT-OFF-01",
+        "WI-MNT-OFF-01",
+        "WI-MNT-OFF-02",
+        "WI-MNT-OFF-03",
+        "WI-MNT-OFF-04"
+      ]
+    },
+    {
+      "machine_code": "CUT-01",
+      "machine_name": "Robdcut ERC-115",
+      "set": "CUT",
+      "documents": [
+        "SOP-MNT-CUT-01",
+        "WI-MNT-CUT-01",
+        "WI-MNT-CUT-02",
+        "WI-MNT-CUT-03",
+        "WI-MNT-CUT-04"
+      ]
+    },
+    {
+      "machine_code": "CUT-02",
+      "machine_name": "Echo Guillotine",
+      "set": "CUT",
+      "documents": [
+        "SOP-MNT-CUT-01",
+        "WI-MNT-CUT-01",
+        "WI-MNT-CUT-02",
+        "WI-MNT-CUT-03",
+        "WI-MNT-CUT-04"
+      ]
+    },
+    {
+      "machine_code": "CUT-03",
+      "machine_name": "Guoxin Guillotine",
+      "set": "CUT",
+      "documents": [
+        "SOP-MNT-CUT-01",
+        "WI-MNT-CUT-01",
+        "WI-MNT-CUT-02",
+        "WI-MNT-CUT-03",
+        "WI-MNT-CUT-04"
+      ]
+    },
+    {
+      "machine_code": "PRS-01",
+      "machine_name": "Daxiang Press",
+      "set": "PRS",
+      "documents": [
+        "SOP-MNT-PRS-01",
+        "WI-MNT-PRS-01",
+        "WI-MNT-PRS-02",
+        "WI-MNT-PRS-03",
+        "WI-MNT-PRS-04"
+      ]
+    },
+    {
+      "machine_code": "SEA-01",
+      "machine_name": "Innovatec FR-900 #1",
+      "set": "SEA",
+      "documents": [
+        "SOP-MNT-SEA-01",
+        "WI-MNT-SEA-01",
+        "WI-MNT-SEA-02",
+        "WI-MNT-SEA-03",
+        "WI-MNT-SEA-04"
+      ]
+    },
+    {
+      "machine_code": "SEA-02",
+      "machine_name": "Innovatec FR-900 #2",
+      "set": "SEA",
+      "documents": [
+        "SOP-MNT-SEA-01",
+        "WI-MNT-SEA-01",
+        "WI-MNT-SEA-02",
+        "WI-MNT-SEA-03",
+        "WI-MNT-SEA-04"
+      ]
+    },
+    {
+      "machine_code": "SHR-01",
+      "machine_name": "Daxiang Shrink Wrapper",
+      "set": "SHR",
+      "documents": [
+        "SOP-MNT-SHR-01",
+        "WI-MNT-SHR-01",
+        "WI-MNT-SHR-02",
+        "WI-MNT-SHR-03",
+        "WI-MNT-SHR-04"
+      ]
+    },
+    {
+      "machine_code": "STI-01",
+      "machine_name": "Daxiang Stitcher #1",
+      "set": "STI",
+      "documents": [
+        "SOP-MNT-STI-01",
+        "WI-MNT-STI-01",
+        "WI-MNT-STI-02",
+        "WI-MNT-STI-03",
+        "WI-MNT-STI-04"
+      ]
+    },
+    {
+      "machine_code": "STI-02",
+      "machine_name": "Daxiang Book Stitcher",
+      "set": "STI",
+      "documents": [
+        "SOP-MNT-STI-01",
+        "WI-MNT-STI-01",
+        "WI-MNT-STI-02",
+        "WI-MNT-STI-03",
+        "WI-MNT-STI-04"
+      ]
+    },
+    {
+      "machine_code": "STI-03",
+      "machine_name": "Daxiang Stitcher #2",
+      "set": "STI",
+      "documents": [
+        "SOP-MNT-STI-01",
+        "WI-MNT-STI-01",
+        "WI-MNT-STI-02",
+        "WI-MNT-STI-03",
+        "WI-MNT-STI-04"
+      ]
+    },
+    {
+      "machine_code": "STR-01",
+      "machine_name": "Daxiang Stripper",
+      "set": "STR",
+      "documents": [
+        "SOP-MNT-STR-01",
+        "WI-MNT-STR-01",
+        "WI-MNT-STR-02",
+        "WI-MNT-STR-03",
+        "WI-MNT-STR-04"
+      ]
+    },
+    {
+      "machine_code": "STR-02",
+      "machine_name": "Daxiang Blanking Stripper",
+      "set": "STR",
+      "documents": [
+        "SOP-MNT-STR-01",
+        "WI-MNT-STR-01",
+        "WI-MNT-STR-02",
+        "WI-MNT-STR-03",
+        "WI-MNT-STR-04"
+      ]
+    },
+    {
+      "machine_code": "CMP-01",
+      "machine_name": "Daxiang Screw Compressor",
+      "set": "CMP",
+      "documents": [
+        "SOP-MNT-CMP-01",
+        "WI-MNT-CMP-01",
+        "WI-MNT-CMP-02",
+        "WI-MNT-CMP-03",
+        "WI-MNT-CMP-04"
+      ]
+    },
+    {
+      "machine_code": "FKL-01",
+      "machine_name": "Doosan Forklift 3 Ton",
+      "set": "FKL",
+      "documents": [
+        "SOP-MNT-FKL-01",
+        "WI-MNT-FKL-01",
+        "WI-MNT-FKL-02",
+        "WI-MNT-FKL-03",
+        "WI-MNT-FKL-04"
+      ]
+    },
+    {
+      "machine_code": "UVC-01",
+      "machine_name": "UV Coating",
+      "set": "UVC",
+      "documents": [
+        "SOP-MNT-UVC-01",
+        "WI-MNT-UVC-01",
+        "WI-MNT-UVC-02",
+        "WI-MNT-UVC-03",
+        "WI-MNT-UVC-04"
+      ]
+    },
+    {
+      "machine_code": "WBC-01",
+      "machine_name": "Daxiang Water-Based Coater",
+      "set": "WBC",
+      "documents": [
+        "SOP-MNT-WBC-01",
+        "WI-MNT-WBC-01",
+        "WI-MNT-WBC-02",
+        "WI-MNT-WBC-03",
+        "WI-MNT-WBC-04"
+      ]
+    },
+    {
+      "machine_code": "WAX-01",
+      "machine_name": "Waxing Machine (DIY)",
+      "set": "WAX",
+      "documents": [
+        "SOP-MNT-WAX-01",
+        "WI-MNT-WAX-01",
+        "WI-MNT-WAX-02",
+        "WI-MNT-WAX-03",
+        "WI-MNT-WAX-04"
+      ]
+    }
+  ]
+}

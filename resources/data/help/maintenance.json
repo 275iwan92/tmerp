@@ -94,12 +94,12 @@
     "keywords": "mtbf, mttr, pm compliance, oee, indikator maintenance, keandalan mesin, availability, ketersediaan mesin, kinerja maintenance",
     "steps": [
       {
-        "en": "MTBF (mean time between failures) is operating hours divided by the number of failures. A higher number is better.",
-        "id": "MTBF (rata-rata jarak antar kerusakan) adalah jam operasi dibagi jumlah kerusakan. Makin besar makin baik."
+        "en": "MTBF (mean time between failures) is the period hours minus breakdown downtime hours, divided by the number of breakdowns. A higher number is better.",
+        "id": "MTBF (rata-rata jarak antar kerusakan) adalah jam periode dikurangi jam downtime breakdown, dibagi jumlah breakdown. Makin besar makin baik."
       },
       {
-        "en": "MTTR (mean time to repair) is repair hours divided by the number of failures. A lower number is better.",
-        "id": "MTTR (rata-rata waktu perbaikan) adalah jam perbaikan dibagi jumlah kerusakan. Makin kecil makin baik."
+        "en": "MTTR (mean time to repair) is the total breakdown downtime hours divided by the number of breakdowns. A lower number is better.",
+        "id": "MTTR (rata-rata waktu perbaikan) adalah total jam downtime breakdown dibagi jumlah breakdown. Makin kecil makin baik."
       },
       {
         "en": "PM compliance is the number of preventive jobs finished on time divided by the number that were due.",
@@ -110,8 +110,8 @@
         "id": "OEE menggabungkan ketersediaan, kecepatan dan mutu menjadi satu angka tentang seberapa efektif mesin dipakai."
       },
       {
-        "en": "MTBF and MTTR are only valid when every failure is marked as a failure, its downtime is recorded and the machine running hours are read at the start and end of the period.",
-        "id": "MTBF dan MTTR hanya valid bila tiap kerusakan ditandai sebagai kerusakan, downtime-nya dicatat dan jam jalan mesin dibaca di awal dan akhir periode."
+        "en": "MTBF and MTTR are only valid when every breakdown is recorded as downtime of kind BREAKDOWN with a start and an end time.",
+        "id": "MTBF dan MTTR hanya valid bila setiap breakdown dicatat sebagai downtime jenis BREAKDOWN dengan waktu mulai dan selesai."
       }
     ]
   },
@@ -522,6 +522,90 @@
     ]
   },
   {
+    "key": "guide-maintenance-tech-kpi",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Dashboard and KPI",
+    "purpose": {
+      "en": "Where the Maintenance indicators appear, what they look like, how the target lights work, and where OEE fits. The mockup is a proposal waiting for approval.",
+      "id": "Di mana indikator Maintenance tampil, bentuknya, cara lampu target bekerja, dan posisi OEE. Mockup ini usulan yang menunggu persetujuan."
+    },
+    "keywords": "kpi maintenance, dashboard maintenance, oee, mtbf, mttr, availability, pm compliance, target, grafik, lampu target",
+    "steps": [
+      {
+        "en": "The Maintenance Dashboard is the first screen of the module. Row one has six indicators with targets. Row two has action numbers for today with no target.",
+        "id": "Maintenance Dashboard adalah layar pertama modul. Baris pertama berisi enam indikator dengan target. Baris kedua berisi angka tindakan hari ini tanpa target."
+      },
+      {
+        "en": "Each indicator card has a coloured edge: green when the target is met, yellow when close, red when missed. Targets are typed by the user in Settings, Constants.",
+        "id": "Setiap kartu indikator punya tepi berwarna: hijau bila target tercapai, kuning bila dekat, merah bila meleset. Target diketik user di Settings, Constants."
+      },
+      {
+        "en": "Clicking a card opens the Maintenance KPI report for the same period and machine. It is one report with many columns and graphs, not several small reports.",
+        "id": "Klik kartu membuka laporan Maintenance KPI untuk periode dan mesin yang sama. Satu laporan kaya kolom dan grafik, bukan beberapa laporan kecil."
+      },
+      {
+        "en": "Graphs: trend of OEE and availability, OEE loss from 100 percent planned time, MTBF and MTTR trend, downtime by kind, failures by component, top machines by downtime.",
+        "id": "Grafik: tren OEE dan availability, rugi OEE dari 100 persen waktu terencana, tren MTBF dan MTTR, downtime menurut jenis, kerusakan per komponen, mesin dengan downtime terbanyak."
+      },
+      {
+        "en": "OEE belongs to Production. Maintenance contributes the downtime that drives Availability and only displays OEE, read only, from the Production engine.",
+        "id": "OEE milik Production. Maintenance menyumbang downtime yang menggerakkan Availability dan hanya menampilkan OEE, hanya dibaca, dari engine Production."
+      },
+      {
+        "en": "OEE applies to production machines only. Vehicles and other assets show reliability, downtime and cost, without OEE.",
+        "id": "OEE hanya berlaku untuk mesin produksi. Kendaraan dan aset lain menampilkan keandalan, downtime dan biaya, tanpa OEE."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Indicators with targets",
+        "en": "Availability, MTBF, MTTR, PM Compliance, Planned work, Backlog.",
+        "id": "Availability, MTBF, MTTR, PM Compliance, Planned work, Backlog."
+      },
+      {
+        "label": "Action numbers",
+        "en": "Machines down now, open requests, overdue PM, orders in progress, orders waiting for part, critical parts below minimum.",
+        "id": "Mesin sedang down, request terbuka, PM terlambat, order berjalan, order menunggu part, part kritis di bawah minimum."
+      },
+      {
+        "label": "MNT_TARGET_AVAILABILITY",
+        "en": "Proposal 97 percent. Yellow when within a small margin below the target.",
+        "id": "Usulan 97 persen. Kuning bila sedikit di bawah target."
+      },
+      {
+        "label": "MNT_TARGET_MTBF_HOURS",
+        "en": "Proposal 120 hours. Higher is better.",
+        "id": "Usulan 120 jam. Makin tinggi makin baik."
+      },
+      {
+        "label": "MNT_TARGET_MTTR_HOURS",
+        "en": "Proposal 4 hours. Lower is better.",
+        "id": "Usulan 4 jam. Makin rendah makin baik."
+      },
+      {
+        "label": "MNT_TARGET_PM_COMPLIANCE",
+        "en": "Proposal 90 percent, a common industry target.",
+        "id": "Usulan 90 persen, target umum di industri."
+      },
+      {
+        "label": "MNT_TARGET_PLANNED_WORK",
+        "en": "Proposal 85 percent, a common industry target.",
+        "id": "Usulan 85 persen, target umum di industri."
+      },
+      {
+        "label": "Backlog range",
+        "en": "Proposal 3 to 5 weeks is healthy. Below 3 means idle technicians, above 5 means a pile-up.",
+        "id": "Usulan 3 sampai 5 minggu sehat. Di bawah 3 teknisi menganggur, di atas 5 pekerjaan menumpuk."
+      },
+      {
+        "label": "OEE target",
+        "en": "Already typed per machine in the machine master (target OEE percent). The dashboard compares with it.",
+        "id": "Sudah diketik per mesin di master mesin (target OEE persen). Dashboard membandingkan dengan itu."
+      }
+    ]
+  },
+  {
     "key": "guide-maintenance-tech-flow",
     "type": "GUIDE",
     "module": "MAINT",
@@ -653,8 +737,13 @@
       },
       {
         "label": "mnt_machine_doc",
-        "en": "Phase 1, only if the existing attachment mechanism cannot be reused. Manual, drawing, vendor contact: kind, title, file location.",
-        "id": "Fase 1, hanya bila mekanisme lampiran yang ada tidak bisa dipakai. Manual, gambar, kontak vendor: jenis, judul, lokasi file."
+        "en": "Phase 1. Files of a machine: manual, drawing, vendor contact. File location and title. SOP and WI text live in mnt_document instead.",
+        "id": "Fase 1. Berkas milik mesin: manual, gambar, kontak vendor. Lokasi file dan judul. Teks SOP dan WI ada di mnt_document."
+      },
+      {
+        "label": "mnt_document, mnt_machine_document",
+        "en": "Phase 1. SOP and WI text with number, revision and status (DRAFT or APPROVED), and the link that assigns each document to machines.",
+        "id": "Fase 1. Teks SOP dan WI dengan nomor, revisi dan status (DRAFT atau APPROVED), dan tautan yang menetapkan tiap dokumen ke mesin."
       },
       {
         "label": "mnt_plan, mnt_plan_task, mnt_plan_part",
@@ -732,18 +821,18 @@
     "fields": [
       {
         "label": "MTBF",
-        "en": "Operating hours in the period divided by the number of breakdown maintenance orders.",
-        "id": "Jam operasi dalam periode dibagi jumlah order perawatan breakdown."
+        "en": "(Period hours minus breakdown downtime hours) divided by the number of breakdowns, from the downtime log. Same calculation as the Production engine.",
+        "id": "(Jam periode dikurangi jam downtime breakdown) dibagi jumlah breakdown, dari log downtime. Perhitungannya sama dengan engine Production."
       },
       {
         "label": "MTTR",
-        "en": "Total time from machine stop to Done of breakdown maintenance orders divided by their number.",
-        "id": "Total waktu dari mesin berhenti sampai Done pada order perawatan breakdown dibagi jumlahnya."
+        "en": "Total breakdown downtime hours divided by the number of breakdowns, from the downtime log.",
+        "id": "Total jam downtime breakdown dibagi jumlah breakdown, dari log downtime."
       },
       {
         "label": "Availability",
-        "en": "MTBF divided by MTBF plus MTTR.",
-        "id": "MTBF dibagi MTBF ditambah MTTR."
+        "en": "In OEE: (planned minutes minus unplanned downtime) divided by planned minutes. Inherent availability in the reliability report: MTBF divided by MTBF plus MTTR.",
+        "id": "Dalam OEE: (menit terencana dikurangi downtime tak terencana) dibagi menit terencana. Availability inheren di laporan keandalan: MTBF dibagi MTBF ditambah MTTR."
       },
       {
         "label": "PM Compliance",
@@ -789,6 +878,144 @@
         "label": "MR, IMP, DC",
         "en": "Maintenance Request MR, Improvement Proposal IMP, Daily Check DC. Same pattern as the orders.",
         "id": "Maintenance Request MR, Improvement Proposal IMP, Daily Check DC. Pola sama dengan order."
+      },
+      {
+        "label": "OEE",
+        "en": "Availability times Performance times Quality, calculated by Production. If a factor cannot be calculated, OEE shows not calculated, never 0 percent.",
+        "id": "Availability kali Performance kali Quality, dihitung Production. Bila satu faktor tidak bisa dihitung, OEE tampil belum dihitung, bukan 0 persen."
+      },
+      {
+        "label": "Performance",
+        "en": "Good output divided by run hours times target speed per hour, at most 100 percent.",
+        "id": "Output bagus dibagi jam jalan kali target kecepatan per jam, paling tinggi 100 persen."
+      },
+      {
+        "label": "Quality",
+        "en": "Good output divided by good output plus spoilage plus waste.",
+        "id": "Output bagus dibagi output bagus ditambah spoilage ditambah waste."
+      },
+      {
+        "label": "Backlog",
+        "en": "Estimated hours of open orders divided by technician hours available per week, shown in weeks.",
+        "id": "Estimasi jam order yang masih terbuka dibagi jam teknisi tersedia per minggu, tampil dalam minggu."
+      },
+      {
+        "label": "Planned work",
+        "en": "Orders that are not BREAKDOWN divided by all orders in the period.",
+        "id": "Order yang bukan BREAKDOWN dibagi semua order dalam periode."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-glossary",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Maintenance Terms",
+    "purpose": {
+      "en": "The terms used in Maintenance, with one short meaning each, so screens, reports and Help use the same words.",
+      "id": "Istilah yang dipakai di Maintenance, masing-masing dengan satu arti singkat, supaya layar, laporan dan Help memakai kata yang sama."
+    },
+    "keywords": "istilah maintenance, glosarium, oee, mtbf, mttr, pmo, bmo, imo, loto, kritikalitas, downtime",
+    "steps": [
+      {
+        "en": "Every screen label stays in English. Indonesian meanings appear through the dictionary.",
+        "id": "Semua label layar tetap bahasa Inggris. Arti dalam bahasa Indonesia muncul lewat kamus."
+      },
+      {
+        "en": "The same word always means the same thing: for example Order means a Maintenance Order and never a production work order.",
+        "id": "Kata yang sama selalu berarti hal yang sama: misalnya Order berarti Maintenance Order dan tidak pernah work order produksi."
+      }
+    ],
+    "fields": [
+      {
+        "label": "OEE",
+        "en": "Overall equipment effectiveness: Availability times Performance times Quality. Calculated by Production.",
+        "id": "Efektivitas peralatan keseluruhan: Availability kali Performance kali Quality. Dihitung Production."
+      },
+      {
+        "label": "Availability",
+        "en": "Share of planned time the machine was able to run.",
+        "id": "Bagian waktu terencana saat mesin mampu berjalan."
+      },
+      {
+        "label": "Performance",
+        "en": "How fast the machine ran compared with its target speed.",
+        "id": "Seberapa cepat mesin berjalan dibanding kecepatan targetnya."
+      },
+      {
+        "label": "Quality",
+        "en": "Share of output that was good.",
+        "id": "Bagian output yang bagus."
+      },
+      {
+        "label": "MTBF",
+        "en": "Mean time between failures: average run time between two breakdowns.",
+        "id": "Rata-rata waktu jalan di antara dua breakdown."
+      },
+      {
+        "label": "MTTR",
+        "en": "Mean time to repair: average downtime of one breakdown.",
+        "id": "Rata-rata downtime satu breakdown."
+      },
+      {
+        "label": "PM Compliance",
+        "en": "Share of preventive orders done on time.",
+        "id": "Bagian order preventive yang selesai tepat waktu."
+      },
+      {
+        "label": "Planned work",
+        "en": "Share of orders that were planned, not breakdowns.",
+        "id": "Bagian order yang terencana, bukan breakdown."
+      },
+      {
+        "label": "Backlog",
+        "en": "Open work expressed in weeks of technician time.",
+        "id": "Pekerjaan terbuka dinyatakan dalam minggu waktu teknisi."
+      },
+      {
+        "label": "Downtime",
+        "en": "Time a machine is stopped. Planned (maintenance, setup) or unplanned (breakdown, waiting).",
+        "id": "Waktu mesin berhenti. Terencana (maintenance, setup) atau tak terencana (breakdown, menunggu)."
+      },
+      {
+        "label": "Criticality A, B, C",
+        "en": "How badly production suffers when the machine stops: A stops the line, C has a replacement.",
+        "id": "Seberapa parah produksi terganggu bila mesin berhenti: A menghentikan lini, C punya pengganti."
+      },
+      {
+        "label": "Watch Point",
+        "en": "One thing to check on a machine, with how, limit, frequency and who checks.",
+        "id": "Satu hal yang dicek pada mesin, dengan cara, batas, frekuensi dan pemeriksa."
+      },
+      {
+        "label": "PMO",
+        "en": "Preventive Maintenance Order: scheduled work, types PREVENTIVE and INSPECTION.",
+        "id": "Preventive Maintenance Order: pekerjaan terjadwal, jenis PREVENTIVE dan INSPECTION."
+      },
+      {
+        "label": "BMO",
+        "en": "Breakdown Maintenance Order: repair work, types BREAKDOWN and CORRECTIVE.",
+        "id": "Breakdown Maintenance Order: pekerjaan perbaikan, jenis BREAKDOWN dan CORRECTIVE."
+      },
+      {
+        "label": "IMO",
+        "en": "Improvement Maintenance Order: work that makes an asset more reliable, type IMPROVEMENT.",
+        "id": "Improvement Maintenance Order: pekerjaan yang membuat aset lebih andal, jenis IMPROVEMENT."
+      },
+      {
+        "label": "SOP",
+        "en": "Standard operating procedure: who does what, how often, and how it is recorded.",
+        "id": "Prosedur operasi standar: siapa mengerjakan apa, seberapa sering, dan bagaimana dicatat."
+      },
+      {
+        "label": "WI",
+        "en": "Work instruction: the step by step way to do one task.",
+        "id": "Instruksi kerja: cara langkah demi langkah mengerjakan satu tugas."
+      },
+      {
+        "label": "LOTO",
+        "en": "Lock-out tag-out: isolating and locking the energy supply before work inside a machine.",
+        "id": "Lock-out tag-out: memutus dan mengunci sumber energi sebelum bekerja di dalam mesin."
       }
     ]
   },
@@ -877,6 +1104,79 @@
         "label": "Critical",
         "en": "Marks a part whose absence stops the machine. Critical parts below minimum show on the Dashboard.",
         "id": "Menandai part yang bila habis mesin berhenti. Part kritis di bawah minimum tampil di Dashboard."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-sop-wi",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: SOP and Work Instructions per Machine",
+    "purpose": {
+      "en": "How an SOP and four work instructions (WI) are prepared for every machine, numbered, approved and shown in the Machine Maintenance Profile. All texts are drafts until approved.",
+      "id": "Cara SOP dan empat instruksi kerja (WI) disusun untuk setiap mesin, diberi nomor, disetujui dan tampil di Machine Maintenance Profile. Semua teks berstatus draf sampai disetujui."
+    },
+    "keywords": "sop, wi, instruksi kerja, prosedur, dokumen mesin, lock out tag out, daily check, perawatan mingguan, perawatan bulanan, breakdown",
+    "steps": [
+      {
+        "en": "Machines are grouped into sets by machine type. Each set has one SOP and four work instructions: daily check, weekly care, monthly care and breakdown first response.",
+        "id": "Mesin dikelompokkan menjadi set menurut jenis mesin. Tiap set punya satu SOP dan empat instruksi kerja: cek harian, perawatan mingguan, perawatan bulanan dan respons awal breakdown."
+      },
+      {
+        "en": "Numbers follow one pattern: SOP-MNT and WI-MNT, then the set code, then a two digit sequence, for example WI-MNT-OFF-01 for the daily check of an offset press.",
+        "id": "Nomor mengikuti satu pola: SOP-MNT dan WI-MNT, lalu kode set, lalu urutan dua digit, misalnya WI-MNT-OFF-01 untuk cek harian mesin offset."
+      },
+      {
+        "en": "Texts are generic good practice. Every limit, interval and specification says per manufacturer manual. No machine specification is invented.",
+        "id": "Teks berupa praktik baik yang umum. Setiap batas, interval dan spesifikasi berbunyi sesuai manual pabrikan. Tidak ada spesifikasi mesin yang dikarang."
+      },
+      {
+        "en": "Work instructions for weekly and monthly care start with lock-out tag-out and end with removing the lock and a test run.",
+        "id": "Instruksi perawatan mingguan dan bulanan diawali lock-out tag-out dan diakhiri melepas kunci dan uji jalan."
+      },
+      {
+        "en": "The head of maintenance reviews each document, adds the limits from the manual, and sets the status to APPROVED. Until then the status stays DRAFT.",
+        "id": "Kepala maintenance meninjau tiap dokumen, menambah batas dari manual, dan mengubah status menjadi APPROVED. Sampai saat itu status tetap DRAFT."
+      },
+      {
+        "en": "The Documents tab of the Machine Maintenance Profile shows the SOP and WI of that machine. Daily Check follows the daily WI, and Preventive Orders follow the weekly and monthly WI.",
+        "id": "Tab Documents pada Machine Maintenance Profile menampilkan SOP dan WI mesin itu. Daily Check mengikuti WI harian, dan Preventive Order mengikuti WI mingguan dan bulanan."
+      },
+      {
+        "en": "Documents are stored in English. The Indonesian text for operators comes through the dictionary and the print language.",
+        "id": "Dokumen disimpan dalam bahasa Inggris. Teks Indonesia untuk operator datang lewat kamus dan bahasa cetak."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Sets",
+        "en": "Twenty sets cover the forty-five machines: CTP, PLT, DIE, DIG, HTR, FGL, AGL, LAM, OFF, CUT, PRS, SEA, SHR, STI, STR, UVC, WBC, WAX, CMP, FKL.",
+        "id": "Dua puluh set mencakup empat puluh lima mesin: CTP, PLT, DIE, DIG, HTR, FGL, AGL, LAM, OFF, CUT, PRS, SEA, SHR, STI, STR, UVC, WBC, WAX, CMP, FKL."
+      },
+      {
+        "label": "Documents per set",
+        "en": "One SOP and four WI, so one hundred documents in total.",
+        "id": "Satu SOP dan empat WI, jadi seratus dokumen seluruhnya."
+      },
+      {
+        "label": "SOP sections",
+        "en": "Scope, Responsibilities, Safety, Procedure, Records, Review.",
+        "id": "Scope, Responsibilities, Safety, Procedure, Records, Review."
+      },
+      {
+        "label": "Safety content",
+        "en": "General protective rules plus the hazards of that machine type, for example the cutting force of a die cutter or the pressure of a compressor.",
+        "id": "Aturan pelindung umum ditambah bahaya jenis mesin itu, misalnya gaya potong mesin die cut atau tekanan kompresor."
+      },
+      {
+        "label": "Status",
+        "en": "DRAFT until approved by the head of maintenance, then APPROVED with a revision number.",
+        "id": "DRAFT sampai disetujui kepala maintenance, lalu APPROVED dengan nomor revisi."
+      },
+      {
+        "label": "Source file",
+        "en": "The draft content is kept in resources/data/maintenance/sop_wi.json and seeded into the dummy database in Phase 1.",
+        "id": "Isi draf disimpan di resources/data/maintenance/sop_wi.json dan dimasukkan ke database dummy di Fase 1."
       }
     ]
   },
