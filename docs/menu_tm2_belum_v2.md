@@ -119,6 +119,12 @@ Urutan disarankan: dari yang paling murah (mungkin cuma pencocokan) ke yang butu
 
 Total: 6+4+5+4+1+4+2+4+4+1 = 35.
 
+**C1 SELESAI (2026-10-07, ddtsys; migration `2026_10_07_00001..00005*` dijalankan di tm2sys saat rilis):**
+SET_LANG dan SET_LOCALIZATION dinonaktifkan (Languages + Translation Dictionary; teks login pindah ke `sys_dictionary` lewat `AuthText`,
+kunci `sys_translations` sisanya milik layar v1 dan ikut pensiun bersama v1). SET_CONFIG -> `v2:setup-identification`, SET_PERM ->
+`v2:security-permissions` (matriks `x-dl::permission-matrix` + prop baru `:save-url`), SET_DATA_ORIGIN -> `v2:setup-data-origin`,
+SET_MIGRATION -> `v2:setup-migration` (17 runner). Fitur v1 dipertahankan; layar v1 tetap ada sampai v1 diarsipkan.
+
 **Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
 
 | Kode | Temuan | Jalan keluar |

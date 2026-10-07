@@ -51,10 +51,12 @@ use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CrmActivities;
 use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
+use App\Support\V2\Data\DataOriginDesk;
 use App\Support\V2\Data\DeliveryOrder;
 use App\Support\V2\Data\GroupPermissions;
 use App\Support\V2\Data\Identification;
 use App\Support\V2\Data\MailContacts;
+use App\Support\V2\Data\MigrationDesk;
 use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
@@ -1113,6 +1115,39 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return response()->json(['changed' => GroupPermissions::save($d['group'], $d['perms'], Auth::user()->login)]);
     })->middleware(['module:SETUP', 'admin'])->name('security.permissions.save');
+
+    // Setup > Dummy & Legacy Data (App\Support\V2\Data\DataOriginDesk): satu rute aksi; pratinjau disimpan di sesi untuk satu kali tampil.
+    Route::post('/setup/data-origin/{op}', function (Request $r, string $op) {
+        $by = Auth::user()->login;
+        $back = redirect(route('v2.screen', 'setup-data-origin'));
+        $svc = DataOriginDesk::service();
+        $flash = fn (string $m) => $back->with('v2_flash', $m);
+        $preview = fn (string $kind, array $data) => $back->with('dorigin_preview', ['kind' => $kind, 'data' => $data]);
+
+        return match ($op) {
+            'settings' => $flash(DataOriginDesk::saveSettings($r->all(), $by)),
+            'rule' => tap($back, fn () => DataOriginDesk::saveRule($r->all(), $r->integer('id_rule') ?: null, $by)),
+            'rule-toggle' => tap($back, fn () => DataOriginDesk::toggle('sys_data_origin_rule', $r->integer('id'), $by)),
+            'req-save' => $flash(DataOriginDesk::saveRequirement($r->all(), $by)),
+            'req-toggle' => tap($back, fn () => DataOriginDesk::toggle('sys_data_requirement', $r->integer('id'), $by)),
+            'recompute' => $flash(DataOriginDesk::recomputeReady()),
+            'classify-preview' => $preview('classify', $svc->classify(true)),
+            'classify' => $flash(DataOriginDesk::applyClassify()),
+            'promote-preview' => $preview('promote', $svc->promoteReadyLegacy(true)),
+            'promote' => $flash(DataOriginDesk::applyPromote($r->input('only') ?: null)),
+            'snapshot' => $flash(DataOriginDesk::takeSnapshot($by)),
+            'reset-preview' => $preview('reset', $svc->reset(true, $r->boolean('remove_new')) + ['remove_new' => $r->boolean('remove_new')]),
+            'reset' => $flash(DataOriginDesk::applyReset($r->boolean('remove_new'))),
+            default => abort(404),
+        };
+    })->middleware(['module:SETUP', 'admin'])->name('data-origin');
+
+    // Setup > Migration (App\Support\V2\Data\MigrationDesk): satu runner per klik; laporan hanya tampil sekali (sesi). Administrator saja.
+    Route::post('/setup/migration/{runner}', function (string $runner) {
+        $report = MigrationDesk::run($runner, Auth::user()->login);
+
+        return redirect(route('v2.screen', 'setup-migration').'#'.$runner)->with('migration_report', ['key' => $runner, 'report' => $report]);
+    })->middleware(['module:SETUP', 'admin'])->whereIn('runner', array_keys(MigrationDesk::runners()))->name('migration.run');
 
     // Setting Approval + Officer Pengganti (PLT) -- App\Support\V2\Data\ApprovalSetting (tm2mst.flow_config*, flow_position_acting).
     Route::middleware('module:SETUP')->group(function () {

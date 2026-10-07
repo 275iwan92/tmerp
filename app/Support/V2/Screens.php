@@ -141,6 +141,10 @@ final class Screens
                 ['label' => 'Identification', 'items' => [
                     $it('setup-identification', ['Identification', 'fa-solid fa-id-badge', 'v2: App\Support\V2\Data\Identification (sys_constant APP_* / COMPANY_*, org_company TM)', null]),
                 ]],
+                ['label' => 'Dummy Data & Migration', 'items' => [
+                    $it('setup-migration', ['Migration', 'fa-solid fa-truck-ramp-box', 'v2: App\Support\V2\Data\MigrationDesk (App\Services\Migration\*)', null]),
+                    $it('setup-data-origin', ['Dummy & Legacy Data', 'fa-solid fa-database', 'v2: App\Support\V2\Data\DataOriginDesk (App\Services\Data\DataOriginService)', null]),
+                ]],
                 ['label' => 'Security', 'items' => [
                     $it('security-permissions', ['Groups on Modules', 'fa-solid fa-user-lock', 'v2: App\Support\V2\Data\GroupPermissions (sec_group_permission)', null]),
                     $it('approval-setting', ['Approval Levels', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),
