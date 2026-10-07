@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Maintenance v3 — Menu dan Machine Maintenance Profile</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #c9d6ea; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f7faff; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .inp.ro { background: #f1f5f9; color: #475569; }
+  .aa { font-size: 9px; font-weight: 700; color: #2c7be5; background: #e3edfb; border-radius: 4px; padding: 1px 4px; }
+  .btn { padding: 4px 11px; border-radius: 6px; font-weight: 600; font-size: 11.5px; border: 1px solid #cbd5e1; background: #fff; color: #334155; }
+  .btn.pri { background: #2c7be5; color: #fff; border-color: #2c7be5; }
+  .btn.dis { opacity: .4; }
+  th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; text-align: left; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 6px; }
+  .note { font-size: 11px; color: #64748b; }
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  .tab { padding: 6px 12px; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; }
+  .tab.on { color: #2c3e69; border-color: #2c7be5; }
+  .tag { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:700; margin-right:4px; flex:none; }
+  .menu-g { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: #8a94a6; font-weight: 700; padding: 8px 10px 2px; }
+  .menu-i { padding: 5px 10px; border-radius: 6px; display:flex; align-items:center; gap:8px; color:#334155; }
+  .menu-i.on { background:#e3edfb; color:#2c3e69; font-weight:600; }
+  .menu-i.new { outline: 1.5px dashed #dc2626; outline-offset: -1px; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-4 max-w-[1400px] mx-auto">
+
+<div class="flex items-end justify-between">
+  <div>
+    <div class="text-lg font-bold text-navy">Maintenance v3 — menu 4 kelompok dan Machine Maintenance Profile</div>
+    <div class="note">Mockup untuk persetujuan · data contoh ddt* (bukan data mesin nyata) · label layar English, kalimat bantu Indonesia · lingkaran merah = beda dari layar yang sudah dibangun (M1)</div>
+  </div>
+  <div class="note text-right">Lingkaran merah bernomor = hal baru atau berubah, penjelasan di legenda bawah</div>
+</div>
+
+<div class="grid gap-4 mt-3" style="grid-template-columns: 290px 1fr;">
+
+  <!-- ===== MENU ===== -->
+  <div>
+    <div class="cap" style="margin-top:0">① Layer Menu › Maintenance</div>
+    <div class="card p-2">
+      <div class="flex items-center gap-2 px-2 py-2 border-b border-slate-100"><i class="fa-solid fa-arrow-left text-accent"></i><b class="text-navy">Maintenance</b></div>
+
+      <div class="menu-g"><span class="tag">1</span>Preventive Maintenance</div>
+      <div class="menu-i"><i class="fa-solid fa-calendar-check w-4 text-muted"></i>Preventive Plan</div>
+      <div class="menu-i new"><i class="fa-solid fa-calendar-days w-4 text-muted"></i>PM Calendar</div>
+      <div class="menu-i"><i class="fa-solid fa-screwdriver-wrench w-4 text-muted"></i>PM Work Order</div>
+      <div class="menu-i new"><i class="fa-solid fa-clipboard-check w-4 text-muted"></i>Daily Check</div>
+      <div class="menu-i new"><i class="fa-solid fa-gauge-high w-4 text-muted"></i>Meter Readings</div>
+
+      <div class="menu-g"><span class="tag">2</span>Breakdown Maintenance</div>
+      <div class="menu-i"><i class="fa-solid fa-triangle-exclamation w-4 text-muted"></i>Maintenance Request</div>
+      <div class="menu-i"><i class="fa-solid fa-screwdriver-wrench w-4 text-muted"></i>Breakdown Work Order</div>
+      <div class="menu-i"><i class="fa-solid fa-user-gear w-4 text-muted"></i>My Work</div>
+
+      <div class="menu-g"><span class="tag">3</span>Improvement</div>
+      <div class="menu-i new"><i class="fa-solid fa-lightbulb w-4 text-muted"></i>Improvement Proposal</div>
+      <div class="menu-i new"><i class="fa-solid fa-chart-line w-4 text-muted"></i>Improvement Review</div>
+
+      <div class="menu-g"><span class="tag">4</span>Master Data</div>
+      <div class="menu-i on new"><i class="fa-solid fa-gears w-4"></i>Machine Maintenance Profile</div>
+      <div class="menu-i"><i class="fa-solid fa-tags w-4 text-muted"></i>Maintenance Codes</div>
+      <div class="menu-i"><i class="fa-solid fa-gears w-4 text-muted"></i>Master Mesin</div>
+
+      <div class="menu-g"><span class="tag">5</span>Report</div>
+      <div class="menu-i"><i class="fa-solid fa-table-list w-4 text-muted"></i>Maintenance WO Report</div>
+      <div class="menu-i new"><i class="fa-solid fa-chart-column w-4 text-muted"></i>Machine Reliability</div>
+      <div class="menu-i new"><i class="fa-solid fa-percent w-4 text-muted"></i>PM Compliance</div>
+    </div>
+    <div class="note mt-2">Garis putus merah = layar baru. Layar tanpa garis sudah dibangun di M1 dan hanya dipindah grupnya (PM Work Order dan Breakdown Work Order = layar Work Order yang sama, disaring menurut jenis).</div>
+  </div>
+
+  <!-- ===== PROFILE FORM ===== -->
+  <div>
+    <div class="cap" style="margin-top:0">② Master Data › Machine Maintenance Profile — form (tab Watch Points)</div>
+    <div class="card overflow-hidden">
+      <div class="flex items-center gap-3 px-4 py-2" style="background:#2c3e69;color:#fff;">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full font-semibold" style="background:#43508a;"><span class="inline-flex w-5 h-5 rounded-full bg-white items-center justify-center text-navy"><i class="fa-solid fa-arrow-left" style="font-size:9px"></i></span>Back</span>
+        <div class="font-bold text-sm">Machine Maintenance Profile · OFF-02</div>
+        <span class="bdg" style="background:#dcfce7;color:#166534">Active</span>
+        <div class="ml-auto flex gap-2"><span class="btn dis">Undo</span><span class="btn pri">Save</span></div>
+      </div>
+
+      <div class="p-4">
+        <div class="grid grid-cols-4 gap-3">
+          <div><div class="lbl">Machine</div><div class="inp ro">OFF-02 · Offset 4-color (contoh)<i class="fa-solid fa-lock text-muted"></i></div></div>
+          <div><div class="lbl">Criticality</div><div class="inp ro">A — line stops if down<i class="fa-solid fa-lock text-muted"></i></div></div>
+          <div><div class="lbl">Service vendor</div><div class="inp ro">dari Master Mesin<i class="fa-solid fa-lock text-muted"></i></div></div>
+          <div><div class="lbl">Profile completeness</div>
+            <div class="inp" style="background:#fff"><div class="w-full h-2 rounded-full bg-slate-200 mr-2"><div class="h-2 rounded-full" style="width:60%;background:#f59e0b"></div></div><b class="whitespace-nowrap">3 / 5</b></div></div>
+        </div>
+        <div class="note mt-2"><span class="tag">6</span>Kelengkapan: Watch Points, PM Plan, Spare Parts, Dokumen, Meter awal. Grid "Machine Readiness" memakai angka yang sama.</div>
+
+        <div class="flex gap-1 mt-4 border-b border-slate-200">
+          <div class="tab">Profile</div>
+          <div class="tab on">Watch Points <span class="bdg" style="background:#e3edfb;color:#1d4ed8">7</span></div>
+          <div class="tab">PM Plans <span class="bdg" style="background:#e2e8f0;color:#475569">4</span></div>
+          <div class="tab">Spare Parts <span class="bdg" style="background:#e2e8f0;color:#475569">0</span></div>
+          <div class="tab">Documents</div>
+          <div class="tab">History</div>
+        </div>
+
+        <div class="flex items-center justify-between mt-3">
+          <div class="note"><span class="tag">2</span>Daftar hal yang dicek untuk mesin ini. Sumber Daily Check operator. <b>Component</b> memakai kode dari Maintenance Codes (tidak ada pohon komponen).</div>
+          <div class="flex gap-2"><span class="btn"><i class="fa-regular fa-copy mr-1"></i>Copy from machine…</span><span class="btn pri">+ Tambah Watch Point</span></div>
+        </div>
+
+        <table class="w-full mt-2 border border-slate-200 rounded">
+          <thead><tr><th>#</th><th>Component</th><th>What to check</th><th>How</th><th>Normal limit</th><th>Frequency</th><th>Checked by</th><th>Active</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Roller</td><td>Surface condition, no glazing</td><td>Visual</td><td>—</td><td><span class="bdg" style="background:#e3edfb;color:#1d4ed8">Every shift</span></td><td>Operator</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+            <tr><td>2</td><td>Hydraulic</td><td>Oil level, no leak</td><td>Sight glass</td><td>Between MIN–MAX</td><td><span class="bdg" style="background:#e3edfb;color:#1d4ed8">Every shift</span></td><td>Operator</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+            <tr><td>3</td><td>Printing unit</td><td>Unusual noise or vibration</td><td>Listen / touch</td><td>—</td><td><span class="bdg" style="background:#e3edfb;color:#1d4ed8">Every shift</span></td><td>Operator</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+            <tr><td>4</td><td>Heater / dryer</td><td>Temperature</td><td>Measure (°C)</td><td>_ _ – _ _ °C <span class="tag" style="margin-left:4px">3</span></td><td><span class="bdg" style="background:#dcfce7;color:#166534">Daily</span></td><td>Operator</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+            <tr><td>5</td><td>Gripper</td><td>Wear and alignment</td><td>Visual + gauge</td><td>—</td><td><span class="bdg" style="background:#fef3c7;color:#92400e">Weekly</span></td><td>Technician</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+            <tr><td>6</td><td>Lubrication</td><td>Grease points done</td><td>Checklist</td><td>—</td><td><span class="bdg" style="background:#fef3c7;color:#92400e">Weekly</span></td><td>Technician</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+            <tr><td>7</td><td>Blade / knife / die</td><td>Sharpness</td><td>Visual</td><td>—</td><td><span class="bdg" style="background:#f3e8ff;color:#6b21a8">Monthly</span></td><td>Technician</td><td><i class="fa-regular fa-circle text-slate-400"></i></td></tr>
+          </tbody>
+        </table>
+        <div class="note mt-2"><span class="tag">3</span>Batas normal diisi dari manual pabrikan oleh kepala maintenance. Kotak batas sengaja kosong di contoh ini: sistem tidak mengisi angka sendiri.</div>
+
+        <div class="cap">Tab Spare Parts (isi tab, contoh)</div>
+        <div class="flex items-center justify-between">
+          <div class="note"><span class="tag">4</span>Part milik mesin ini (barang Spare Part Machine dari master material). Dipakai saran stok minimum dan pilihan cepat di Work Order.</div>
+          <span class="btn pri">+ Tambah Spare Part</span>
+        </div>
+        <table class="w-full mt-2 border border-slate-200 rounded">
+          <thead><tr><th>Item</th><th>Component</th><th>Qty / use</th><th>Suggested min stock</th><th>Expected life</th><th>Critical</th><th>In stock</th></tr></thead>
+          <tbody>
+            <tr><td>SPM-0412 · Doctor blade (contoh)</td><td>Blade / knife / die</td><td>1 pcs</td><td>2 pcs</td><td>3 months</td><td><span class="bdg" style="background:#fee2e2;color:#991b1b">Critical</span></td><td><b class="text-red-600">1</b> <span class="note">below min</span></td></tr>
+            <tr><td>SPM-0188 · Hydraulic oil 20 L (contoh)</td><td>Hydraulic</td><td>20 L</td><td>40 L</td><td>6 months</td><td><span class="bdg" style="background:#e2e8f0;color:#475569">Normal</span></td><td>60</td></tr>
+          </tbody>
+        </table>
+        <div class="note mt-2"><span class="tag">5</span>Stok dibaca dari Inventory (tidak disalin). Di bawah minimum → muncul di Dashboard dan bisa Create PR dari baris ini.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cap">Legenda</div>
+<div class="card p-3 grid grid-cols-2 gap-x-6 gap-y-2">
+  <div class="flex"><span class="tag">1</span><div><b>Empat kelompok + Report.</b> Sesuai permintaan Anda: Preventive, Breakdown, Improvement, Master Data. Report tetap dipisah supaya tidak tersebar.</div></div>
+  <div class="flex"><span class="tag">2</span><div><b>Watch Points per mesin.</b> Hal baru. Tidak ada pohon komponen: sesuai keputusan K5 (2026-10-01), komponen cukup berupa kode.</div></div>
+  <div class="flex"><span class="tag">3</span><div><b>Batas normal kosong.</b> Interval dan batas dari manual pabrikan. Data mesin nyata tidak diisi karangan.</div></div>
+  <div class="flex"><span class="tag">4</span><div><b>Spare Parts per mesin.</b> Sudah direncanakan di M2 (<code>mnt_machine_part</code>), kini punya layar sendiri.</div></div>
+  <div class="flex"><span class="tag">5</span><div><b>Stok dari Inventory.</b> Layar hanya membaca, tidak menyalin angka stok.</div></div>
+  <div class="flex"><span class="tag">6</span><div><b>Profile completeness.</b> Menunjukkan seberapa lengkap profil sebuah mesin, supaya pengisian data bisa dikejar.</div></div>
+</div>
+
+</main>
+</body>
+</html>

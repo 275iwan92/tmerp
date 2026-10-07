@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Maintenance v3 — Improvement, Daily Check, PM Calendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #c9d6ea; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f7faff; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .inp.ro { background: #f1f5f9; color: #475569; }
+  .aa { font-size: 9px; font-weight: 700; color: #2c7be5; background: #e3edfb; border-radius: 4px; padding: 1px 4px; }
+  .btn { padding: 4px 11px; border-radius: 6px; font-weight: 600; font-size: 11.5px; border: 1px solid #cbd5e1; background: #fff; color: #334155; }
+  .btn.pri { background: #2c7be5; color: #fff; border-color: #2c7be5; }
+  .btn.ok { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .btn.dis { opacity: .4; }
+  th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; text-align: left; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 6px; }
+  .note { font-size: 11px; color: #64748b; }
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  .tab { padding: 6px 12px; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; }
+  .tab.on { color: #2c3e69; border-color: #2c7be5; }
+  .tag { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:700; margin-right:4px; flex:none; }
+  .phone { width: 300px; border: 8px solid #1e293b; border-radius: 28px; background: #f8fafc; overflow: hidden; }
+  .cal td { border: 1px solid #e2e8f0; height: 62px; vertical-align: top; width: 14.28%; padding: 3px 4px; font-size: 10px; }
+  .cal .d { color: #94a3b8; font-weight: 600; }
+  .pm { background:#dcfce7; color:#166534; border-radius:4px; padding:1px 4px; margin-top:2px; display:block; }
+  .late { background:#fee2e2; color:#991b1b; border-radius:4px; padding:1px 4px; margin-top:2px; display:block; }
+  .insp { background:#fef3c7; color:#92400e; border-radius:4px; padding:1px 4px; margin-top:2px; display:block; }
+  .mtn { background: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 5px, #cbd5e1 5px, #cbd5e1 10px); border:1px solid #94a3b8; color:#334155; border-radius:4px; padding:1px 4px; margin-top:2px; display:block; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-4 max-w-[1400px] mx-auto">
+
+<div class="flex items-end justify-between">
+  <div>
+    <div class="text-lg font-bold text-navy">Maintenance v3 — Improvement, Daily Check, PM Calendar</div>
+    <div class="note">Mockup untuk persetujuan · data contoh ddt* · label layar English, kalimat bantu Indonesia · semua layar di bawah baru (belum ada di M1)</div>
+  </div>
+</div>
+
+<!-- ============ IMPROVEMENT FORM ============ -->
+<div class="cap">① Improvement › Improvement Proposal — form (tab Proposal)</div>
+<div class="card overflow-hidden">
+  <div class="flex items-center gap-3 px-4 py-2" style="background:#2c3e69;color:#fff;">
+    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full font-semibold" style="background:#43508a;"><span class="inline-flex w-5 h-5 rounded-full bg-white items-center justify-center text-navy"><i class="fa-solid fa-arrow-left" style="font-size:9px"></i></span>Back</span>
+    <div class="font-bold text-sm">Improvement Proposal · IMP-2610-0003</div>
+    <span class="bdg" style="background:#fef3c7;color:#92400e">Draft</span>
+    <div class="ml-auto flex gap-2"><span class="btn">New</span><span class="btn dis">Undo</span><span class="btn pri">Save</span><span class="btn dis">Confirm</span><span class="btn dis">Delete</span></div>
+  </div>
+  <div class="p-4">
+    <div class="flex gap-1 border-b border-slate-200">
+      <div class="tab on">Proposal</div><div class="tab">Evidence</div><div class="tab">Approval</div><div class="tab">Review</div><div class="tab">History</div>
+    </div>
+
+    <div class="grid grid-cols-4 gap-3 mt-3">
+      <div><div class="lbl">Machine</div><div class="inp">OFF-02 · Offset 4-color (contoh)<i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+      <div><div class="lbl">Component</div><div class="inp">Blade / knife / die<i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+      <div><div class="lbl">Source</div><div class="inp ro">Request MR-2609-0021<i class="fa-solid fa-link text-muted"></i></div></div>
+      <div><div class="lbl">Proposed by</div><div class="inp ro">Technician (login)</div></div>
+      <div class="col-span-4"><div class="lbl">Title</div><div class="inp">Change doctor blade to longer-life type<span class="aa">Aa</span></div></div>
+      <div class="col-span-2"><div class="lbl">Problem</div><div class="inp" style="min-height:54px;align-items:flex-start">Doctor blade worn every 3 weeks, 3 stops of the line in the last 90 days.<span class="aa">Aa</span></div></div>
+      <div class="col-span-2"><div class="lbl">Proposed solution</div><div class="inp" style="min-height:54px;align-items:flex-start">Use ceramic-coated blade from alternative supplier, trial on one unit first.<span class="aa">Aa</span></div></div>
+      <div><div class="lbl">Estimated cost (IDR)</div><div class="inp"><span>4.500.000</span><span class="note">IDR</span></div></div>
+      <div><div class="lbl">Estimated saving / year (IDR)</div><div class="inp"><span>12.000.000</span><span class="note">IDR</span></div></div>
+      <div><div class="lbl">Approval needed</div><div class="inp ro">Head of Maintenance only <span class="tag" style="margin:0">4</span></div></div>
+      <div><div class="lbl">Review after</div><div class="inp ro">60 days after Done <span class="tag" style="margin:0">5</span></div></div>
+    </div>
+
+    <div class="cap">Tab Evidence (diisi sistem dari riwayat, hanya dibaca) <span class="tag">2</span></div>
+    <div class="grid grid-cols-4 gap-3">
+      <div class="card p-3"><div class="lbl">Breakdowns, last 90 days</div><div class="text-2xl font-bold text-navy">3</div><div class="note">komponen yang sama</div></div>
+      <div class="card p-3"><div class="lbl">Downtime</div><div class="text-2xl font-bold text-navy">7,5 <span class="text-sm">h</span></div><div class="note">total, 90 hari</div></div>
+      <div class="card p-3"><div class="lbl">Cost</div><div class="text-2xl font-bold text-navy">2.1 <span class="text-sm">jt IDR</span></div><div class="note">part + teknisi + jasa</div></div>
+      <div class="card p-3"><div class="lbl">Linked work orders</div><div class="text-2xl font-bold text-navy">3</div><div class="note">klik untuk buka</div></div>
+    </div>
+    <div class="note mt-2"><span class="tag">1</span>Sistem menyarankan Improvement bila kode kerusakan yang sama pada komponen yang sama muncul berulang (3× dalam 90 hari). Ambang diatur di Settings › Constants.</div>
+  </div>
+</div>
+
+<!-- ============ REVIEW ============ -->
+<div class="cap">② Improvement › Improvement Review — grid (hasil sebelum dan sesudah)</div>
+<div class="card overflow-hidden">
+  <table class="w-full">
+    <thead><tr><th>No.</th><th>Machine</th><th>Title</th><th>Done on</th><th>Downtime before → after</th><th>Cost before → after</th><th>Outcome</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>IMP-2608-0001</td><td>OFF-02</td><td>Change doctor blade type</td><td>12-Aug-2026</td><td>7,5 h → <b>2,0 h</b></td><td>2,1 jt → <b>0,9 jt</b></td><td><span class="bdg" style="background:#dcfce7;color:#166534">Effective</span></td>
+        <td><span class="btn"><i class="fa-solid fa-up-right-from-square mr-1"></i>Buka</span> <span class="btn pri">Apply to master… <span class="tag" style="margin:0 0 0 4px">3</span></span></td></tr>
+      <tr><td>IMP-2608-0002</td><td>CMP-01</td><td>Add air filter check to weekly PM</td><td>20-Aug-2026</td><td>4,0 h → 3,6 h</td><td>1,1 jt → 1,0 jt</td><td><span class="bdg" style="background:#fef3c7;color:#92400e">Partial</span></td>
+        <td><span class="btn"><i class="fa-solid fa-up-right-from-square mr-1"></i>Buka</span></td></tr>
+      <tr><td>IMP-2609-0001</td><td>FKL-01</td><td>Replace chain type</td><td>02-Sep-2026</td><td colspan="2" class="note">Review due in 21 days</td><td><span class="bdg" style="background:#e2e8f0;color:#475569">Waiting review</span></td>
+        <td><span class="btn"><i class="fa-solid fa-up-right-from-square mr-1"></i>Buka</span></td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="note mt-2"><span class="tag">3</span><b>Apply to master hanya dijalankan manusia.</b> Tombol membuka daftar usulan perubahan (interval PM, watch point, atau spare part), kepala maintenance mencentang dan menyetujui. Sistem tidak mengubah master sendiri.</div>
+
+<!-- ============ DAILY CHECK + CALENDAR ============ -->
+<div class="grid gap-6 mt-2" style="grid-template-columns: 330px 1fr;">
+  <div>
+    <div class="cap">③ Preventive › Daily Check — HP operator</div>
+    <div class="phone">
+      <div class="px-3 py-2 text-white" style="background:#2c3e69"><div class="font-bold">Daily Check · OFF-02</div><div class="text-[10px] opacity-80">Shift 1 · 08-Oct-2026</div></div>
+      <div class="p-3 space-y-2">
+        <div class="card p-2"><div class="font-semibold">Roller</div><div class="note">Surface condition, no glazing</div><div class="flex gap-2 mt-1"><span class="btn ok flex-1 text-center">OK</span><span class="btn flex-1 text-center">Not OK</span></div></div>
+        <div class="card p-2"><div class="font-semibold">Hydraulic</div><div class="note">Oil level, no leak</div><div class="flex gap-2 mt-1"><span class="btn ok flex-1 text-center">OK</span><span class="btn flex-1 text-center">Not OK</span></div></div>
+        <div class="card p-2" style="border-color:#fca5a5"><div class="font-semibold">Heater / dryer</div><div class="note">Temperature (°C)</div><div class="inp mt-1">96</div><div class="flex gap-2 mt-1"><span class="btn flex-1 text-center">OK</span><span class="btn flex-1 text-center" style="background:#dc2626;color:#fff;border-color:#dc2626">Not OK</span></div>
+          <div class="note mt-1" style="color:#b91c1c">Not OK akan membuat Maintenance Request <span class="tag" style="margin:0 0 0 2px">6</span></div></div>
+        <div class="btn pri w-full text-center py-2">Save</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="cap" style="margin-top:18px">④ Preventive › PM Calendar — Oktober 2026</div>
+    <div class="flex items-center gap-2 mb-2">
+      <span class="note">Machine:</span><div class="inp" style="width:170px">All machines<i class="fa-solid fa-chevron-down text-muted"></i></div>
+      <span class="bdg pm" style="display:inline-block">On schedule</span><span class="bdg insp" style="display:inline-block">Inspection (fixed)</span><span class="bdg late" style="display:inline-block">Overdue</span><span class="bdg mtn" style="display:inline-block">Machine blocked</span>
+    </div>
+    <table class="cal w-full card" style="border-collapse:collapse">
+      <thead><tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead>
+      <tbody>
+        <tr><td><span class="d">28</span></td><td><span class="d">29</span></td><td><span class="d">30</span></td><td><span class="d">1</span><span class="late">OFF-02 Gripper</span></td><td><span class="d">2</span></td><td><span class="d">3</span></td><td><span class="d">4</span></td></tr>
+        <tr><td><span class="d">5</span><span class="pm">CMP-01 Filter</span></td><td><span class="d">6</span></td><td><span class="d">7</span></td><td><span class="d">8</span><span class="mtn">OFF-02 PM 4 h</span></td><td><span class="d">9</span></td><td><span class="d">10</span></td><td><span class="d">11</span></td></tr>
+        <tr><td><span class="d">12</span></td><td><span class="d">13</span><span class="pm">LAM-01 Heater</span></td><td><span class="d">14</span></td><td><span class="d">15</span></td><td><span class="d">16</span><span class="insp">FKL-01 K3 check</span></td><td><span class="d">17</span></td><td><span class="d">18</span></td></tr>
+      </tbody>
+    </table>
+    <div class="note mt-2"><span class="tag">7</span>Klik kotak PM membuka Work Order-nya. Kotak bergaris (machine blocked) juga tampil di Scheduling Board sebagai blok "MTN" (rencana M2). Geser jadwal = usulan, kepala maintenance mengonfirmasi.</div>
+  </div>
+</div>
+
+<div class="cap">Legenda</div>
+<div class="card p-3 grid grid-cols-2 gap-x-6 gap-y-2">
+  <div class="flex"><span class="tag">1</span><div><b>Kerusakan berulang disarankan jadi Improvement.</b> Ambang (3× dalam 90 hari) ada di Constants, bisa diubah.</div></div>
+  <div class="flex"><span class="tag">2</span><div><b>Evidence dihitung sistem</b> dari WO dan downtime yang sudah ada, tidak diketik.</div></div>
+  <div class="flex"><span class="tag">3</span><div><b>Apply to master dikerjakan orang.</b> Sesuai aturan: master hanya diubah user, sistem hanya mengubah transaksi.</div></div>
+  <div class="flex"><span class="tag">4</span><div><b>Persetujuan dua tingkat.</b> Biaya di atas ambang (Constants) butuh Direksi juga, di bawahnya cukup Kepala Maintenance.</div></div>
+  <div class="flex"><span class="tag">5</span><div><b>Review otomatis dijadwalkan</b> 60 hari setelah selesai. Angka sebelum dan sesudah diisi sistem, orang hanya menyimpulkan.</div></div>
+  <div class="flex"><span class="tag">6</span><div><b>Daily Check Not OK</b> otomatis membuka Maintenance Request, bukan Work Order, supaya kepala maintenance yang menilai.</div></div>
+  <div class="flex"><span class="tag">7</span><div><b>PM Calendar.</b> Tampilan kalender dari Work Order PREVENTIVE dan INSPECTION yang sudah ada, bukan data baru.</div></div>
+</div>
+
+</main>
+</body>
+</html>

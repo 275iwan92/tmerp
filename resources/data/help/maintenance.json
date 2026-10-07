@@ -29,39 +29,6 @@
     ]
   },
   {
-    "key": "guide-maintenance-machine-profile",
-    "type": "GUIDE",
-    "module": "MAINT",
-    "title": "What a Machine Maintenance Profile Holds",
-    "purpose": {
-      "en": "Describes the information kept for each machine so that maintenance work can be planned: components, watch points, tasks, spare parts, failure codes and documents.",
-      "id": "Menjelaskan informasi yang disimpan untuk tiap mesin agar pekerjaan maintenance bisa direncanakan: komponen, titik pantau, tugas, suku cadang, kode kerusakan dan dokumen."
-    },
-    "keywords": "profil mesin, machine profile, komponen, watch point, titik pantau, spare part, suku cadang, failure code, kode kerusakan, pm task, master mesin",
-    "steps": [
-      {
-        "en": "Components are the parts of a machine in levels: machine, unit, component. Cost and failures can then be followed down to the component.",
-        "id": "Components adalah bagian mesin yang bertingkat: mesin, unit, komponen. Dengan begitu biaya dan kerusakan bisa dilacak sampai ke komponen."
-      },
-      {
-        "en": "Watch Points list what must be checked: what, how, the normal limit, how often, and whether the operator or a technician checks it.",
-        "id": "Watch Points berisi hal yang harus dicek: apa, caranya, batas normal, seberapa sering, dan apakah operator atau teknisi yang mengecek."
-      },
-      {
-        "en": "PM Tasks are the scheduled maintenance jobs, each with its interval, expected duration and whether the machine must be stopped.",
-        "id": "PM Tasks adalah pekerjaan perawatan terjadwal, masing-masing dengan interval, perkiraan lama pengerjaan dan penanda apakah mesin harus berhenti."
-      },
-      {
-        "en": "Spare Parts are the parts the machine needs, with the quantity per use, a suggested minimum stock, the expected life and whether the part is critical.",
-        "id": "Spare Parts adalah part yang dibutuhkan mesin, dengan jumlah per pemakaian, saran stok minimum, umur pakai dan penanda apakah part itu kritis."
-      },
-      {
-        "en": "Failure Codes name the usual kinds of failure (mechanical, electrical, hydraulic, pneumatic, operator) so reports can show which failures happen most.",
-        "id": "Failure Codes menamai jenis kerusakan yang lazim (mekanik, elektrik, hidrolik, pneumatik, operator) agar laporan bisa menunjukkan kerusakan yang paling sering."
-      }
-    ]
-  },
-  {
     "key": "guide-maintenance-record-rules",
     "type": "GUIDE",
     "module": "MAINT",
