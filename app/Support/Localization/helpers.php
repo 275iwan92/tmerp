@@ -3,7 +3,6 @@
 // Dimuat AppServiceProvider::register() (bukan composer "files": tidak perlu dump-autoload di tiap checkout).
 
 use App\Support\Localization\Dictionary;
-use Devlib\Lang;
 
 if (! function_exists('t')) {
     // Teks tampilan (LOCKED user 2026-10-01): TULIS ENGLISH di kode -> tampil dalam bahasa layar/cetak lewat kamus
@@ -31,13 +30,4 @@ if (! function_exists('tf')) {
     }
 }
 
-if (! function_exists('raw')) {
-    // NILAI DATA di dalam prop teks komponen x-dl::* (no. dokumen, nama customer, angka, tanggal): tidak diterjemahkan dan
-    // tidak tercatat di kamus; label di sekitarnya tetap English dan tetap diterjemahkan komponen.
-    //   :title="'Customer Order · '.raw($o->co_no)"   :subtitle="raw($customer.' · '.$status)"
-    // Hanya untuk prop komponen x-dl::* (di luar itu penandanya tidak dibuang). Tetap di-escape, bukan HTML mentah.
-    function raw(string|int|float|Stringable|null $value): string
-    {
-        return Lang::raw($value);
-    }
-}
+// raw() = helper library: packages/devlib/src/helpers.php (diwarisi dari DevLib).

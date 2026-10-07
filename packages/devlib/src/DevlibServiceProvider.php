@@ -12,6 +12,11 @@ use Illuminate\Support\ServiceProvider;
 // jadi ubah di paket = semua aplikasi pemakai ikut.
 class DevlibServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        require_once __DIR__.'/helpers.php';  // raw() -- nilai data di prop teks x-dl::*
+    }
+
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'devlib');
