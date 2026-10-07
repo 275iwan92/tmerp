@@ -18,6 +18,7 @@ use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\CrmActivity;
 use App\Models\Sdi\DoDelivery;
+use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysConstant;
@@ -1083,6 +1084,16 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return $err ? $back->withErrors(['approval' => $err]) : $back->with('v2_flash', ['approve' => t('Approved — recorded in the log.'), 'reject' => t('Rejected — recorded in the log.'), 'hold' => t('On hold — recorded in the log.')][$d['action']]);
     })->whereIn('screen', array_keys(ApprovalCenter::SCREENS))->name('approval.decide');
+
+    // Pro-Cost Instant: + New Record = draft kosong baru (atau draft kosong milik user yang belum diisi), lalu buka form Instant v1.
+    Route::get('/procost-instant/new', function () {
+        $by = Auth::user()->login;
+        $draft = IqpCosting::query()->where('mode', IqpCosting::MODE_INSTANT)->where('doc_status', 'DRAFT')->where('created_by', $by)
+            ->whereNull('customer_id')->whereNull('product_name_draft')->whereNull('reversed_at')->orderByDesc('id_costing')->first()
+            ?? IqpCosting::create(['mode' => IqpCosting::MODE_INSTANT, 'calc_type' => 'NEW', 'doc_status' => 'DRAFT', 'created_by' => $by, 'updated_by' => $by]);
+
+        return redirect()->route('inquiry.costing.instant', ['costing' => $draft->id_costing]);
+    })->middleware('module:COSTING')->name('procost-instant.new');
 
     // Setup > Identification (App\Support\V2\Data\Identification): identitas aplikasi + perusahaan. Administrator saja (sama dengan v1).
     Route::middleware(['module:SETUP', 'admin'])->prefix('setup/identification')->name('identification.')->group(function () {

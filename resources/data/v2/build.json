@@ -1,20 +1,20 @@
 {
-    "generated": "2026-10-07 13:11",
+    "generated": "2026-10-07 13:15",
     "database": "ddtsys",
     "totals": {
         "objects": 144,
         "modules": 10,
         "modules_done": 7,
-        "screens": 218,
-        "v2": 208,
+        "screens": 219,
+        "v2": 209,
         "v1": 4,
         "not_built": 6,
-        "waiting_qc": 211,
+        "waiting_qc": 212,
         "locked": 1,
         "forms": 83,
-        "grids": 88,
+        "grids": 89,
         "reports": 46,
-        "grid_classes": 146,
+        "grid_classes": 147,
         "lookups": 37,
         "report_grids": 36,
         "engines": 25,
@@ -22,24 +22,24 @@
         "tables": 370,
         "databases": 9,
         "models": 328,
-        "migrations": 544,
-        "tests": 94,
+        "migrations": 545,
+        "tests": 95,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1144",
+        "commits": "1145",
         "since": "2026-08-06"
     },
     "modules": [
         {
             "label": "Sales",
-            "total": 45,
-            "v2": 41,
+            "total": 46,
+            "v2": 42,
             "v1": 4,
             "not_built": 0,
-            "waiting_qc": 44,
+            "waiting_qc": 45,
             "locked": 1,
             "form": 23,
-            "grid": 7,
+            "grid": 8,
             "report": 15
         },
         {
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 54,
+            "commits": 55,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 76,
+            "screens": 80,
             "objects": 17,
             "engines": 1,
-            "tests": 5
+            "tests": 7
         },
         {
             "key": "jo",
@@ -257,7 +257,7 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 11,
+            "iwan": 12,
             "jo": 0,
             "other": 8
         }
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 54,
+            "iwan": 55,
             "jo": 0,
             "other": 10
         }
@@ -837,10 +837,10 @@
             "name": "Dummy & Legacy Data",
             "module": "Setup",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
@@ -1288,10 +1288,10 @@
             "name": "Migration",
             "module": "Setup",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
@@ -2281,6 +2281,17 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PRE_COST_INSTANT",
+            "name": "Pro-Cost Instant",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {

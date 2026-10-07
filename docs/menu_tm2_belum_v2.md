@@ -125,6 +125,11 @@ kunci `sys_translations` sisanya milik layar v1 dan ikut pensiun bersama v1). SE
 `v2:security-permissions` (matriks `x-dl::permission-matrix` + prop baru `:save-url`), SET_DATA_ORIGIN -> `v2:setup-data-origin`,
 SET_MIGRATION -> `v2:setup-migration` (17 runner). Fitur v1 dipertahankan; layar v1 tetap ada sampai v1 diarsipkan.
 
+**C4 SELESAI (2026-10-07, ddtsys; migration `2026_10_07_000060`):** PRE_COST_INSTANT -> `v2:sales-procost-instant` (`CostingInstantGrid`;
+daftar costing mode INSTANT, buka baris = form Instant v1 apa adanya karena zona beku, + New Record = draft kosong baru / pakai ulang draft kosong
+milik sendiri lewat `v2.procost-instant.new`). SALES_GRID_SO, SALES_MON_ORD, SALES_RPT TIDAK dibangun: ketiganya baris warisan ScriptCase yang
+sudah `activate=0`, tidak pernah punya layar v1, dan fungsinya dipegang layar v2 yang aktif (Customer Order, Customer Order Summary / Report /
+Shipment Detail di Sales > Order > Report). Diusulkan dibiarkan nonaktif / dihapus saat rilis, tidak dihitung sebagai utang v2.
 **Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
 
 | Kode | Temuan | Jalan keluar |

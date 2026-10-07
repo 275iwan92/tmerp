@@ -52,6 +52,7 @@ final class Grids
         Sales\CostingListGrid::class,
         Sales\CostingReviseGrid::class,
         Sales\CostingRecalcGrid::class,
+        Sales\CostingInstantGrid::class,
         Sales\WinRateGrid::class,
         Sales\CoSummaryReport::class,
         Sales\CoOrderReport::class,
