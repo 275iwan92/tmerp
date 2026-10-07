@@ -31,7 +31,7 @@ sebelum eksekusi):
   Interruption Profile reporting) — semua secara eksplisit ditunda user,
   belum digarap sama sekali.
 - **Maintenance** (modul v2 `MAINT`) — DIHAPUS TOTAL 2026-10-08 atas perintah user (kode, layar, tabel `mnt_*` dan menu di ddt*, tanpa arsip).
-  Dibangun ulang mulai dari Master Data (rencana teknis + mockup `docs/mockups/maintenance_v3_*.jpg`). Sisa di tm2*: 11 tabel `mnt_*`
+  Dibangun ulang mulai dari Master Data (rencana teknis + mockup `docs/mockups/maintenance_v2_*.jpg`). Sisa di tm2*: 11 tabel `mnt_*`
   kosong (kecuali `mnt_code`), modul `MAINT`, menu, grup `MAINT_TECH` / `MAINT_HEAD` dan konstanta `MNT_LABOR_RATE_HOUR` -- dibereskan
   oleh migration pembangunan ulang saat rilis.
 ---
