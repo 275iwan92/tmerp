@@ -235,8 +235,8 @@
         "id": "Modul punya empat kelompok: Preventive Maintenance, Breakdown Maintenance, Improvement dan Master Data. Kelompok kecil Report ada di bawahnya."
       },
       {
-        "en": "PM Order and Breakdown Order are the same Maintenance Order screen with a different type filter. They are not two separate screens.",
-        "id": "PM Order dan Breakdown Order adalah layar Maintenance Order yang sama dengan saringan jenis berbeda. Bukan dua layar terpisah."
+        "en": "Preventive Maintenance Order (PMO) and Breakdown Maintenance Order (BMO) are two menu doors to one Maintenance Order design and one table. Each door has its own number prefix.",
+        "id": "Preventive Maintenance Order (PMO) dan Breakdown Maintenance Order (BMO) adalah dua pintu menu ke satu desain Maintenance Order dan satu tabel. Tiap pintu punya prefiks nomor sendiri."
       },
       {
         "en": "The menu shows only screens that already exist. A screen appears the day its phase is delivered.",
@@ -250,18 +250,18 @@
     "fields": [
       {
         "label": "Preventive Maintenance",
-        "en": "Preventive Plan, PM Calendar, PM Order, Daily Check, Meter Readings. Delivered in Phase 2.",
-        "id": "Preventive Plan, PM Calendar, PM Order, Daily Check, Meter Readings. Dikirim di Fase 2."
+        "en": "Preventive Plan, PM Calendar, Preventive Maintenance Order (PMO), Daily Check, Meter Readings. Delivered in Phase 2.",
+        "id": "Preventive Plan, PM Calendar, Preventive Maintenance Order (PMO), Daily Check, Meter Readings. Dikirim di Fase 2."
       },
       {
         "label": "Breakdown Maintenance",
-        "en": "Maintenance Request, Breakdown Order, My Work for technicians. Delivered in Phase 3.",
-        "id": "Maintenance Request, Breakdown Order, My Work untuk teknisi. Dikirim di Fase 3."
+        "en": "Maintenance Request, Breakdown Maintenance Order (BMO), My Work for technicians. Delivered in Phase 3.",
+        "id": "Maintenance Request, Breakdown Maintenance Order (BMO), My Work untuk teknisi. Dikirim di Fase 3."
       },
       {
         "label": "Improvement",
-        "en": "Improvement Proposal and Improvement Review. Delivered in Phase 4.",
-        "id": "Improvement Proposal dan Improvement Review. Dikirim di Fase 4."
+        "en": "Improvement Proposal and Improvement Review. Improvement orders (IMO) are opened from the proposal. Delivered in Phase 4.",
+        "id": "Improvement Proposal dan Improvement Review. Order improvement (IMO) dibuka dari usulannya. Dikirim di Fase 4."
       },
       {
         "label": "Master Data",
@@ -347,9 +347,9 @@
         "id": "Fase 3. Laporan singkat masalah yang bisa dibuat siapa pun. Menjaga laporan ditolak atau dobel keluar dari data pekerjaan."
       },
       {
-        "label": "Maintenance Order",
-        "en": "Phase 3. The authorised job with schedule, technician, checklist, parts, hours, downtime and cost. All three kinds use it.",
-        "id": "Fase 3. Pekerjaan resmi dengan jadwal, teknisi, checklist, part, jam, downtime dan biaya. Ketiga jenis memakainya."
+        "label": "Maintenance Order (PMO, BMO, IMO)",
+        "en": "Phase 3. The authorised job with schedule, technician, checklist, parts, hours, downtime and cost. PMO for preventive, BMO for breakdown, IMO for improvement.",
+        "id": "Fase 3. Pekerjaan resmi dengan jadwal, teknisi, checklist, part, jam, downtime dan biaya. PMO untuk preventive, BMO untuk breakdown, IMO untuk improvement."
       },
       {
         "label": "My Work",
@@ -449,16 +449,16 @@
     "keywords": "work flow maintenance, alur kerja, status order perawatan, request, draft confirmed in progress waiting part done closed, prioritas p1 p2 p3 p4",
     "steps": [
       {
-        "en": "Preventive: Plan, Generate, Confirm, Start, Done, Close. A scheduled command turns due plans into Draft maintenance orders. The head sets schedule and technician and presses Confirm.",
-        "id": "Preventive: Plan, Generate, Confirm, Start, Done, Close. Perintah terjadwal mengubah plan jatuh tempo menjadi order perawatan Draft. Kepala mengatur jadwal dan teknisi lalu menekan Confirm."
+        "en": "Preventive (PMO): Plan, Generate, Confirm, Start, Done, Close. A scheduled command turns due plans into Draft orders. The head sets schedule and technician and presses Confirm.",
+        "id": "Preventive (PMO): Plan, Generate, Confirm, Start, Done, Close. Perintah terjadwal mengubah plan jatuh tempo menjadi order Draft. Kepala mengatur jadwal dan teknisi lalu menekan Confirm."
       },
       {
         "en": "Preventive: the technician presses Start, fills the checklist, uses parts and records hours, then Done. The head checks cost and findings and presses Close. The next due date is recalculated.",
         "id": "Preventive: teknisi menekan Start, mengisi checklist, memakai part dan mencatat jam, lalu Done. Kepala memeriksa biaya dan temuan lalu menekan Close. Jatuh tempo berikutnya dihitung ulang."
       },
       {
-        "en": "Breakdown: Request, Accept, Start, Done, Close. Anyone files a Request. The head presses Accept, which creates a Confirmed maintenance order, or Reject with a reason.",
-        "id": "Breakdown: Request, Accept, Start, Done, Close. Siapa pun membuat Request. Kepala menekan Accept sehingga order perawatan Confirmed dibuat, atau Reject dengan alasan."
+        "en": "Breakdown (BMO): Request, Accept, Start, Done, Close. Anyone files a Request. The head presses Accept, which creates a Confirmed order, or Reject with a reason.",
+        "id": "Breakdown (BMO): Request, Accept, Start, Done, Close. Siapa pun membuat Request. Kepala menekan Accept sehingga order Confirmed dibuat, atau Reject dengan alasan."
       },
       {
         "en": "Breakdown: priority P1 on a machine that stopped goes straight to a maintenance order. The technician can press Hold when a part is missing and Resume when it arrives.",
@@ -469,8 +469,8 @@
         "id": "Breakdown: Done menutup downtime dan mengembalikan mesin ke ready. Kepala menekan Close setelah memeriksa biaya serta kode masalah, penyebab dan tindakan."
       },
       {
-        "en": "Improvement: Proposal, Confirm, Implement, Done, Review, Apply. The head confirms, a maintenance order of type IMPROVEMENT is created, and after the review period the review is filled and changes are applied by a person.",
-        "id": "Improvement: Proposal, Confirm, Implement, Done, Review, Apply. Kepala mengonfirmasi, order perawatan jenis IMPROVEMENT dibuat, dan setelah masa review, review diisi dan perubahan diterapkan oleh orang."
+        "en": "Improvement (IMO): Proposal, Confirm, Implement, Done, Review, Apply. The head confirms, an order of type IMPROVEMENT is created, and after the review a person applies the changes.",
+        "id": "Improvement (IMO): Proposal, Confirm, Implement, Done, Review, Apply. Kepala mengonfirmasi, order jenis IMPROVEMENT dibuat, dan setelah review orang yang menerapkan perubahan."
       }
     ],
     "fields": [
@@ -673,8 +673,8 @@
       },
       {
         "label": "mnt_request, mnt_order",
-        "en": "Phase 3. Maintenance request and maintenance order. Maintenance order types: PREVENTIVE, BREAKDOWN, CORRECTIVE, INSPECTION, IMPROVEMENT.",
-        "id": "Fase 3. Request dan order perawatan maintenance. Jenis order perawatan: PREVENTIVE, BREAKDOWN, CORRECTIVE, INSPECTION, IMPROVEMENT."
+        "en": "Phase 3. Request (MR) and Maintenance Order. Five order types: PREVENTIVE and INSPECTION (prefix PMO), BREAKDOWN and CORRECTIVE (prefix BMO), IMPROVEMENT (prefix IMO).",
+        "id": "Fase 3. Request (MR) dan Maintenance Order. Lima jenis order: PREVENTIVE dan INSPECTION (prefiks PMO), BREAKDOWN dan CORRECTIVE (prefiks BMO), IMPROVEMENT (prefiks IMO)."
       },
       {
         "label": "mnt_order_task, mnt_order_part, mnt_order_labor",
@@ -723,6 +723,10 @@
       {
         "en": "Apply to master is never automatic. The head ticks and approves each proposed change one by one, and each is logged.",
         "id": "Apply to master tidak pernah otomatis. Kepala mencentang dan menyetujui tiap usulan satu per satu, dan masing-masing dicatat."
+      },
+      {
+        "en": "Document numbers follow one pattern: prefix, year and month (yymm), and a four digit sequence, for example PMO-2610-0001. Each prefix has its own sequence that restarts every month.",
+        "id": "Nomor dokumen mengikuti satu pola: prefiks, tahun dan bulan (yymm), dan urutan empat digit, misalnya PMO-2610-0001. Tiap prefiks punya urutan sendiri yang mulai lagi tiap bulan."
       }
     ],
     "fields": [
@@ -765,6 +769,26 @@
         "label": "MNT_IMPROVEMENT_DIRECTOR_LIMIT",
         "en": "Proposal 10,000,000 IDR. Above this estimated cost the director also approves.",
         "id": "Usulan 10.000.000 IDR. Di atas estimasi biaya ini direksi ikut menyetujui."
+      },
+      {
+        "label": "PMO",
+        "en": "Preventive Maintenance Order. Order types PREVENTIVE and INSPECTION. Example PMO-2610-0001.",
+        "id": "Preventive Maintenance Order. Jenis order PREVENTIVE dan INSPECTION. Contoh PMO-2610-0001."
+      },
+      {
+        "label": "BMO",
+        "en": "Breakdown Maintenance Order. Order types BREAKDOWN and CORRECTIVE. Example BMO-2610-0001.",
+        "id": "Breakdown Maintenance Order. Jenis order BREAKDOWN dan CORRECTIVE. Contoh BMO-2610-0001."
+      },
+      {
+        "label": "IMO",
+        "en": "Improvement Maintenance Order. Order type IMPROVEMENT, opened from an Improvement Proposal. Example IMO-2610-0001.",
+        "id": "Improvement Maintenance Order. Jenis order IMPROVEMENT, dibuka dari Improvement Proposal. Contoh IMO-2610-0001."
+      },
+      {
+        "label": "MR, IMP, DC",
+        "en": "Maintenance Request MR, Improvement Proposal IMP, Daily Check DC. Same pattern as the orders.",
+        "id": "Maintenance Request MR, Improvement Proposal IMP, Daily Check DC. Pola sama dengan order."
       }
     ]
   },

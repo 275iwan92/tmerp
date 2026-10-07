@@ -44,7 +44,7 @@
 </div>
 
 <!-- ============ WO GRID ============ -->
-<div class="cap">① Preventive Maintenance › PM Order dan Breakdown Maintenance › Breakdown Order — grid (layar sama, saringan jenis berbeda) <span class="tag">1</span></div>
+<div class="cap">① Breakdown Maintenance › Breakdown Maintenance Order (BMO) dan Preventive Maintenance › Preventive Maintenance Order (PMO) — grid <span class="tag">1</span></div>
 <section class="card p-3 space-y-2">
   <div class="flt"><span class="on">All 11</span><span>Draft 2</span><span>Scheduled 3</span><span>In Progress 2</span><span>Waiting Part 1</span><span>Done 2</span><span>Closed 1</span></div>
   <div class="flex items-center gap-2">
@@ -57,12 +57,20 @@
   <table class="w-full">
     <thead><tr><th>Order</th><th>Machine</th><th>Type</th><th>Priority</th><th>Work status</th><th>Planned</th><th>Technician</th><th>Downtime</th><th>Source</th><th class="text-right">Action</th></tr></thead>
     <tbody>
-      <tr><td><b>MNO-2610-0012</b><div class="note">Feeder double-sheet, stop</div></td><td><b>OFF-02</b> Offset 4-color <span class="bdg bg-red-100 text-red-700">A</span></td><td><span class="bdg bg-red-100 text-red-700">BREAKDOWN</span></td><td><span class="bdg bg-red-600 text-white">P1</span></td><td><span class="bdg bg-sky-100 text-sky-700">In Progress</span></td><td>08-Oct-2026 08:40</td><td>Sutrisno</td><td class="text-red-700 font-semibold">2 h 35 m</td><td>MR-2610-0007</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
-      <tr><td><b>MNO-2610-0014</b><div class="note">Noise from drive motor</div></td><td><b>DIE-04</b> Die cutter <span class="bdg bg-amber-100 text-amber-700">B</span></td><td><span class="bdg bg-sky-100 text-sky-700">CORRECTIVE</span></td><td><span class="bdg bg-slate-200">P3</span></td><td><span class="bdg bg-amber-100 text-amber-700">Waiting Part</span></td><td>09-Oct-2026 13:00</td><td>Agus</td><td>—</td><td>MR-2610-0009</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
-      <tr><td><b>MNO-2609-0031</b><div class="note">Blade dull, uneven cut</div></td><td><b>CUT-01</b> Paper cutter <span class="bdg bg-amber-100 text-amber-700">B</span></td><td><span class="bdg bg-sky-100 text-sky-700">CORRECTIVE</span></td><td><span class="bdg bg-slate-200">P3</span></td><td><span class="bdg bg-emerald-100 text-emerald-700">Done</span></td><td>29-Sep-2026</td><td>Sutrisno</td><td>1 h 10 m</td><td>MR-2609-0022</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span> <span class="btn ok"><i class="fa-solid fa-check"></i></span></td></tr>
+      <tr><td><b>BMO-2610-0012</b><div class="note">Feeder double-sheet, stop</div></td><td><b>OFF-02</b> Offset 4-color <span class="bdg bg-red-100 text-red-700">A</span></td><td><span class="bdg bg-red-100 text-red-700">BREAKDOWN</span></td><td><span class="bdg bg-red-600 text-white">P1</span></td><td><span class="bdg bg-sky-100 text-sky-700">In Progress</span></td><td>08-Oct-2026 08:40</td><td>Sutrisno</td><td class="text-red-700 font-semibold">2 h 35 m</td><td>MR-2610-0007</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><b>BMO-2610-0014</b><div class="note">Noise from drive motor</div></td><td><b>DIE-04</b> Die cutter <span class="bdg bg-amber-100 text-amber-700">B</span></td><td><span class="bdg bg-sky-100 text-sky-700">CORRECTIVE</span></td><td><span class="bdg bg-slate-200">P3</span></td><td><span class="bdg bg-amber-100 text-amber-700">Waiting Part</span></td><td>09-Oct-2026 13:00</td><td>Agus</td><td>—</td><td>MR-2610-0009</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><b>BMO-2609-0031</b><div class="note">Blade dull, uneven cut</div></td><td><b>CUT-01</b> Paper cutter <span class="bdg bg-amber-100 text-amber-700">B</span></td><td><span class="bdg bg-sky-100 text-sky-700">CORRECTIVE</span></td><td><span class="bdg bg-slate-200">P3</span></td><td><span class="bdg bg-emerald-100 text-emerald-700">Done</span></td><td>29-Sep-2026</td><td>Sutrisno</td><td>1 h 10 m</td><td>MR-2609-0022</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span> <span class="btn ok"><i class="fa-solid fa-check"></i></span></td></tr>
     </tbody>
   </table>
-  <div class="note">Saringan jenis di toolbar: dari menu Breakdown Order jenis awalnya Breakdown dan Corrective, dari PM Order jenis awalnya Preventive dan Inspection. Tanpa kotak statistik, sesuai standar grid yang disetujui.</div>
+  <div class="cap" style="margin:10px 0 2px;font-size:12px">Preventive Maintenance Order (PMO)</div>
+  <table class="w-full">
+    <thead><tr><th>Order</th><th>Machine</th><th>Type</th><th>Priority</th><th>Work status</th><th>Planned</th><th>Technician</th><th>Downtime</th><th>Source</th><th class="text-right">Action</th></tr></thead>
+    <tbody>
+      <tr><td><b>PMO-2610-0011</b><div class="note">Monthly service: dampening, inking, gripper</div></td><td><b>OFF-01</b> Offset 2-color <span class="bdg bg-red-100 text-red-700">A</span></td><td><span class="bdg bg-violet-100 text-violet-700">PREVENTIVE</span></td><td><span class="bdg bg-slate-200">P3</span></td><td><span class="bdg bg-slate-100 text-slate-600">Scheduled</span></td><td>11-Oct-2026 07:00</td><td>Agus</td><td>—</td><td>PM-OFF01-01</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><b>PMO-2610-0009</b><div class="note">Annual lifting-equipment inspection</div></td><td><b>FKL-01</b> Forklift <span class="bdg bg-slate-200">Support</span></td><td><span class="bdg bg-teal-100 text-teal-700">INSPECTION</span></td><td><span class="bdg bg-slate-200">P2</span></td><td><span class="bdg bg-slate-100 text-slate-600">Scheduled</span></td><td>15-Oct-2026</td><td>Vendor K3</td><td>—</td><td>PM-FKL01-02</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+    </tbody>
+  </table>
+  <div class="note">Satu desain dan satu tabel, dua pintu menu: PMO memuat jenis Preventive dan Inspection, BMO memuat jenis Breakdown dan Corrective, masing-masing dengan nomor sendiri. Tanpa kotak statistik, sesuai standar grid.</div>
 </section>
 
 <!-- ============ WO FORM ============ -->
@@ -70,7 +78,7 @@
 <section class="card overflow-hidden">
   <div class="bg-navy text-white px-4 py-2.5 flex items-center gap-2">
     <span class="back"><i class="fa-solid fa-arrow-left" style="font-size:9px"></i>Back</span>
-    <div class="ml-2"><div class="text-sm font-bold">Maintenance Order · MNO-2610-0012</div><div class="text-[10px] opacity-70">Breakdown Maintenance</div></div>
+    <div class="ml-2"><div class="text-sm font-bold">Breakdown Maintenance Order · BMO-2610-0012</div><div class="text-[10px] opacity-70">Breakdown Maintenance</div></div>
     <span class="bdg bg-emerald-100 text-emerald-700 ml-3">Confirmed</span>
     <span class="bdg bg-sky-100 text-sky-700">In Progress</span>
     <div class="ml-auto flex items-center gap-1.5">
@@ -152,7 +160,7 @@
         <div><div class="lbl">Plan code</div><div class="inp ro">PM-OFF01-01</div></div>
         <div class="col-span-2"><div class="lbl">Plan name</div><div class="inp">Monthly service: dampening, inking, gripper <span class="aa">Aa</span></div></div>
         <div><div class="lbl">Machine</div><div class="inp">OFF-01 Offset 2-color <i class="fa-solid fa-magnifying-glass text-slate-400"></i></div></div>
-        <div><div class="lbl">Maintenance order type</div><div class="inp">PREVENTIVE <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+        <div><div class="lbl">Order type</div><div class="inp">PREVENTIVE <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
         <div><div class="lbl">Trigger</div><div class="inp">Time OR Meter, first reached <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
         <div><div class="lbl">Every</div><div class="inp">1 Month</div></div>
         <div><div class="lbl">Or every</div><div class="inp">250 Run hours</div></div>
@@ -197,7 +205,7 @@
 
 <div class="cap">Legenda</div>
 <div class="card p-3 grid grid-cols-2 gap-x-6 gap-y-2">
-  <div class="flex"><span class="tag">1</span><div><b>Satu layar Maintenance Order, dua pintu menu.</b> Saringan jenis berbeda, tanpa kotak statistik.</div></div>
+  <div class="flex"><span class="tag">1</span><div><b>Dua pintu menu, satu desain.</b> PMO (Preventive, Inspection) dan BMO (Breakdown, Corrective) berbagi kolom dan tabel, nomornya berbeda. Order Improvement (IMO) dibuka dari Improvement Proposal.</div></div>
   <div class="flex"><span class="tag">2</span><div><b>From machine spare parts.</b> Mengambil dari daftar part milik mesin (Master Data), lalu stok dibaca dari Inventory.</div></div>
   <div class="flex"><span class="tag">3</span><div><b>Tarif teknisi</b> dari konstanta di Settings › Constants, bukan data gaji.</div></div>
   <div class="flex"><span class="tag">4</span><div><b>Repeated failure.</b> Saran sistem bila kerusakan sama berulang, tombol membuka Improvement baru.</div></div>

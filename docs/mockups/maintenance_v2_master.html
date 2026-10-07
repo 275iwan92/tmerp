@@ -38,9 +38,9 @@
 <div class="flex items-end justify-between">
   <div>
     <div class="text-lg font-bold text-navy">Maintenance V2 — menu 4 kelompok dan Machine Maintenance Profile</div>
-    <div class="note">Mockup untuk persetujuan · data contoh ddt* (bukan data mesin nyata) · label layar English, kalimat bantu Indonesia · lingkaran merah = beda dari layar yang sudah dibangun (M1)</div>
+    <div class="note">Mockup untuk persetujuan · data contoh ddt* (bukan data mesin nyata) · label layar English, kalimat bantu Indonesia · lingkaran merah = penjelasan ada di legenda</div>
   </div>
-  <div class="note text-right">Lingkaran merah bernomor = hal baru atau berubah, penjelasan di legenda bawah</div>
+  <div class="note text-right">Lingkaran merah bernomor = penjelasan di legenda bawah</div>
 </div>
 
 <div class="grid gap-4 mt-3" style="grid-template-columns: 290px 1fr;">
@@ -53,31 +53,31 @@
 
       <div class="menu-g"><span class="tag">1</span>Preventive Maintenance</div>
       <div class="menu-i"><i class="fa-solid fa-calendar-check w-4 text-muted"></i>Preventive Plan</div>
-      <div class="menu-i new"><i class="fa-solid fa-calendar-days w-4 text-muted"></i>PM Calendar</div>
-      <div class="menu-i"><i class="fa-solid fa-screwdriver-wrench w-4 text-muted"></i>PM Order</div>
-      <div class="menu-i new"><i class="fa-solid fa-clipboard-check w-4 text-muted"></i>Daily Check</div>
-      <div class="menu-i new"><i class="fa-solid fa-gauge-high w-4 text-muted"></i>Meter Readings</div>
+      <div class="menu-i"><i class="fa-solid fa-calendar-days w-4 text-muted"></i>PM Calendar</div>
+      <div class="menu-i"><i class="fa-solid fa-screwdriver-wrench w-4 text-muted"></i>Preventive Maintenance Order</div>
+      <div class="menu-i"><i class="fa-solid fa-clipboard-check w-4 text-muted"></i>Daily Check</div>
+      <div class="menu-i"><i class="fa-solid fa-gauge-high w-4 text-muted"></i>Meter Readings</div>
 
       <div class="menu-g"><span class="tag">2</span>Breakdown Maintenance</div>
       <div class="menu-i"><i class="fa-solid fa-triangle-exclamation w-4 text-muted"></i>Maintenance Request</div>
-      <div class="menu-i"><i class="fa-solid fa-screwdriver-wrench w-4 text-muted"></i>Breakdown Order</div>
+      <div class="menu-i"><i class="fa-solid fa-screwdriver-wrench w-4 text-muted"></i>Breakdown Maintenance Order</div>
       <div class="menu-i"><i class="fa-solid fa-user-gear w-4 text-muted"></i>My Work</div>
 
       <div class="menu-g"><span class="tag">3</span>Improvement</div>
-      <div class="menu-i new"><i class="fa-solid fa-lightbulb w-4 text-muted"></i>Improvement Proposal</div>
-      <div class="menu-i new"><i class="fa-solid fa-chart-line w-4 text-muted"></i>Improvement Review</div>
+      <div class="menu-i"><i class="fa-solid fa-lightbulb w-4 text-muted"></i>Improvement Proposal</div>
+      <div class="menu-i"><i class="fa-solid fa-chart-line w-4 text-muted"></i>Improvement Review</div>
 
       <div class="menu-g"><span class="tag">4</span>Master Data</div>
-      <div class="menu-i on new"><i class="fa-solid fa-gears w-4"></i>Machine Maintenance Profile</div>
+      <div class="menu-i on"><i class="fa-solid fa-gears w-4"></i>Machine Maintenance Profile</div>
       <div class="menu-i"><i class="fa-solid fa-tags w-4 text-muted"></i>Maintenance Codes</div>
       <div class="menu-i"><i class="fa-solid fa-gears w-4 text-muted"></i>Master Mesin</div>
 
       <div class="menu-g"><span class="tag">5</span>Report</div>
       <div class="menu-i"><i class="fa-solid fa-table-list w-4 text-muted"></i>Maintenance Order Report</div>
-      <div class="menu-i new"><i class="fa-solid fa-chart-column w-4 text-muted"></i>Machine Reliability</div>
-      <div class="menu-i new"><i class="fa-solid fa-percent w-4 text-muted"></i>PM Compliance</div>
+      <div class="menu-i"><i class="fa-solid fa-chart-column w-4 text-muted"></i>Machine Reliability</div>
+      <div class="menu-i"><i class="fa-solid fa-percent w-4 text-muted"></i>PM Compliance</div>
     </div>
-    <div class="note mt-2">Garis putus merah = layar baru. Layar tanpa garis sudah dibangun di M1 dan hanya dipindah grupnya (PM Order dan Breakdown Order = layar Maintenance Order yang sama, disaring menurut jenis).</div>
+    <div class="note mt-2">Semua layar dibangun bertahap sesuai fase. Preventive Maintenance Order (PMO) dan Breakdown Maintenance Order (BMO) adalah dua pintu ke satu desain Maintenance Order, nomornya berprefiks PMO- dan BMO-. Master Mesin memakai layar yang sudah ada.</div>
   </div>
 
   <!-- ===== PROFILE FORM ===== -->
@@ -149,10 +149,10 @@
 
 <div class="cap">Legenda</div>
 <div class="card p-3 grid grid-cols-2 gap-x-6 gap-y-2">
-  <div class="flex"><span class="tag">1</span><div><b>Empat kelompok + Report.</b> Sesuai permintaan Anda: Preventive, Breakdown, Improvement, Master Data. Report tetap dipisah supaya tidak tersebar.</div></div>
-  <div class="flex"><span class="tag">2</span><div><b>Watch Points per mesin.</b> Hal baru. Tidak ada pohon komponen: sesuai keputusan K5 (2026-10-01), komponen cukup berupa kode.</div></div>
+  <div class="flex"><span class="tag">1</span><div><b>Empat kelompok + Report.</b> Sesuai permintaan Anda: Preventive, Breakdown, Improvement, Master Data. Report dipisah supaya tidak tersebar.</div></div>
+  <div class="flex"><span class="tag">2</span><div><b>Watch Points per mesin.</b> Tidak ada pohon komponen: komponen cukup berupa kode dari Maintenance Codes.</div></div>
   <div class="flex"><span class="tag">3</span><div><b>Batas normal kosong.</b> Interval dan batas dari manual pabrikan. Data mesin nyata tidak diisi karangan.</div></div>
-  <div class="flex"><span class="tag">4</span><div><b>Spare Parts per mesin.</b> Sudah direncanakan di M2 (<code>mnt_machine_part</code>), kini punya layar sendiri.</div></div>
+  <div class="flex"><span class="tag">4</span><div><b>Spare Parts per mesin.</b> Layar sendiri di Master Data, tabel <code>mnt_machine_part</code>.</div></div>
   <div class="flex"><span class="tag">5</span><div><b>Stok dari Inventory.</b> Layar hanya membaca, tidak menyalin angka stok.</div></div>
   <div class="flex"><span class="tag">6</span><div><b>Profile completeness.</b> Menunjukkan seberapa lengkap profil sebuah mesin, supaya pengisian data bisa dikejar.</div></div>
 </div>

@@ -101,13 +101,13 @@ return new class extends Migration
         $add('MAINT_GRP_PM', 'MAINT', 'Preventive Maintenance', 'fa-solid fa-calendar-check', 'group', ['sort_order' => 10]);
         $item('MAINT_PLAN', 'MAINT_GRP_PM', 'Preventive Plan', 'fa-solid fa-calendar-check', 10);
         $item('MAINT_PM_CAL', 'MAINT_GRP_PM', 'PM Calendar', 'fa-solid fa-calendar-days', 20);
-        $item('MAINT_PM_ORDER', 'MAINT_GRP_PM', 'PM Order', 'fa-solid fa-screwdriver-wrench', 30);
+        $item('MAINT_PMO', 'MAINT_GRP_PM', 'Preventive Maintenance Order', 'fa-solid fa-screwdriver-wrench', 30);
         $item('MAINT_DAILY', 'MAINT_GRP_PM', 'Daily Check', 'fa-solid fa-clipboard-check', 40);
         $item('MAINT_METER', 'MAINT_GRP_PM', 'Meter Readings', 'fa-solid fa-gauge-high', 50);
 
         $add('MAINT_GRP_BD', 'MAINT', 'Breakdown Maintenance', 'fa-solid fa-triangle-exclamation', 'group', ['sort_order' => 20]);
         $item('MAINT_REQ', 'MAINT_GRP_BD', 'Maintenance Request', 'fa-solid fa-triangle-exclamation', 10);
-        $item('MAINT_BD_ORDER', 'MAINT_GRP_BD', 'Breakdown Order', 'fa-solid fa-screwdriver-wrench', 20);
+        $item('MAINT_BMO', 'MAINT_GRP_BD', 'Breakdown Maintenance Order', 'fa-solid fa-screwdriver-wrench', 20);
         $item('MAINT_MYWORK', 'MAINT_GRP_BD', 'My Work', 'fa-solid fa-user-gear', 30);
 
         $add('MAINT_GRP_IMP', 'MAINT', 'Improvement', 'fa-solid fa-lightbulb', 'group', ['sort_order' => 30]);
