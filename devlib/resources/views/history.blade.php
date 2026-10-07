@@ -1,6 +1,6 @@
 {{-- Agent History devlib.test (user 2026-10-07): catatan pengingat user. Ringkasan laporan agen Iwan / Jo, keputusan, catatan dan
      tautan Artifact. Aturan = App\Support\AgentHistory, tabel dev_note di database devlib. Disusun dari objek x-dl::*. --}}
-@extends('layout', ['title' => 'Agent History', 'dev' => true, 'bodyClass' => 'dl-page-body'])
+@extends('layout', ['title' => 'Historical', 'dev' => true, 'bodyClass' => 'dl-page-body'])
 @php
     use App\Support\AgentHistory;
     use Devlib\Lang;
@@ -9,7 +9,7 @@
 @endphp
 @section('body')
 <div class="dl-sum">
-    <header class="dl-sum__head"><b>{{ Lang::text('Agent History') }}</b><small>{{ Lang::text('Reports, decisions, notes and Artifact links saved by Agent Iwan, Agent Jo and you, kept here as your reminder.') }}</small></header>
+    <header class="dl-sum__head"><b>{{ Lang::text('Historical') }}</b><small>{{ Lang::text('Reports, decisions, notes and Artifact links saved by Agent Iwan, Agent Jo and you, kept here as your reminder.') }}</small></header>
 
     @if (session('hist_flash'))<x-dl::alert tone="success" :message="session('hist_flash')" />@endif
     @if (session('hist_error'))<x-dl::alert tone="danger" :message="session('hist_error')" />@endif
@@ -33,7 +33,8 @@
             <x-dl::field.text name="author" label="Author" :value="Lang::raw(AgentHistory::AUTHORS[$note->author] ?? $note->author)" readonly source="devlib.dev_note.author" />
             <x-dl::field.text name="kind" label="Kind" :value="Lang::raw(AgentHistory::KINDS[$note->kind] ?? $note->kind)" readonly source="devlib.dev_note.kind" />
             <x-dl::field.text name="saved" label="Saved" :value="Lang::raw(\Devlib\Locale::dateTime($note->created_at))" readonly source="devlib.dev_note.created_at" />
-            <x-dl::field.text name="body" label="Note" multiline :value="Lang::raw((string) $note->body)" readonly source="devlib.dev_note.body" />
+            {{-- Narasi dibaca penuh (markdown: judul, daftar, tabel); HTML mentah di isi catatan di-escape. --}}
+            <div class="dl-prose" style="max-width:none;padding:6px 0">{!! \Illuminate\Support\Str::markdown((string) $note->body, ['html_input' => 'escape', 'allow_unsafe_links' => false]) !!}</div>
             @if ($note->url)<x-dl::field.text name="url" label="Link" :value="Lang::raw($note->url)" readonly source="devlib.dev_note.url" />@endif
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />

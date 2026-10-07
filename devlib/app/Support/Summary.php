@@ -47,7 +47,7 @@ final class Summary
 
         // Agent History (user 2026-10-07): submenu tersendiri untuk catatan pengingat agen Iwan / Jo.
         $unread = AgentHistory::unread();
-        $items[] = ['code' => 'S-history', 'label' => 'Agent History', 'icon' => 'fa-solid fa-clock-rotate-left', 'url' => route('history'), 'type' => 'grid'] + ($unread ? ['badge' => (string) $unread, 'badgeTone' => 'partial'] : []);
+        $items[] = ['code' => 'S-history', 'label' => 'Historical', 'icon' => 'fa-solid fa-clock-rotate-left', 'url' => route('history'), 'type' => 'grid'] + ($unread ? ['badge' => (string) $unread, 'badgeTone' => 'partial'] : []);
 
         $items[] = ['code' => 'S-agent-log', 'label' => 'Agent Log', 'icon' => 'fa-solid fa-list-check', 'url' => route('agent-log'), 'type' => 'grid'];
 
