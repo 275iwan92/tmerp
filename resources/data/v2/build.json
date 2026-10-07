@@ -1,18 +1,18 @@
 {
-    "generated": "2026-10-07 12:56",
+    "generated": "2026-10-07 13:11",
     "database": "ddtsys",
     "totals": {
-        "objects": 143,
+        "objects": 144,
         "modules": 10,
-        "modules_done": 6,
-        "screens": 216,
-        "v2": 204,
+        "modules_done": 7,
+        "screens": 218,
+        "v2": 208,
         "v1": 4,
-        "not_built": 8,
-        "waiting_qc": 207,
+        "not_built": 6,
+        "waiting_qc": 211,
         "locked": 1,
-        "forms": 80,
-        "grids": 89,
+        "forms": 83,
+        "grids": 88,
         "reports": 46,
         "grid_classes": 146,
         "lookups": 37,
@@ -22,11 +22,11 @@
         "tables": 370,
         "databases": 9,
         "models": 328,
-        "migrations": 539,
-        "tests": 90,
-        "dictionary": 9689,
+        "migrations": 544,
+        "tests": 94,
+        "dictionary": 9694,
         "languages": 4,
-        "commits": "1140",
+        "commits": "1143",
         "since": "2026-08-06"
     },
     "modules": [
@@ -140,14 +140,14 @@
         },
         {
             "label": "Setup",
-            "total": 23,
-            "v2": 21,
+            "total": 25,
+            "v2": 25,
             "v1": 0,
-            "not_built": 2,
-            "waiting_qc": 21,
+            "not_built": 0,
+            "waiting_qc": 25,
             "locked": 0,
-            "form": 2,
-            "grid": 20,
+            "form": 5,
+            "grid": 19,
             "report": 1
         }
     ],
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 52,
+            "commits": 54,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 71,
-            "objects": 15,
+            "screens": 76,
+            "objects": 17,
             "engines": 1,
-            "tests": 2
+            "tests": 5
         },
         {
             "key": "jo",
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1088,
+    "untracked": 1089,
     "days": [
         {
             "date": "2026-09-24",
@@ -257,9 +257,9 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 9,
+            "iwan": 11,
             "jo": 0,
-            "other": 6
+            "other": 7
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 52,
+            "iwan": 54,
             "jo": 0,
-            "other": 8
+            "other": 9
         }
     ],
     "items": [
@@ -454,7 +454,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-07",
             "changed_by": "iwan"
         },
         {
@@ -777,6 +777,17 @@
             "changed_by": null
         },
         {
+            "type": "FORM",
+            "key": "menu:SET_CONFIG",
+            "name": "Identification",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
+        },
+        {
             "type": "GRID",
             "key": "menu:SET_CONSTANTS",
             "name": "Constants",
@@ -815,6 +826,17 @@
             "name": "Sales Details",
             "module": "Management Reports",
             "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SET_DATA_ORIGIN",
+            "name": "Dummy & Legacy Data",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
             "built_at": null,
             "built_by": null,
             "changed_at": null,
@@ -1262,10 +1284,10 @@
         },
         {
             "type": "FORM",
-            "key": "menu:SET_LANG",
-            "name": "Language",
+            "key": "menu:SET_MIGRATION",
+            "name": "Migration",
             "module": "Setup",
-            "qc": "NOT_BUILT",
+            "qc": "READY_FOR_QC",
             "built_at": null,
             "built_by": null,
             "changed_at": null,
@@ -2163,15 +2185,15 @@
             "changed_by": null
         },
         {
-            "type": "GRID",
+            "type": "FORM",
             "key": "menu:SET_PERM",
             "name": "Groups on Modules",
             "module": "Setup",
-            "qc": "NOT_BUILT",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -3242,6 +3264,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:CodeGenerator",
+            "name": "CodeGenerator",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
             "key": "object:Dashboard",
             "name": "Dashboard",
             "module": "DevLib",
@@ -3257,10 +3290,10 @@
             "name": "DeliveryTrack",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4117,8 +4150,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",

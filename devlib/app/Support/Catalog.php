@@ -150,8 +150,6 @@ final class Catalog
                     'p5-form-wizard' => $page('Form Wizard', 'fa-solid fa-shoe-prints', [
                         'wizard-customer' => ['Form Wizard (step by step)', $c('Wizard', 'Wizard\\Step')],
                     ], 'UIUX_components_part1.html'),
-                    'form' => ['label' => 'Form · all fields (full screen)', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
-                        'classes' => $c('Form', 'Form\Col', 'Form\Row', 'DeviceFrame'), 'mockup' => 'UIUX_components_part1.html'],
                 ]],
             ['code' => 'DK', 'short' => 'DK', 'label' => 'Documents', 'icon' => 'fa-solid fa-file-lines',
                 'pages' => [
@@ -177,7 +175,10 @@ final class Catalog
                     ], 'dashboard_home_sales.html'),
                     'p6-indicators' => $page('Dashboard Indicators', 'fa-solid fa-gauge-high', ['indicators' => ['KPI, gauge, progress ring, bullet, traffic light', $c('Kpi', 'Gauge', 'ProgressRing', 'Bullet', 'TrafficLight')]]),
                     'p6-delivery' => $page('Delivery Track', 'fa-solid fa-truck-fast', ['delivery-track' => ['Delivery route (schematic SVG, stage follows Delivery Order status)', $c('DeliveryTrack')]]),
-                    'p6-codes' => $page('QR & Barcode', 'fa-solid fa-qrcode', ['codes' => ['QR & Barcode (Code128, EAN-13)', $c('Qr', 'Barcode')]]),
+                    'p6-codes' => $page('QR & Barcode', 'fa-solid fa-qrcode', [
+                        'codes' => ['QR & Barcode (Code128, EAN-13)', $c('Qr', 'Barcode')],
+                        'code-generator' => ['QR & Barcode Generator (QR with error correction, Code 128 A/B/C, Code 39, EAN-13 / 8, UPC-A / E, ITF-14, ITF, MSI, Codabar, Pharmacode; live preview, content check, PNG / SVG download, print)', $c('CodeGenerator')],
+                    ]),
                     'p6-warehouse' => $page('Warehouse Map & Labels', 'fa-solid fa-warehouse', [
                         'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, expiry mark, bin panel with weight / volume / floor area, stack view from the top down with swap buttons, remnant and buried marks)', $c('WhMap', 'Qr')],
                         'wh-labels' => ['Location, item and pallet labels (colour band, QR + barcode, expiry tags, three real sizes), size and printing guide, label sheet (label roll or A4), scan field', $c('Label', 'LabelGuide', 'LabelSheet', 'Scan', 'Qr', 'Barcode')],
