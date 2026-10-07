@@ -1,5 +1,276 @@
 [
     {
+        "at": "2026-10-04 01:05:58",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "co_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "doc_status",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "last_run_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "co_fingerprint",
+                "detail": "varchar(64)"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "material_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "co_delivery_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "part_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "material_role",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "need_date",
+                "detail": "date"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "line_status",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "calc_source",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "calc_note",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "spec_text",
+                "detail": "varchar(150)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking_d",
+                "column": "qty_short",
+                "detail": "decimal(20,4)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "rm_booking_alloc",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "flow_config",
+                "column": "final_status",
+                "detail": "varchar(30)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "flow_config",
+                "column": "reject_status",
+                "detail": "varchar(30)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "flow_config_step",
+                "column": "print_label",
+                "detail": "varchar(50)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "flow_config_step",
+                "column": "activate",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "mat_category",
+                "column": "lead_time_days",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_machine",
+                "column": "nickname",
+                "detail": "varchar(60)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_machine",
+                "column": "legacy_machine_names",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_machine",
+                "column": "machine_model_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "mat_usage_standard",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_machine_model",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_speed_suggestion",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_code",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_meter_reading",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_plan",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_plan_part",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_plan_task",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_request",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_wo",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_wo_labor",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_wo_part",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "mnt_wo_task",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "prd_demand_forecast",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-03 13:07:27",
         "items": [
             {
