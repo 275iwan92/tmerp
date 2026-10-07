@@ -3538,3 +3538,4 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-track--incident .dl-track__steps li.is-done i{background:var(--dl-success)}
 @keyframes dl-track-blink{50%{transform:scale(1.2);opacity:.65}}
 @media (prefers-reduced-motion:reduce){.dl-track--incident .dl-track__truck circle{animation:none}}
+.dl-flat{display:contents}

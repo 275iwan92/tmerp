@@ -186,6 +186,7 @@ final class Catalog
                     ]),
                     // Warehouse = submenu (user 2026-10-07): Location & Mapping | Labels | Scan & Track.
                     'p6-wh-map' => $page('Location & Mapping', 'fa-solid fa-map-location-dot', [
+                        'warehouse-desk' => ['Warehouse Map desk (object x-dl::warehouse-desk): building picker and shortcuts, the map with its left bin panel, capacity per floor, summary and the Generate Bins pop-up', $c('WarehouseDesk', 'WhMap', 'Qr')],
                         'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, expiry mark; click an area or a bin for the left panel with its stacks and items, stack view from the top down with swap buttons, remnant and buried marks)', $c('WhMap', 'Qr')],
                     ]) + ['folder' => 'Warehouse', 'folderIcon' => 'fa-solid fa-warehouse'],
                     'p6-wh-labels' => $page('Labels', 'fa-solid fa-tags', [
@@ -227,7 +228,6 @@ final class Catalog
                     'sf-petty-cash' => $page('Petty Cash', 'fa-solid fa-wallet', ['petty-cash' => ['Petty cash desk: balance head, then one mode — transaction, cash PO (advance / settlement / reimburse), top up, setting or list', ['MockupParts\\Components\\Acc\\PettyCash']]]),
                     'sf-label-print' => $page('Label Printing (location and item)', 'fa-solid fa-qrcode', ['label-print' => ['Label print form: notice, building / area filter, what to print, label size, paper and copies; one object for location labels and item labels', ['MockupParts\\Components\\Inv\\LabelPrint']]]),
                     'sf-pallet-label' => $page('Pallet Label', 'fa-solid fa-pallet', ['pallet-label' => ['Pallet label desk: receipt notice or building picker, colour guide, one stock position (new pallets, relabel after use, print again), label work list and the pallets of the building', ['MockupParts\\Components\\Inv\\PalletLabel']]]),
-                    'sf-warehouse-desk' => $page('Warehouse Map desk', 'fa-solid fa-warehouse', ['warehouse-desk' => ['Warehouse Map desk: building picker and shortcuts, the map, capacity per floor, summary and the Generate Bins pop-up', ['MockupParts\\Components\\Inv\\WarehouseDesk', 'Devlib\\Components\\WhMap']]]),
                     'sf-scan-track' => $page('Track via QR / Barcode', 'fa-solid fa-magnifying-glass-location', ['scan-track' => ['Scan box, then one result: not found, stock transfer, pallet, bin or item', ['MockupParts\\Components\\Inv\\ScanTrack']]]),
                     'sf-material-planning' => $page('Material Planning and Booking', 'fa-solid fa-boxes-packing', ['material-planning' => ['Material Planning (MRP) desk and Material Booking desk: shortcuts, state message, Create PR / Pick Item cards around the grid of the screen', ['MockupParts\\Components\\Planning\\MaterialPlan', 'MockupParts\\Components\\Planning\\MaterialBooking']]]),
                 ]],
