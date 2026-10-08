@@ -13,6 +13,7 @@ use App\Services\Scheduling\Plan\AutoPlanRunner;
 use App\Services\Scheduling\Plan\GateService;
 use App\Services\Scheduling\Plan\PlanChangeService;
 use App\Services\Scheduling\Plan\PlanConfirmService;
+use App\Services\Scheduling\Plan\PpicAccess;
 use App\Services\Scheduling\Plan\WoPlanningEnricher;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\Ppic;
@@ -34,6 +35,12 @@ final class PpicController extends Controller
         return (string) (Auth::user()->login ?? 'unknown');
     }
 
+    /** Changing the plan needs the PPIC_SCHEDULING flag (administrators hold it); everyone with Production access reads. */
+    private function schedulerOnly(): void
+    {
+        abort_unless(PpicAccess::canSchedule(Auth::user()), 403, t('You need the PPIC Scheduling access flag to change the plan.'));
+    }
+
     private function back(string $slug = 'production-scheduling'): string
     {
         return route('v2.screen', $slug);
@@ -42,6 +49,7 @@ final class PpicController extends Controller
     /** Run the engines now: a new Draft. */
     public function run(AutoPlanRunner $runner): RedirectResponse
     {
+        $this->schedulerOnly();
         $run = $runner->run('MANUAL', $this->login());
         Ppic::forget();
 
@@ -50,6 +58,7 @@ final class PpicController extends Controller
 
     public function confirm(Request $r, PlanConfirmService $service): RedirectResponse
     {
+        $this->schedulerOnly();
         $d = $r->validate(['run' => ['required', 'integer']]);
         try {
             $res = $service->confirm((int) $d['run'], $this->login());
@@ -63,6 +72,7 @@ final class PpicController extends Controller
 
     public function discard(Request $r, PlanConfirmService $service): RedirectResponse
     {
+        $this->schedulerOnly();
         $d = $r->validate(['run' => ['required', 'integer']]);
         $service->discard((int) $d['run'], $this->login());
         Ppic::forget();
@@ -72,6 +82,7 @@ final class PpicController extends Controller
 
     public function prioritize(Request $r, PlanChangeService $changes): RedirectResponse
     {
+        $this->schedulerOnly();
         $d = $r->validate(['wo_id' => ['required', 'integer'], 'kind' => ['required', 'in:HOT,MOVE_UP'], 'reason' => ['required', 'string', 'max:190']], [], ['reason' => t('Reason')]);
         $run = $changes->prioritize((int) $d['wo_id'], $d['kind'], $d['reason'], $this->login());
         Ppic::forget();
@@ -95,6 +106,7 @@ final class PpicController extends Controller
     /** Gantt: save the move into the Draft and re-plan around it. */
     public function moveOp(Request $r, PlanChangeService $changes): JsonResponse
     {
+        $this->schedulerOnly();
         [$op, $machine, $start] = $this->move($r);
         try {
             $run = $changes->move($op, $machine, $start, 'Moved on the Gantt', $this->login());
@@ -124,6 +136,7 @@ final class PpicController extends Controller
     /** Spreadsheet: target per hour, waste and spoilage typed by the officer override the engine estimate. */
     public function sheetSave(Request $r): JsonResponse
     {
+        $this->schedulerOnly();
         $changed = (array) $r->input('changed', []);
         $n = 0;
         foreach ($changed as $row) {
@@ -150,6 +163,7 @@ final class PpicController extends Controller
      */
     public function createWo(Request $r, WoPlanningEnricher $enricher, GateService $gates, AutoPlanRunner $runner): RedirectResponse
     {
+        $this->schedulerOnly();
         $d = $r->validate(['delivery' => ['nullable', 'integer'], 'all' => ['nullable', 'boolean']]);
         $ids = ! empty($d['all']) ? array_column(Ppic::pendingDeliveries(500), 'id') : array_filter([(int) ($d['delivery'] ?? 0)]);
         $made = 0;
@@ -181,6 +195,7 @@ final class PpicController extends Controller
     /** Work Order page: read ProDev data again and refresh gates. */
     public function refreshWo(int $wo, WoPlanningEnricher $enricher, GateService $gates): RedirectResponse
     {
+        $this->schedulerOnly();
         $model = PrdWo::findOrFail($wo);
         $res = $enricher->enrich($model);
         $gates->apply($model);
@@ -292,6 +307,7 @@ final class PpicController extends Controller
 
     public function learnRun(LearningEngine $engine): RedirectResponse
     {
+        $this->schedulerOnly();
         $applied = $engine->run($this->login());
 
         return redirect(route('v2.screen', 'production-learning'))->with('v2_flash', tf(':n value(s) adjusted from finished jobs.', ['n' => count($applied)]));
@@ -299,6 +315,7 @@ final class PpicController extends Controller
 
     public function learnRevert(Request $r, LearningEngine $engine): RedirectResponse
     {
+        $this->schedulerOnly();
         $d = $r->validate(['decision' => ['required', 'integer']], [], ['decision' => t('Change')]);
         try {
             $engine->revert((int) $d['decision'], $this->login());
