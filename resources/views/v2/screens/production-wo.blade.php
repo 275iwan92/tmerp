@@ -4,6 +4,7 @@
      Production Scheduling; this page links to it and records output. --}}
 @php
     use App\Support\V2\Data\Ppic;
+    use App\Support\V2\Data\Sales;
     use App\Support\V2\Src;
     use Devlib\Locale;
 
@@ -89,6 +90,18 @@
             </x-dl::form.row>
         </x-dl::action-form>
     </x-dl::card>
+
+    @if ($d['part'])
+        <x-dl::card title="Product and dieline" description="Flat blank with cut and crease lines, drawn from the Product Development dieline of this part. Size, board and process list follow the part.">
+            <x-mp::sales.part-visual :part="$d['part']" :types="Sales::dielineTypes()" height="320px" />
+            <x-dl::form.row :cols="4">
+                <x-dl::field.display label="Part" :value="raw($d['part']['name'])" :source="$src" />
+                <x-dl::field.display label="Flat size" :value="raw($d['part']['flat'] ?? '—')" :source="$src" />
+                <x-dl::field.display label="Colour / ink" :value="raw(trim(($d['part']['color'] ?? '').' '.($d['part']['ink'] ?? '')) ?: '—')" :source="$src" />
+                <x-dl::field.display label="Finishing" :value="raw($d['part']['finishings'] ? implode(', ', $d['part']['finishings']) : '—')" :source="$src" />
+            </x-dl::form.row>
+        </x-dl::card>
+    @endif
 
     <x-dl::card title="BOP and routing" description="Operations from Product Development. Quantity in of each step is the good output of the step before it; waste and spoilage of every step are already inside, so material is requested once.">
         <x-dl::table :source="$src" empty="This Work Order has no operations yet." :columns="['seq' => '#', 'process' => 'Process', 'machine' => 'Machine', 'qin' => 'Qty in', 'qout' => 'Good out', 'target' => 'Target / hour', 'waste' => 'Waste qty', 'spoil' => 'Spoilage qty',

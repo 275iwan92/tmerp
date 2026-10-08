@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\V2\Data;
 
+use App\Models\Master\ProdPart;
 use App\Models\Prd\PrdPlanRun;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\Scheduling\Plan\PlanLoader;
@@ -474,7 +475,7 @@ final class Ppic
         }
         unset($o);
 
-        return ['wo' => $wo, 'ops' => $ops, 'materials' => $mats, 'first' => $ops[0] ?? null];
+        return ['wo' => $wo, 'ops' => $ops, 'materials' => $mats, 'first' => $ops[0] ?? null, 'part' => self::dielinePart($wo)];
     }
 
     // ------------------------------------------------------------------ Create Work Order
@@ -508,5 +509,16 @@ final class Ppic
                 'parts' => $parts, 'complete' => $parts > 0,
             ];
         })->all();
+    }
+
+    /** Dieline, artwork and spec of the part this Work Order makes, read from Product Development (TMDieline). null = no part linked. @return array<string, mixed>|null */
+    private static function dielinePart(object $wo): ?array
+    {
+        $partId = $wo->source_iqp_part_id
+            ? DB::connection('tm2sdi')->table('iqp_part')->where('id_part', $wo->source_iqp_part_id)->value('prod_part_id')
+            : null;
+        $part = $partId ? ProdPart::find($partId) : null;
+
+        return $part ? ProductMaster::part($part) : null;
     }
 }
