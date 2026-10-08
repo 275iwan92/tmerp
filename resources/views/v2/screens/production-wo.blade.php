@@ -130,10 +130,15 @@
     </x-dl::card>
 
     <x-dl::card title="BOM and material" description="Material lines from Product Development. Readiness comes from Material Planning (stock, booking, incoming purchases).">
+        @php $subs = \App\Models\Prd\PrdWoMaterialSubstitution::where('wo_id', $wo->wo_id)->where('is_active', true)->get(); @endphp
+        @if ($subs->isNotEmpty())
+            <x-dl::alert tone="info" :message="raw(t('Substituted material').': '.$subs->pluck('substitute_rawmat_name')->filter()->implode(' · ').' ('.$subs->pluck('approval_status')->unique()->implode(', ').')')" />
+        @endif
         <x-dl::table :columns="['name' => 'Material', 'role' => 'Role', 'need' => 'Required', 'uom' => 'Unit', 'by' => 'Needed by']" empty="No material lines." :source="$src"
             :rows="$d['materials']->map(fn ($m) => ['name' => raw($m->material_name), 'role' => raw($m->material_role), 'need' => Locale::decimal($m->qty_required, 2), 'uom' => raw($m->uom), 'by' => $m->material_needed_by ? raw(Locale::d($m->material_needed_by)) : '—'])->all()" />
         <x-dl::action-bar>
             <x-dl::button variant="secondary" icon="fa-boxes-stacked" label="Open Material Planning" :href="route('v2.screen', 'material-planning')" />
+            <x-dl::button variant="secondary" icon="fa-right-left" label="Substitute material" :href="route('production.wo.entry', $wo->wo_id)" />
         </x-dl::action-bar>
     </x-dl::card>
 
