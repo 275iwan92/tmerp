@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-09 00:16",
+    "generated": "2026-10-09 00:49",
     "database": "ddtsys",
     "totals": {
         "objects": 152,
         "modules": 10,
         "modules_done": 7,
-        "screens": 264,
-        "v2": 257,
+        "screens": 270,
+        "v2": 263,
         "v1": 5,
         "not_built": 2,
-        "waiting_qc": 261,
+        "waiting_qc": 267,
         "locked": 1,
-        "forms": 104,
-        "grids": 97,
-        "reports": 63,
-        "grid_classes": 163,
-        "lookups": 45,
-        "report_grids": 42,
+        "forms": 107,
+        "grids": 98,
+        "reports": 65,
+        "grid_classes": 169,
+        "lookups": 46,
+        "report_grids": 44,
         "engines": 39,
         "engine_groups": 13,
-        "tables": 397,
+        "tables": 400,
         "databases": 10,
-        "models": 351,
-        "migrations": 577,
-        "tests": 133,
-        "dictionary": 12028,
+        "models": 354,
+        "migrations": 578,
+        "tests": 139,
+        "dictionary": 12062,
         "languages": 4,
-        "commits": "1241",
+        "commits": "1248",
         "since": "2026-08-06"
     },
     "modules": [
@@ -68,15 +68,15 @@
         },
         {
             "label": "Inventory",
-            "total": 59,
-            "v2": 59,
+            "total": 65,
+            "v2": 65,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 59,
+            "waiting_qc": 65,
             "locked": 0,
-            "form": 26,
-            "grid": 12,
-            "report": 21
+            "form": 29,
+            "grid": 13,
+            "report": 23
         },
         {
             "label": "Production",
@@ -166,13 +166,13 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 43,
+            "commits": 50,
             "days": 3,
             "last": "2026-10-09",
-            "screens": 88,
+            "screens": 102,
             "objects": 6,
             "engines": 19,
-            "tests": 29
+            "tests": 36
         }
     ],
     "untracked": 1117,
@@ -258,7 +258,7 @@
         {
             "date": "2026-10-09",
             "iwan": 0,
-            "jo": 5,
+            "jo": 12,
             "other": 0
         }
     ],
@@ -320,7 +320,7 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 43,
+            "jo": 50,
             "other": 37
         }
     ],
@@ -1206,6 +1206,17 @@
             "changed_by": "jo"
         },
         {
+            "type": "GRID",
+            "key": "menu:INV_TOOLS_REG",
+            "name": "Tool Register",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
             "type": "FORM",
             "key": "menu:PROD_MPS",
             "name": "Production Scheduling",
@@ -1328,9 +1339,31 @@
         },
         {
             "type": "FORM",
+            "key": "menu:INV_WH_TRANSIT",
+            "name": "In Transit",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
             "key": "menu:PROD_PREBOOK",
             "name": "Pre-Booking",
             "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_COUNT",
+            "name": "Count Tasks",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
@@ -1796,8 +1829,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1818,7 +1851,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-08",
+            "changed_at": "2026-10-09",
             "changed_by": "jo"
         },
         {
@@ -1957,6 +1990,17 @@
             "type": "FORM",
             "key": "menu:INV_WH_PICK",
             "name": "Pick List",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_SUBCON",
+            "name": "Send to Subcontractor",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
@@ -3153,6 +3197,17 @@
             "changed_by": "jo"
         },
         {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_VENDOR",
+            "name": "Stock at Vendor",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
             "type": "GRID",
             "key": "menu:MD_PAYMENT_TERM",
             "name": "Payment Terms",
@@ -3195,6 +3250,17 @@
             "built_by": null,
             "changed_at": "2026-10-03",
             "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_CUSTMAT",
+            "name": "Customer Material",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
