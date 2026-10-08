@@ -20,6 +20,8 @@ Route::prefix('v2/ppic')->name('v2.ppic.')->middleware('module:PROD')->group(fun
     Route::post('/operator/{op}/stop', [PpicController::class, 'opStop'])->name('op.stop');
     Route::post('/operator/{op}/quantity', [PpicController::class, 'opQuantity'])->name('op.quantity');
     Route::get('/operator/{op}/problem', [PpicController::class, 'opProblem'])->name('op.problem');
+    Route::post('/learn/run', [PpicController::class, 'learnRun'])->name('learn.run');
+    Route::post('/learn/revert', [PpicController::class, 'learnRevert'])->name('learn.revert');
     Route::post('/wo/{wo}/refresh', [PpicController::class, 'refreshWo'])->name('wo.refresh');
     Route::post('/wo/{wo}/output', [PpicController::class, 'output'])->name('wo.output');
 });

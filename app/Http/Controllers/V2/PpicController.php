@@ -7,6 +7,7 @@ namespace App\Http\Controllers\V2;
 use App\Http\Controllers\Controller;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
+use App\Services\Scheduling\Learning\LearningEngine;
 use App\Services\Scheduling\Operator\OperatorTimerService;
 use App\Services\Scheduling\Plan\AutoPlanRunner;
 use App\Services\Scheduling\Plan\GateService;
@@ -285,5 +286,26 @@ final class PpicController extends Controller
 
         return route('v2.screen', 'maintenance-request').'?'.http_build_query(['new' => 1, 'asset_id' => $asset, 'asset_stopped' => 1,
             'symptom' => 'Reported from the operator screen while running '.$wo.' ('.$op->process_name.').']);
+    }
+
+    // ------------------------------------------------------------------ learning changes
+
+    public function learnRun(LearningEngine $engine): RedirectResponse
+    {
+        $applied = $engine->run($this->login());
+
+        return redirect(route('v2.screen', 'production-learning'))->with('v2_flash', tf(':n value(s) adjusted from finished jobs.', ['n' => count($applied)]));
+    }
+
+    public function learnRevert(Request $r, LearningEngine $engine): RedirectResponse
+    {
+        $d = $r->validate(['decision' => ['required', 'integer']], [], ['decision' => t('Change')]);
+        try {
+            $engine->revert((int) $d['decision'], $this->login());
+        } catch (\DomainException $e) {
+            return redirect(route('v2.screen', 'production-learning'))->withErrors(['learn' => $e->getMessage()]);
+        }
+
+        return redirect(route('v2.screen', 'production-learning'))->with('v2_flash', t('Value put back and frozen.'));
     }
 }

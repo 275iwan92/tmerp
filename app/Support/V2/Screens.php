@@ -144,6 +144,8 @@ final class Screens
             ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [
                 ['label' => 'Dashboard', 'items' => [
                     $it('production-operator', ['Operator Queue', 'fa-solid fa-stopwatch', 'v2 baru: antrean terkonfirmasi per mesin, Play / Pause / Stop, input qty, tombol Problem ke Maintenance Request', 'ppic_operator_queue.jpg']),
+                    $it('production-learning', ['Learning Changes', 'fa-solid fa-graduation-cap', 'v2 baru: nilai changeover Assumed dikoreksi dari waktu setup nyata, tiap perubahan tercatat dan bisa dikembalikan', null]),
+                    $it('production-operator', ['Operator Queue', 'fa-solid fa-stopwatch', 'v2 baru: antrean terkonfirmasi per mesin, Play / Pause / Stop, input qty, tombol Problem ke Maintenance Request', 'ppic_operator_queue.jpg']),
                     $it('maintenance-dashboard', ['Maintenance Dashboard', 'fa-solid fa-gauge-high', 'v2 baru: angka dari KpiService (OEE dari Production, order dari tm2mnt)', 'maintenance_v2_dashboard.jpg']),
                 ]],
                 ['label' => 'Preventive Maintenance', 'items' => [

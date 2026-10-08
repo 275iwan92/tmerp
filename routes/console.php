@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Schema;
@@ -32,3 +33,13 @@ Schedule::command('planning:run')->dailyAt('01:30')->withoutOverlapping()
 // Lingkungan yang belum punya tabel asisten dilewati.
 Schedule::command('assistant:prune')->dailyAt('02:30')->withoutOverlapping()
     ->when(fn () => Schema::connection('tm2sys')->hasTable('sys_assistant_message'));
+
+// PPIC autopilot: engines prepare a Draft plan nightly and at each shift start (the officer confirms; nothing becomes the real schedule on its own),
+// and the learning engine corrects assumed setup values after the night's jobs. Environments without the scheduling tables are skipped.
+$ppicReady = fn () => Schema::connection('tm2prd')->hasTable('prd_plan_run');
+Schedule::command('ppic:auto-plan --trigger=DAILY')->dailyAt('02:00')->withoutOverlapping()->when($ppicReady);
+foreach (range(0, max(0, (int) config('ppic.default_shifts', 2) - 1)) as $shift) {
+    $start = Carbon::createFromFormat('H:i', (string) config('ppic.day_start', '07:00'))->addMinutes((int) round($shift * (float) config('ppic.default_hours_per_shift', 8) * 60));
+    Schedule::command('ppic:auto-plan --trigger=SHIFT')->dailyAt($start->format('H:i'))->withoutOverlapping()->when($ppicReady);
+}
+Schedule::command('ppic:learn')->dailyAt('03:30')->withoutOverlapping()->when($ppicReady);
