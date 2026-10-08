@@ -11,6 +11,7 @@ use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
 use App\Services\Pur\SubcontractPoService;
 use App\Services\Scheduling\InterruptionOptionGenerator;
+use App\Services\Scheduling\MaintenanceBlockProvider;
 use App\Services\Scheduling\PdrEngine;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -375,6 +376,25 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         ];
     }
 
+    // Jendela Maintenance pada hari board untuk satu mesin (hanya tampil; pemilik datanya MaintenanceBlockProvider).
+    private function maintenanceVm(int $machineId): array
+    {
+        $day = Carbon::parse($this->date);
+        $out = [];
+        foreach ((new MaintenanceBlockProvider)->blocksOn($day, $machineId) as $b) {
+            $start = max($b['start']->getTimestamp(), $day->copy()->startOfDay()->getTimestamp());
+            $end = min($b['end']->getTimestamp(), $day->copy()->endOfDay()->getTimestamp());
+            $from = max((float) self::TIMELINE_START, $this->hourOf(Carbon::createFromTimestamp($start)));
+            $to = min((float) self::TIMELINE_END, $end >= $day->copy()->endOfDay()->getTimestamp() ? 24.0 : $this->hourOf(Carbon::createFromTimestamp($end)));
+            if ($to > $from) {
+                $out[] = ['left' => ($from - self::TIMELINE_START) * self::PX_PER_HOUR, 'width' => ($to - $from) * self::PX_PER_HOUR, 'title' => $b['label'],
+                    'timeLabel' => $this->hourLabel($from).'–'.$this->hourLabel($to)];
+            }
+        }
+
+        return $out;
+    }
+
     // Baris board (mesin + manual job) -- Tier4 §3.1. $filterMachine/$filterProcess
     // override eksplisit supaya bisa dipanggil "tanpa filter" utk hitung stat global.
     private function buildRows(string $filterMachine, string $filterProcess): array
@@ -399,6 +419,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                 'sublabel' => '👤 '.$this->crewLabel($activeOp),
                 'blocks' => $visibleOps->map(fn ($o) => $this->operationVm($o))->values()->all(),
                 'idle' => $this->idleGapsVm($rowOps),
+                'maint' => $this->maintenanceVm($m->machine_id),
             ];
         }
 

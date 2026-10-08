@@ -33,7 +33,8 @@ class MachineCalendarService
 
     private readonly Carbon $shiftEnd;
 
-    public function __construct()
+    // Jendela Maintenance (order yang menghentikan mesin) ikut mengurangi jam kerja mesin.
+    public function __construct(private readonly MaintenanceBlockProvider $maintenance = new MaintenanceBlockProvider)
     {
         // Diisi ulang per-hari di dalam method, ini cuma template jam.
         $this->shiftStart = Carbon::createFromTimeString(
@@ -85,9 +86,28 @@ class MachineCalendarService
             }
 
             $windowStart = $cursor->gt($dayShiftEnd) ? $dayShiftEnd : $cursor;
+
+            // Maintenance: kursor di dalam jendela -> lompat ke awalnya; jendela di bawah kursor -> hanya waktu di atasnya yang terpakai, lalu lompat ke awal jendela.
+            $floor = $dayShiftStart;
+            $jumpTo = null;
+            foreach ($machineId ? $this->maintenance->blocksOn($windowStart, $machineId) : [] as $block) {
+                if ($block['end']->lte($dayShiftStart) || $block['start']->gte($windowStart)) {
+                    continue;
+                }
+                if ($block['end']->gte($windowStart)) {
+                    $cursor = $block['start']->copy();
+
+                    continue 2;
+                }
+                $floor = $block['end'];
+                $jumpTo = $block['start'];
+
+                break;
+            }
+
             // Carbon 3 -- diffInSeconds default berubah jadi signed (bukan absolute
             // seperti Carbon 2), wajib pass `true` eksplisit di sini.
-            $availableThisWindow = $windowStart->diffInSeconds($dayShiftStart, true);
+            $availableThisWindow = $windowStart->diffInSeconds($floor, true);
             $needSeconds = $remaining->totalSeconds;
 
             if ($availableThisWindow >= $needSeconds) {
@@ -95,7 +115,7 @@ class MachineCalendarService
                 $remaining = CarbonInterval::seconds(0);
             } else {
                 $remaining = CarbonInterval::seconds($needSeconds - $availableThisWindow);
-                $cursor = $dayShiftStart->copy()->subDay()->setTimeFrom($this->shiftEnd);
+                $cursor = $jumpTo ?? $dayShiftStart->copy()->subDay()->setTimeFrom($this->shiftEnd);
             }
         }
 
@@ -104,8 +124,8 @@ class MachineCalendarService
 
     /**
      * @return array{start: Carbon, end: Carbon}|false|null null = mesin belum pernah
-     *         pakai roster (fallback jam default), false = mesin pakai roster tapi
-     *         kosong hari ini (hari libur mesin), array = window kerja hari ini.
+     *                                                      pakai roster (fallback jam default), false = mesin pakai roster tapi
+     *                                                      kosong hari ini (hari libur mesin), array = window kerja hari ini.
      */
     private function machineWorkingWindow(Carbon $date, int $machineId): array|false|null
     {

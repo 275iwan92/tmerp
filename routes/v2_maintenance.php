@@ -10,12 +10,15 @@ use App\Models\Mnt\MntOrder;
 use App\Models\Mnt\MntPlan;
 use App\Models\Mnt\MntPlanPart;
 use App\Models\Mnt\MntPlanTask;
+use App\Models\Mnt\MntRequest;
 use App\Models\Mnt\MntWatchPoint;
 use App\Services\Maintenance\AssetProfileService;
 use App\Services\Maintenance\DailyCheckService;
 use App\Services\Maintenance\MaintenanceAccess;
 use App\Services\Maintenance\OrderService;
+use App\Services\Maintenance\PartSupplyService;
 use App\Services\Maintenance\PlanService;
+use App\Services\Maintenance\RequestService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -262,6 +265,9 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
     })->name('plan.save');
 
     // ------------------------------------------------------------ Maintenance Order (PMO, BMO, IMO)
+    // Buka order dari daftar lintas seri (My Work, laporan): pindah ke layar PMO atau BMO yang sesuai.
+    Route::get('/order/{id}', fn (int $id) => redirect($orderScreen(MntOrder::findOrFail($id))))->name('order.open');
+
     Route::post('/order/create', function (Request $r) use ($head, $orderScreen) {
         $head();
         $d = $r->validate(['asset_id' => ['required', 'integer', 'exists:tm2mnt.mnt_asset,id_asset'], 'order_type' => ['required', Rule::in(array_keys(MntOrder::TYPES))],
@@ -325,6 +331,15 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
                 $s->addLabor($o, $r->integer('labor_employee_id'), $r->integer('labor_minutes'), $r->input('labor_date') ?: null);
                 $msg = 'Labor added.';
                 break;
+            case 'issue_parts':
+                $res = (new PartSupplyService)->issue($o);
+                $msg = $res['issued'] ? tf('Parts issued from stock (:docs). Short on stock: :short.', ['docs' => implode(', ', $res['docs']), 'short' => $res['short'] ? implode(', ', $res['short']) : '-'])
+                    : tf('No part could be issued: not enough stock for :short. Use Create PR.', ['short' => implode(', ', $res['short'])]);
+                break;
+            case 'create_pr':
+                $pr = (new PartSupplyService)->createPr($o);
+                $msg = $pr ? tf('Purchase Requisition draft #:id created for the parts that are short in stock. Submit it in Procurement.', ['id' => $pr]) : 'No part is short in stock, or a PR already exists for it.';
+                break;
             case 'confirm':
                 $head();
                 $s->confirm($o);
@@ -348,6 +363,37 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
 
         return redirect($orderScreen($o))->with('v2_flash', $msg);
     })->name('order.save');
+
+    // ------------------------------------------------------------ Maintenance Request
+    Route::post('/request/create', function (Request $r) {
+        $d = $r->validate(['asset_id' => ['required', 'integer', 'exists:tm2mnt.mnt_asset,id_asset'], 'request_kind' => ['required', Rule::in(array_keys(RequestService::OPEN_KINDS))],
+            'priority' => ['nullable', Rule::in(array_keys(MntOrder::PRIORITIES))], 'symptom' => ['required', 'string', 'max:2000'], 'stopped_at' => ['nullable', 'date']],
+            [], ['asset_id' => t('Asset'), 'request_kind' => t('Kind'), 'symptom' => t('Symptom')]);
+        [$req, $order] = (new RequestService)->open($d + ['asset_stopped' => $r->boolean('asset_stopped')]);
+        $msg = $order ? tf('Request :no sent. It is an emergency (P1), so Breakdown Maintenance Order :order was created and confirmed.', ['no' => $req->doc_no, 'order' => $order->doc_no])
+            : tf('Request :no sent to the head of maintenance.', ['no' => $req->doc_no]);
+
+        return redirect(route('v2.screen', 'maintenance-request').'?id='.$req->id_request)->with('v2_flash', $msg);
+    })->name('request.create');
+
+    Route::post('/request/{id}/save', function (Request $r, int $id) use ($head) {
+        $head();
+        $req = MntRequest::findOrFail($id);
+        $svc = new RequestService;
+        $url = route('v2.screen', 'maintenance-request').'?id='.$id;
+        if ($r->input('action') === 'accept') {
+            $order = $svc->accept($req);
+
+            return redirect(route('v2.screen', 'maintenance-bmo').'?id='.$order->id_order)->with('v2_flash', 'Request accepted. Complete the Draft order, then Confirm.');
+        }
+        if ($r->input('action') === 'reject') {
+            $svc->reject($req, (string) $r->input('reject_reason', ''));
+
+            return redirect($url)->with('v2_flash', 'Request rejected.');
+        }
+
+        return redirect($url);
+    })->name('request.save');
 
     // ------------------------------------------------------------ Daily Check
     Route::post('/daily/open', function (Request $r) {

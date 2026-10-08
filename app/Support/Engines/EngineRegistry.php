@@ -12,6 +12,11 @@ use App\Services\Inventory\StockLedger;
 use App\Services\Inventory\StockPostingService;
 use App\Services\Inventory\StockTransferService;
 use App\Services\Inventory\WarehouseStock;
+use App\Services\Maintenance\KpiService;
+use App\Services\Maintenance\OrderService;
+use App\Services\Maintenance\PartSupplyService;
+use App\Services\Maintenance\PlanService;
+use App\Services\Maintenance\RequestService;
 use App\Services\Payroll\PayrollEngineService;
 use App\Services\Planning\MaterialPlanningEngine;
 use App\Services\ProDev\SpecEngine;
@@ -22,6 +27,7 @@ use App\Services\Pur\PqMatcher;
 use App\Services\Sales\CoOrderBuilder;
 use App\Services\Sales\CpdelPromiseService;
 use App\Services\Scheduling\InterruptionOptionGenerator;
+use App\Services\Scheduling\MaintenanceBlockProvider;
 use App\Services\Scheduling\PdrEngine;
 use App\Services\Scheduling\SchedulingRuleEngine;
 use App\Services\Scheduling\WoGenerationService;
@@ -748,6 +754,149 @@ final class EngineRegistry
                 'settings' => ['Settings > Constants, group SPEED_ENGINE'],
                 'used' => ['Scheduled command production:suggest-speed-targets (daily)', 'Master Machine'],
                 'tests' => ['tests/Unit/SpeedTargetEngineTest.php'],
+            ],
+            [
+                'key' => 'maintenance-plan', 'name' => 'Preventive Plan Engine', 'group' => 'Maintenance', 'mode' => 'auto',
+                'purpose' => 'Works out when each preventive plan is next due and opens the Draft preventive orders on time.',
+                'class' => PlanService::class,
+                'methods' => ['nextDue', 'isDue', 'generateFromPlan', 'generateDue', 'afterClose'],
+                'inputs' => [
+                    ['plan', 'A Preventive Plan: time interval, meter interval or both, floating or fixed schedule, lead days.'],
+                    ['meter readings', 'The latest meter value of the asset (hours, km or count), for meter-based plans.'],
+                ],
+                'outputs' => [
+                    ['next due', 'The date or meter value when the plan falls due next.'],
+                    ['Draft order', 'A preventive order with the plan checklist and spare parts copied in, never two open orders for one plan.'],
+                ],
+                'steps' => [
+                    'Floating plans count from the last Closed order; fixed plans keep the calendar and skip missed dates.',
+                    'A plan is due when the next due date is within its lead days, or the meter has reached the interval, whichever comes first.',
+                    'generateDue (scheduled daily) opens a Draft order for every due plan that has no open order yet; the head of maintenance confirms it.',
+                    'Closing the order moves the plan to its next due date.',
+                ],
+                'reads' => ['tm2mnt.mnt_plan', 'tm2mnt.mnt_meter_reading', 'tm2mnt.mnt_order'],
+                'writes' => ['tm2mnt.mnt_order (Draft)', 'tm2mnt.mnt_plan (next due)'],
+                'settings' => ['Settings > Constants, group MAINTENANCE'],
+                'used' => ['Preventive Plan', 'Preventive Maintenance Order', 'PM Calendar', 'Scheduled command maintenance:generate-pm'],
+                'tests' => ['tests/Feature/MaintenancePreventiveTest.php'],
+            ],
+            [
+                'key' => 'maintenance-order', 'name' => 'Maintenance Order Lifecycle', 'group' => 'Maintenance', 'mode' => 'flow',
+                'purpose' => 'Moves a Maintenance Order (PMO, BMO, IMO) from Draft to Closed and keeps the machine status and downtime log true.',
+                'class' => OrderService::class,
+                'methods' => ['create', 'save', 'confirm', 'start', 'hold', 'resume', 'done', 'close', 'cancel'],
+                'inputs' => [
+                    ['order', 'The order with its checklist, spare parts and labor lines.'],
+                    ['actor', 'The head of maintenance decides (Confirm, Close, Cancel); technicians work (Start, Hold, Done).'],
+                ],
+                'outputs' => [
+                    ['order number', 'PMO-, BMO- or IMO-yymm-nnnn, born at Confirm.'],
+                    ['downtime', 'One downtime row for a machine asset that must stop, opened at Start and closed at Done.'],
+                    ['cost', 'Spare parts, labor at the standard rate and vendor service, final at Close.'],
+                ],
+                'steps' => [
+                    'Draft can be edited freely; Confirm gives the number and puts the order in the technician list (Scheduled).',
+                    'Start opens the downtime and sets the machine to Maintenance (planned) or Breakdown; assets that are not machines have no downtime.',
+                    'Done is refused while a required checklist task has no result; it closes the downtime and sets the machine Ready.',
+                    'Close fixes the cost and tells the plan to move to its next due date. Cancel needs a reason and closes any open downtime.',
+                ],
+                'reads' => ['tm2mnt.mnt_order', 'tm2mst.prod_machine'],
+                'writes' => ['tm2mnt.mnt_order', 'tm2mst.prod_machine_downtime', 'tm2mst.prod_machine (status)'],
+                'used' => ['Preventive Maintenance Order', 'Breakdown Maintenance Order', 'My Work'],
+                'tests' => ['tests/Feature/MaintenancePreventiveTest.php'],
+            ],
+            [
+                'key' => 'maintenance-request', 'name' => 'Maintenance Request Engine', 'group' => 'Maintenance', 'mode' => 'suggest',
+                'purpose' => 'Turns a problem report into a Breakdown Maintenance Order, and suggests how urgent it is.',
+                'class' => RequestService::class,
+                'methods' => ['suggestPriority', 'open', 'fromBreakdown', 'accept', 'reject'],
+                'inputs' => [
+                    ['request', 'Asset, kind (Breakdown, Corrective, Safety), whether the asset is stopped, and the symptom.'],
+                    ['breakdown event', 'A machine breakdown reported on the shop floor in Work Order entry.'],
+                ],
+                'outputs' => [
+                    ['priority', 'Suggested P1 to P3; the reporter may overrule it.'],
+                    ['order', 'A Draft BMO when the head of maintenance accepts; a Confirmed BMO at once for P1.'],
+                ],
+                'steps' => [
+                    'Safety is P1; a stopped machine of criticality A or B is P1; another stopped asset is P2; a critical asset that still runs is P2; the rest is P3.',
+                    'P1 does not wait: the request is accepted and its BMO is confirmed so it shows in My Work immediately.',
+                    'Other requests wait for the head of maintenance: Accept makes a Draft BMO, Reject needs a reason.',
+                    'A shop floor breakdown creates one request per event; a machine without a Maintenance asset is skipped and the production report is never blocked.',
+                ],
+                'reads' => ['tm2mnt.mnt_asset', 'tm2prd.prd_breakdown_event (link only)'],
+                'writes' => ['tm2mnt.mnt_request', 'tm2mnt.mnt_order'],
+                'used' => ['Maintenance Request', 'Daily Check', 'Work Order entry (report breakdown)'],
+                'tests' => ['tests/Feature/MaintenanceBreakdownTest.php'],
+            ],
+            [
+                'key' => 'maintenance-parts', 'name' => 'Maintenance Spare Part Supply', 'group' => 'Maintenance', 'mode' => 'auto',
+                'purpose' => 'Shows spare part stock on an order, issues the parts from the warehouse, and drafts a purchase requisition for what is short.',
+                'class' => PartSupplyService::class,
+                'methods' => ['onHand', 'toIssue', 'issue', 'createPr'],
+                'inputs' => [
+                    ['order', 'A Confirmed order in progress with spare part lines (planned and used quantity).'],
+                ],
+                'outputs' => [
+                    ['Stock Out', 'An ordinary raw material Stock Out per warehouse, posted through Inventory, so the stock card follows.'],
+                    ['PR draft', 'One Draft purchase requisition with the parts that stock cannot cover.'],
+                ],
+                'steps' => [
+                    'On hand = usable stock of the material over all locations (Inventory view).',
+                    'Issue takes each part from the locations with most stock; a part the stock cannot cover is skipped and reported, never half-issued.',
+                    'Inventory is never written directly: the document is saved and posted by the Inventory services, which also refuse closed periods and negative stock.',
+                    'Create PR needs a cost account for each short part (material category or item COGS account) and requests each line once.',
+                ],
+                'reads' => ['tm2inv.v_rm_onhand', 'tm2mnt.mnt_order_part'],
+                'writes' => ['tm2inv.rm_stock (Stock Out, posted)', 'tm2pur.pr_requisition (Draft)', 'tm2mnt.mnt_order_part'],
+                'settings' => ['Settings > Constants: MNT_DEPARTMENT_CODE'],
+                'used' => ['Maintenance Order (Issue Parts, Create PR, In Stock column)'],
+                'tests' => ['tests/Feature/MaintenanceBreakdownTest.php'],
+            ],
+            [
+                'key' => 'maintenance-kpi', 'name' => 'Maintenance KPI', 'group' => 'Maintenance', 'mode' => 'calc',
+                'purpose' => 'Computes the Dashboard and report figures: availability, MTBF, MTTR, PM compliance, planned work, backlog, downtime and cost.',
+                'class' => KpiService::class,
+                'methods' => ['targets', 'indicators', 'backlogWeeks', 'actions', 'criticalPartsBelowMin', 'complianceTrend', 'topDowntime', 'downtimeByKind', 'failuresByComponent', 'cost'],
+                'inputs' => [
+                    ['period', 'From and to dates, and optionally one machine.'],
+                ],
+                'outputs' => [
+                    ['indicators', 'Each figure, or nothing when it cannot be calculated; it is never shown as 0 for missing data.'],
+                    ['counts', 'What needs action today: machines down, open requests, overdue preventive orders, orders in progress or waiting for parts, critical parts below minimum.'],
+                ],
+                'steps' => [
+                    'OEE, availability and MTBF / MTTR per machine come from the Production engine (MachineOeeService); Maintenance only adds up the machines.',
+                    'MTBF = (machines x period hours - repair hours) / breakdowns; MTTR = repair hours / breakdowns.',
+                    'PM compliance and planned work come from the orders; backlog = estimated hours of open orders / technician hours per week.',
+                    'Targets are Constants (MNT_TARGET_*); the lamp compares each figure with its target.',
+                ],
+                'reads' => ['tm2mnt.mnt_order', 'tm2mnt.mnt_request', 'tm2mst.prod_machine_downtime', 'tm2mst.prod_machine'],
+                'writes' => ['Nothing: read only.'],
+                'settings' => ['Settings > Constants, group MAINTENANCE'],
+                'used' => ['Maintenance Dashboard', 'Machine Reliability'],
+                'tests' => ['tests/Feature/MaintenanceBreakdownTest.php'],
+            ],
+            [
+                'key' => 'maintenance-block', 'name' => 'Maintenance Machine Hold (Scheduling)', 'group' => 'Maintenance', 'mode' => 'calc',
+                'purpose' => 'Tells Scheduling when a machine belongs to Maintenance, so production is never planned into those hours.',
+                'class' => MaintenanceBlockProvider::class,
+                'methods' => ['blocksFor', 'blocksOn', 'overlapping'],
+                'inputs' => [
+                    ['window', 'A time window and optionally the machines to look at.'],
+                ],
+                'outputs' => [
+                    ['blocks', 'Machine, start, end and order for every Confirmed order that must stop the machine.'],
+                ],
+                'steps' => [
+                    'Counts orders that are Confirmed, not Done, Closed or Cancelled, need the machine stopped, and sit on an asset linked to the machine.',
+                    'The window runs from the actual (or planned) start to the planned end, or start plus the estimate, or 60 minutes when neither is known.',
+                    'Backward scheduling skips the window; a manual move into it is refused; the Scheduling Board draws it as MTN.',
+                ],
+                'reads' => ['tm2mnt.mnt_order', 'tm2mnt.mnt_asset'],
+                'writes' => ['Nothing: read only.'],
+                'used' => ['Backward scheduling', 'Scheduling Board', 'Manual reschedule validation'],
+                'tests' => ['tests/Feature/MaintenanceSchedulingBlockTest.php'],
             ],
             [
                 'key' => 'pq-matcher', 'name' => 'Purchase Quotation Matcher', 'group' => 'Procurement', 'mode' => 'suggest',

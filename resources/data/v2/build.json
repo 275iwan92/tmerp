@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-08 08:58",
+    "generated": "2026-10-08 21:12",
     "database": "ddtsys",
     "totals": {
         "objects": 151,
         "modules": 10,
         "modules_done": 6,
-        "screens": 240,
-        "v2": 230,
+        "screens": 246,
+        "v2": 236,
         "v1": 5,
         "not_built": 5,
-        "waiting_qc": 234,
+        "waiting_qc": 240,
         "locked": 1,
-        "forms": 93,
+        "forms": 96,
         "grids": 91,
-        "reports": 56,
-        "grid_classes": 149,
+        "reports": 59,
+        "grid_classes": 151,
         "lookups": 38,
-        "report_grids": 37,
-        "engines": 25,
-        "engine_groups": 12,
+        "report_grids": 39,
+        "engines": 31,
+        "engine_groups": 13,
         "tables": 379,
         "databases": 10,
         "models": 335,
-        "migrations": 562,
-        "tests": 113,
-        "dictionary": 11683,
+        "migrations": 564,
+        "tests": 115,
+        "dictionary": 11900,
         "languages": 4,
-        "commits": "1217",
+        "commits": "1225",
         "since": "2026-08-06"
     },
     "modules": [
@@ -92,15 +92,15 @@
         },
         {
             "label": "Maintenance",
-            "total": 11,
-            "v2": 11,
+            "total": 17,
+            "v2": 17,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 11,
+            "waiting_qc": 17,
             "locked": 0,
-            "form": 9,
+            "form": 12,
             "grid": 0,
-            "report": 2
+            "report": 5
         },
         {
             "label": "Human Resources",
@@ -166,13 +166,13 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 19,
+            "commits": 27,
             "days": 2,
             "last": "2026-10-08",
-            "screens": 35,
-            "objects": 0,
-            "engines": 0,
-            "tests": 8
+            "screens": 36,
+            "objects": 2,
+            "engines": 2,
+            "tests": 9
         }
     ],
     "untracked": 1117,
@@ -258,7 +258,7 @@
         {
             "date": "2026-10-08",
             "iwan": 0,
-            "jo": 18,
+            "jo": 26,
             "other": 2
         }
     ],
@@ -320,7 +320,7 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 19,
+            "jo": 27,
             "other": 37
         }
     ],
@@ -1119,6 +1119,17 @@
         },
         {
             "type": "FORM",
+            "key": "menu:MAINT_REQ",
+            "name": "Maintenance Request",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
             "key": "menu:MAINT_PROFILE",
             "name": "Asset Maintenance Profile",
             "module": "Maintenance",
@@ -1127,6 +1138,28 @@
             "built_by": "jo",
             "changed_at": "2026-10-08",
             "changed_by": "jo"
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:MAINT_ORDER_RPT",
+            "name": "Maintenance Order Report",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:MAINT_DASH",
+            "name": "Maintenance Dashboard",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1741,13 +1774,24 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
             "key": "menu:MAINT_PM_CAL",
             "name": "PM Calendar",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_BMO",
+            "name": "Breakdown Maintenance Order",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
@@ -1765,6 +1809,17 @@
             "built_by": "jo",
             "changed_at": "2026-10-08",
             "changed_by": "jo"
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:MAINT_RELIAB",
+            "name": "Machine Reliability",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2203,6 +2258,17 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_MYWORK",
+            "name": "My Work",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
             "changed_at": "2026-10-08",
             "changed_by": "jo"
         },
@@ -3198,6 +3264,72 @@
         },
         {
             "type": "ENGINE",
+            "key": "engine:maintenance-plan",
+            "name": "Preventive Plan Engine",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:maintenance-order",
+            "name": "Maintenance Order Lifecycle",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:maintenance-request",
+            "name": "Maintenance Request Engine",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:maintenance-parts",
+            "name": "Maintenance Spare Part Supply",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:maintenance-kpi",
+            "name": "Maintenance KPI",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:maintenance-block",
+            "name": "Maintenance Machine Hold (Scheduling)",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
             "key": "engine:pq-matcher",
             "name": "Purchase Quotation Matcher",
             "module": "Procurement",
@@ -3521,10 +3653,10 @@
             "name": "Coverage",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -5283,6 +5415,59 @@
                     "purpose": "Proposes the target speed of every machine and of every process x machine pair.",
                     "mode": "suggest",
                     "used": 2,
+                    "tests": 1
+                }
+            ]
+        },
+        {
+            "group": "Maintenance",
+            "items": [
+                {
+                    "key": "maintenance-plan",
+                    "name": "Preventive Plan Engine",
+                    "purpose": "Works out when each preventive plan is next due and opens the Draft preventive orders on time.",
+                    "mode": "auto",
+                    "used": 4,
+                    "tests": 1
+                },
+                {
+                    "key": "maintenance-order",
+                    "name": "Maintenance Order Lifecycle",
+                    "purpose": "Moves a Maintenance Order (PMO, BMO, IMO) from Draft to Closed and keeps the machine status and downtime log true.",
+                    "mode": "flow",
+                    "used": 3,
+                    "tests": 1
+                },
+                {
+                    "key": "maintenance-request",
+                    "name": "Maintenance Request Engine",
+                    "purpose": "Turns a problem report into a Breakdown Maintenance Order, and suggests how urgent it is.",
+                    "mode": "suggest",
+                    "used": 3,
+                    "tests": 1
+                },
+                {
+                    "key": "maintenance-parts",
+                    "name": "Maintenance Spare Part Supply",
+                    "purpose": "Shows spare part stock on an order, issues the parts from the warehouse, and drafts a purchase requisition for what is short.",
+                    "mode": "auto",
+                    "used": 1,
+                    "tests": 1
+                },
+                {
+                    "key": "maintenance-kpi",
+                    "name": "Maintenance KPI",
+                    "purpose": "Computes the Dashboard and report figures: availability, MTBF, MTTR, PM compliance, planned work, backlog, downtime and cost.",
+                    "mode": "calc",
+                    "used": 2,
+                    "tests": 1
+                },
+                {
+                    "key": "maintenance-block",
+                    "name": "Maintenance Machine Hold (Scheduling)",
+                    "purpose": "Tells Scheduling when a machine belongs to Maintenance, so production is never planned into those hours.",
+                    "mode": "calc",
+                    "used": 3,
                     "tests": 1
                 }
             ]

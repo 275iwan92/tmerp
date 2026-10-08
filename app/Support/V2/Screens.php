@@ -138,6 +138,9 @@ final class Screens
                 ]],
             ]],
             ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [
+                ['label' => 'Dashboard', 'items' => [
+                    $it('maintenance-dashboard', ['Maintenance Dashboard', 'fa-solid fa-gauge-high', 'v2 baru: angka dari KpiService (OEE dari Production, order dari tm2mnt)', 'maintenance_v2_dashboard.jpg']),
+                ]],
                 ['label' => 'Preventive Maintenance', 'items' => [
                     $it('maintenance-plan', ['Preventive Plan', 'fa-solid fa-calendar-check', 'v2 baru: tm2mnt.mnt_plan + mnt_plan_task + mnt_plan_part (mockup maintenance_v2_work.jpg)', 'maintenance_v2_work.jpg']),
                     $it('maintenance-pmo', ['Preventive Maintenance Order', 'fa-solid fa-screwdriver-wrench', 'v2 baru: tm2mnt.mnt_order (PMO: Preventive, Inspection)', 'maintenance_v2_work.jpg']),
@@ -145,7 +148,9 @@ final class Screens
                     $it('maintenance-daily-check', ['Daily Check', 'fa-solid fa-clipboard-check', 'v2 baru: tm2mnt.mnt_daily_check + mnt_daily_check_line', 'maintenance_v2_flow.jpg']),
                 ]],
                 ['label' => 'Breakdown Maintenance', 'items' => [
-                    $it('maintenance-bmo', ['Breakdown Maintenance Order', 'fa-solid fa-screwdriver-wrench', 'v2 baru: tm2mnt.mnt_order (BMO: Breakdown, Corrective); menu menyusul di Fase 3', 'maintenance_v2_work.jpg']),
+                    $it('maintenance-request', ['Maintenance Request', 'fa-solid fa-triangle-exclamation', 'v2 baru: tm2mnt.mnt_request (Accept membuat BMO, P1 otomatis)', null]),
+                    $it('maintenance-my-work', ['My Work', 'fa-solid fa-user-gear', 'v2 baru: tm2mnt.mnt_order milik teknisi yang login', null]),
+                    $it('maintenance-bmo', ['Breakdown Maintenance Order', 'fa-solid fa-screwdriver-wrench', 'v2 baru: tm2mnt.mnt_order (BMO: Breakdown, Corrective)', 'maintenance_v2_work.jpg']),
                 ]],
                 ['label' => 'Master Data', 'items' => [
                     $it('maintenance-profile', ['Asset Maintenance Profile', 'fa-solid fa-gears', 'v2 baru: tm2mnt.mnt_asset + mnt_watch_point + mnt_asset_part (mockup maintenance_v2_master.jpg)', 'maintenance_v2_master.jpg']),

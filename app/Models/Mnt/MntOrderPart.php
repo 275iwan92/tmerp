@@ -14,5 +14,5 @@ class MntOrderPart extends Model
 
     protected $guarded = ['id_order_part'];
 
-    protected $casts = ['qty_plan' => 'float', 'qty_used' => 'float', 'unit_cost' => 'float'];
+    protected $casts = ['qty_plan' => 'float', 'qty_used' => 'float', 'qty_issued' => 'float', 'unit_cost' => 'float'];
 }

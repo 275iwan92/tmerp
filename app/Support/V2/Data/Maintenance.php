@@ -16,9 +16,12 @@ use App\Models\Mnt\MntOrderTask;
 use App\Models\Mnt\MntPlan;
 use App\Models\Mnt\MntPlanPart;
 use App\Models\Mnt\MntPlanTask;
+use App\Models\Mnt\MntRequest;
 use App\Services\Maintenance\AssetProfileService;
 use App\Services\Maintenance\DocumentTranslator;
+use App\Services\Maintenance\PartSupplyService;
 use Devlib\Locale;
+use Illuminate\Support\Facades\DB;
 
 // Data layar v2 Maintenance Fase 1 (profil aset, kelengkapan, dokumen). Aturan tulis = AssetProfileService.
 // Mesin dan bahan ada di tm2mst -> dicari sekali per halaman lalu dicocokkan di PHP (pola 1 CLAUDE.md bagian 2).
@@ -223,9 +226,11 @@ final class Maintenance
     public static function orderPartRows(MntOrder $o): array
     {
         $mats = MatRaw::whereIn('material_id', $o->parts->pluck('material_id'))->get(['material_id', 'material_code', 'material_name'])->keyBy('material_id');
+        $stock = PartSupplyService::onHand($o->parts->pluck('material_id'));
 
         return $o->parts->map(fn ($p) => ['id_order_part' => $p->id_order_part, 'item' => ($mats[$p->material_id]->material_code ?? '#'.$p->material_id).' · '.($mats[$p->material_id]->material_name ?? ''),
-            'qty_plan' => $p->qty_plan, 'qty_used' => $p->qty_used, 'uom_code' => $p->uom_code, 'unit_cost' => $p->unit_cost])->values()->all();
+            'qty_plan' => $p->qty_plan, 'qty_used' => $p->qty_used, 'qty_issued' => $p->qty_issued, 'stock' => $stock[$p->material_id] ?? 0, 'uom_code' => $p->uom_code, 'unit_cost' => $p->unit_cost,
+            'pr' => $p->pr_id ? 'PR #'.$p->pr_id : ''])->values()->all();
     }
 
     public static function orderLaborRows(MntOrder $o): array
@@ -273,7 +278,7 @@ final class Maintenance
     public static function coverageRows(): array
     {
         $docs = MntDocument::query()->whereNotNull('doc_set')->where('doc_set', '<>', '')->orderBy('doc_no')->get();
-        $links = \Illuminate\Support\Facades\DB::connection('tm2mnt')->table('mnt_asset_document')->whereIn('document_id', $docs->pluck('id_document'))->get(['document_id', 'asset_id']);
+        $links = DB::connection('tm2mnt')->table('mnt_asset_document')->whereIn('document_id', $docs->pluck('id_document'))->get(['document_id', 'asset_id']);
         $codes = MntAsset::whereIn('id_asset', $links->pluck('asset_id')->unique())->pluck('asset_code', 'id_asset');
         $url = route('v2.screen', 'maintenance-documents');
         $slots = ['01' => 'daily', '02' => 'weekly', '03' => 'monthly', '04' => 'breakdown'];
@@ -298,5 +303,31 @@ final class Maintenance
             return ['code' => $code, 'title' => DocumentTranslator::t($sop?->title ?? $set->first()->title), 'sub' => count($assets).' · '.implode(', ', array_slice($assets, 0, 3)).(count($assets) > 3 ? ' +'.(count($assets) - 3) : ''),
                 'cells' => $cells, 'flags' => collect($cells)->contains(fn ($c) => $c['label'] !== 'Approved') || count($cells) < count(self::COVERAGE_COLUMNS) ? ['pending'] : [], 'detail' => $detail];
         })->values()->all();
+    }
+
+    /** Baris daftar Maintenance Request, terbaru dulu. */
+    public static function requestRows(): array
+    {
+        $requests = MntRequest::orderByDesc('id_request')->limit(1000)->get();
+        $assets = self::assetLabels($requests->pluck('asset_id'));
+        $orders = MntOrder::whereIn('id_order', $requests->pluck('order_id')->filter())->pluck('doc_no', 'id_order');
+
+        return $requests->map(fn ($r) => ['id' => $r->id_request, 'code' => $r->doc_no, 'asset' => $assets[$r->asset_id] ?? '#'.$r->asset_id,
+            'kind' => MntRequest::KINDS[$r->request_kind] ?? $r->request_kind, 'priority' => $r->priority, 'status' => MntRequest::STATUS[$r->status] ?? $r->status,
+            'symptom' => $r->symptom, 'date' => $r->request_date?->toDateString(), 'stopped' => $r->asset_stopped ? 'Stopped' : '', 'source' => $r->source_type === 'DAILY_CHECK' ? t('Daily Check') : t('Manual'),
+            'order' => $r->order_id ? ($orders[$r->order_id] ?: '#'.$r->order_id) : '—'])->all();
+    }
+
+    /** Baris My Work: order terbuka milik teknisi yang login + yang belum punya teknisi; terdesak (prioritas, rencana mulai) dulu. */
+    public static function myWorkRows(): array
+    {
+        $me = auth()->user()?->employee_id;
+        $orders = MntOrder::where('stat_confirm', true)->where('stat_cancel', false)->where('stat_close', false)
+            ->where(fn ($q) => $q->whereNull('assigned_to')->when($me, fn ($q) => $q->orWhere('assigned_to', $me)))->orderBy('priority')->orderBy('planned_start')->limit(500)->get();
+        $assets = self::assetLabels($orders->pluck('asset_id'));
+
+        return $orders->map(fn (MntOrder $o) => ['id' => $o->id_order, 'no' => $o->doc_no, 'desc' => $o->description, 'asset' => $assets[$o->asset_id] ?? '#'.$o->asset_id,
+            'type' => MntOrder::TYPES[$o->order_type] ?? $o->order_type, 'priority' => $o->priority, 'work' => $o->statusLabel(), 'planned' => $o->planned_start?->toDateString(),
+            'owner' => $o->assigned_to ? 'Mine' : 'Unassigned'])->all();
     }
 }

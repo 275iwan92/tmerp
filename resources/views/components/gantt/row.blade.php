@@ -22,5 +22,14 @@
         @foreach ($row['blocks'] ?? [] as $b)
             <x-gantt.task-block :b="$b" />
         @endforeach
+
+        {{-- Jendela Maintenance (MTN): hanya tampil, tanpa interaksi. 'maint' = [['left','width','title','timeLabel']] dari MaintenanceBlockProvider. --}}
+        @foreach ($row['maint'] ?? [] as $mtn)
+            <div class="task-block dashed-border" title="{{ $mtn['title'] }} · {{ $mtn['timeLabel'] }}"
+                style="left:{{ $mtn['left'] }}px; width:{{ $mtn['width'] }}px; background:repeating-linear-gradient(45deg,#fde68a,#fde68a 6px,#fef3c7 6px,#fef3c7 12px); color:#92400e; cursor:default;">
+                <div class="title">MTN · {{ $mtn['title'] }}</div>
+                <div class="sub">{{ $mtn['timeLabel'] }}</div>
+            </div>
+        @endforeach
     </div>
 </div>

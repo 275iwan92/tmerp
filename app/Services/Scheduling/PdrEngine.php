@@ -151,6 +151,14 @@ class PdrEngine
             $errors[] = t('A task with status QC_HOLD is locked until QA decides (Tier4 §6).');
         }
 
+        // Maintenance memegang mesin pada jam itu (order Confirmed yang menghentikan mesin).
+        if ($task->resource_type === 'MACHINE' && $task->machine_id && $newFinish->gt($newStart)) {
+            $block = (new MaintenanceBlockProvider)->overlapping((int) $task->machine_id, $newStart, $newFinish);
+            if ($block) {
+                $errors[] = tf('The machine is reserved for maintenance (:label, :from to :to).', ['label' => $block['label'], 'from' => $block['start']->format('d-M H:i'), 'to' => $block['end']->format('d-M H:i')]);
+            }
+        }
+
         return $errors;
     }
 

@@ -2332,5 +2332,300 @@
         "id": "Diatur di Settings, Constants sebagai persen dari interval plan, minimal satu hari."
       }
     ]
+  },
+  {
+    "key": "maintenance-request",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Maintenance Request",
+    "purpose": {
+      "en": "Anyone reports a problem here: a breakdown, something to fix, or a safety risk. The head of maintenance decides what becomes a Breakdown Maintenance Order. Open it when something is wrong with an asset.",
+      "id": "Siapa pun melapor masalah di sini: kerusakan, sesuatu yang perlu diperbaiki, atau risiko keselamatan. Kepala maintenance memutuskan apa yang menjadi Breakdown Maintenance Order. Buka bila ada yang tidak beres pada aset."
+    },
+    "keywords": "request, maintenance request, laporan kerusakan, breakdown, lapor mesin, p1, darurat, accept, reject, keselamatan",
+    "steps": [
+      {
+        "en": "Click + New Record. Pick the asset and the kind: Breakdown, Corrective or Safety.",
+        "id": "Klik + New Record. Pilih aset dan jenisnya: Breakdown, Corrective atau Safety."
+      },
+      {
+        "en": "Tick The asset is stopped when it cannot run, and describe what is wrong in the symptom.",
+        "id": "Centang The asset is stopped bila aset tidak bisa jalan, dan jelaskan masalahnya di symptom."
+      },
+      {
+        "en": "Leave Priority on Auto. Safety, or a stopped machine of criticality A or B, is P1. Click Send Request.",
+        "id": "Biarkan Priority di Auto. Keselamatan, atau mesin berhenti dengan kritikalitas A atau B, adalah P1. Klik Send Request."
+      },
+      {
+        "en": "A P1 request does not wait: a Breakdown Maintenance Order is created and confirmed at once and appears in My Work.",
+        "id": "Request P1 tidak menunggu: Breakdown Maintenance Order langsung dibuat dan dikonfirmasi dan muncul di My Work."
+      },
+      {
+        "en": "For other requests the head of maintenance opens the request and clicks Accept (a Draft order is made) or Reject (a reason is required).",
+        "id": "Untuk request lain kepala maintenance membuka request dan klik Accept (Draft order dibuat) atau Reject (alasan wajib)."
+      },
+      {
+        "en": "A breakdown reported on the shop floor in Work Order entry creates a request by itself. A failed Daily Check point does too.",
+        "id": "Kerusakan yang dilaporkan di lantai produksi pada Work Order entry membuat request sendiri. Titik Daily Check yang gagal juga."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Priority",
+        "en": "P1 emergency, P2 high, P3 normal, P4 low. Auto suggests it from the kind, the stop and the criticality.",
+        "id": "P1 darurat, P2 tinggi, P3 normal, P4 rendah. Auto mengusulkannya dari jenis, kondisi berhenti dan kritikalitas."
+      },
+      {
+        "label": "Status",
+        "en": "Open waits for a decision, Accepted has an order, Rejected has a reason.",
+        "id": "Open menunggu keputusan, Accepted punya order, Rejected punya alasan."
+      },
+      {
+        "label": "Source",
+        "en": "Manual, or Daily Check when an operator marked a point Not OK.",
+        "id": "Manual, atau Daily Check bila operator menandai titik Not OK."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-bmo",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Breakdown Maintenance Order",
+    "purpose": {
+      "en": "The repair job for a breakdown or a corrective fix. It records the work, the spare parts and the hours, and keeps the machine status and downtime true. Open it from a request or from My Work.",
+      "id": "Pekerjaan perbaikan untuk kerusakan atau perbaikan korektif. Mencatat pekerjaan, spare part dan jam kerja, dan menjaga status mesin dan downtime tetap benar. Buka dari request atau dari My Work."
+    },
+    "keywords": "bmo, breakdown maintenance order, perbaikan, repair, spare part, issue parts, create pr, downtime, waiting part",
+    "steps": [
+      {
+        "en": "A BMO is made from an accepted request, or by + New Record for a one-off job. The head of maintenance confirms it and the number BMO-yymm-nnnn is born.",
+        "id": "BMO dibuat dari request yang diterima, atau + New Record untuk pekerjaan sekali. Kepala maintenance mengonfirmasinya dan nomor BMO-yymm-nnnn lahir."
+      },
+      {
+        "en": "The technician clicks Start. For a machine the downtime opens and the machine status changes to Breakdown.",
+        "id": "Teknisi klik Start. Untuk mesin, downtime terbuka dan status mesin berubah menjadi Breakdown."
+      },
+      {
+        "en": "Fill the Failure tab: problem, cause and action codes, and the findings. Add spare parts and labor hours.",
+        "id": "Isi tab Failure: kode masalah, penyebab dan tindakan, serta temuan. Tambahkan spare part dan jam kerja."
+      },
+      {
+        "en": "The Spare Parts tab shows the stock on hand. Click Issue Parts to take the parts from the warehouse; the stock card follows.",
+        "id": "Tab Spare Parts menunjukkan stok yang ada. Klik Issue Parts untuk mengambil part dari gudang; kartu stok ikut."
+      },
+      {
+        "en": "A part that stock cannot cover stays on the order. Click Create PR to draft a purchase requisition, then Hold the order while waiting for the part.",
+        "id": "Part yang tidak tercukupi stok tetap di order. Klik Create PR untuk membuat draft purchase requisition, lalu Hold order selagi menunggu part."
+      },
+      {
+        "en": "Click Done when the checklist is complete: the downtime closes and the machine is Ready again. The head of maintenance clicks Close to fix the cost.",
+        "id": "Klik Done bila checklist lengkap: downtime menutup dan mesin Ready lagi. Kepala maintenance klik Close untuk mengunci biaya."
+      }
+    ],
+    "fields": [
+      {
+        "label": "In Stock",
+        "en": "Usable stock of the part in all warehouses now.",
+        "id": "Stok part yang bisa dipakai di semua gudang sekarang."
+      },
+      {
+        "label": "Issued",
+        "en": "What was already taken from the warehouse for this order.",
+        "id": "Yang sudah diambil dari gudang untuk order ini."
+      },
+      {
+        "label": "PR",
+        "en": "The purchase requisition drafted for this part.",
+        "id": "Purchase requisition yang dibuat untuk part ini."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-my-work",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "My Work",
+    "purpose": {
+      "en": "The list of orders a technician has to do: those assigned to you and those nobody has taken yet. Open it at the start of the shift.",
+      "id": "Daftar order yang harus dikerjakan teknisi: yang ditugaskan kepada Anda dan yang belum diambil siapa pun. Buka di awal shift."
+    },
+    "keywords": "my work, pekerjaan saya, teknisi, daftar kerja, order saya, unassigned",
+    "steps": [
+      {
+        "en": "Open My Work. The boxes are All, Mine, Unassigned, In Progress and Waiting Part.",
+        "id": "Buka My Work. Kotaknya All, Mine, Unassigned, In Progress dan Waiting Part."
+      },
+      {
+        "en": "The most urgent orders come first: by priority, then by planned start.",
+        "id": "Order paling mendesak ada di atas: menurut prioritas, lalu rencana mulai."
+      },
+      {
+        "en": "Click a row to open the order, then Start, record the work and click Done.",
+        "id": "Klik sebuah baris untuk membuka order, lalu Start, catat pekerjaan dan klik Done."
+      },
+      {
+        "en": "Unassigned orders are assigned by the head of maintenance in the order itself.",
+        "id": "Order Unassigned ditugaskan kepala maintenance di dalam order itu sendiri."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-dashboard",
+    "type": "REPORT",
+    "module": "MAINT",
+    "title": "Maintenance Dashboard",
+    "purpose": {
+      "en": "Shows how the machines and the maintenance team are doing against their targets, and what needs action today. Open it first when you enter the Maintenance module.",
+      "id": "Menunjukkan kondisi mesin dan tim maintenance terhadap target, dan apa yang perlu ditindak hari ini. Buka pertama kali saat masuk modul Maintenance."
+    },
+    "keywords": "dashboard, kpi, availability, mtbf, mttr, oee, pm compliance, planned work, backlog, target, biaya",
+    "steps": [
+      {
+        "en": "Pick the period and, if you like, one machine, then click Show.",
+        "id": "Pilih periode dan, bila perlu, satu mesin, lalu klik Show."
+      },
+      {
+        "en": "Indicators: availability, MTBF, MTTR, PM compliance, planned work and backlog. The lamp turns green, yellow or red against the target.",
+        "id": "Indikator: availability, MTBF, MTTR, PM compliance, planned work dan backlog. Lampu hijau, kuning atau merah terhadap target."
+      },
+      {
+        "en": "Needs action today are counts without a target: machines down, open requests, overdue preventive orders, orders in progress, orders waiting for parts and critical parts below minimum.",
+        "id": "Perlu tindakan hari ini adalah angka tanpa target: mesin berhenti, request terbuka, preventive terlambat, order berjalan, order menunggu part dan part kritis di bawah minimum."
+      },
+      {
+        "en": "The charts show the PM compliance trend, the machines with the most downtime and the failures by component.",
+        "id": "Grafik menunjukkan tren kepatuhan PM, mesin dengan downtime terbanyak dan kerusakan per komponen."
+      },
+      {
+        "en": "OEE is only displayed: Production calculates it and Maintenance contributes the downtime. If a factor is missing, OEE is not calculated, never 0.",
+        "id": "OEE hanya ditampilkan: Production menghitungnya dan Maintenance menyumbang downtime. Bila ada faktor yang kosong, OEE tidak dihitung, bukan 0."
+      },
+      {
+        "en": "The targets are set by the head of maintenance in Settings, Constants, group MAINTENANCE (MNT_TARGET_).",
+        "id": "Target diatur kepala maintenance di Settings, Constants, grup MAINTENANCE (MNT_TARGET_)."
+      }
+    ],
+    "fields": [
+      {
+        "label": "MTBF",
+        "en": "Mean time between failures: period hours of all machines minus repair hours, divided by the number of breakdowns.",
+        "id": "Rata-rata waktu antar kerusakan: jam periode semua mesin dikurangi jam perbaikan, dibagi jumlah kerusakan."
+      },
+      {
+        "label": "MTTR",
+        "en": "Mean time to repair: repair hours divided by the number of breakdowns.",
+        "id": "Rata-rata waktu perbaikan: jam perbaikan dibagi jumlah kerusakan."
+      },
+      {
+        "label": "Backlog",
+        "en": "Estimated hours of open orders divided by the technician hours available per week.",
+        "id": "Perkiraan jam order terbuka dibagi jam teknisi yang tersedia per minggu."
+      },
+      {
+        "label": "Planned work",
+        "en": "Orders that are not Breakdown divided by all orders in the period.",
+        "id": "Order yang bukan Breakdown dibagi semua order pada periode."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-reliability",
+    "type": "REPORT",
+    "module": "MAINT",
+    "title": "Machine Reliability",
+    "purpose": {
+      "en": "One row per machine: how often it breaks, how long repairs take, how much it was down and what maintenance cost. Use it to decide which machine needs a better plan, an improvement or a replacement.",
+      "id": "Satu baris per mesin: seberapa sering rusak, berapa lama perbaikan, berapa lama berhenti dan berapa biaya maintenance. Gunakan untuk memutuskan mesin mana yang perlu plan lebih baik, perbaikan atau penggantian."
+    },
+    "keywords": "machine reliability, keandalan mesin, mtbf, mttr, downtime, oee, biaya maintenance, laporan",
+    "steps": [
+      {
+        "en": "Pick the period and click Show. The default is the last 90 days.",
+        "id": "Pilih periode dan klik Show. Bawaannya 90 hari terakhir."
+      },
+      {
+        "en": "Breakdowns, MTTR and MTBF come from the downtime log of finished breakdown orders. A dash means it cannot be calculated yet.",
+        "id": "Breakdowns, MTTR dan MTBF berasal dari log downtime order kerusakan yang selesai. Tanda strip berarti belum bisa dihitung."
+      },
+      {
+        "en": "Availability and OEE come from Production and stay blank while the machine calendar or output is missing.",
+        "id": "Availability dan OEE berasal dari Production dan kosong selama kalender mesin atau output belum ada."
+      },
+      {
+        "en": "Inherent availability is MTBF divided by MTBF plus MTTR. It is not the same as the availability inside OEE.",
+        "id": "Inherent availability adalah MTBF dibagi MTBF ditambah MTTR. Tidak sama dengan availability di dalam OEE."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-order-report",
+    "type": "REPORT",
+    "module": "MAINT",
+    "title": "Maintenance Order Report",
+    "purpose": {
+      "en": "One row per confirmed Maintenance Order with hours and cost. Group it to see where the time and money go: by month, asset, type or technician.",
+      "id": "Satu baris per Maintenance Order yang sudah dikonfirmasi dengan jam dan biaya. Kelompokkan untuk melihat ke mana waktu dan uang pergi: menurut bulan, aset, jenis atau teknisi."
+    },
+    "keywords": "maintenance order report, laporan order, biaya, jam kerja, teknisi, pmo, bmo, laporan",
+    "steps": [
+      {
+        "en": "Open the report and use the boxes All, Breakdown and Preventive, or the Filter button.",
+        "id": "Buka laporan dan pakai kotak All, Breakdown dan Preventive, atau tombol Filter."
+      },
+      {
+        "en": "Group by Month, Asset, Type, Technician or Status. Hours and the cost columns give subtotals.",
+        "id": "Kelompokkan menurut Month, Asset, Type, Technician atau Status. Jam dan kolom biaya memberi subtotal."
+      },
+      {
+        "en": "Hours are the actual start to the actual end. Cost is spare parts plus labor at the standard rate plus vendor service.",
+        "id": "Jam adalah mulai aktual sampai selesai aktual. Biaya adalah spare part ditambah tenaga pada tarif standar ditambah jasa vendor."
+      },
+      {
+        "en": "Click a row to open the order.",
+        "id": "Klik sebuah baris untuk membuka order."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-breakdown-flow",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Breakdown Flow, Spare Parts and the Scheduling Hold",
+    "purpose": {
+      "en": "Explains what happens, step by step and in which data, from a machine breakdown to a closed order: the request, the order, the spare parts, the purchase requisition and the hold on the Scheduling Board.",
+      "id": "Menjelaskan apa yang terjadi, langkah demi langkah dan di data mana, dari mesin rusak sampai order ditutup: request, order, spare part, purchase requisition dan penahanan mesin di Scheduling Board."
+    },
+    "keywords": "breakdown flow, alur kerusakan, data flow, spare part, stock out, purchase requisition, scheduling, mtn, p1, downtime",
+    "steps": [
+      {
+        "en": "Work flow: report (Work Order entry, Daily Check or Maintenance Request), then the request, then the Breakdown Maintenance Order, then Start, Done and Close.",
+        "id": "Alur kerja: laporan (Work Order entry, Daily Check atau Maintenance Request), lalu request, lalu Breakdown Maintenance Order, lalu Start, Done dan Close."
+      },
+      {
+        "en": "A shop floor breakdown report in Work Order entry also creates a request, linked to the production breakdown event. The production report is never blocked.",
+        "id": "Laporan kerusakan di Work Order entry juga membuat request, terhubung ke kejadian kerusakan produksi. Laporan produksi tidak pernah terhalang."
+      },
+      {
+        "en": "Data flow of the downtime: Start opens one row in the machine downtime log, Done closes it. OEE, MTBF and MTTR read that same log, so they use the repair time you recorded.",
+        "id": "Alur data downtime: Start membuka satu baris di log downtime mesin, Done menutupnya. OEE, MTBF dan MTTR membaca log yang sama, jadi memakai waktu perbaikan yang Anda catat."
+      },
+      {
+        "en": "Data flow of the spare parts: Issue Parts makes a normal Stock Out in Inventory and posts it, so the stock card and the stock value follow. Maintenance never writes the stock tables itself.",
+        "id": "Alur data spare part: Issue Parts membuat Stock Out biasa di Inventory dan memostingnya, jadi kartu stok dan nilai stok ikut. Maintenance tidak pernah menulis tabel stok sendiri."
+      },
+      {
+        "en": "A part that stock cannot cover is not issued. Create PR drafts a purchase requisition for the shortage; submit it in Procurement.",
+        "id": "Part yang tidak tercukupi stok tidak dikeluarkan. Create PR membuat draft purchase requisition untuk kekurangannya; ajukan di Procurement."
+      },
+      {
+        "en": "A confirmed order that stops a machine holds that machine in Scheduling: backward scheduling skips those hours, a manual move into them is refused and the board shows them as MTN.",
+        "id": "Order terkonfirmasi yang menghentikan mesin menahan mesin itu di Scheduling: penjadwalan mundur melewati jam itu, geser manual ke dalamnya ditolak dan board menampilkannya sebagai MTN."
+      },
+      {
+        "en": "Cost flow: spare parts at the item average cost, labor at the standard hourly rate (a constant, not payroll data) and vendor service. The cost is final at Close.",
+        "id": "Alur biaya: spare part pada biaya rata-rata item, tenaga pada tarif standar per jam (konstanta, bukan data gaji) dan jasa vendor. Biaya final saat Close."
+      }
+    ]
   }
 ]

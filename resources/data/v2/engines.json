@@ -3061,7 +3061,7 @@
     {
         "class": "App\\Services\\Scheduling\\PdrEngine",
         "file": "app/Services/Scheduling/PdrEngine.php",
-        "lines": 161,
+        "lines": 169,
         "entries": [
             {
                 "method": "buildResourceQueue",
@@ -3581,6 +3581,900 @@
         ],
         "tests": [
             "tests/Unit/SpeedTargetEngineTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Maintenance\\PlanService",
+        "file": "app/Services/Maintenance/PlanService.php",
+        "lines": 122,
+        "entries": [
+            {
+                "method": "nextDue",
+                "static": false,
+                "params": [
+                    {
+                        "name": "plan",
+                        "type": "MntPlan",
+                        "default": null
+                    },
+                    {
+                        "name": "doneAt",
+                        "type": "?CarbonImmutable",
+                        "default": "null"
+                    },
+                    {
+                        "name": "meter",
+                        "type": "?float",
+                        "default": "null"
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "isDue",
+                "static": false,
+                "params": [
+                    {
+                        "name": "plan",
+                        "type": "MntPlan",
+                        "default": null
+                    },
+                    {
+                        "name": "today",
+                        "type": "?CarbonImmutable",
+                        "default": "null"
+                    }
+                ],
+                "returns": "bool",
+                "note": null
+            },
+            {
+                "method": "generateFromPlan",
+                "static": false,
+                "params": [
+                    {
+                        "name": "plan",
+                        "type": "MntPlan",
+                        "default": null
+                    },
+                    {
+                        "name": "force",
+                        "type": "bool",
+                        "default": "false"
+                    }
+                ],
+                "returns": "?MntOrder",
+                "note": null
+            },
+            {
+                "method": "generateDue",
+                "static": false,
+                "params": [],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "afterClose",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            }
+        ],
+        "key": "maintenance-plan",
+        "name": "Preventive Plan Engine",
+        "group": "Maintenance",
+        "mode": "auto",
+        "purpose": "Works out when each preventive plan is next due and opens the Draft preventive orders on time.",
+        "inputs": [
+            [
+                "plan",
+                "A Preventive Plan: time interval, meter interval or both, floating or fixed schedule, lead days."
+            ],
+            [
+                "meter readings",
+                "The latest meter value of the asset (hours, km or count), for meter-based plans."
+            ]
+        ],
+        "outputs": [
+            [
+                "next due",
+                "The date or meter value when the plan falls due next."
+            ],
+            [
+                "Draft order",
+                "A preventive order with the plan checklist and spare parts copied in, never two open orders for one plan."
+            ]
+        ],
+        "steps": [
+            "Floating plans count from the last Closed order; fixed plans keep the calendar and skip missed dates.",
+            "A plan is due when the next due date is within its lead days, or the meter has reached the interval, whichever comes first.",
+            "generateDue (scheduled daily) opens a Draft order for every due plan that has no open order yet; the head of maintenance confirms it.",
+            "Closing the order moves the plan to its next due date."
+        ],
+        "reads": [
+            "tm2mnt.mnt_plan",
+            "tm2mnt.mnt_meter_reading",
+            "tm2mnt.mnt_order"
+        ],
+        "writes": [
+            "tm2mnt.mnt_order (Draft)",
+            "tm2mnt.mnt_plan (next due)"
+        ],
+        "settings": [
+            "Settings > Constants, group MAINTENANCE"
+        ],
+        "used": [
+            "Preventive Plan",
+            "Preventive Maintenance Order",
+            "PM Calendar",
+            "Scheduled command maintenance:generate-pm"
+        ],
+        "tests": [
+            "tests/Feature/MaintenancePreventiveTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Maintenance\\OrderService",
+        "file": "app/Services/Maintenance/OrderService.php",
+        "lines": 264,
+        "entries": [
+            {
+                "method": "create",
+                "static": false,
+                "params": [
+                    {
+                        "name": "d",
+                        "type": "array",
+                        "default": null
+                    }
+                ],
+                "returns": "MntOrder",
+                "note": null
+            },
+            {
+                "method": "save",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    },
+                    {
+                        "name": "in",
+                        "type": "array",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            },
+            {
+                "method": "confirm",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            },
+            {
+                "method": "start",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            },
+            {
+                "method": "hold",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    },
+                    {
+                        "name": "note",
+                        "type": "string",
+                        "default": "''"
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            },
+            {
+                "method": "resume",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            },
+            {
+                "method": "done",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            },
+            {
+                "method": "close",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            },
+            {
+                "method": "cancel",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            }
+        ],
+        "key": "maintenance-order",
+        "name": "Maintenance Order Lifecycle",
+        "group": "Maintenance",
+        "mode": "flow",
+        "purpose": "Moves a Maintenance Order (PMO, BMO, IMO) from Draft to Closed and keeps the machine status and downtime log true.",
+        "inputs": [
+            [
+                "order",
+                "The order with its checklist, spare parts and labor lines."
+            ],
+            [
+                "actor",
+                "The head of maintenance decides (Confirm, Close, Cancel); technicians work (Start, Hold, Done)."
+            ]
+        ],
+        "outputs": [
+            [
+                "order number",
+                "PMO-, BMO- or IMO-yymm-nnnn, born at Confirm."
+            ],
+            [
+                "downtime",
+                "One downtime row for a machine asset that must stop, opened at Start and closed at Done."
+            ],
+            [
+                "cost",
+                "Spare parts, labor at the standard rate and vendor service, final at Close."
+            ]
+        ],
+        "steps": [
+            "Draft can be edited freely; Confirm gives the number and puts the order in the technician list (Scheduled).",
+            "Start opens the downtime and sets the machine to Maintenance (planned) or Breakdown; assets that are not machines have no downtime.",
+            "Done is refused while a required checklist task has no result; it closes the downtime and sets the machine Ready.",
+            "Close fixes the cost and tells the plan to move to its next due date. Cancel needs a reason and closes any open downtime."
+        ],
+        "reads": [
+            "tm2mnt.mnt_order",
+            "tm2mst.prod_machine"
+        ],
+        "writes": [
+            "tm2mnt.mnt_order",
+            "tm2mst.prod_machine_downtime",
+            "tm2mst.prod_machine (status)"
+        ],
+        "used": [
+            "Preventive Maintenance Order",
+            "Breakdown Maintenance Order",
+            "My Work"
+        ],
+        "tests": [
+            "tests/Feature/MaintenancePreventiveTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Maintenance\\RequestService",
+        "file": "app/Services/Maintenance/RequestService.php",
+        "lines": 111,
+        "entries": [
+            {
+                "method": "suggestPriority",
+                "static": true,
+                "params": [
+                    {
+                        "name": "asset",
+                        "type": "MntAsset",
+                        "default": null
+                    },
+                    {
+                        "name": "kind",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "stopped",
+                        "type": "bool",
+                        "default": null
+                    }
+                ],
+                "returns": "string",
+                "note": null
+            },
+            {
+                "method": "open",
+                "static": false,
+                "params": [
+                    {
+                        "name": "d",
+                        "type": "array",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "fromBreakdown",
+                "static": false,
+                "params": [
+                    {
+                        "name": "eventId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "machineId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "note",
+                        "type": "?string",
+                        "default": "null"
+                    }
+                ],
+                "returns": "?array",
+                "note": null
+            },
+            {
+                "method": "accept",
+                "static": false,
+                "params": [
+                    {
+                        "name": "request",
+                        "type": "MntRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "auto",
+                        "type": "bool",
+                        "default": "false"
+                    }
+                ],
+                "returns": "MntOrder",
+                "note": null
+            },
+            {
+                "method": "reject",
+                "static": false,
+                "params": [
+                    {
+                        "name": "request",
+                        "type": "MntRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": null
+            }
+        ],
+        "key": "maintenance-request",
+        "name": "Maintenance Request Engine",
+        "group": "Maintenance",
+        "mode": "suggest",
+        "purpose": "Turns a problem report into a Breakdown Maintenance Order, and suggests how urgent it is.",
+        "inputs": [
+            [
+                "request",
+                "Asset, kind (Breakdown, Corrective, Safety), whether the asset is stopped, and the symptom."
+            ],
+            [
+                "breakdown event",
+                "A machine breakdown reported on the shop floor in Work Order entry."
+            ]
+        ],
+        "outputs": [
+            [
+                "priority",
+                "Suggested P1 to P3; the reporter may overrule it."
+            ],
+            [
+                "order",
+                "A Draft BMO when the head of maintenance accepts; a Confirmed BMO at once for P1."
+            ]
+        ],
+        "steps": [
+            "Safety is P1; a stopped machine of criticality A or B is P1; another stopped asset is P2; a critical asset that still runs is P2; the rest is P3.",
+            "P1 does not wait: the request is accepted and its BMO is confirmed so it shows in My Work immediately.",
+            "Other requests wait for the head of maintenance: Accept makes a Draft BMO, Reject needs a reason.",
+            "A shop floor breakdown creates one request per event; a machine without a Maintenance asset is skipped and the production report is never blocked."
+        ],
+        "reads": [
+            "tm2mnt.mnt_asset",
+            "tm2prd.prd_breakdown_event (link only)"
+        ],
+        "writes": [
+            "tm2mnt.mnt_request",
+            "tm2mnt.mnt_order"
+        ],
+        "used": [
+            "Maintenance Request",
+            "Daily Check",
+            "Work Order entry (report breakdown)"
+        ],
+        "tests": [
+            "tests/Feature/MaintenanceBreakdownTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Maintenance\\PartSupplyService",
+        "file": "app/Services/Maintenance/PartSupplyService.php",
+        "lines": 167,
+        "entries": [
+            {
+                "method": "onHand",
+                "static": true,
+                "params": [
+                    {
+                        "name": "materialIds",
+                        "type": "iterable",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "toIssue",
+                "static": true,
+                "params": [
+                    {
+                        "name": "p",
+                        "type": "MntOrderPart",
+                        "default": null
+                    }
+                ],
+                "returns": "float",
+                "note": null
+            },
+            {
+                "method": "issue",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "createPr",
+                "static": false,
+                "params": [
+                    {
+                        "name": "order",
+                        "type": "MntOrder",
+                        "default": null
+                    }
+                ],
+                "returns": "?int",
+                "note": null
+            }
+        ],
+        "key": "maintenance-parts",
+        "name": "Maintenance Spare Part Supply",
+        "group": "Maintenance",
+        "mode": "auto",
+        "purpose": "Shows spare part stock on an order, issues the parts from the warehouse, and drafts a purchase requisition for what is short.",
+        "inputs": [
+            [
+                "order",
+                "A Confirmed order in progress with spare part lines (planned and used quantity)."
+            ]
+        ],
+        "outputs": [
+            [
+                "Stock Out",
+                "An ordinary raw material Stock Out per warehouse, posted through Inventory, so the stock card follows."
+            ],
+            [
+                "PR draft",
+                "One Draft purchase requisition with the parts that stock cannot cover."
+            ]
+        ],
+        "steps": [
+            "On hand = usable stock of the material over all locations (Inventory view).",
+            "Issue takes each part from the locations with most stock; a part the stock cannot cover is skipped and reported, never half-issued.",
+            "Inventory is never written directly: the document is saved and posted by the Inventory services, which also refuse closed periods and negative stock.",
+            "Create PR needs a cost account for each short part (material category or item COGS account) and requests each line once."
+        ],
+        "reads": [
+            "tm2inv.v_rm_onhand",
+            "tm2mnt.mnt_order_part"
+        ],
+        "writes": [
+            "tm2inv.rm_stock (Stock Out, posted)",
+            "tm2pur.pr_requisition (Draft)",
+            "tm2mnt.mnt_order_part"
+        ],
+        "settings": [
+            "Settings > Constants: MNT_DEPARTMENT_CODE"
+        ],
+        "used": [
+            "Maintenance Order (Issue Parts, Create PR, In Stock column)"
+        ],
+        "tests": [
+            "tests/Feature/MaintenanceBreakdownTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Maintenance\\KpiService",
+        "file": "app/Services/Maintenance/KpiService.php",
+        "lines": 187,
+        "entries": [
+            {
+                "method": "targets",
+                "static": true,
+                "params": [],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "indicators",
+                "static": false,
+                "params": [
+                    {
+                        "name": "from",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "to",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "machineId",
+                        "type": "?int",
+                        "default": "null"
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "backlogWeeks",
+                "static": false,
+                "params": [],
+                "returns": "?float",
+                "note": null
+            },
+            {
+                "method": "actions",
+                "static": false,
+                "params": [],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "criticalPartsBelowMin",
+                "static": false,
+                "params": [],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "complianceTrend",
+                "static": false,
+                "params": [
+                    {
+                        "name": "months",
+                        "type": "int",
+                        "default": "12"
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "topDowntime",
+                "static": false,
+                "params": [
+                    {
+                        "name": "from",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "to",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "limit",
+                        "type": "int",
+                        "default": "4"
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "downtimeByKind",
+                "static": false,
+                "params": [
+                    {
+                        "name": "from",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "to",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "failuresByComponent",
+                "static": false,
+                "params": [
+                    {
+                        "name": "from",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "to",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "limit",
+                        "type": "int",
+                        "default": "5"
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "cost",
+                "static": false,
+                "params": [
+                    {
+                        "name": "from",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "to",
+                        "type": "CarbonImmutable",
+                        "default": null
+                    },
+                    {
+                        "name": "machineId",
+                        "type": "?int",
+                        "default": "null"
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            }
+        ],
+        "key": "maintenance-kpi",
+        "name": "Maintenance KPI",
+        "group": "Maintenance",
+        "mode": "calc",
+        "purpose": "Computes the Dashboard and report figures: availability, MTBF, MTTR, PM compliance, planned work, backlog, downtime and cost.",
+        "inputs": [
+            [
+                "period",
+                "From and to dates, and optionally one machine."
+            ]
+        ],
+        "outputs": [
+            [
+                "indicators",
+                "Each figure, or nothing when it cannot be calculated; it is never shown as 0 for missing data."
+            ],
+            [
+                "counts",
+                "What needs action today: machines down, open requests, overdue preventive orders, orders in progress or waiting for parts, critical parts below minimum."
+            ]
+        ],
+        "steps": [
+            "OEE, availability and MTBF / MTTR per machine come from the Production engine (MachineOeeService); Maintenance only adds up the machines.",
+            "MTBF = (machines x period hours - repair hours) / breakdowns; MTTR = repair hours / breakdowns.",
+            "PM compliance and planned work come from the orders; backlog = estimated hours of open orders / technician hours per week.",
+            "Targets are Constants (MNT_TARGET_*); the lamp compares each figure with its target."
+        ],
+        "reads": [
+            "tm2mnt.mnt_order",
+            "tm2mnt.mnt_request",
+            "tm2mst.prod_machine_downtime",
+            "tm2mst.prod_machine"
+        ],
+        "writes": [
+            "Nothing: read only."
+        ],
+        "settings": [
+            "Settings > Constants, group MAINTENANCE"
+        ],
+        "used": [
+            "Maintenance Dashboard",
+            "Machine Reliability"
+        ],
+        "tests": [
+            "tests/Feature/MaintenanceBreakdownTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Scheduling\\MaintenanceBlockProvider",
+        "file": "app/Services/Scheduling/MaintenanceBlockProvider.php",
+        "lines": 73,
+        "entries": [
+            {
+                "method": "blocksFor",
+                "static": false,
+                "params": [
+                    {
+                        "name": "from",
+                        "type": "Carbon",
+                        "default": null
+                    },
+                    {
+                        "name": "to",
+                        "type": "Carbon",
+                        "default": null
+                    },
+                    {
+                        "name": "machineIds",
+                        "type": "?array",
+                        "default": "null"
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "blocksOn",
+                "static": false,
+                "params": [
+                    {
+                        "name": "day",
+                        "type": "Carbon",
+                        "default": null
+                    },
+                    {
+                        "name": "machineId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "overlapping",
+                "static": false,
+                "params": [
+                    {
+                        "name": "machineId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "start",
+                        "type": "Carbon",
+                        "default": null
+                    },
+                    {
+                        "name": "end",
+                        "type": "Carbon",
+                        "default": null
+                    }
+                ],
+                "returns": "?array",
+                "note": null
+            }
+        ],
+        "key": "maintenance-block",
+        "name": "Maintenance Machine Hold (Scheduling)",
+        "group": "Maintenance",
+        "mode": "calc",
+        "purpose": "Tells Scheduling when a machine belongs to Maintenance, so production is never planned into those hours.",
+        "inputs": [
+            [
+                "window",
+                "A time window and optionally the machines to look at."
+            ]
+        ],
+        "outputs": [
+            [
+                "blocks",
+                "Machine, start, end and order for every Confirmed order that must stop the machine."
+            ]
+        ],
+        "steps": [
+            "Counts orders that are Confirmed, not Done, Closed or Cancelled, need the machine stopped, and sit on an asset linked to the machine.",
+            "The window runs from the actual (or planned) start to the planned end, or start plus the estimate, or 60 minutes when neither is known.",
+            "Backward scheduling skips the window; a manual move into it is refused; the Scheduling Board draws it as MTN."
+        ],
+        "reads": [
+            "tm2mnt.mnt_order",
+            "tm2mnt.mnt_asset"
+        ],
+        "writes": [
+            "Nothing: read only."
+        ],
+        "used": [
+            "Backward scheduling",
+            "Scheduling Board",
+            "Manual reschedule validation"
+        ],
+        "tests": [
+            "tests/Feature/MaintenanceSchedulingBlockTest.php"
         ]
     },
     {

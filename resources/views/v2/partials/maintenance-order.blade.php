@@ -90,6 +90,12 @@
             @elseif ($doc === 'OPEN' && $order->work_status === 'DONE' && $head)
                 <x-dl::button size="sm" variant="success" icon="fa-lock" label="Close" type="submit" name="action" value="close" formnovalidate />
             @endif
+            @if ($doc === 'OPEN' && $order->parts->isNotEmpty())
+                @if (in_array($order->work_status, ['IN_PROGRESS', 'WAITING_PART'], true))
+                    <x-dl::button size="sm" variant="secondary" icon="fa-boxes-packing" label="Issue Parts" type="submit" name="action" value="issue_parts" formnovalidate />
+                @endif
+                <x-dl::button size="sm" variant="secondary" icon="fa-cart-shopping" label="Create PR" type="submit" name="action" value="create_pr" formnovalidate />
+            @endif
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('Order No.')</span><b>{{ $order->doc_no ?: t('(on Confirm)') }}</b></div>
@@ -160,8 +166,11 @@
                             ['key' => 'item', 'label' => 'Item', 'type' => 'display', 'width' => '320px'],
                             ['key' => 'qty_plan', 'label' => 'Plan', 'type' => 'number', 'width' => '90px'],
                             ['key' => 'qty_used', 'label' => 'Used', 'type' => 'number', 'width' => '90px'],
+                            ['key' => 'qty_issued', 'label' => 'Issued', 'type' => 'display', 'width' => '80px'],
+                            ['key' => 'stock', 'label' => 'In Stock', 'type' => 'display', 'width' => '90px'],
                             ['key' => 'uom_code', 'label' => 'UoM', 'type' => 'display', 'width' => '70px'],
                             ['key' => 'unit_cost', 'label' => 'Unit Cost', 'type' => 'display', 'width' => '110px'],
+                            ['key' => 'pr', 'label' => 'PR', 'type' => 'display', 'width' => '90px'],
                         ]">
                         @if ($canWork)
                             <x-slot:tools>

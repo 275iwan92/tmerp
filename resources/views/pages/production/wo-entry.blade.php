@@ -1015,6 +1015,13 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
         $op->transitionTo('BREAKDOWN');
 
+        // Maintenance ikut tahu: laporan ini menjadi Maintenance Request (P1 langsung jadi BMO). Gagal di sini tidak menghentikan laporan produksi.
+        try {
+            (new \App\Services\Maintenance\RequestService(Auth::user()->login))->fromBreakdown((int) $event->event_id, (int) $op->machine_id, 'Operation #'.$op->operation_id.'.');
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         $this->breakdownEventId = $event->event_id;
         $this->breakdownStep = 'reroute';
     }
