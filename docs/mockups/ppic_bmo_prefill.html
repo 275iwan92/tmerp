@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>BMO prefilled from Problem</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"><style>
+body{font-family:'Instrument Sans','Segoe UI',system-ui,sans-serif;background:#f1f5f9;font-size:12px;color:#1e293b;margin:0}
+.mut{color:#8a94a6}.top{background:#2c3e69;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:14px}.top .t{font-size:14px;font-weight:700}.top .s{font-size:10px;opacity:.7}
+.top .r{margin-left:auto;display:flex;gap:8px;align-items:center}.btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.4);font-weight:600;color:#fff}.btn.p{background:#2c7be5;border-color:#2c7be5}
+.back{display:inline-flex;align-items:center;gap:8px;padding:2px 4px 2px 12px;background:#43508a;border-radius:99px;font-weight:700;font-size:11px;text-transform:uppercase}.back i{display:inline-flex;width:22px;height:22px;border-radius:50%;background:#fff;color:#43508a;align-items:center;justify-content:center}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px}
+.bdg{display:inline-block;border-radius:9px;padding:0 8px;font-size:10px;font-weight:700}
+.lbl{font-size:10px;color:#8a94a6;text-transform:uppercase;font-weight:600}
+.pg{padding:12px 20px}.kp{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.kp b{display:block;font-size:14px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #e2e8f0;margin:12px 0 0}.tabs span{padding:8px 14px;font-weight:600;color:#64748b}.tabs span.on{color:#2c7be5;border-bottom:3px solid #2c7be5}
+.sg{border-collapse:collapse;width:100%;font-size:11.5px}.sg th{background:#2c3e69;color:#fff;padding:6px 7px;text-align:left;white-space:nowrap;font-weight:600}.sg td{padding:6px 7px;border-bottom:1px solid #eef2f7;border-right:1px solid #f1f5f9;white-space:nowrap;vertical-align:middle}
+.sg td.ed{background:#fff7d6}.sg td.au{background:#eef2f7;color:#475569}.sg td.n{text-align:right}
+.pb{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;min-width:90px}.pb span{display:block;height:8px;background:#2c7be5}
+.lk{color:#2c7be5;font-weight:600}.d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}.d.g{background:#10b981}.d.a{background:#f59e0b}.d.r{background:#f43f5e}
+h3{margin:0 0 6px;font-size:13px;color:#334155}
+
+.pg{padding:16px 20px;max-width:1250px;margin:0 auto}.g2{display:grid;grid-template-columns:1.5fr 1fr;gap:12px}
+.fl{margin-bottom:10px}.inp{border:1px solid #cbd5e1;border-radius:6px;padding:6px 9px;background:#fff;font-size:12.5px;min-height:18px}.inp.ro{background:#f1f5f9;color:#475569}.inp .aa{float:right;font-size:10px;background:#e2e8f0;border-radius:4px;padding:0 5px;color:#64748b}
+.pr{display:flex;gap:8px}.pr span{border:2px solid #cbd5e1;border-radius:8px;padding:6px 14px;font-weight:700}.pr span.on{border-color:#dc2626;background:#fef2f2;color:#b91c1c}
+.imp div{padding:6px 0;border-bottom:1px solid #f1f5f9}
+</style></head><body>
+<div class="top"><div><div class="t">Breakdown Maintenance Order</div><div class="s">Maintenance · opened from the Problem button on the operator screen</div></div>
+<div class="r"><span class="bdg" style="background:#fde68a;color:#92400e">DRAFT REQUEST</span><span class="btn">Undo</span><span class="btn p">Send request</span><span class="back">Back <i class="fa-solid fa-arrow-left"></i></span></div></div>
+<div class="pg"><div class="g2"><div class="card"><h3>Request (filled by the system, the operator only adds what happened)</h3>
+<div class="fl"><div class="lbl">Machine</div><div class="inp ro">Die-Cut 01 · DC-01 <span class="mut">(from the operator screen)</span></div></div>
+<div class="fl"><div class="lbl">Reported from production</div><div class="inp ro">WO-2610-0120 · Die-Cutting · timer paused at 01:19:12 · output so far 2,150 good</div></div>
+<div class="fl"><div class="lbl">Priority</div><div class="pr"><span class="on">P1 Machine stopped</span><span>P2 Slows down</span><span>P3 Can wait</span></div></div>
+<div class="fl"><div class="lbl">Problem code</div><div class="inp">Feeder jam, sheet not delivered <i class="fa-solid fa-chevron-down" style="float:right;color:#94a3b8"></i></div></div>
+<div class="fl"><div class="lbl">What happened</div><div class="inp" style="min-height:48px">Sheets stop at the feeder, machine alarm E-214. Cleared twice, repeats.<span class="aa">aa</span></div></div>
+<div class="fl"><div class="lbl">Reported by</div><div class="inp ro">Budi S. · Thu 8 Oct 2026 09:17</div></div></div>
+<div class="card"><h3>What happens after Send request</h3><div class="imp">
+<div><i class="fa-solid fa-circle-check" style="color:#059669"></i> P1 on a stopped machine goes straight to a Breakdown Maintenance Order and starts the downtime.</div>
+<div><i class="fa-solid fa-circle-check" style="color:#059669"></i> The machine is marked Down. Production Scheduling shows a red Down band on the Gantt.</div>
+<div><i class="fa-solid fa-circle-check" style="color:#059669"></i> The operator timer stays paused with the reason Machine problem.</div>
+<div><i class="fa-solid fa-triangle-exclamation" style="color:#d97706"></i> Jobs on Die-Cut 01 are listed under "Needs re-schedule" with the forecast delay; the PPIC officer presses Re-plan.</div>
+<div><i class="fa-solid fa-circle-check" style="color:#059669"></i> When maintenance presses Done, the downtime closes, the machine returns to ready and the schedule is re-planned automatically as a new Draft.</div></div>
+<div class="mut" style="margin-top:8px">Number BMO-yymm-nnnn is given when the head accepts the request.</div></div></div></div></body></html>

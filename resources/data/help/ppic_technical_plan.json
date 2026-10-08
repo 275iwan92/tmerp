@@ -1,0 +1,768 @@
+[
+  {
+    "key": "guide-ppic-tech-overview",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: PPIC Scheduling Module",
+    "purpose": {
+      "en": "Technical plan for PPIC: Work Orders come from Product Development data, and engines prepare material readiness, estimates and a draft schedule automatically. The officer confirms the plan and can give a job priority.",
+      "id": "Rencana teknis PPIC: Work Order berasal dari data Product Development, dan engine menyiapkan kesiapan bahan, perkiraan dan draf jadwal secara otomatis. Officer mengonfirmasi rencana dan dapat memberi prioritas pada job."
+    },
+    "keywords": "technical plan, rencana teknis, ppic, scheduling, penjadwalan, gantt, kanban, calendar, spreadsheet, modul ppic",
+    "steps": [
+      {
+        "en": "Operating model (decided): Work Orders are created from ProDev data (BOP, routing, BOM). Material readiness (MRP), target estimates and the schedule are prepared automatically by engines. The officer confirms the plan and can give a job priority.",
+        "id": "Model kerja (diputuskan): Work Order dibuat dari data ProDev (BOP, routing, BOM). Kesiapan bahan (MRP), perkiraan target dan jadwal disiapkan otomatis oleh engine. Officer mengonfirmasi rencana dan dapat memberi prioritas pada job."
+      },
+      {
+        "en": "Screen: one Production Scheduling screen with four views (Gantt, Kanban, Calendar, Grid), filtered by process and machine, showing setup time, gates and an exception list first, plus a Monitoring tab.",
+        "id": "Layar: satu layar Production Scheduling dengan empat tampilan (Gantt, Kanban, Calendar, Grid), difilter per proses dan mesin, menampilkan setup time, gerbang dan daftar pengecualian lebih dulu, plus tab Monitoring."
+      },
+      {
+        "en": "Built on what exists: WoGenerationService, MaterialPlanningEngine, SpeedTargetEngine, PdrEngine, CompositePriorityScorer, SchedulingRuleEngine, the changeover table and the DevLib objects.",
+        "id": "Dibangun di atas yang sudah ada: WoGenerationService, MaterialPlanningEngine, SpeedTargetEngine, PdrEngine, CompositePriorityScorer, SchedulingRuleEngine, tabel changeover dan objek DevLib."
+      },
+      {
+        "en": "New: AutoPlanRunner (runs the chain), tooling master, setup time engine, waste allowance cascade, readiness gates, capacity load, learning engine, monitoring service and the v2 screen with DevLib extensions.",
+        "id": "Baru: AutoPlanRunner (menjalankan rantai), master tooling, engine setup time, kaskade toleransi waste, gerbang kesiapan, beban kapasitas, engine pembelajar, service monitoring dan layar v2 dengan perluasan DevLib."
+      },
+      {
+        "en": "Principles: engines prepare and log every change; nothing becomes the real schedule without the officer's Confirm; an engine never moves a locked task; no foreign keys across databases; every value has an input screen.",
+        "id": "Prinsip: engine menyiapkan dan mencatat tiap perubahan; tidak ada yang menjadi jadwal nyata tanpa Confirm officer; engine tidak pernah memindahkan task terkunci; tanpa foreign key lintas database; setiap nilai punya layar input."
+      },
+      {
+        "en": "Confirmation: the engine runs by itself and produces a plan marked Draft. The officer reviews the exceptions and confirms; only a confirmed plan becomes the real schedule. Bookings are confirmed automatically when stock fully covers the need.",
+        "id": "Konfirmasi: engine berjalan sendiri dan menghasilkan rencana berstatus Draft. Officer meninjau pengecualian dan mengonfirmasi; hanya rencana terkonfirmasi yang menjadi jadwal nyata. Booking dikonfirmasi otomatis bila stok mencukupi seluruh kebutuhan."
+      },
+      {
+        "en": "Frozen zone: Inquiry, ProDev and ProCost are not touched. PPIC only reads the BOP, routing and BOM they produce. Delivery is in six phases, each reviewed by the user.",
+        "id": "Zona beku: Inquiry, ProDev dan ProCost tidak disentuh. PPIC hanya membaca BOP, routing dan BOM yang mereka hasilkan. Pengerjaan dalam enam fase, tiap fase ditinjau user."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-menu",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: PPIC Menu and Access",
+    "purpose": {
+      "en": "Where the screens sit in the Production menu and which access flags separate the scheduling officer from the inventory control officer.",
+      "id": "Letak layar di menu Production dan flag akses yang memisahkan officer penjadwalan dari officer pengendalian inventori."
+    },
+    "keywords": "menu ppic, akses, access flag, required_object, scheduling officer, inventory control officer, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Production Scheduling (new, v2) replaces the old Scheduling Board as the daily screen. The old v1 board stays reachable until the user retires it.",
+        "id": "Production Scheduling (baru, v2) menggantikan Scheduling Board lama sebagai layar harian. Board v1 tetap bisa dibuka sampai user menghentikannya."
+      },
+      {
+        "en": "Inside the screen, four page tabs: Schedule, Material Control (links to Material Planning and Material Booking), Incoming Purchases, Monitoring.",
+        "id": "Di dalam layar ada empat tab halaman: Schedule, Material Control (tautan ke Material Planning dan Material Booking), Incoming Purchases, Monitoring."
+      },
+      {
+        "en": "New master screens: Tooling Master, Setup and Changeover Table, Waste Allowance (per process and machine), Learning Proposals. Customer Tier is a field in the Customer master, kept by Sales.",
+        "id": "Layar master baru: Master Tooling, Tabel Setup dan Changeover, Toleransi Waste (per proses dan mesin), Usulan Pembelajaran. Tier Customer adalah field di master Customer, dirawat Sales."
+      },
+      {
+        "en": "Access flags, not new modules: PPIC_SCHEDULING changes queues and locks; PPIC_INVENTORY changes bookings, shortage follow-up and ready dates. Both read everything. One user can hold both.",
+        "id": "Flag akses, bukan modul baru: PPIC_SCHEDULING mengubah antrean dan kunci; PPIC_INVENTORY mengubah booking, tindak lanjut kekurangan dan tanggal siap. Keduanya membaca semuanya. Satu user boleh memegang keduanya."
+      },
+      {
+        "en": "Menu rows are added by a migration into sys_app_menu (target v2:production-scheduling and so on), run first on the dummy menu database, then on live at release. Screens start as NOT_BUILT; only the user sets LOCKED.",
+        "id": "Baris menu ditambah lewat migration ke sys_app_menu (target v2:production-scheduling dan seterusnya), dijalankan dulu di database menu dummy, lalu di live saat rilis. Layar mulai NOT_BUILT; hanya user yang mengisi LOCKED."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-screen",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: Scheduling Screen Design",
+    "purpose": {
+      "en": "How the one scheduling screen is assembled from DevLib objects so that the four views share the same data, filters and rules.",
+      "id": "Cara satu layar penjadwalan disusun dari objek DevLib agar empat tampilan memakai data, filter dan aturan yang sama."
+    },
+    "keywords": "layar scheduling, devlib, gantt, kanban, calendar, sheet, tabs, drawer, view switch, filter mesin proses, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "The screen opens with a Draft banner and an exception strip: time of the last auto-plan, operations planned, what needs a person (late risk, material waiting, tooling blocked, overload) and a Confirm plan button.",
+        "id": "Layar dibuka dengan banner Draft dan strip pengecualian: waktu auto-plan terakhir, operasi yang dijadwalkan, yang butuh manusia (berisiko telat, bahan menunggu, tooling terblokir, kelebihan beban) dan tombol Confirm plan."
+      },
+      {
+        "en": "The screen file is thin: it hands one array from a data class (ProductionSchedule) to the objects. No raw HTML, as required for v2 screens.",
+        "id": "Berkas layar tipis: hanya menyerahkan satu array dari kelas data (ProductionSchedule) ke objek. Tanpa HTML mentah, sesuai aturan layar v2."
+      },
+      {
+        "en": "One query builds the operations list for the chosen period, processes and machines. Gantt, Kanban, Calendar and Grid are four projections of that list, so a filter change updates all four.",
+        "id": "Satu query membangun daftar operasi untuk periode, proses dan mesin terpilih. Gantt, Kanban, Calendar dan Grid adalah empat proyeksi dari daftar itu, jadi perubahan filter memperbarui keempatnya."
+      },
+      {
+        "en": "Objects: x-dl::gantt, x-dl::kanban, x-dl::calendar, x-dl::sheet for the views; x-dl::tabs for the page tabs; x-dl::drawer for the work order panel; x-dl::kpi for Monitoring.",
+        "id": "Objek: x-dl::gantt, x-dl::kanban, x-dl::calendar, x-dl::sheet untuk tampilan; x-dl::tabs untuk tab halaman; x-dl::drawer untuk panel work order; x-dl::kpi untuk Monitoring."
+      },
+      {
+        "en": "Machine filter: a process lists its machines from prod_process_machine (preference rank, certified). Several machines per process are normal; the Gantt groups rows as process, then machine.",
+        "id": "Filter mesin: sebuah proses mendaftar mesinnya dari prod_process_machine (urutan preferensi, tersertifikasi). Banyak mesin per proses itu wajar; Gantt mengelompokkan baris proses lalu mesin."
+      },
+      {
+        "en": "AutoPlanRunner fills a Draft. A manual move on the Gantt is a priority override: simulation first, checked by PdrEngine::validateManualReschedule, saved with a reason. Confirm plan makes the Draft real. Grid edits save in a batch.",
+        "id": "AutoPlanRunner mengisi Draft. Pemindahan manual di Gantt adalah penimpaan prioritas: simulasi dulu, dicek PdrEngine::validateManualReschedule, disimpan dengan alasan. Confirm plan membuat Draft menjadi nyata. Edit Grid disimpan sekaligus."
+      },
+      {
+        "en": "Kanban moves are validated on the server: only Pending or Assigned cards may move; Running and Done may not. A refused move leaves the card where it was.",
+        "id": "Perpindahan Kanban divalidasi server: hanya kartu Pending atau Assigned yang boleh pindah; Running dan Done tidak. Pemindahan yang ditolak membiarkan kartu di tempatnya."
+      },
+      {
+        "en": "The work order panel shows the setup breakdown, the routing table (target, waste, spoilage, setup per process), material lines with booking and incoming PO, and the output with a link to Production Output.",
+        "id": "Panel work order menampilkan rincian setup, tabel routing (target, waste, spoilage, setup per proses), baris bahan dengan booking dan PO datang, dan output dengan tautan ke Production Output."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-devlib",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: DevLib Work Needed First",
+    "purpose": {
+      "en": "Changes to DevLib objects the scheduling screen needs. DevLib is changed first, then the screen inherits, as the project rule requires.",
+      "id": "Perubahan objek DevLib yang dibutuhkan layar penjadwalan. DevLib diubah lebih dulu, lalu layar mewarisinya, sesuai aturan proyek."
+    },
+    "keywords": "devlib, gantt multi hari, view switch, overlay, setup stripe, gate dots, objek, pewarisan, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Gantt today shows the hours of one day. It needs a multi-day axis (days with hour ticks), grouping of rows by section (process), and a pixel-per-hour that fits the period.",
+        "id": "Gantt saat ini menampilkan jam dalam satu hari. Ia perlu sumbu multi hari (hari dengan tanda jam), pengelompokan baris per seksi (proses), dan piksel per jam yang sesuai periode."
+      },
+      {
+        "en": "Gantt task gets a setup segment (hatched, minutes shown when wide enough), a progress strip, hot and lock icons, and three gate dots (material, tooling, artwork).",
+        "id": "Task Gantt mendapat segmen setup (bergaris, menit tampil bila cukup lebar), strip progres, ikon hot dan kunci, dan tiga titik gerbang (bahan, tooling, artwork)."
+      },
+      {
+        "en": "Gantt gets two vertical markers: Now and Locked until. Both are drawn over the rows only, never over the legend.",
+        "id": "Gantt mendapat dua penanda vertikal: Now dan Locked until. Keduanya digambar hanya di atas baris, tidak pernah di atas legenda."
+      },
+      {
+        "en": "A view switch object (segmented control with icons) is added; today only the Gantt mode toggle looks similar. It keeps the chosen view and filters in the URL.",
+        "id": "Objek view switch (kontrol segmen dengan ikon) ditambahkan; saat ini hanya toggle mode Gantt yang mirip. Ia menyimpan tampilan dan filter terpilih di URL."
+      },
+      {
+        "en": "Calendar gets a day cell with a load bar and a setup-hours line; Sheet gets a column flag for typed (yellow) against calculated (grey) cells.",
+        "id": "Calendar mendapat sel hari dengan bar beban dan baris jam setup; Sheet mendapat penanda kolom untuk sel diketik (kuning) lawan dihitung (abu)."
+      },
+      {
+        "en": "Each change lands in the DevLib package, is shown on devlib.test with a demo, and only then used by the screen. The catalog and Build board are refreshed with build:catalog.",
+        "id": "Tiap perubahan masuk ke paket DevLib, ditampilkan di devlib.test dengan demo, baru dipakai layar. Katalog dan papan Build diperbarui dengan build:catalog."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-database",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: PPIC Tables and Columns",
+    "purpose": {
+      "en": "Planned changes to tables, grouped by database. Names are English; relations across databases are logical and checked by Laravel, never by foreign keys.",
+      "id": "Perubahan tabel yang direncanakan, dikelompokkan per database. Nama dalam bahasa Inggris; relasi lintas database bersifat logis dan dicek Laravel, bukan foreign key."
+    },
+    "keywords": "tabel ppic, prd_wo_operation, prod_tooling_asset, prod_machine_changeover, prd_setup_log, prd_learning_proposal, kolom, migration, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Every new table gets a single BIGINT auto-number primary key. Migrations mirror the live dump, run first on the dummy databases, and need user approval before any live schema change.",
+        "id": "Tiap tabel baru memakai satu primary key BIGINT auto number. Migration mencerminkan dump live, dijalankan dulu di database dummy, dan butuh persetujuan user sebelum mengubah skema live."
+      },
+      {
+        "en": "prd_wo_operation has no process id and no setup columns today. Adding them lets the screen join to the process and machine rates and store the plan next to the actual.",
+        "id": "prd_wo_operation saat ini tidak punya id proses dan kolom setup. Menambahkannya memungkinkan layar menggabungkan ke tarif proses dan mesin dan menyimpan rencana di samping aktual."
+      },
+      {
+        "en": "Existing columns are reused: waste and spoilage quantity on the operation, default waste and fixed waste on process and process-machine, target per hour on the part rate table, is_bottleneck on process.",
+        "id": "Kolom yang sudah ada dipakai ulang: qty waste dan spoilage di operasi, waste default dan waste tetap di proses dan proses-mesin, target per jam di tabel tarif part, is_bottleneck di proses."
+      },
+      {
+        "en": "Values that can be learned carry a status (Assumed, Learning, Calibrated), a sample count and a freeze flag, so the learning engine knows what it may adjust.",
+        "id": "Nilai yang bisa dipelajari membawa status (Assumed, Learning, Calibrated), jumlah sampel dan flag bekukan, agar engine pembelajar tahu apa yang boleh disesuaikan."
+      },
+      {
+        "en": "Scheduling settings (lock in shifts, weights, bottleneck threshold, learning limits) are rows in Settings > Constants, so every value has an input screen. Shift count per machine comes from the machine calendar.",
+        "id": "Pengaturan penjadwalan (kunci dalam shift, bobot, ambang bottleneck, batas pembelajaran) adalah baris di Settings > Constants, sehingga setiap nilai punya layar input. Jumlah shift per mesin berasal dari kalender mesin."
+      }
+    ],
+    "fields": [
+      {
+        "label": "tm2mst.prod_tooling_asset",
+        "en": "New. Code, type (plate set, cutting die, emboss die, foil die), product or dieline reference, size, location, status, planned and used impressions, setup minutes first run and repeat run.",
+        "id": "Baru. Kode, jenis (set plat, pisau pond, matras emboss, foil), referensi produk atau dieline, ukuran, lokasi, status, impresi rencana dan terpakai, menit setup run pertama dan run ulang."
+      },
+      {
+        "label": "tm2mst.prod_machine_changeover",
+        "en": "Exists (machine, kind, from, to, extra minutes, extra waste). Add value status, sample count and freeze flag.",
+        "id": "Sudah ada (mesin, jenis, dari, ke, menit tambahan, waste tambahan). Tambah status nilai, jumlah sampel dan flag bekukan."
+      },
+      {
+        "label": "tm2mst.prod_process_machine",
+        "en": "Exists with setup minutes, speed, waste percent and fixed waste. Add value status, sample count and freeze flag for each learnable value.",
+        "id": "Sudah ada dengan menit setup, kecepatan, persen waste dan waste tetap. Tambah status nilai, jumlah sampel dan flag bekukan untuk tiap nilai yang bisa dipelajari."
+      },
+      {
+        "label": "tm2mst.prod_wait_rule",
+        "en": "New. Minimum wait in minutes after a process for a coating or ink kind before the next process (drying, curing).",
+        "id": "Baru. Waktu tunggu minimum dalam menit setelah sebuah proses untuk jenis coating atau tinta sebelum proses berikutnya (kering, curing)."
+      },
+      {
+        "label": "tm2mst.cust_customer",
+        "en": "Add customer tier (1 to 3, default 2). Kept in the Customer master by Sales.",
+        "id": "Tambah tier customer (1 sampai 3, default 2). Dirawat di master Customer oleh Sales."
+      },
+      {
+        "label": "tm2prd.prd_wo_operation",
+        "en": "Add process id, base, changeover and tool setup minutes, target per hour, planned run minutes, plan status (DRAFT or CONFIRMED), locked flag and reason, planned by (ENGINE or OFFICER), actual setup minutes.",
+        "id": "Tambah id proses, menit setup dasar, changeover dan tooling, target per jam, menit jalan rencana, status rencana (DRAFT atau CONFIRMED), flag terkunci dan alasan, dijadwalkan oleh (ENGINE atau OFFICER), menit setup aktual."
+      },
+      {
+        "label": "tm2prd.prd_operation_time_log",
+        "en": "New. One row per timer segment (setup, run, pause with reason) from the operator screen, with change kind and extra waste for setup. Source for monitoring and learning.",
+        "id": "Baru. Satu baris per segmen timer (setup, jalan, jeda dengan alasan) dari layar operator, dengan jenis perubahan dan waste tambahan untuk setup. Sumber monitoring dan pembelajaran."
+      },
+      {
+        "label": "tm2prd.prd_learning_proposal",
+        "en": "New. Target table and row, field, old value, new value, sample count, basis, status (Proposed, Applied, Rejected, Reverted), decided by and at.",
+        "id": "Baru. Tabel dan baris sasaran, field, nilai lama, nilai baru, jumlah sampel, dasar, status (Proposed, Applied, Rejected, Reverted), diputuskan oleh dan pada."
+      },
+      {
+        "label": "tm2prd.prd_plan_run",
+        "en": "New. One row per auto-plan run: time, trigger (daily, shift start, event), operations planned, exceptions found, duration, and who confirmed it and when.",
+        "id": "Baru. Satu baris per auto-plan: waktu, pemicu (harian, awal shift, kejadian), operasi yang dijadwalkan, pengecualian yang ditemukan, durasi, dan siapa yang mengonfirmasi serta kapan."
+      }
+    ]
+  },
+  {
+    "key": "guide-ppic-tech-engines",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: Engines and Services",
+    "purpose": {
+      "en": "Which engines and services are extended and which are new. All are registered in the engine catalog, and logic stays out of the screen.",
+      "id": "Engine dan service mana yang diperluas dan mana yang baru. Semuanya didaftarkan di katalog engine, dan logika tidak ada di layar."
+    },
+    "keywords": "engine, service, SetupTimeEngine, GateService, CapacityLoadService, WasteAllowanceService, LearningEngine, PdrEngine, CompositePriorityScorer, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Every new engine gets an entry in EngineRegistry (purpose, input, output, how it works) and the catalog is refreshed with engine:catalog. EngineCatalogTest guards it.",
+        "id": "Tiap engine baru mendapat entri di EngineRegistry (kegunaan, input, output, cara kerja) dan katalog diperbarui dengan engine:catalog. EngineCatalogTest menjaganya."
+      },
+      {
+        "en": "Each engine has regression tests against the real local MySQL database; tests that insert data clean up after themselves and the cleanup is verified in the database.",
+        "id": "Tiap engine punya test regresi terhadap database MySQL lokal sungguhan; test yang menyisipkan data membersihkan sendiri dan pembersihannya diverifikasi di database."
+      },
+      {
+        "en": "Engines that calculate (setup, waste, load, readiness) are pure. AutoPlanRunner only writes Draft plans. The real schedule changes only when the officer confirms; the confirm and every change go to the decision log.",
+        "id": "Engine penghitung (setup, waste, beban, kesiapan) bersifat murni. AutoPlanRunner hanya menulis rencana Draft. Jadwal nyata berubah hanya saat officer mengonfirmasi; konfirmasi dan setiap perubahan masuk log keputusan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "AutoPlanRunner (new)",
+        "en": "Runs the chain and produces a Draft plan: check Work Orders, MRP and gates, estimates, schedule, exception list. Triggers: daily, start of each shift and events (new Work Order, material arrival, breakdown, officer priority).",
+        "id": "Menjalankan rantai dan menghasilkan rencana Draft: cek Work Order, MRP dan gerbang, perkiraan, jadwal, daftar pengecualian. Pemicu: harian, awal tiap shift dan kejadian (Work Order baru, bahan datang, kerusakan, prioritas officer)."
+      },
+      {
+        "label": "WoGenerationService (extend)",
+        "en": "Already creates one Work Order per part from the delivery plan. Extend: store process id on each operation, fill start quantity from the waste cascade, copy BOM lines, flag a part without routing.",
+        "id": "Sudah membuat satu Work Order per part dari rencana kirim. Perluas: simpan id proses pada tiap operasi, isi jumlah awal dari kaskade waste, salin baris BOM, tandai part tanpa routing."
+      },
+      {
+        "label": "SpeedTargetEngine (reuse)",
+        "en": "Gives the estimated target per hour for every operation: machine history first, then model specification, then the process default. Replaces typing the target by hand.",
+        "id": "Memberi perkiraan target per jam untuk setiap operasi: riwayat mesin dulu, lalu spesifikasi model, lalu default proses. Menggantikan pengetikan target manual."
+      },
+      {
+        "label": "MaterialPlanningEngine (reuse)",
+        "en": "Runs daily and on demand: nets stock, booking and incoming purchases per Work Order, proposes bookings and purchase requests. GateService reads its result as the material gate.",
+        "id": "Berjalan harian dan sesuai permintaan: menetralkan stok, booking dan pembelian yang datang per Work Order, mengusulkan booking dan purchase request. GateService membaca hasilnya sebagai gerbang bahan."
+      },
+      {
+        "label": "SetupTimeEngine (new)",
+        "en": "Setup between two jobs on a machine = base setup + changeover (ink, ink type, substrate, size, plate, die) + tool setup. Returns minutes, extra waste and the breakdown for display.",
+        "id": "Setup antara dua job di satu mesin = setup dasar + changeover (tinta, jenis tinta, bahan, ukuran, plat, pisau) + setup tooling. Mengembalikan menit, waste tambahan dan rincian untuk tampilan."
+      },
+      {
+        "label": "GateService (new)",
+        "en": "Material, tooling, artwork, customer goods and capacity gate per operation: Ready, Waiting with date, or Blocked with reason. Reads Booking, Material Planning incoming, tooling status and proof approval.",
+        "id": "Gerbang bahan, tooling, artwork, barang titipan dan kapasitas per operasi: Ready, Waiting dengan tanggal, atau Blocked dengan alasan. Membaca Booking, incoming Material Planning, status tooling dan persetujuan proof."
+      },
+      {
+        "label": "CompositePriorityScorer (extend)",
+        "en": "Keeps Hot, Critical Ratio and due date layers. Adds customer tier, ageing and the setup-aware score inside the layer 2 window. Slack uses the whole remaining routing.",
+        "id": "Mempertahankan lapisan Hot, Critical Ratio dan due date. Menambah tier customer, ageing dan skor sadar setup di dalam jendela lapis 2. Slack memakai seluruh sisa routing."
+      },
+      {
+        "label": "SchedulingRuleEngine (extend)",
+        "en": "Sequencing rules as data: group by ink set, substrate, size and die. Smooths order only among tasks of equal priority.",
+        "id": "Aturan urutan sebagai data: kelompokkan menurut set tinta, bahan, ukuran dan pisau. Menghaluskan urutan hanya di antara task berprioritas setara."
+      },
+      {
+        "label": "PdrEngine (extend)",
+        "en": "Backward scheduling adds waits from prod_wait_rule, queue time, and picks among the machines of a process by preference rank and load.",
+        "id": "Penjadwalan mundur menambah tunggu dari prod_wait_rule, waktu antrean, dan memilih di antara mesin sebuah proses menurut urutan preferensi dan beban."
+      },
+      {
+        "label": "CapacityLoadService (new)",
+        "en": "Load per machine group = planned hours (incl. setup) over available hours after shifts, holidays and maintenance orders. Flags the bottleneck above the threshold.",
+        "id": "Beban per grup mesin = jam rencana (termasuk setup) dibagi jam tersedia setelah shift, libur dan order perawatan. Menandai bottleneck di atas ambang."
+      },
+      {
+        "label": "WasteAllowanceService (new)",
+        "en": "Backward cascade from finished quantity through the routing: input = output over (1 minus variable percent) plus fixed. Used by work order generation and Material Planning.",
+        "id": "Kaskade mundur dari jumlah jadi melalui routing: input = output dibagi (1 dikurangi persen variabel) ditambah tetap. Dipakai pembuatan work order dan Material Planning."
+      },
+      {
+        "label": "LearningEngine (new)",
+        "en": "Reads setup log and production output, proposes corrected values with status and sample count. Same pattern as SpeedTargetEngine and SpeedSuggestionStore.",
+        "id": "Membaca log setup dan output produksi, mengusulkan nilai terkoreksi dengan status dan jumlah sampel. Pola sama dengan SpeedTargetEngine dan SpeedSuggestionStore."
+      },
+      {
+        "label": "MonitoringService (new)",
+        "en": "Planned against actual per operation: finish, good output, waste, setup minutes, material used against issued, late reason. Feeds the KPIs and the learning engine.",
+        "id": "Rencana lawan aktual per operasi: selesai, hasil baik, waste, menit setup, bahan terpakai lawan keluar, alasan telat. Menyuplai KPI dan engine pembelajar."
+      }
+    ]
+  },
+  {
+    "key": "guide-ppic-tech-flow",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: PPIC Data Flow",
+    "purpose": {
+      "en": "How data moves from a confirmed Customer Order to a scheduled operation, to actual results, and back into the assumed values.",
+      "id": "Bagaimana data mengalir dari Customer Order terkonfirmasi ke operasi terjadwal, ke hasil aktual, dan kembali memperbaiki nilai asumsi."
+    },
+    "keywords": "alur data, data flow, customer order, work order, gate, jadwal, output, setup log, pembelajaran, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Delivery plan posted from a confirmed Customer Order: WoGenerationService creates one Work Order per part, with operations from the BOP and routing and material lines from the BOM. Process id is stored.",
+        "id": "Rencana kirim dari Customer Order terkonfirmasi diposting: WoGenerationService membuat satu Work Order per part, dengan operasi dari BOP dan routing dan baris bahan dari BOM. Id proses disimpan."
+      },
+      {
+        "en": "Estimates, automatic: WasteAllowanceService sets the start quantity, SpeedTargetEngine the target per hour, SetupTimeEngine the setup minutes of each operation.",
+        "id": "Perkiraan, otomatis: WasteAllowanceService menentukan jumlah awal, SpeedTargetEngine target per jam, SetupTimeEngine menit setup tiap operasi."
+      },
+      {
+        "en": "Material readiness, automatic: MaterialPlanningEngine nets stock, booking and incoming purchases and proposes bookings and purchase requests; GateService marks each operation Ready, Waiting or Blocked.",
+        "id": "Kesiapan bahan, otomatis: MaterialPlanningEngine menetralkan stok, booking dan pembelian yang datang dan mengusulkan booking dan purchase request; GateService menandai tiap operasi Ready, Waiting atau Blocked."
+      },
+      {
+        "en": "AutoPlanRunner schedules the Ready operations as a Draft plan: priority score, backward scheduling with waits, machine choice among the process machines. It never touches the confirmed, locked window.",
+        "id": "AutoPlanRunner menjadwalkan operasi yang Ready sebagai rencana Draft: skor prioritas, penjadwalan mundur dengan waktu tunggu, pemilihan mesin di antara mesin proses. Ia tidak pernah menyentuh jendela terkonfirmasi yang terkunci."
+      },
+      {
+        "en": "The officer reviews the exceptions (late risk, material waiting, tooling blocked, overload), may give a job priority (Hot or move up, with a reason), then confirms. Confirm writes the real start and finish and locks the first shifts.",
+        "id": "Officer meninjau pengecualian (berisiko telat, bahan menunggu, tooling terblokir, kelebihan beban), boleh memberi prioritas pada job (Hot atau naikkan, dengan alasan), lalu mengonfirmasi. Confirm menulis mulai dan selesai nyata dan mengunci shift pertama."
+      },
+      {
+        "en": "Shop floor records output, defects and actual setup minutes. MonitoringService compares plan and actual; LearningEngine corrects the assumed values inside its limits and logs each change.",
+        "id": "Lantai produksi mencatat output, cacat dan menit setup aktual. MonitoringService membandingkan rencana dan aktual; LearningEngine mengoreksi nilai asumsi dalam batasnya dan mencatat tiap perubahan."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-rules",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: PPIC Rules and Formulas",
+    "purpose": {
+      "en": "The formulas and rules the engines implement, with start values that live in Settings > Constants.",
+      "id": "Rumus dan aturan yang diimplementasikan engine, dengan nilai awal yang tersimpan di Settings > Constants."
+    },
+    "keywords": "rumus, formula, slack, critical ratio, skor, setup, waste, beban, ageing, pembelajaran, konstanta, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Remaining work = sum over remaining operations of setup, run time, queue and waits. Slack = (due date minus now) minus remaining work. Critical Ratio = (due date minus now) divided by remaining work.",
+        "id": "Sisa pekerjaan = jumlah semua operasi tersisa dari setup, waktu jalan, antrean dan tunggu. Slack = (due date dikurangi sekarang) dikurangi sisa pekerjaan. Critical Ratio = (due date dikurangi sekarang) dibagi sisa pekerjaan."
+      },
+      {
+        "en": "Layers: 0 Hot; 1 Critical Ratio below 1; 2 normal. Inside layer 2, jobs whose slack differs by less than the window (default one shift) are ranked by the setup-aware score.",
+        "id": "Lapisan: 0 Hot; 1 Critical Ratio di bawah 1; 2 normal. Di dalam lapis 2, job yang selisih slack-nya kurang dari jendela (default satu shift) diurutkan dengan skor sadar setup."
+      },
+      {
+        "en": "Score = Wdue x urgency + Wsetup x (1 minus setup / longest setup) + Wcust x tier + Wage x age, each 0 to 1; defaults 0.50, 0.35, 0.15 and a small ageing weight. Stored as constants.",
+        "id": "Skor = Wdue x urgensi + Wsetup x (1 dikurangi setup / setup terpanjang) + Wcust x tier + Wage x umur, tiap nilai 0 sampai 1; default 0,50, 0,35, 0,15 dan bobot ageing kecil. Disimpan sebagai konstanta."
+      },
+      {
+        "en": "Setup = base + changeover + tool. Total job setup counts as non-productive time in the load and the dates. A job is never delayed by setup savings for longer than one lock period.",
+        "id": "Setup = dasar + changeover + tooling. Total setup job dihitung sebagai waktu tidak produktif pada beban dan tanggal. Job tidak pernah ditunda penghematan setup lebih dari satu masa kunci."
+      },
+      {
+        "en": "Waste cascade: input = output / (1 - variable percent) + fixed, from the last process back to the first. Material to issue = first input. Rounded up to whole units.",
+        "id": "Kaskade waste: input = output / (1 - persen variabel) + tetap, dari proses terakhir mundur ke yang pertama. Bahan yang dikeluarkan = input pertama. Dibulatkan ke atas ke satuan utuh."
+      },
+      {
+        "en": "Load = planned hours incl. setup / available hours. Bottleneck when the load is at least the threshold (default 90 percent) and the highest of its horizon; the process flag is_bottleneck is the manual override.",
+        "id": "Beban = jam rencana termasuk setup / jam tersedia. Bottleneck bila beban minimal ambang (default 90 persen) dan tertinggi di horizonnya; flag is_bottleneck pada proses adalah penimpaan manual."
+      },
+      {
+        "en": "Learning: typical actual = median of the last N jobs (default 5, extremes ignored). New value = old + alpha x (typical minus old), alpha default 0.3, step limited to 20 percent. Frozen values are skipped.",
+        "id": "Pembelajaran: aktual tipikal = median N job terakhir (default 5, ekstrem diabaikan). Nilai baru = lama + alpha x (tipikal dikurangi lama), alpha default 0,3, langkah dibatasi 20 persen. Nilai beku dilewati."
+      },
+      {
+        "en": "Auto-plan runs daily, at shift start and on events and makes a Draft; the officer's Confirm makes it real. Lock = the next N running shifts (N set by the officer, default 1). Engines never move locked tasks; breaking the lock needs a reason.",
+        "id": "Auto-plan berjalan harian, tiap awal shift dan saat kejadian dan membuat Draft; Confirm officer membuatnya nyata. Kunci = N shift berjalan berikutnya (N diatur officer, default 1). Engine tidak memindahkan task terkunci; membuka kunci butuh alasan."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-roles",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: Roles, Permissions and Audit",
+    "purpose": {
+      "en": "Who may change what, what everyone may read, and how decisions are recorded.",
+      "id": "Siapa boleh mengubah apa, apa yang boleh dibaca semua orang, dan bagaimana keputusan dicatat."
+    },
+    "keywords": "peran, hak akses, permission, audit, decision log, scheduling officer, inventory officer, sales, tier customer, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Scheduling officer (PPIC_SCHEDULING): reviews the Draft plan and the exceptions, gives priority (Hot or move up, with a reason) and confirms the plan. Sets the lock in shifts and the bottleneck override.",
+        "id": "Officer penjadwalan (PPIC_SCHEDULING): meninjau rencana Draft dan pengecualian, memberi prioritas (Hot atau naikkan, dengan alasan) dan mengonfirmasi rencana. Mengatur kunci dalam shift dan penimpaan bottleneck."
+      },
+      {
+        "en": "Inventory control officer (PPIC_INVENTORY): watches the shortage and Waiting list and follows up purchases and ready dates. Bookings are confirmed automatically when stock covers the need.",
+        "id": "Officer pengendalian inventori (PPIC_INVENTORY): memantau daftar kekurangan dan Waiting dan menindaklanjuti pembelian dan tanggal siap. Booking dikonfirmasi otomatis bila stok mencukupi kebutuhan."
+      },
+      {
+        "en": "Both read the whole screen and Monitoring. Neither changes the other's data.",
+        "id": "Keduanya membaca seluruh layar dan Monitoring. Tidak ada yang mengubah data yang lain."
+      },
+      {
+        "en": "Masters (tooling, changeover, waste allowance, rates) are changed by users with the master right. The learning engine may adjust assumed values inside its limits; every change is logged and can be reverted or frozen.",
+        "id": "Master (tooling, changeover, toleransi waste, tarif) diubah user yang berhak master. Engine pembelajar boleh menyesuaikan nilai asumsi dalam batasnya; setiap perubahan dicatat dan dapat dikembalikan atau dibekukan."
+      },
+      {
+        "en": "Customer tier is edited in the Customer master by Sales only. Tooling status is edited by the tooling keepers named by the user.",
+        "id": "Tier customer hanya diubah di master Customer oleh Sales. Status tooling diubah oleh penjaga tooling yang ditunjuk user."
+      },
+      {
+        "en": "Every auto-plan, Confirm, lock break, priority override and applied value change is written to the decision log with who (user or ENGINE), time, old value, new value and reason.",
+        "id": "Setiap auto-plan, Confirm, pembukaan kunci, penimpaan prioritas dan perubahan nilai yang diterapkan dicatat di log keputusan dengan siapa (user atau ENGINE), waktu, nilai lama, nilai baru dan alasan."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-phases",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: Phases and Acceptance",
+    "purpose": {
+      "en": "The build order, what each phase delivers and how it is accepted. Nothing starts before the previous phase is reviewed by the user.",
+      "id": "Urutan pembangunan, apa yang dihasilkan tiap fase dan cara penerimaannya. Tidak ada yang mulai sebelum fase sebelumnya ditinjau user."
+    },
+    "keywords": "fase, phase, roadmap, urutan, penerimaan, acceptance, migrasi, test, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Phase 1, Work Orders from ProDev: check WoGenerationService end to end against BOP, routing and BOM; store process id; start quantity; copy BOM lines; list parts without routing. Accepted when each dummy Work Order matches its ProDev data.",
+        "id": "Fase 1, Work Order dari ProDev: periksa WoGenerationService dari ujung ke ujung terhadap BOP, routing dan BOM; simpan id proses; jumlah awal; salin baris BOM; daftarkan part tanpa routing. Diterima bila tiap Work Order dummy cocok dengan data ProDev."
+      },
+      {
+        "en": "Phase 2, material readiness: MRP per Work Order, GateService, booking and purchase request proposals, incoming dates. Accepted when a Work Order with missing material shows Waiting with the date and no officer input.",
+        "id": "Fase 2, kesiapan bahan: MRP per Work Order, GateService, usulan booking dan purchase request, tanggal datang. Diterima bila Work Order dengan bahan kurang tampil Waiting dengan tanggalnya tanpa input officer."
+      },
+      {
+        "en": "Phase 3, estimates: WasteAllowanceService, SpeedTargetEngine per operation, SetupTimeEngine, tooling master, wait rules, constants. Accepted when every operation has target, waste, spoilage and setup filled by engines.",
+        "id": "Fase 3, perkiraan: WasteAllowanceService, SpeedTargetEngine per operasi, SetupTimeEngine, master tooling, aturan tunggu, konstanta. Diterima bila tiap operasi punya target, waste, spoilage dan setup yang diisi engine."
+      },
+      {
+        "en": "Phase 4, auto planner: priority scorer, PDR with machine choice, lock in shifts, AutoPlanRunner making a Draft, exception list, officer priority and Confirm, decision log. Accepted by regression tests and a dummy week planned and confirmed.",
+        "id": "Fase 4, penjadwal otomatis: skor prioritas, PDR dengan pilihan mesin, kunci dalam shift, AutoPlanRunner membuat Draft, daftar pengecualian, prioritas officer dan Confirm, log keputusan. Diterima lewat test regresi dan satu minggu dummy yang dikonfirmasi."
+      },
+      {
+        "en": "Phase 5, screen: DevLib extensions, then Schedule tab (exception strip, Gantt, Kanban, Calendar, Grid), Work Order panel, Monitoring tab. Accepted by the user on the dummy site.",
+        "id": "Fase 5, layar: perluasan DevLib, lalu tab Schedule (strip pengecualian, Gantt, Kanban, Calendar, Grid), panel Work Order, tab Monitoring. Diterima user di situs dummy."
+      },
+      {
+        "en": "Phase 6, learning: setup log capture on the shop floor entry, LearningEngine with limits, change log with revert. Needs enough real jobs; until then values stay Assumed.",
+        "id": "Fase 6, pembelajaran: pencatatan log setup di entri lantai produksi, LearningEngine dengan batas, log perubahan dengan pengembalian. Butuh cukup job nyata; sampai saat itu nilai tetap Assumed."
+      },
+      {
+        "en": "Every phase: tests on real MySQL with verified cleanup, build:catalog, a JPEG or screenshot preview, commit and push with the agent tag, and live release only after the user agrees.",
+        "id": "Tiap fase: test di MySQL sungguhan dengan pembersihan terverifikasi, build:catalog, preview JPEG atau screenshot, commit dan push dengan tanda agen, dan rilis live hanya setelah user setuju."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-decisions",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: Decisions, Risks and Open Items",
+    "purpose": {
+      "en": "What is decided, what is proposed, and what still needs the user before the related phase starts.",
+      "id": "Apa yang sudah diputuskan, apa yang diusulkan, dan apa yang masih butuh user sebelum fase terkait dimulai."
+    },
+    "keywords": "keputusan, risiko, terbuka, open items, bottleneck, kunci jadwal, subkon, skema, persetujuan, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Decided: Work Orders from ProDev; MRP, estimates and draft schedule by engines, officer confirms; bookings auto-confirm when stock covers; lock = N running shifts set by officer; assumed values learned; tier in Customer master.",
+        "id": "Diputuskan: Work Order dari ProDev; MRP, perkiraan dan draf jadwal oleh engine, officer mengonfirmasi; booking otomatis terkonfirmasi bila stok cukup; kunci = N shift berjalan atur officer; nilai asumsi dipelajari; tier di master Customer."
+      },
+      {
+        "en": "Proposed, applies unless the user says otherwise: bottleneck detected automatically with an officer override; a subcontracted process is marked by the officer on the process (inhouse flag), which adds transport days.",
+        "id": "Diusulkan, berlaku kecuali user menyatakan lain: bottleneck dideteksi otomatis dengan penimpaan officer; proses subkon ditandai officer pada proses (flag inhouse), yang menambah hari angkutan."
+      },
+      {
+        "en": "Approved by the user: the column additions on prd_wo_operation and the new tables in the Master and Production databases for Phases 1 to 3. Migrations run first on the dummy databases and on live only at release.",
+        "id": "Disetujui user: penambahan kolom pada prd_wo_operation dan tabel baru di database Master dan Production untuk Fase 1 sampai 3. Migration dijalankan dulu di database dummy dan di live hanya saat rilis."
+      },
+      {
+        "en": "To verify in code: whether purchase order lines hold an expected receipt date (the Material Planning incoming list is the planned source), and whether every ProDev product has BOP, routing and BOM complete enough to generate from.",
+        "id": "Diverifikasi di kode: apakah baris purchase order menyimpan tanggal perkiraan terima (daftar incoming Material Planning adalah sumber rencana), dan apakah tiap produk ProDev punya BOP, routing dan BOM yang cukup lengkap untuk dibuat WO."
+      },
+      {
+        "en": "Risk: a product with incomplete routing or BOM gives a poor Work Order. Such parts are listed for PPIC and ProDev to fix; the engine never guesses missing data.",
+        "id": "Risiko: produk dengan routing atau BOM tidak lengkap menghasilkan Work Order buruk. Part seperti itu didaftar untuk diperbaiki PPIC dan ProDev; engine tidak pernah menebak data yang hilang."
+      },
+      {
+        "en": "Risk: the Draft changes too often and the officer loses trust. Mitigated by the lock, runs only at fixed times and on events, and a plan stability measure on the Monitoring tab.",
+        "id": "Risiko: Draft berubah terlalu sering dan officer kehilangan kepercayaan. Diredam oleh kunci, auto-plan hanya di waktu tetap dan saat kejadian, dan ukuran stabilitas rencana di tab Monitoring."
+      },
+      {
+        "en": "Risk: learning from few or odd jobs. Mitigated by a minimum sample count, a step limit, a freeze flag, and a logged revert.",
+        "id": "Risiko: belajar dari sedikit atau janggal job. Diredam oleh jumlah sampel minimum, batas langkah, flag bekukan, dan pengembalian yang tercatat."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-engine-flow",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: Engine Flow for Priority Scheduling",
+    "purpose": {
+      "en": "Step by step order in which the engines prepare a Draft schedule with priority, and where the officer acts. The flowchart picture is in the preview.",
+      "id": "Urutan langkah engine menyiapkan jadwal Draft dengan prioritas, dan di mana officer bertindak. Gambar flowchart ada di preview."
+    },
+    "keywords": "flowchart, alur engine, prioritas, hot job, critical ratio, pilih mesin, draft, confirm, autopilot, gate, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Trigger: daily, shift start, new Work Order, material arrival or delay, breakdown, officer priority. Each starts AutoPlanRunner, which opens a Draft run and a log row.",
+        "id": "Pemicu: harian, awal shift, Work Order baru, bahan datang atau terlambat, kerusakan, prioritas officer. Tiap pemicu menjalankan AutoPlanRunner, yang membuka run Draft dan satu baris log."
+      },
+      {
+        "en": "Collect and gate: take open operations outside the confirmed lock, then check gates (material by MRP, tooling, artwork, customer goods, capacity). Not ready goes to the exception list with a date or reason.",
+        "id": "Kumpulkan dan gerbang: ambil operasi terbuka di luar kunci terkonfirmasi, lalu cek gerbang (bahan oleh MRP, tooling, artwork, barang titipan, kapasitas). Yang belum siap masuk daftar pengecualian dengan tanggal atau alasan."
+      },
+      {
+        "en": "Estimate: waste cascade gives the start quantity, SpeedTargetEngine the target per hour, SetupTimeEngine the setup, wait rules add drying. Run time = quantity over target.",
+        "id": "Perkirakan: kaskade waste memberi jumlah awal, SpeedTargetEngine target per jam, SetupTimeEngine setup, aturan tunggu menambah pengeringan. Waktu jalan = jumlah dibagi target."
+      },
+      {
+        "en": "Rank: layer 0 Hot job; layer 1 Critical Ratio below 1 (smallest first); layer 2 by due date, re-ranked inside a one-shift window by the setup-aware score. Setup savings never reorder layers 0 and 1.",
+        "id": "Peringkat: lapis 0 Hot job; lapis 1 Critical Ratio di bawah 1 (terkecil dulu); lapis 2 menurut due date, diurut ulang dalam jendela satu shift dengan skor sadar setup. Penghematan setup tidak mengubah lapis 0 dan 1."
+      },
+      {
+        "en": "Choose machine: for each operation compare the machines of its process (certified, preference rank), drop unavailable ones, pick the earliest finish including setup, then lower load, then rank.",
+        "id": "Pilih mesin: untuk tiap operasi bandingkan mesin proses itu (tersertifikasi, urutan preferensi), buang yang tidak tersedia, pilih selesai paling awal termasuk setup, lalu beban lebih rendah, lalu urutan."
+      },
+      {
+        "en": "Check fit: if the job misses its due date or the machine is overloaded, it becomes an exception with options (other machine, overtime, split the lot, subcontract, move the date). Otherwise smooth the sequence by die, ink set and substrate.",
+        "id": "Cek kecocokan: bila job melewati due date atau mesin kelebihan beban, ia menjadi pengecualian dengan opsi (mesin lain, lembur, pecah lot, subkon, geser tanggal). Bila tidak, haluskan urutan menurut pisau, set tinta dan bahan."
+      },
+      {
+        "en": "Write the Draft and let the officer review. If a priority is needed (Hot job or Move up with a reason), the impact is shown and the engine re-runs from the ranking step. Then the officer confirms.",
+        "id": "Tulis Draft dan biarkan officer meninjau. Bila perlu prioritas (Hot job atau naikkan dengan alasan), dampaknya ditampilkan dan engine mengulang dari langkah peringkat. Lalu officer mengonfirmasi."
+      },
+      {
+        "en": "Confirm writes the real schedule and locks the next N running shifts. The shop floor records output and setup; monitoring and learning correct the assumed values that feed the estimate step.",
+        "id": "Confirm menulis jadwal nyata dan mengunci N shift berjalan berikutnya. Lantai produksi mencatat output dan setup; monitoring dan pembelajaran mengoreksi nilai asumsi yang masuk ke langkah perkiraan."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tech-operator-queue",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: Operator Queue, Timer and Quantity Input",
+    "purpose": {
+      "en": "A tablet screen at the machine showing the confirmed queue, with Play, Pause and Stop timers per process and quantity input. It records the real setup, run and pause time that the learning engine needs.",
+      "id": "Layar tablet di mesin yang menampilkan antrean terkonfirmasi, dengan timer Play, Pause dan Stop per proses dan input qty. Layar ini mencatat waktu setup, jalan dan jeda nyata yang dibutuhkan engine pembelajar."
+    },
+    "keywords": "operator, tablet, timer, play, pause, stop, waktu proses, time consume, qty output, waste, reject, setup log, antrean operator, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Shows only the confirmed, locked queue of the operator's machine: the running job, the next job with its checklist (material, plate, ink) and the rest of the queue. The operator cannot reorder it.",
+        "id": "Hanya menampilkan antrean terkonfirmasi dan terkunci untuk mesin operator: job yang berjalan, job berikutnya dengan daftar cek (bahan, plat, tinta) dan sisa antrean. Operator tidak dapat mengubah urutan."
+      },
+      {
+        "en": "Play on the next job starts the setup timer; Play again starts the run timer. Pause stops the timer and asks for a reason: waiting material, break, machine problem, quality hold, waiting crew, other.",
+        "id": "Play pada job berikutnya memulai timer setup; Play lagi memulai timer jalan. Pause menghentikan timer dan menanyakan alasan: menunggu bahan, istirahat, masalah mesin, tahan mutu, menunggu crew, lainnya."
+      },
+      {
+        "en": "Only one timer runs per machine and operator at a time. The Problem button, and the pause reason Machine problem, open a Breakdown Maintenance Order request filled with machine, work order and timer.",
+        "id": "Hanya satu timer berjalan per mesin dan operator pada satu waktu. Tombol Problem, dan alasan jeda Masalah mesin, membuka request Breakdown Maintenance Order yang terisi mesin, work order dan timer."
+      },
+      {
+        "en": "Add quantity records good sheets during the run. The screen shows good quantity, actual speed against target and waste so far against the allowance.",
+        "id": "Add quantity mencatat lembar baik selama jalan. Layar menampilkan jumlah baik, kecepatan aktual terhadap target dan waste sejauh ini terhadap toleransi."
+      },
+      {
+        "en": "Stop closes the timer and asks for good, waste and reject quantities and a reject reason (scrap type). It shows planned against produced, waste against allowance, the time split and the speed.",
+        "id": "Stop menutup timer dan menanyakan jumlah baik, waste dan reject beserta alasan reject (tipe scrap). Ditampilkan rencana lawan hasil, waste lawan toleransi, pembagian waktu dan kecepatan."
+      },
+      {
+        "en": "The time log feeds the Monitoring tab (plan against actual) and the learning engine: actual setup minutes per kind of change, actual speed (run quantity over run time) and actual waste.",
+        "id": "Log waktu menyuplai tab Monitoring (rencana lawan aktual) dan engine pembelajar: menit setup aktual per jenis perubahan, kecepatan aktual (jumlah jalan dibagi waktu jalan) dan waste aktual."
+      },
+      {
+        "en": "Quantities keep going to the existing production output tables (output and defect lines by scrap type). The new part is the time log, so no second output table is created.",
+        "id": "Jumlah tetap masuk ke tabel output produksi yang sudah ada (output dan baris cacat per tipe scrap). Yang baru adalah log waktu, sehingga tidak dibuat tabel output kedua."
+      }
+    ],
+    "fields": [
+      {
+        "label": "tm2prd.prd_operation_time_log",
+        "en": "New. One row per timer segment: operation, machine, operator, kind (SETUP, RUN, PAUSE), pause reason, start, end, minutes, change kind for setup. Replaces the planned prd_setup_log idea with one log.",
+        "id": "Baru. Satu baris per segmen timer: operasi, mesin, operator, jenis (SETUP, RUN, PAUSE), alasan jeda, mulai, selesai, menit, jenis perubahan untuk setup. Menggantikan rencana prd_setup_log dengan satu log."
+      },
+      {
+        "label": "tm2prd.prd_wo_operation_output",
+        "en": "Exists. Good quantity per entry. Add checkpoint entries during the run and the link to the time log segment.",
+        "id": "Sudah ada. Qty baik per entri. Tambah entri checkpoint selama jalan dan tautan ke segmen log waktu."
+      },
+      {
+        "label": "tm2prd.prd_wo_operation_output_defect",
+        "en": "Exists. Quantity per scrap type, category REJECT or WASTE. Stop writes the waste and reject lines here.",
+        "id": "Sudah ada. Qty per tipe scrap, kategori REJECT atau WASTE. Stop menulis baris waste dan reject di sini."
+      }
+    ]
+  },
+  {
+    "key": "guide-ppic-tech-wo-gantt",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: Work Order, Gantt Drag and Drop, Re-schedule and BMO",
+    "purpose": {
+      "en": "The Work Order screen with its BOP and BOM, how it links to the Gantt, how drag and drop works, how the screen shows what must be re-scheduled, and how a machine problem opens a Breakdown Maintenance Order.",
+      "id": "Layar Work Order dengan BOP dan BOM, tautannya ke Gantt, cara kerja drag and drop, bagaimana layar menunjukkan apa yang harus di-re-schedule, dan bagaimana masalah mesin membuka Breakdown Maintenance Order."
+    },
+    "keywords": "work order, bop, bom, gantt, drag and drop, geser, re-schedule, jadwal ulang, bmo, breakdown, monitoring hasil produksi, input output, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "Work Order screen: header (customer, product and revision, quantity, source order, due date, slack), a mini Gantt of its operations, then BOP and routing and BOM and material in two tabs plus Output and History.",
+        "id": "Layar Work Order: header (customer, produk dan revisi, jumlah, order sumber, due date, slack), Gantt mini dari operasinya, lalu BOP dan routing serta BOM dan material dalam dua tab ditambah Output dan History."
+      },
+      {
+        "en": "BOP and routing table: process, machine (with alternatives), quantity in and good out from the waste cascade, target per hour, waste, spoilage, setup, run, plan dates, status and output so far. Estimates come from the engines.",
+        "id": "Tabel BOP dan routing: proses, mesin (dengan alternatif), qty masuk dan hasil baik dari kaskade waste, target per jam, waste, spoilage, setup, jalan, tanggal rencana, status dan output sejauh ini. Perkiraan berasal dari engine."
+      },
+      {
+        "en": "BOM table: each material with where it is used, need including waste, stock, booked, incoming and the gate, plus tooling (plates, dies) with status. Links open Material Planning, Material Booking and the purchase order.",
+        "id": "Tabel BOM: tiap material dengan tempat pemakaiannya, kebutuhan termasuk waste, stok, booking, yang datang dan gerbangnya, plus tooling (plat, pisau) dengan status. Tautan membuka Material Planning, Material Booking dan purchase order."
+      },
+      {
+        "en": "Link to the Gantt: Open in Gantt on the header or on one operation opens the Gantt filtered to that Work Order and focused on the bar. Clicking a bar in the Gantt opens the Work Order panel.",
+        "id": "Tautan ke Gantt: Open in Gantt di header atau pada satu operasi membuka Gantt yang difilter ke Work Order itu dan terfokus pada barnya. Mengeklik bar di Gantt membuka panel Work Order."
+      },
+      {
+        "en": "Drag and drop: move a bar in time or to another certified machine of the same process. A green ghost and an impact box show new dates, setup change and jobs that become late. The move goes into the Draft; Confirm plan makes it real.",
+        "id": "Drag and drop: pindahkan bar dalam waktu atau ke mesin lain yang bersertifikat untuk proses yang sama. Bayangan hijau dan kotak dampak menunjukkan tanggal baru, perubahan setup dan job yang telat. Pemindahan masuk Draft; Confirm plan menjadikannya nyata."
+      },
+      {
+        "en": "Refused drops (red): inside the locked window, blocked gates, a machine that is down, or a machine not certified. Breaking the lock needs Hot job and a reason. The server checks every drop with PdrEngine::validateManualReschedule.",
+        "id": "Drop ditolak (merah): di dalam jendela terkunci, gerbang terblokir, mesin yang rusak, atau mesin tidak bersertifikat. Membuka kunci butuh Hot job dan alasan. Server memeriksa tiap drop dengan PdrEngine::validateManualReschedule."
+      },
+      {
+        "en": "Monitoring on the Gantt: planned bar, blue actual progress strip from production output and timers, and a red dashed tail where the forecast finish passes the plan. A machine Down band comes from a Breakdown Maintenance Order.",
+        "id": "Monitoring di Gantt: bar rencana, strip progres biru aktual dari output produksi dan timer, dan ekor merah putus-putus saat perkiraan selesai melewati rencana. Pita Down mesin berasal dari Breakdown Maintenance Order."
+      },
+      {
+        "en": "Needs re-schedule list: operations that are behind plan, on a machine that is down, blocked by tooling or material, or overlap a hot job. Each shows the reason, the forecast and Re-plan, which asks the engine for a new Draft around locked jobs.",
+        "id": "Daftar Perlu re-schedule: operasi tertinggal dari rencana, di mesin rusak, terblokir tooling atau bahan, atau bertabrakan dengan hot job. Tiap item menampilkan alasan, perkiraan dan Re-plan, yang meminta Draft baru dari engine di sekitar job terkunci."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Output entry by PPIC",
+        "en": "Output can be entered from the Work Order (Output link on an operation) or from the Gantt panel by PPIC, as well as by the operator timer screen. All write the same production output tables.",
+        "id": "Output dapat diinput dari Work Order (tautan Output pada operasi) atau dari panel Gantt oleh PPIC, selain dari layar timer operator. Semuanya menulis ke tabel output produksi yang sama."
+      },
+      {
+        "label": "Problem button to BMO",
+        "en": "The Problem button on the operator screen, and the pause reason Machine problem, open a Breakdown Maintenance Order request already filled with machine, work order, operation and timer. Priority P1 on a stopped machine starts the downtime.",
+        "id": "Tombol Problem di layar operator, dan alasan jeda Masalah mesin, membuka request Breakdown Maintenance Order yang sudah terisi mesin, work order, operasi dan timer. Prioritas P1 pada mesin berhenti memulai downtime."
+      },
+      {
+        "label": "BMO back to scheduling",
+        "en": "While the order is open, the machine shows Down on the Gantt and its jobs appear under Needs re-schedule. When maintenance presses Done, the downtime closes and the engine makes a new Draft.",
+        "id": "Selama order terbuka, mesin tampil Down di Gantt dan job-nya muncul di Perlu re-schedule. Saat maintenance menekan Done, downtime ditutup dan engine membuat Draft baru."
+      }
+    ]
+  },
+  {
+    "key": "guide-ppic-tech-wo-knowledge",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Technical Plan: What the Work Order Must Know",
+    "purpose": {
+      "en": "What a Work Order carries from Product Development so that scheduling knows every process, every machine that can run it, and the target, waste and spoilage of each step, and so that material is requested once with all waste included.",
+      "id": "Apa yang dibawa Work Order dari Product Development agar penjadwalan tahu setiap proses, setiap mesin yang bisa menjalankannya, serta target, waste dan spoilage tiap langkah, dan agar bahan diminta sekali dengan semua waste sudah termasuk."
+    },
+    "keywords": "dieline, imposisi, ups, bop, bom, routing, mesin eligible, kapasitas mesin, target pcs per jam, waste, spoilage, bahan baku, kaskade, ppic, rencana teknis, technical plan",
+    "steps": [
+      {
+        "en": "When the Work Order is created it copies from ProDev: dieline reference, imposition (ups per sheet, sheet size, grain, yield), BOP, routing, BOM and tooling. The copy is frozen on the Work Order, as for other transactions.",
+        "id": "Saat Work Order dibuat ia menyalin dari ProDev: referensi dieline, imposisi (ups per lembar, ukuran lembar, serat, yield), BOP, routing, BOM dan tooling. Salinan itu dibekukan di Work Order, seperti transaksi lain."
+      },
+      {
+        "en": "The Product and dieline tab shows the flat blank with cut and crease lines, the imposition on the press sheet, and the specification: style, sizes, board, ups, yield, colours, finishing and tooling.",
+        "id": "Tab Product and dieline menampilkan blank datar dengan garis potong dan lipat, imposisi pada lembar cetak, dan spesifikasi: model, ukuran, board, ups, yield, warna, finishing dan tooling."
+      },
+      {
+        "en": "The Routing and machines tab shows the processes in order and, for each, the machines that can run it, the one the engine chose, and the ones that cannot with the reason.",
+        "id": "Tab Routing and machines menampilkan proses berurutan dan, untuk tiap proses, mesin yang bisa menjalankannya, yang dipilih engine, dan yang tidak bisa beserta alasannya."
+      },
+      {
+        "en": "A machine is eligible only if it fits the sheet size, board weight, number of colours, process capability and certification, the die or plate fits, and it is not down. Limits come from the process-machine master.",
+        "id": "Sebuah mesin eligible hanya bila cocok dengan ukuran lembar, berat board, jumlah warna, kemampuan proses dan sertifikasi, pisau atau plat cocok, dan mesin tidak rusak. Batasnya berasal dari master proses-mesin."
+      },
+      {
+        "en": "For every eligible machine the screen shows target for this product, setup, load and earliest start, so the officer knows which machines can queue the job. A process with no eligible machine becomes an exception.",
+        "id": "Untuk tiap mesin eligible layar menampilkan target untuk produk ini, setup, beban dan mulai paling awal, sehingga officer tahu mesin mana yang bisa mengantre job. Proses tanpa mesin eligible menjadi pengecualian."
+      },
+      {
+        "en": "Units are explicit: sheets until die-cutting, pcs after it, with ups per sheet as the conversion. Target is stored in the process unit and also shown as pcs per hour.",
+        "id": "Satuan dibuat jelas: lembar sampai die-cutting, pcs sesudahnya, dengan ups per lembar sebagai konversi. Target disimpan dalam satuan proses dan juga ditampilkan sebagai pcs per jam."
+      },
+      {
+        "en": "Waste qty is the fixed loss of getting ready. Spoilage qty is the loss while running (percent of output). Each process asks for what it needs: input = output over (1 minus spoilage percent) plus waste qty, from the last process back.",
+        "id": "Qty waste adalah kehilangan tetap saat persiapan. Qty spoilage adalah kehilangan saat jalan (persen dari output). Tiap proses meminta yang dibutuhkan: input = output dibagi (1 dikurangi persen spoilage) ditambah qty waste, dari proses terakhir mundur."
+      },
+      {
+        "en": "The first process input is the material request. All waste of every process is inside it from the start, so there is no later request for waste at press, coating, die-cut or glue. MRP and booking use the same numbers.",
+        "id": "Input proses pertama adalah permintaan bahan. Semua waste tiap proses sudah ada di dalamnya sejak awal, jadi tidak ada permintaan susulan untuk waste di cetak, coating, die-cut atau lem. MRP dan booking memakai angka yang sama."
+      }
+    ],
+    "fields": [
+      {
+        "label": "tm2prd.prd_wo (add)",
+        "en": "Frozen copy from ProDev: dieline reference, ups per sheet, sheet size, grain, yield, colour count, style.",
+        "id": "Salinan beku dari ProDev: referensi dieline, ups per lembar, ukuran lembar, serat, yield, jumlah warna, model."
+      },
+      {
+        "label": "tm2prd.prd_wo_operation_machine (new)",
+        "en": "One row per operation and candidate machine: eligible yes or no, reason, rank, target for this product, setup minutes, computed by the engine at creation and on master change.",
+        "id": "Satu baris per operasi dan mesin kandidat: eligible ya atau tidak, alasan, urutan, target untuk produk ini, menit setup, dihitung engine saat pembuatan dan saat master berubah."
+      },
+      {
+        "label": "tm2prd.prd_wo_operation (add)",
+        "en": "Unit (sheets or pcs), quantity in, good out, waste qty, spoilage qty and percent, from the cascade.",
+        "id": "Satuan (lembar atau pcs), qty masuk, hasil baik, qty waste, qty spoilage dan persen, dari kaskade."
+      }
+    ]
+  }
+]

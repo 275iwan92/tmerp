@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Operator queue with timer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"><style>
+body{margin:0;background:#e9eef5;font-family:'Segoe UI',system-ui,sans-serif;color:#1e293b;font-size:15px}
+.top{background:#2c3e69;color:#fff;padding:12px 22px;display:flex;align-items:center;gap:16px}.top b{font-size:19px}.top small{opacity:.75}
+.top .r{margin-left:auto;text-align:right}.chip{display:inline-block;border-radius:14px;padding:2px 12px;font-weight:700;font-size:13px}
+.wrap{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;padding:14px 18px}
+.card{background:#fff;border:1px solid #dbe3ee;border-radius:14px;padding:16px 18px;margin-bottom:14px}
+h3{margin:0 0 8px;font-size:13px;text-transform:uppercase;color:#8a94a6;letter-spacing:.05em}
+.big{font-size:25px;font-weight:700}.mut{color:#64748b}
+.tm{display:flex;align-items:center;gap:18px;margin:10px 0}.clock{font:700 54px/1 'Segoe UI',monospace;letter-spacing:2px;color:#1d4ed8}.clock small{font-size:16px;color:#64748b;letter-spacing:0;margin-left:6px}
+.pb{height:14px;background:#e2e8f0;border-radius:8px;overflow:hidden}.pb span{display:block;height:14px;background:#2c7be5;width:55%}
+.btn{border-radius:12px;padding:14px 24px;font-weight:700;font-size:17px;border:2px solid #cbd5e1;background:#fff}.btn.p{background:#2c7be5;border-color:#2c7be5;color:#fff}.btn.g{background:#16a34a;border-color:#16a34a;color:#fff}.btn.a{background:#f59e0b;border-color:#f59e0b;color:#fff}.btn.r{background:#dc2626;border-color:#dc2626;color:#fff}.btn.o{border-color:#dc2626;color:#dc2626}
+.row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.seg{display:flex;height:26px;border-radius:7px;overflow:hidden;margin:8px 0 4px;font-size:12px;font-weight:700;color:#fff}.seg div{display:flex;align-items:center;justify-content:center}
+.lg{display:flex;gap:16px;font-size:12.5px;color:#475569;flex-wrap:wrap}.lg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.kv div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px}.kv b{display:block;font-size:19px}.kv span{font-size:11.5px;color:#64748b}
+.next{border-left:6px solid #d97706}.cd{font-size:30px;font-weight:700;color:#d97706}
+ul.ck{list-style:none;padding:0;margin:8px 0 0}ul.ck li{padding:6px 0;border-bottom:1px solid #eef2f7;display:flex;gap:10px;align-items:center;font-size:14px}.ok{color:#16a34a}.no{color:#dc2626}
+.q{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #eef2f7}.n{background:#2c3e69;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.q small{color:#64748b}.note{font-size:12.5px;color:#64748b;margin-top:10px}
+.ov{position:absolute;inset:0;background:rgba(15,23,42,.55)}.dlg{position:absolute;background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.dlg h2{margin:0 0 4px;font-size:21px}.rs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.rs div{border:2px solid #cbd5e1;border-radius:12px;padding:16px 12px;font-weight:700;font-size:16px;text-align:center}
+.rs div.on{border-color:#f59e0b;background:#fffbeb}.inp{border:2px solid #cbd5e1;border-radius:10px;padding:10px 12px;font-size:20px;font-weight:700;width:100%;box-sizing:border-box;text-align:right}
+.fl{font-size:12px;color:#64748b;text-transform:uppercase;font-weight:700;margin:10px 0 4px}.sum{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}.sum div{display:flex;justify-content:space-between;padding:2px 0}
+</style></head><body><div style="position:relative;height:760px;overflow:hidden"><div class="top"><div><b>Press 4C-01</b><br><small>Shift 1 · 07:00 to 15:00 · operator Budi S.</small></div>
+<div class="r"><span class="chip" style="background:#d1fae5;color:#065f46">Confirmed plan</span> <span class="chip" style="background:#e2e8f0;color:#475569">Locked until 15:00</span><br><small>Thu 8 Oct 2026 · 09:41</small></div></div><div class="wrap" style="opacity:.55"><div class="card" style="height:300px"></div><div class="card" style="height:300px"></div></div><div class="ov"></div>
+<div class="dlg" style="left:16px;top:90px;width:470px"><h2>Pause: why?</h2><div class="mut">The timer stops and the reason is saved. Press Play to continue.</div>
+<div class="rs"><div class="on"><i class="fa-solid fa-boxes-stacked"></i> Waiting material</div><div><i class="fa-solid fa-mug-hot"></i> Break</div><div><i class="fa-solid fa-screwdriver-wrench"></i> Machine problem</div><div><i class="fa-solid fa-magnifying-glass"></i> Quality hold</div><div><i class="fa-solid fa-people-arrows"></i> Waiting crew</div><div><i class="fa-solid fa-ellipsis"></i> Other</div></div>
+<div class="mut" style="margin-top:10px">Machine problem opens a Breakdown Maintenance Order request, filled with this machine and work order. Run time so far: 00:39:40.</div>
+<div class="row" style="justify-content:flex-end"><button class="btn">Back</button><button class="btn a"><i class="fa-solid fa-pause"></i> Pause</button></div></div>
+<div class="dlg" style="left:560px;top:60px;width:570px"><h2>Stop WO-2610-0128</h2><div class="mut">Enter what was produced in this run. Stop closes the timer.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><div><div class="fl">Good sheets</div><div class="inp">5,012</div></div><div><div class="fl">Waste sheets</div><div class="inp">86</div></div><div><div class="fl">Reject sheets</div><div class="inp">24</div></div></div>
+<div class="fl">Reject reason (scrap type)</div><div class="inp" style="text-align:left;font-size:16px;font-weight:600">Colour variation <i class="fa-solid fa-chevron-down" style="float:right;margin-top:3px;color:#94a3b8"></i></div>
+<div class="sum"><div><span>Planned</span><b>5,379</b></div><div><span>Produced (good + waste + reject)</span><b>5,122</b></div><div><span>Waste against allowance</span><b style="color:#d97706">1.7 % (allow 1.5 %)</b></div><div><span>Time: setup 18 min · run 1 h 11 · paused 14 min</span><b>Speed 4,330 / h</b></div></div>
+<div class="row" style="justify-content:flex-end"><button class="btn">Cancel</button><button class="btn r"><i class="fa-solid fa-stop"></i> Save and stop</button></div></div></div></body></html>

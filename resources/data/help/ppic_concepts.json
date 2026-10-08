@@ -1,0 +1,502 @@
+[
+  {
+    "key": "guide-ppic-overview",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Scheduling and Capacity Control for Offset Packaging",
+    "purpose": {
+      "en": "PPIC focuses on scheduling and on monitoring results, and while scheduling it also controls inventory. After Inquiry and ProDev lock the product and routing, PPIC decides what runs next, where, when and with how much material.",
+      "id": "PPIC berfokus pada penjadwalan dan pemantauan hasil, dan saat menjadwal juga mengendalikan inventori. Setelah Inquiry dan ProDev mengunci produk dan routing, PPIC menentukan job berikutnya, di mana, kapan dan dengan bahan berapa."
+    },
+    "keywords": "ppic, production planning, inventory control, scheduling, penjadwalan, antrean cetak, job sequencing, kapasitas, capacity, urutan job, strategic scheduling, short run",
+    "steps": [
+      {
+        "en": "Upstream is locked: product structure, gang run, imposition and routing (BOP) come from Inquiry and ProDev. PPIC does not change them; it decides sequence, timing, capacity and release.",
+        "id": "Hulu sudah terkunci: struktur produk, gang run, imposisi dan routing (BOP) datang dari Inquiry dan ProDev. PPIC tidak mengubahnya; PPIC memutuskan urutan, waktu, kapasitas dan pelepasan job."
+      },
+      {
+        "en": "Five questions every day: is the job ready (material, tooling, artwork), how urgent is it, which jobs fit together to save setup, can the machines carry the load, and how much extra material must be issued.",
+        "id": "Lima pertanyaan tiap hari: apakah job siap (bahan, tooling, artwork), seberapa mendesak, job mana yang cocok digabung untuk hemat setup, apakah mesin kuat menanggung beban, dan berapa tambahan bahan yang harus dikeluarkan."
+      },
+      {
+        "en": "Flow, mostly automatic: Work Orders from ProDev data, material readiness and estimates by engines, a draft schedule by the engine, the officer confirms, then the next shifts are locked (the officer sets how many).",
+        "id": "Alur, sebagian besar otomatis: Work Order dari data ProDev, kesiapan bahan dan perkiraan oleh engine, draf jadwal oleh engine, officer mengonfirmasi, lalu shift berikutnya dikunci (officer mengatur jumlahnya)."
+      },
+      {
+        "en": "The officer confirms the plan, gives a job priority or clears an exception. The engine never reorders a hot or late-risk job to save setup time, and never moves a locked task.",
+        "id": "Officer mengonfirmasi rencana, memberi prioritas pada job atau menyelesaikan pengecualian. Engine tidak pernah menggeser job hot atau berisiko telat demi hemat setup, dan tidak pernah memindahkan task yang terkunci."
+      },
+      {
+        "en": "Already in the system: Work Order generation, backward scheduling, priority ranking (hot job, critical ratio, due date), Scheduling Board, rule library, changeover table per machine, Material Planning and Material Booking.",
+        "id": "Sudah ada di sistem: pembuatan Work Order, penjadwalan mundur, peringkat prioritas (hot job, critical ratio, due date), Scheduling Board, rule library, tabel changeover per mesin, Material Planning dan Material Booking."
+      },
+      {
+        "en": "Proposed additions in these guides: readiness gates incl. tooling, setup-aware sequencing, waste allowance per process, bottleneck load view, lock rules and a PPIC KPI board. Nothing is built until the user approves the review.",
+        "id": "Usulan tambahan di panduan ini: gerbang kesiapan termasuk tooling, urutan yang sadar setup, toleransi waste per proses, tampilan beban bottleneck, aturan kunci jadwal dan papan KPI PPIC. Belum ada yang dibangun sebelum review disetujui user."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-readiness-gates",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Readiness Gates Before a Job Enters a Machine Queue",
+    "purpose": {
+      "en": "A Work Order enters a machine queue only when everything it needs is ready. The gate shows what is missing instead of hiding the job, so PPIC can chase it.",
+      "id": "Work Order masuk antrean mesin hanya bila semua kebutuhannya siap. Gerbang menunjukkan apa yang kurang, bukan menyembunyikan job, sehingga PPIC bisa mengejarnya."
+    },
+    "keywords": "gate, kesiapan, readiness, tooling, plat ctp, pisau pond, matras emboss, ready, material gate, artwork, proof, siap cetak, blocked",
+    "steps": [
+      {
+        "en": "Material gate: paper or board, ink, coating, foil and glue are booked or in stock for the quantity including waste allowance. A late purchase shows its expected arrival date.",
+        "id": "Gerbang bahan: kertas atau board, tinta, coating, foil dan lem sudah dibooking atau ada stok untuk jumlah termasuk toleransi waste. Pembelian yang terlambat menampilkan perkiraan tanggal datang."
+      },
+      {
+        "en": "Tooling gate: CTP plates made, cutting die (pisau pond) and emboss or foil die present and approved. A die that has reached its planned impression count is checked first.",
+        "id": "Gerbang tooling: plat CTP sudah jadi, pisau pond serta matras emboss atau foil ada dan disetujui. Pisau yang sudah mencapai jumlah impresi rencana diperiksa dulu."
+      },
+      {
+        "en": "Artwork gate: final artwork and the physical proof are approved, and the colour list including Pantone spot colours is fixed. The due date counts from the physical proof approval.",
+        "id": "Gerbang artwork: artwork final dan proof fisik sudah disetujui, dan daftar warna termasuk spot color Pantone sudah pasti. Due date dihitung dari persetujuan proof fisik."
+      },
+      {
+        "en": "Customer-supplied goods gate: material sent by the customer is received and has passed inspection for quantity and quality.",
+        "id": "Gerbang barang titipan pelanggan: bahan kiriman pelanggan sudah diterima dan lolos pemeriksaan jumlah dan mutu."
+      },
+      {
+        "en": "Capacity gate: machine, crew and shift are available, and the machine has no planned maintenance order in that slot.",
+        "id": "Gerbang kapasitas: mesin, crew dan shift tersedia, dan mesin tidak punya jadwal perawatan terencana pada slot itu."
+      },
+      {
+        "en": "Each gate shows Ready, Waiting (with the expected date) or Blocked (with the reason). Only jobs with every gate Ready are scheduled; Waiting jobs appear in an almost-ready list.",
+        "id": "Tiap gerbang bernilai Ready, Waiting (dengan perkiraan tanggal) atau Blocked (dengan alasan). Hanya job dengan semua gerbang Ready yang dijadwalkan; job Waiting tampil di daftar hampir siap."
+      },
+      {
+        "en": "Decided: a tooling master is built (plates, dies, emboss and foil dies) with status, use counter and setup time. Today tooling exists only as lines on the inquiry.",
+        "id": "Diputuskan: master tooling dibangun (plat, pisau, matras emboss dan foil) dengan status, penghitung pemakaian dan waktu setup. Saat ini tooling hanya ada sebagai baris di inquiry."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-priority",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: How Job Urgency Is Ranked",
+    "purpose": {
+      "en": "How the system decides which ready job is most urgent: hot job first, then critical ratio, then due date, with setup savings and customer class only as refinements among similar jobs.",
+      "id": "Cara sistem menentukan job siap mana yang paling mendesak: hot job dulu, lalu critical ratio, lalu due date; penghematan setup dan kelas pelanggan hanya penyempurna di antara job yang mirip."
+    },
+    "keywords": "priority, prioritas, slack time, critical ratio, cr, due date, anchor job, hot job, urgent, mendesak, skor prioritas, edd, kelas pelanggan, tier",
+    "steps": [
+      {
+        "en": "Layer 0: Hot Job. Flagged by hand with a reason; always first.",
+        "id": "Lapis 0: Hot Job. Ditandai manual dengan alasan; selalu paling depan."
+      },
+      {
+        "en": "Layer 1: Critical Ratio below 1 (late risk). CR = time left until due date divided by remaining work. Slack = time left minus remaining work; negative slack means already late. These are the anchor jobs.",
+        "id": "Lapis 1: Critical Ratio di bawah 1 (berisiko telat). CR = sisa waktu sampai due date dibagi sisa pekerjaan. Slack = sisa waktu dikurangi sisa pekerjaan; slack negatif berarti sudah telat. Ini job jangkar."
+      },
+      {
+        "en": "Remaining work counts every remaining operation: setup, run time, queue before each machine, drying or curing waits and transport. Counting only the current operation makes every job look safe.",
+        "id": "Sisa pekerjaan menghitung semua operasi yang tersisa: setup, waktu jalan, antrean sebelum tiap mesin, waktu tunggu kering atau curing dan angkutan. Jika hanya operasi sekarang yang dihitung, semua job tampak aman."
+      },
+      {
+        "en": "Layer 2: normal jobs ordered by due date, then crew fit, then confirmation order. Customer class (Tier 1 to 3, kept in the Customer master by Sales) is a tie-break with ageing, so a Tier 3 job is not pushed back forever.",
+        "id": "Lapis 2: job normal diurutkan menurut due date, lalu kecocokan crew, lalu urutan konfirmasi. Kelas pelanggan (Tier 1 sampai 3, disimpan di master Customer oleh Sales) hanya penentu seri dengan ageing, agar job Tier 3 tidak terus ditunda."
+      },
+      {
+        "en": "Among jobs of similar urgency (slack within one shift of each other) setup counts: Score = 0.50 x urgency + 0.35 x (1 - setup / longest setup) + 0.15 x customer class, each scaled 0 to 1. Weights are starting values.",
+        "id": "Di antara job yang urgensinya mirip (selisih slack dalam satu shift) setup ikut dihitung: Skor = 0,50 x urgensi + 0,35 x (1 - setup / setup terpanjang) + 0,15 x kelas pelanggan, tiap nilai 0 sampai 1. Bobot ini nilai awal."
+      },
+      {
+        "en": "The source formula 1 / max(slack, 0.1) mixes hours with setup minutes and gives every late job the same value. Scaling each part to 0 to 1 fixes both and keeps the existing hot, critical-ratio and due-date layers.",
+        "id": "Rumus sumber 1 / max(slack, 0,1) mencampur jam dengan menit setup dan memberi nilai sama untuk semua job telat. Menskalakan tiap bagian ke 0 sampai 1 memperbaiki keduanya dan mempertahankan lapisan hot, critical ratio dan due date."
+      },
+      {
+        "en": "The board shows why a job sits where it is (hot, at risk, setup saving, customer class). The officer may override; the reason is recorded in the decision log.",
+        "id": "Papan menunjukkan alasan posisi sebuah job (hot, berisiko, hemat setup, kelas pelanggan). Petugas boleh menimpa; alasannya dicatat di log keputusan."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-setup-matrix",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Setup Matrix and Sequencing Rules",
+    "purpose": {
+      "en": "Estimates changeover time and extra waste when one job follows another on the same machine, and uses it to choose the next job among equally urgent ones.",
+      "id": "Memperkirakan waktu changeover dan waste tambahan saat satu job menyusul job lain di mesin yang sama, lalu memakainya untuk memilih job berikutnya di antara job yang sama mendesak."
+    },
+    "keywords": "setup, changeover, make ready, makeready, wash up, cuci rol, spot color, pantone, gramatur, caliper, ukuran kertas, sequencing, urutan, smed, matrix",
+    "steps": [
+      {
+        "en": "Setup between job i and job j = sum of the changes: colour, ink type, substrate, sheet size, plate, die. No change = 0 minutes.",
+        "id": "Setup antara job i dan job j = jumlah perubahan: warna, jenis tinta, bahan, ukuran kertas, plat, pisau. Tanpa perubahan = 0 menit."
+      },
+      {
+        "en": "Ink between jobs: lighter colours before darker ones; same Pantone on the same unit. Adding a spot colour = partial wash (start value 15 to 25 min); full wash = 30 to 45 min.",
+        "id": "Tinta antar job: warna terang sebelum gelap; Pantone yang sama di unit yang sama. Tambah spot color = cuci sebagian (nilai awal 15 sampai 25 menit); cuci total = 30 sampai 45 menit."
+      },
+      {
+        "en": "Colour order inside one job (Yellow, Magenta, Cyan, Black, then spot) follows the press units set by prepress. PPIC sequences between jobs only.",
+        "id": "Urutan warna di dalam satu job (Yellow, Magenta, Cyan, Black, lalu spot) mengikuti unit mesin yang diatur prepress. PPIC hanya mengurutkan antar job."
+      },
+      {
+        "en": "Conventional and UV ink or varnish on the same units usually need different rollers and a full wash. Count it as an ink type change, a large setup; confirm the real time with the press operator.",
+        "id": "Tinta atau vernis konvensional dan UV di unit yang sama biasanya butuh rol berbeda dan cuci total. Hitung sebagai perubahan jenis tinta, setup besar; konfirmasikan waktu nyata dengan operator mesin."
+      },
+      {
+        "en": "Substrate: move from thin to thick (for example 210 to 350 gsm), keep the same board type and grain direction together. A difference over about 20 gsm is significant (start value 10 to 20 min); caliper matters as much as gsm.",
+        "id": "Bahan: urut dari tipis ke tebal (misalnya 210 ke 350 gsm), kelompokkan jenis board dan arah serat yang sama. Selisih di atas sekitar 20 gsm dianggap signifikan (nilai awal 10 sampai 20 menit); ketebalan (caliper) sama penting dengan gsm."
+      },
+      {
+        "en": "Sheet size: same size = 0 minutes; a clearly different size = 10 to 15 min start value. Group the same size together and go from large to small.",
+        "id": "Ukuran kertas: ukuran sama = 0 menit; ukuran jelas berbeda = nilai awal 10 sampai 15 menit. Kelompokkan ukuran yang sama dan urut dari besar ke kecil."
+      },
+      {
+        "en": "Post-press: die-cutting is grouped by cutting die, gluing by carton style and glue type. The existing batching rule on dieline reference already groups jobs with the same die.",
+        "id": "Pasca cetak: die-cutting dikelompokkan menurut pisau pond, gluing menurut model karton dan jenis lem. Aturan batching berdasarkan referensi dieline sudah mengelompokkan job yang pisaunya sama."
+      },
+      {
+        "en": "Times and extra waste are stored per machine in the Changeover table. They start as assumed values and the learning engine adjusts them from measured makeready. Total job setup = machine base setup + changeover + tool setup.",
+        "id": "Waktu dan waste tambahan disimpan per mesin di tabel Changeover. Awalnya nilai asumsi, lalu mesin pembelajar menyesuaikannya dari makeready terukur. Total setup job = setup dasar mesin + changeover + setup tooling."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-bottleneck",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Finite Capacity and Bottleneck Control",
+    "purpose": {
+      "en": "Loads each machine group against its real available hours, finds where the constraint is, and keeps work flowing to it without piling up half-finished sheets.",
+      "id": "Membandingkan beban tiap grup mesin dengan jam tersedia yang nyata, mencari di mana kendala berada, dan menjaga aliran kerja ke sana tanpa menumpuk lembaran setengah jadi."
+    },
+    "keywords": "bottleneck, kapasitas, finite capacity, wip, buffer, staging, drum buffer rope, toc, die cutting, gluing, beban mesin, load, antrean, curing, pengeringan",
+    "steps": [
+      {
+        "en": "Load per machine group (press, coating or lamination, foil or emboss, die-cutting, gluing) for the next one to two weeks = planned hours divided by available hours after shifts, holidays and maintenance.",
+        "id": "Beban per grup mesin (cetak, coating atau laminasi, foil atau emboss, die-cutting, gluing) untuk satu sampai dua minggu ke depan = jam rencana dibagi jam tersedia setelah shift, libur dan perawatan."
+      },
+      {
+        "en": "The bottleneck is the group with the highest load; flag it above about 90 percent (start value). It moves with the product mix: many four-colour jobs load the press, complex cartons load gluing. Recheck weekly.",
+        "id": "Bottleneck adalah grup dengan beban tertinggi; tandai di atas sekitar 90 persen (nilai awal). Ia berpindah mengikuti campuran produk: banyak job empat warna membebani mesin cetak, karton rumit membebani gluing. Cek tiap minggu."
+      },
+      {
+        "en": "Drum: schedule the bottleneck first and in full detail; schedule the other machines around it.",
+        "id": "Drum: jadwalkan bottleneck lebih dulu dan serinci mungkin; mesin lain dijadwalkan mengikutinya."
+      },
+      {
+        "en": "Buffer: protect the bottleneck with a time buffer so sheets arrive some hours before needed and the machine never waits. Measure the buffer in hours of work, not only in sheet count.",
+        "id": "Buffer: lindungi bottleneck dengan buffer waktu agar lembaran tiba beberapa jam sebelum dipakai dan mesin tidak pernah menunggu. Ukur buffer dalam jam kerja, bukan hanya jumlah lembar."
+      },
+      {
+        "en": "Rope: release a Work Order to its first process only when the bottleneck will need it soon. Set a WIP limit per staging area (pallets or hours of work) so printed sheets do not pile up.",
+        "id": "Rope: lepas Work Order ke proses pertamanya hanya bila bottleneck akan segera membutuhkannya. Tetapkan batas WIP per area staging (pallet atau jam kerja) agar lembaran cetak tidak menumpuk."
+      },
+      {
+        "en": "Respect waiting time: after printing or coating the sheets must dry or cure before die-cutting or gluing, and laminated sheets need curing. Keep a minimum wait per coating type in the process master (proposed field).",
+        "id": "Hormati waktu tunggu: setelah cetak atau coating lembaran harus kering atau curing sebelum die-cutting atau gluing, dan hasil laminasi perlu curing. Simpan waktu tunggu minimum per jenis coating di master proses (usulan field)."
+      },
+      {
+        "en": "Split a long Work Order so finished sheets move to the next process before the whole quantity is done (transfer batch). The officer confirms each split.",
+        "id": "Pecah Work Order panjang agar lembaran yang sudah jadi pindah ke proses berikutnya sebelum seluruh jumlah selesai (transfer batch). Petugas mengonfirmasi tiap pemecahan."
+      },
+      {
+        "en": "If a step is subcontracted (for example die-cutting), add transport days to the remaining work and treat the subcontractor as a capacity group of its own.",
+        "id": "Bila satu tahap disubkontrakkan (misalnya die-cutting), tambahkan hari angkutan ke sisa pekerjaan dan perlakukan subkon sebagai grup kapasitas tersendiri."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-waste",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Waste Allowance and Spoilage per Process",
+    "purpose": {
+      "en": "How much extra material to issue so enough good pieces remain after each process: a fixed setup waste plus a variable percentage, calculated backwards from the order quantity.",
+      "id": "Berapa bahan tambahan yang dikeluarkan agar cukup barang baik tersisa setelah tiap proses: waste setup tetap ditambah persentase variabel, dihitung mundur dari jumlah pesanan."
+    },
+    "keywords": "waste, spoilage, susut, toleransi, allowance, make ready, setup waste, trim, guillotine, potong awal, scrap, rendemen, yield, bahan tambahan",
+    "steps": [
+      {
+        "en": "Allowance per process = fixed setup waste (lost getting ready, per run) + variable percentage of the quantity (lost while running). Two numbers per process, not one percent.",
+        "id": "Toleransi per proses = waste setup tetap (hilang saat persiapan, per run) + persentase variabel dari jumlah (hilang saat berjalan). Dua angka per proses, bukan satu persen."
+      },
+      {
+        "en": "Start ranges: guillotine 2 to 5 sheets + 0.2 to 0.5 %; press 50 to 150 sheets + 1.0 to 2.0 %; coating or lamination 15 to 30 sheets + 0.5 to 1.0 %.",
+        "id": "Rentang awal: potong awal 2 sampai 5 lembar + 0,2 sampai 0,5 %; cetak 50 sampai 150 lembar + 1,0 sampai 2,0 %; coating atau laminasi 15 sampai 30 lembar + 0,5 sampai 1,0 %."
+      },
+      {
+        "en": "Start ranges: foil or emboss 20 to 40 sheets + 1.0 to 1.5 %; die-cutting 15 to 30 sheets + 0.5 to 1.0 %; gluing and folding 20 to 50 units + 0.5 to 1.5 %.",
+        "id": "Rentang awal: foil atau emboss 20 sampai 40 lembar + 1,0 sampai 1,5 %; die-cutting 15 sampai 30 lembar + 0,5 sampai 1,0 %; gluing dan lipat 20 sampai 50 unit + 0,5 sampai 1,5 %."
+      },
+      {
+        "en": "Calculate backwards from the finished quantity: input of a process = output / (1 - variable %) + fixed. The result of one process is the required output of the process before it.",
+        "id": "Hitung mundur dari jumlah jadi: input sebuah proses = output / (1 - variabel %) + tetap. Hasil satu proses adalah output yang dibutuhkan proses sebelumnya."
+      },
+      {
+        "en": "Example, 5,000 boxes, one per sheet: gluing 5,081 (1.0 % + 30); die-cut 5,140 (0.75 % + 20); coating 5,199 (0.75 % + 20); press 5,379 (1.5 % + 100); guillotine 5,401 (0.35 % + 3). Issue 5,401 sheets, 8.0 % above the order.",
+        "id": "Contoh, 5.000 box, satu per lembar: gluing 5.081 (1,0 % + 30); die-cut 5.140 (0,75 % + 20); coating 5.199 (0,75 % + 20); cetak 5.379 (1,5 % + 100); potong awal 5.401 (0,35 % + 3). Keluarkan 5.401 lembar, 8,0 % di atas pesanan."
+      },
+      {
+        "en": "Complexity moves the numbers: more colours, spot colour, foil, difficult board and the extra waste of a changeover from the previous job (Changeover table) are added on top of the base allowance.",
+        "id": "Kerumitan menggeser angka: warna lebih banyak, spot color, foil, board sulit dan waste tambahan changeover dari job sebelumnya (tabel Changeover) ditambahkan di atas toleransi dasar."
+      },
+      {
+        "en": "Costing and PPIC must read the same allowance table or the cost and the paper issued disagree. After each job actual waste is compared with the allowance and a change is only suggested; the user changes the master.",
+        "id": "Costing dan PPIC harus membaca tabel toleransi yang sama, bila tidak biaya dan kertas yang dikeluarkan akan berbeda. Setelah tiap job waste aktual dibandingkan dengan toleransi dan perubahan hanya disarankan; master diubah oleh user."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-lock-reschedule",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Schedule Lock and Rescheduling",
+    "purpose": {
+      "en": "Keeps the plan stable on the shop floor: the near part of each queue is locked, the far part is re-planned when things change, and breaking the lock needs a reason.",
+      "id": "Menjaga rencana tetap stabil di lantai produksi: bagian antrean yang dekat dikunci, bagian yang jauh direncanakan ulang bila ada perubahan, dan membuka kunci butuh alasan."
+    },
+    "keywords": "lock, kunci jadwal, reschedule, jadwal ulang, frozen, stabilitas, interupsi, breakdown, hot job, shift, penjadwalan ulang",
+    "steps": [
+      {
+        "en": "Lock the next running shifts of every queue (default one shift; the officer sets the number, since it depends on how many shifts the machine runs), so operators and material handlers work to a stable plan.",
+        "id": "Kunci shift berjalan berikutnya di setiap antrean (default satu shift; officer mengatur jumlahnya, karena tergantung berapa shift yang dijalankan mesin), agar operator dan petugas bahan bekerja dengan rencana stabil."
+      },
+      {
+        "en": "Beyond the lock the engine re-plans by itself when something changes (new order, late material, breakdown) and makes a new Draft. The officer confirms it; nothing changes on the shop floor before that.",
+        "id": "Di luar kunci, engine merencanakan ulang sendiri bila ada perubahan (order baru, bahan terlambat, kerusakan) dan membuat Draft baru. Officer mengonfirmasinya; tidak ada yang berubah di lantai produksi sebelum itu."
+      },
+      {
+        "en": "The lock may be broken only for a hot job, machine breakdown, material or tooling failure, or customer cancellation. The officer picks from the options and the reason is recorded.",
+        "id": "Kunci hanya boleh dibuka untuk hot job, kerusakan mesin, kegagalan bahan atau tooling, atau pembatalan pelanggan. Petugas memilih dari opsi yang ada dan alasannya dicatat."
+      },
+      {
+        "en": "Before confirming, show the impact: which jobs move, new finish dates, jobs that become late, and setup minutes added.",
+        "id": "Sebelum konfirmasi, tampilkan dampaknya: job mana yang bergeser, tanggal selesai baru, job yang menjadi telat, dan menit setup yang bertambah."
+      },
+      {
+        "en": "A job already running is never moved. Its unfinished quantity returns to the queue as a continuation.",
+        "id": "Job yang sedang berjalan tidak pernah dipindah. Sisa jumlahnya kembali ke antrean sebagai lanjutan."
+      },
+      {
+        "en": "Re-plan on events and at the start of each shift, not continuously, so the plan does not change every few minutes.",
+        "id": "Rencana ulang dilakukan saat ada kejadian dan di awal tiap shift, bukan terus-menerus, agar rencana tidak berubah setiap beberapa menit."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-kpi",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Key Measures to Watch",
+    "purpose": {
+      "en": "The few numbers that tell whether scheduling is working: delivery, plan keeping, setup, waste and flow at the bottleneck.",
+      "id": "Beberapa angka yang menunjukkan apakah penjadwalan berhasil: pengiriman, ketepatan rencana, setup, waste dan aliran di bottleneck."
+    },
+    "keywords": "kpi, indikator, on time delivery, otd, oee, schedule attainment, setup share, waste actual, wip, plan stability, laporan ppic",
+    "steps": [
+      {
+        "en": "On-time delivery = orders delivered by the promised date divided by all orders delivered.",
+        "id": "Ketepatan kirim = order terkirim sesuai tanggal janji dibagi semua order terkirim."
+      },
+      {
+        "en": "Schedule attainment = actual output divided by planned output per shift. Plan stability = share of jobs moved inside the lock period.",
+        "id": "Pencapaian jadwal = output aktual dibagi output rencana per shift. Stabilitas rencana = porsi job yang digeser di dalam masa kunci."
+      },
+      {
+        "en": "Setup share = changeover hours divided by machine hours; also average makeready minutes per job for each kind of change (colour, substrate, plate, die, size).",
+        "id": "Porsi setup = jam changeover dibagi jam mesin; juga rata-rata menit makeready per job untuk tiap jenis perubahan (warna, bahan, plat, pisau, ukuran)."
+      },
+      {
+        "en": "Actual waste against allowance per process, and OEE of the bottleneck = availability x performance x quality.",
+        "id": "Waste aktual terhadap toleransi per proses, dan OEE bottleneck = ketersediaan x kinerja x mutu."
+      },
+      {
+        "en": "Flow: hours of work waiting before the bottleneck and the age of the oldest staged pallet. Targets are set by management after a few weeks of measured data.",
+        "id": "Aliran: jam kerja yang menunggu sebelum bottleneck dan umur pallet tertua di staging. Target ditetapkan manajemen setelah beberapa minggu data terukur."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-review-open-decisions",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Review of the Source Specification and Open Decisions",
+    "purpose": {
+      "en": "What was kept, changed and added compared with the Strategic Scheduling specification, and the decisions the user must make before any screen is planned.",
+      "id": "Apa yang dipertahankan, diubah dan ditambah dibanding spesifikasi Strategic Scheduling, serta keputusan yang harus diambil user sebelum layar apa pun direncanakan."
+    },
+    "keywords": "review, ulasan, keputusan terbuka, open decisions, spesifikasi ppic, strategic scheduling, catatan, referensi",
+    "steps": [
+      {
+        "en": "Kept: scope after Inquiry and ProDev, setup matrix, grouping by ink, paper and size, finite capacity with bottleneck, tooling gate, waste allowance per process, anchor job and the 8 to 12 hour lock.",
+        "id": "Dipertahankan: ruang lingkup setelah Inquiry dan ProDev, matriks setup, pengelompokan tinta, kertas dan ukuran, kapasitas terbatas dengan bottleneck, gerbang tooling, toleransi waste per proses, job jangkar dan kunci 8 sampai 12 jam."
+      },
+      {
+        "en": "Changed: the priority formula (units, equal value for all late jobs); slack counts the whole remaining routing and waits; setup grouping reorders only similar-urgency jobs; waste is fixed plus variable, calculated backwards.",
+        "id": "Diubah: rumus prioritas (satuan, nilai sama untuk semua job telat); slack menghitung seluruh sisa routing dan waktu tunggu; pengelompokan setup hanya mengurutkan job yang urgensinya mirip; waste = tetap + variabel, dihitung mundur."
+      },
+      {
+        "en": "Added: drying and curing waits, UV against conventional ink, caliper and grain, tooling use counter, WIP release (rope), split lots, subcontract, maintenance windows, event-based re-plan and KPIs.",
+        "id": "Ditambah: waktu tunggu kering dan curing, tinta UV lawan konvensional, caliper dan arah serat, penghitung pemakaian tooling, pelepasan WIP (rope), pecah lot, subkon, jendela perawatan, rencana ulang berbasis kejadian dan KPI."
+      },
+      {
+        "en": "Corrected: Yellow, Magenta, Cyan, Black is the colour order inside a job set by prepress, not a rule between jobs. Between jobs the rule is lighter before darker and the same spot colour together.",
+        "id": "Dikoreksi: Yellow, Magenta, Cyan, Black adalah urutan warna di dalam satu job yang diatur prepress, bukan aturan antar job. Antar job aturannya terang sebelum gelap dan spot color yang sama dikelompokkan."
+      },
+      {
+        "en": "Decided 1: start with assumed setup minutes, waste ranges and weights (0.50 / 0.35 / 0.15); a learning engine then adjusts them from actual results.",
+        "id": "Diputuskan 1: mulai dari menit setup, rentang waste dan bobot (0,50 / 0,35 / 0,15) asumsi; lalu mesin pembelajar menyesuaikannya dari hasil aktual."
+      },
+      {
+        "en": "Decided 2: customer class (Tier 1 to 3) is kept in the Customer master and maintained by Sales. Decided 3: the tooling master is built, with setup time per tool.",
+        "id": "Diputuskan 2: kelas pelanggan (Tier 1 sampai 3) disimpan di master Customer dan dirawat Sales. Diputuskan 3: master tooling dibangun, dengan waktu setup per tooling."
+      },
+      {
+        "en": "Still open: which machine groups are bottleneck candidates, the lock length (8 or 12 hours), and the policy for subcontracted die-cutting.",
+        "id": "Masih terbuka: grup mesin mana yang kandidat bottleneck, panjang masa kunci (8 atau 12 jam), dan kebijakan die-cutting yang disubkontrakkan."
+      },
+      {
+        "en": "References: SMED (changeover reduction), the ATCS rule of Lee et al. 1997 for setup-dependent scheduling, Theory of Constraints Drum-Buffer-Rope, critical ratio, and published print-industry make-ready and spoilage practice.",
+        "id": "Referensi: SMED (pengurangan changeover), aturan ATCS Lee dkk. 1997 untuk penjadwalan dengan setup bergantung urutan, Drum-Buffer-Rope dari Theory of Constraints, critical ratio, dan praktik makeready serta spoilage industri cetak."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-learning-engine",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Learning from Actual Results",
+    "purpose": {
+      "en": "Starts from assumed numbers and corrects them from what really happened on the machines: setup minutes, waste and run speed. Same idea as the existing speed target suggestions.",
+      "id": "Mulai dari angka asumsi lalu mengoreksinya dari kejadian nyata di mesin: menit setup, waste dan kecepatan jalan. Gagasannya sama dengan usulan target kecepatan yang sudah ada."
+    },
+    "keywords": "learning, pembelajar, kalibrasi, calibration, asumsi, aktual, setup time, waktu setup, waste aktual, engine, koreksi otomatis",
+    "steps": [
+      {
+        "en": "Start: every value begins as an assumed value (setup minutes per kind of change, fixed and variable waste, run speed) and is marked Assumed.",
+        "id": "Awal: tiap nilai dimulai sebagai nilai asumsi (menit setup per jenis perubahan, waste tetap dan variabel, kecepatan jalan) dan ditandai Assumed."
+      },
+      {
+        "en": "Collect: each finished operation records actual setup minutes with the from and to condition, actual waste and good output.",
+        "id": "Kumpulkan: tiap operasi yang selesai mencatat menit setup aktual beserta kondisi dari dan ke, waste aktual dan hasil baik."
+      },
+      {
+        "en": "Calculate: per machine and kind of change the engine takes a typical actual value from recent jobs, ignoring extreme ones, once enough jobs exist (start value: 5).",
+        "id": "Hitung: per mesin dan jenis perubahan, engine mengambil nilai aktual tipikal dari job terakhir, mengabaikan yang ekstrem, setelah jumlah job cukup (nilai awal: 5)."
+      },
+      {
+        "en": "Adjust gradually: the value moves part of the way to the actual (start value 30 percent per update) and by a limited step, so one bad job does not swing the plan.",
+        "id": "Sesuaikan bertahap: nilai bergeser sebagian menuju nilai aktual (nilai awal 30 persen per pembaruan) dengan langkah terbatas, agar satu job buruk tidak mengguncang rencana."
+      },
+      {
+        "en": "Status per value: Assumed, Learning (with the number of jobs) or Calibrated. The board shows which status the plan relies on.",
+        "id": "Status tiap nilai: Assumed, Learning (dengan jumlah job) atau Calibrated. Papan menunjukkan status mana yang dipakai rencana."
+      },
+      {
+        "en": "New values are used from the next plan; locked queue and running jobs are not recalculated.",
+        "id": "Nilai baru dipakai mulai rencana berikutnya; antrean yang terkunci dan job yang berjalan tidak dihitung ulang."
+      },
+      {
+        "en": "Each change is listed with old value, new value and the jobs used. The user can freeze or revert a value. Costing standards are not changed by this engine.",
+        "id": "Tiap perubahan dicatat dengan nilai lama, nilai baru dan job yang dipakai. User dapat membekukan atau mengembalikan nilai. Standar Costing tidak diubah oleh engine ini."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-tooling-setup-time",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Tooling Master and Setup Time",
+    "purpose": {
+      "en": "The master list of plates, cutting dies, emboss and foil dies with their status, use count and setup time, so the tooling gate and the setup calculation use real data.",
+      "id": "Daftar master plat, pisau pond, matras emboss dan foil dengan status, jumlah pemakaian dan waktu setup, agar gerbang tooling dan perhitungan setup memakai data nyata."
+    },
+    "keywords": "tooling, master tooling, pisau pond, die, plat, plate, emboss, matras, foil, waktu setup, setup time, rak, pemakaian, impresi",
+    "steps": [
+      {
+        "en": "Each tool has a code, a type (plate set, cutting die, emboss die, foil die), the product or dieline it belongs to, its size and its storage location.",
+        "id": "Tiap tooling punya kode, jenis (set plat, pisau pond, matras emboss, foil), produk atau dieline pemiliknya, ukuran dan lokasi simpan."
+      },
+      {
+        "en": "Status: Not made, In making, Ready, In use, Needs repair or Retired. The readiness gate accepts only Ready. Who updates the status (prepress, die room) is set by the user.",
+        "id": "Status: Not made, In making, Ready, In use, Needs repair atau Retired. Gerbang kesiapan hanya menerima Ready. Siapa yang memperbarui status (prepress, ruang pisau) ditentukan user."
+      },
+      {
+        "en": "Use counter: impressions run so far against the planned life. A warning appears before the limit so repair or a new tool is ready in time.",
+        "id": "Penghitung pemakaian: impresi yang sudah berjalan dibanding umur rencana. Peringatan muncul sebelum batas agar perbaikan atau tooling baru siap tepat waktu."
+      },
+      {
+        "en": "Setup time per tool: standard minutes to mount, register and make ready (plate mounting, die mounting and stripping, foil heat alignment). First run and repeat run can differ.",
+        "id": "Waktu setup per tooling: menit standar untuk memasang, register dan menyiapkan (pasang plat, pasang pisau dan stripping, penyelarasan panas foil). Run pertama dan run ulang bisa berbeda."
+      },
+      {
+        "en": "Setup time per machine and process: base setup (cleaning, feeder, delivery) kept on the machine. Total job setup = base setup + changeover from the previous job + tool setup.",
+        "id": "Waktu setup per mesin dan proses: setup dasar (bersih-bersih, feeder, delivery) disimpan di mesin. Total setup job = setup dasar + changeover dari job sebelumnya + setup tooling."
+      },
+      {
+        "en": "The scheduler counts total setup as non-productive time in the machine load and in the sequence choice. The learning engine corrects these minutes from measured makeready.",
+        "id": "Penjadwal menghitung total setup sebagai waktu tidak produktif pada beban mesin dan pilihan urutan. Mesin pembelajar mengoreksi menit ini dari makeready terukur."
+      }
+    ],
+    "fields": []
+  },
+  {
+    "key": "guide-ppic-roles-handoff",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: Roles, Hand-offs and Monitoring of Results",
+    "purpose": {
+      "en": "PPIC has two working focuses, scheduling and inventory control, plus monitoring of results. They can be done by different officers or by one person who holds both rights.",
+      "id": "PPIC punya dua fokus kerja, penjadwalan dan pengendalian inventori, ditambah pemantauan hasil. Bisa dikerjakan officer berbeda atau satu orang yang memegang kedua hak akses."
+    },
+    "keywords": "peran, role, officer, scheduling officer, inventory control, pengendalian inventori, monitoring, pemantauan, hasil produksi, serah terima, handoff, ppic",
+    "steps": [
+      {
+        "en": "Scheduling officer: machine queues, priority, setup sequence, bottleneck, schedule lock and rescheduling. Sees the material status of every job but does not change stock or bookings.",
+        "id": "Officer penjadwalan: antrean mesin, prioritas, urutan setup, bottleneck, kunci jadwal dan jadwal ulang. Melihat status bahan tiap job tetapi tidak mengubah stok atau booking."
+      },
+      {
+        "en": "Inventory control officer: material gate of each Work Order, booking, shortage list, purchase follow-up, issue to production with the waste allowance, substitutions and customer-supplied goods.",
+        "id": "Officer pengendalian inventori: gerbang bahan tiap Work Order, booking, daftar kekurangan, tindak lanjut pembelian, pengeluaran ke produksi dengan toleransi waste, substitusi dan barang titipan pelanggan."
+      },
+      {
+        "en": "Hand-off 1: scheduling shows what material the queue will need in the coming days. Inventory control answers with a ready date per Work Order.",
+        "id": "Serah terima 1: penjadwalan menunjukkan bahan yang dibutuhkan antrean dalam beberapa hari ke depan. Inventori menjawab dengan tanggal siap per Work Order."
+      },
+      {
+        "en": "Hand-off 2: a late ready date goes back to scheduling as a Waiting gate with that date. Scheduling does not release the job before its material arrives and plans other ready jobs instead.",
+        "id": "Serah terima 2: tanggal siap yang terlambat kembali ke penjadwalan sebagai gerbang Waiting dengan tanggal itu. Penjadwalan tidak melepas job sebelum bahannya datang dan menjadwalkan job siap lain."
+      },
+      {
+        "en": "Look-ahead: inventory control checks material for the locked window first, then the next days, so a shortage is found before the job reaches the machine.",
+        "id": "Pandang ke depan: inventori memeriksa bahan untuk masa kunci lebih dulu, lalu hari-hari berikutnya, agar kekurangan ditemukan sebelum job sampai di mesin."
+      },
+      {
+        "en": "Monitoring results: planned against actual per job and machine: start and finish, good output, waste, setup minutes, material issued against used, late jobs and the reason. Both officers read it.",
+        "id": "Pemantauan hasil: rencana lawan aktual per job dan mesin: mulai dan selesai, hasil baik, waste, menit setup, bahan keluar lawan terpakai, job telat dan alasannya. Kedua officer membacanya."
+      },
+      {
+        "en": "Monitoring feeds the learning engine and the KPIs, and shows where the plan or the material forecast was wrong.",
+        "id": "Pemantauan menjadi masukan bagi mesin pembelajar dan KPI, dan menunjukkan di mana rencana atau perkiraan bahan meleset."
+      },
+      {
+        "en": "Access: each officer changes only their own part and both can read everything. One person may hold both rights. Daily rhythm: review yesterday, check shortages, confirm the queue, re-plan at each shift start.",
+        "id": "Hak akses: tiap officer hanya mengubah bagiannya dan keduanya boleh membaca semuanya. Satu orang boleh memegang kedua hak. Ritme harian: tinjau kemarin, cek kekurangan, konfirmasi antrean, rencana ulang di awal tiap shift."
+      }
+    ],
+    "fields": []
+  }
+]
