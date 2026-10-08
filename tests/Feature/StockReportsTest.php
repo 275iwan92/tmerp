@@ -155,9 +155,10 @@ class StockReportsTest extends TestCase
         $this->assertEqualsWithDelta(7020.0, $april['opening_value'], 0.001);
     }
 
-    // Stock Card = baris kartu stok apa adanya: BB dan EB tiap baris adalah saldo item di lokasi itu (qty_bb / qty_eb),
-    // transfer = Out di lokasi asal + In di lokasi tujuan, lalu satu baris Total per item untuk semua lokasi.
-    public function test_stock_card_shows_bb_in_out_adj_eb_per_location_and_a_total_row(): void
+    // Stock Card = rumus bersambung (user 2026-10-08): BB / EB tiap baris adalah saldo ITEM (semua lokasi), BB baris berikutnya = EB baris sebelumnya,
+    // transfer = Out di lokasi asal + In di lokasi tujuan, lalu satu baris Total per item yang cocok dengan baris pertama dan terakhir.
+    // Saldo satu lokasi (qty_eb kartu stok) tetap ada di kolom opsional Location Balance.
+    public function test_stock_card_chains_bb_to_eb_across_locations_and_the_total_row_ties(): void
     {
         $rows = $this->rows('inv-rpt-card', params: ['item' => '#'.self::ITEM]);
 
@@ -165,11 +166,23 @@ class StockReportsTest extends TestCase
         $a = 'Test ZZR-A · ZZR-A-01';
         $b = 'Test ZZR-A · ZZR-A-02';
         $this->assertSame([$a, $a, $a, $b, $a, $b, 'Total'], array_column($rows, 'location'));
-        $this->assertSame([100.0, 150.0, 120.0, 0.0, 100.0, 20.0, 100.0], array_column($rows, 'bb'));
+        $this->assertSame([100.0, 150.0, 120.0, 100.0, 120.0, 115.0, 100.0], array_column($rows, 'bb'));
         $this->assertSame([50.0, 0.0, 0.0, 20.0, 0.0, 0.0, 70.0], array_column($rows, 'in'));
         $this->assertSame([0.0, 30.0, 20.0, 0.0, 0.0, 0.0, 50.0], array_column($rows, 'out'));
         $this->assertSame([0.0, 0.0, 0.0, 0.0, -5.0, 2.0, -3.0], array_column($rows, 'adj'));
-        $this->assertSame([150.0, 120.0, 100.0, 20.0, 95.0, 22.0, 117.0], array_column($rows, 'eb'));
+        $this->assertSame([150.0, 120.0, 100.0, 120.0, 115.0, 117.0, 117.0], array_column($rows, 'eb'));
+        // Saldo per lokasi tetap tersedia sebagai kolom opsional.
+        $this->assertSame([150.0, 120.0, 100.0, 20.0, 95.0, 22.0], array_slice(array_column($rows, 'loc_eb'), 0, 6));
+
+        // Bersambung: BB baris berikutnya = EB baris sebelumnya; Total = BB baris pertama dan EB baris terakhir; BB + In - Out + Adj = EB.
+        $moves = array_slice($rows, 0, 6);
+        for ($k = 1; $k < count($moves); $k++) {
+            $this->assertSame($moves[$k - 1]['eb'], $moves[$k]['bb'], 'Baris '.$k.' tidak bersambung ke baris sebelumnya.');
+        }
+        $total = $rows[6];
+        $this->assertSame($moves[0]['bb'], $total['bb']);
+        $this->assertSame($moves[5]['eb'], $total['eb']);
+        $this->assertSame('accent', $total['tone'], 'Rantai konsisten: baris Total tidak diberi warna bahaya.');
         foreach ($rows as $r) {
             $this->assertEqualsWithDelta($r['eb'], $r['bb'] + $r['in'] - $r['out'] + $r['adj'], 0.0001, $r['id']);
             // Versi gudang: harga dan nilai tidak ikut di baris sama sekali.

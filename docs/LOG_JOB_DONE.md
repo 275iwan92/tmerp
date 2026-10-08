@@ -3955,3 +3955,11 @@ QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BU
 - Executive Summary (menu kedua Layer Menu, ikon tukar): Overview, By Module, By Object, By Engine, By Feature, By Agent,
   By Time, Quality & Rating, Open Work. Objek baru `x-dl::rate-list`: bintang 1-5 + catatan per item, riwayat disimpan.
 - Test: `BuildCatalogTest` (4 test). Belum: Code Snippets, tingkat risiko di Open Work, uji klik di browser (user menguji).
+
+### 2026-10-08 -- Stock Card bersambung (Inventory & Warehouse v2.01, D25)
+
+- User: "kalau terakhir EB 5000 berikutnya sambung BB nya ya 5000". Data dummy PYJ31 membuktikan laporan lama tidak bersambung: BB / EB per lokasi,
+  Total per item (EB 5.000 lalu BB 6.440; Total BB 41.440 vs 20.440 yang tampil).
+- `StockCardAllReport`: BB / EB = saldo item berjalan (BB berikutnya = EB sebelumnya), Total = BB baris pertama dan EB baris terakhir (warna bahaya bila data lama tidak konsisten),
+  kolom opsional Location Balance (saldo lokasi lama, tersembunyi), id kolom tersimpan `inv-rpt-card-chain`. Help `inv-rpt-card` diperbarui.
+- Test: `StockReportsTest` (9 lulus). Dicoba pada ddt: 41.440 > 46.440 > 46.465 > 42.465 > 46.465. Belum: Stock Card per kelas (laporan lain, perlu preview), koreksi salah input (D26).

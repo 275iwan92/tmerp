@@ -5,11 +5,13 @@ namespace App\Support\V2\Grid\Inv;
 use App\Services\Inventory\StockLedger;
 use Devlib\Locale;
 
-// Stock Card semua kelas stok untuk satu periode, mengikuti tabel kartu stok (rm / sfg / fg_stockcard) apa adanya
-// (user 2026-10-03): kepala = nama item lalu periode; rinci = Date, Location, BB, In, Out, Adj, EB.
-//   BB = beginning balance (qty_bb) dan EB = end balance (qty_eb) item itu DI LOKASI ITU, sebelum dan sesudah baris itu.
-//   Stock Transfer = Out di lokasi asal dan In di lokasi tujuan (dua baris kartu), jadi BB + In - Out + Adj = EB di tiap baris.
-//   Baris Total tiap item: BB = saldo semua lokasi sebelum periode, EB = saldo semua lokasi di akhir periode.
+// Stock Card semua kelas stok untuk satu periode (user 2026-10-03): kepala = nama item lalu periode; rinci = Date, Location, BB, In, Out, Adj, EB.
+// RUMUS BERSAMBUNG (user 2026-10-08: "kalau terakhir EB 5000 berikutnya sambung BB nya ya 5000"):
+//   BB = saldo ITEM (semua lokasi) sebelum baris itu, EB = BB + In - Out + Adj, dan BB baris berikutnya = EB baris sebelumnya.
+//   (Dulu BB / EB = saldo satu lokasi, jadi baris berurutan dari lokasi berbeda tidak bersambung dan Total tidak cocok dengan baris di atasnya.)
+//   Stock Transfer = Out di lokasi asal dan In di lokasi tujuan (dua baris), jadi saldo item turun lalu naik kembali dan totalnya tetap.
+//   Saldo satu lokasi (qty_eb kartu stok) tetap ada sebagai kolom opsional "Location Balance" (tersembunyi secara default).
+//   Baris Total tiap item: BB = saldo semua lokasi sebelum periode = BB baris pertama, EB = saldo semua lokasi di akhir periode = EB baris terakhir.
 // Versi gudang: TANPA harga dan nilai -- kolomnya tidak ikut di baris sama sekali (inventory_tier1 bagian 7, Sisi B).
 // Kartu satu item: isi kotak Item (kode atau nama) lalu Show; cetakannya = kartu stok item itu.
 class StockCardAllReport extends AllStockReport
@@ -47,7 +49,7 @@ class StockCardAllReport extends AllStockReport
     public function guide(): ?string
     {
         return $this->truncated ? 'Only the first 20,000 rows are shown. Shorten the period or fill in Item, then click Show.'
-            : 'Stock card per item for the period. Each row is one movement at one location: BB = balance before it, In, Out, Adj, EB = balance after it. The Total row covers all locations of the item. For one item, type its code or name in Item and click Show.';
+            : 'Stock card per item for the period. Each row is one movement: BB = balance of the item before it (the same as the EB of the row above), In, Out, Adj, EB = balance after it. The Total row covers all locations of the item. For one item, type its code or name in Item and click Show.';
     }
 
     // Kotak cari grid hanya membaca kolom yang tampil (tanggal, lokasi, angka); item dipilih lewat kotak Item.
@@ -66,10 +68,10 @@ class StockCardAllReport extends AllStockReport
         return 'tone';
     }
 
-    // Susunan kolom berubah 2026-10-03: pilihan kolom / urutan yang tersimpan di browser untuk susunan lama tidak dipakai lagi.
+    // Susunan kolom berubah 2026-10-03 dan 2026-10-08 (kolom opsional Location Balance): pilihan kolom / urutan yang tersimpan di browser untuk susunan lama tidak dipakai lagi.
     public function props(): array
     {
-        return ['id' => 'inv-rpt-card-bb-eb'] + parent::props();
+        return ['id' => 'inv-rpt-card-chain'] + parent::props();
     }
 
     public function rows(): array
@@ -107,16 +109,22 @@ class StockCardAllReport extends AllStockReport
             $base = ['card' => implode(' · ', array_filter([$meta['name'], $meta['code'], $i['uom'], $period])), 'item' => $meta['name'], 'item_code' => $meta['code'],
                 'class' => self::CLASSES[$i['class']], 'unit' => $i['uom']];
             $in = $out = $adj = 0.0;
+            // Saldo berjalan item (semua lokasi): mulai dari saldo awal item, tiap baris menyambung ke EB baris sebelumnya.
+            $running = round((float) $i['opening_qty'], 4);
             foreach ($moved[$key] ?? [] as $m) {
                 $in += $m['qty_in'];
                 $out += $m['qty_out'];
                 $adj += $m['adj'];
+                $bb = $running;
+                $running = round($bb + $m['qty_in'] - $m['qty_out'] + $m['adj'], 4);
                 $rows[] = ['id' => $m['class'].'-'.$m['doc_id'], 'doc_date' => $m['date'], 'location' => implode(' · ', array_filter([$m['warehouse'], $m['location']])),
-                    'bb' => $m['bb'], 'in' => $m['qty_in'], 'out' => $m['qty_out'], 'adj' => $m['adj'], 'eb' => $m['location_balance'], 'doc_no' => $m['doc_no'], 'move' => $m['kind'],
+                    'bb' => $bb, 'in' => $m['qty_in'], 'out' => $m['qty_out'], 'adj' => $m['adj'], 'eb' => $running, 'loc_eb' => $m['location_balance'], 'doc_no' => $m['doc_no'], 'move' => $m['kind'],
                     'lot' => $m['lot'], 'ref_no' => $m['ref_no'], 'warehouse' => $m['warehouse'], 'tone' => null, 'unit' => $m['uom'] ?: $i['uom']] + $base;
             }
-            $rows[] = ['id' => 'T-'.$key, 'doc_date' => null, 'location' => self::TOTAL, 'bb' => $i['opening_qty'], 'in' => $in, 'out' => $out, 'adj' => $adj, 'eb' => $i['closing_qty'],
-                'doc_no' => null, 'move' => self::TOTAL, 'lot' => null, 'ref_no' => null, 'warehouse' => null, 'tone' => 'accent'] + $base;
+            // Rantai harus berakhir di saldo akhir semua lokasi; bila data lama tidak konsisten, baris Total diberi warna bahaya (tidak disembunyikan).
+            $mismatch = abs($running - (float) $i['closing_qty']) > 0.0001;
+            $rows[] = ['id' => 'T-'.$key, 'doc_date' => null, 'location' => self::TOTAL, 'bb' => $i['opening_qty'], 'in' => $in, 'out' => $out, 'adj' => $adj, 'eb' => $i['closing_qty'], 'loc_eb' => null,
+                'doc_no' => null, 'move' => self::TOTAL, 'lot' => null, 'ref_no' => null, 'warehouse' => null, 'tone' => $mismatch ? 'danger' : 'accent'] + $base;
             if (count($rows) > self::MAX_ROWS) {
                 $this->truncated = true;
                 break;
@@ -140,6 +148,7 @@ class StockCardAllReport extends AllStockReport
             ['key' => 'out', 'label' => raw('Out'), 'type' => 'number'] + $fixed,
             ['key' => 'adj', 'label' => raw('Adj'), 'type' => 'number'] + $fixed,
             ['key' => 'eb', 'label' => raw('EB'), 'type' => 'number'] + $fixed,
+            ['key' => 'loc_eb', 'label' => 'Location Balance', 'type' => 'number', 'visible' => false] + $fixed,
             ['key' => 'card', 'label' => 'Item', 'visible' => false] + $fixed,
             ['key' => 'doc_no', 'label' => 'Doc No.', 'visible' => false] + $fixed,
             ['key' => 'move', 'label' => 'Movement', 'type' => 'badge', 'visible' => false, 'tones' => ['In' => 'success', 'Out' => 'danger', 'Adjustment' => 'warn', 'Opening' => 'neutral',

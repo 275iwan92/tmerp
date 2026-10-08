@@ -39,8 +39,8 @@
 | D22 | **PO Subkon sebagai induk** dokumen kirim bahan ke subkon (O-7). | user 2026-10-08 |
 | D23 | **Stock Summary dan Warehouse Map tidak diubah**; Stock Card tidak diubah **kecuali rumus BB / EB (D25)**. Format, kolom, dan filter tetap; tidak ada kolom baru. Perbaikan apa pun lewat preview dulu. | user 2026-10-08 |
 | D24 | **Aturan area** = tiga isian: Mixing, Pick order (FIFO / FEFO), hitung tiap N hari; belum ada aturan lain. | user 2026-10-08 |
-| D25 | **Stock Card: rumus bersambung.** BB baris berikutnya = EB baris sebelumnya; BB dan EB = saldo **seluruh item** (bukan per lokasi); EB = BB + In − Out + Adj; baris Total tidak berubah angkanya. Contoh user: saldo 5.000 + 1.000 = 6.000; keluar 500 besoknya: BB 6.000, EB 5.500. Preview: `inv_v201_stock_card_chain.jpg`. | user 2026-10-08 |
-| D26 | **Koreksi salah input** (usulan, menunggu persetujuan preview): dokumen POSTED tidak diedit; koreksi lewat dokumen baru yang menunjuk dokumen asal. **Pembalik** untuk salah input, **Adjustment hanya untuk selisih fisik**. Preview: `inv_v201_chain_correction.jpg`. | usulan 2026-10-08 |
+| D25 | **Stock Card: rumus bersambung.** BB baris berikutnya = EB baris sebelumnya; BB dan EB = saldo **seluruh item** (bukan per lokasi); EB = BB + In − Out + Adj; baris Total tidak berubah angkanya. Contoh user: saldo 5.000 + 1.000 = 6.000; keluar 500 besoknya: BB 6.000, EB 5.500. Preview: `inv_v201_stock_card_chain.jpg`. **DIBANGUN 2026-10-08** di `StockCardAllReport` (uji `StockReportsTest`, 9 lulus; dicoba pada data dummy PYJ31: 41.440 → 46.440 → 46.465 → 42.465 → 46.465, Total cocok). Kolom opsional **Location Balance** (saldo lokasi, tersembunyi) disetujui user. | user 2026-10-08 |
+| D26 | **Koreksi salah input: DISETUJUI user 2026-10-08 dengan keterangan wajib "Kesalahan transaksi no. XXX"** (XXX = nomor dokumen yang salah). Dokumen POSTED tidak diedit; koreksi lewat dokumen baru yang menunjuk dokumen asal. **Pembalik** untuk salah input, **Adjustment hanya untuk selisih fisik**. Rancangan layar: tombol standar **Cancel** pada dokumen Confirmed membuka dialog alasan (terisi "Kesalahan transaksi no. <nomor dokumen>"), sistem memposting pembalik dan menandai dokumen Cancelled; dokumen benar dibuat lewat **Duplicate**. Preview konsep: `inv_v201_chain_correction.jpg`; **preview dialog Cancel belum dibuat**. | user 2026-10-08 |
 | D16 | **Pengaman URGENT** sesuai saran: yang boleh menandai PPIC, Supervisor Produksi, Ops Manager dan di atasnya; alasan dan tautan WO / CO wajib; bahan FSC / food grade butuh persetujuan kepala QC atau Ops Manager. | user 2026-10-08 (O-12) |
 
 Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-10-08.
@@ -607,6 +607,7 @@ dummy baru (aturan: dummy basi diganti), dan **commit + push per potongan kerja*
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-10-08 | Rev.7: D25 dibangun dan diuji pada data dummy; D26 disetujui dengan keterangan "Kesalahan transaksi no. XXX"; kolom Location Balance disetujui |
 | 2026-10-08 | Rev.6: D25 (Stock Card bersambung: BB / EB saldo item, user), D26 (koreksi salah input lewat Pembalik, usulan), I-57; D23 diberi pengecualian |
 | 2026-10-08 | Rev.5: D23 (Stock Card, Stock Summary, Warehouse Map tidak diubah) dan D24 (aturan area tiga isian) |
 | 2026-10-08 | Rev.4: user menyetujui semua saran (D17 sampai D22); status DISETUJUI; rencana Fase 1 dibuat terpisah (`inventorywarehouse_v201_phase1_plan.md`) |
