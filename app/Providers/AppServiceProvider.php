@@ -48,6 +48,9 @@ class AppServiceProvider extends ServiceProvider
         Src::$resolver = \App\Support\V2\Src::of(...);
         Lookups::register();
 
+        // PPIC: a machine going down or coming back makes the engines prepare a new Draft plan (App\Services\Scheduling\Plan\PlanEvents).
+        \App\Models\Master\ProdMachineDowntime::observe(\App\Observers\MachineDowntimeObserver::class);
+
         // Aturan tampil per bahasa (angka, bulan) + terjemahan label DevLib dari kamus DB (LOCKED user 2026-10-01).
         Locale::languagesUsing(fn () => Dictionary::languages());
         // Bahasa tampilan ikut AKUN (sec_user.lang_code), bukan cookie perangkat; tamu / halaman login memakai cookie.
