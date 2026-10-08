@@ -27,8 +27,16 @@ use App\Services\Pur\PqMatcher;
 use App\Services\Sales\CoOrderBuilder;
 use App\Services\Sales\CpdelPromiseService;
 use App\Services\Scheduling\InterruptionOptionGenerator;
+use App\Services\Scheduling\Learning\LearningEngine;
 use App\Services\Scheduling\MaintenanceBlockProvider;
+use App\Services\Scheduling\Operator\OperatorTimerService;
 use App\Services\Scheduling\PdrEngine;
+use App\Services\Scheduling\Plan\AutoPlanRunner;
+use App\Services\Scheduling\Plan\GateService;
+use App\Services\Scheduling\Plan\PlanConfirmService;
+use App\Services\Scheduling\Plan\ScheduleSolver;
+use App\Services\Scheduling\Plan\SetupTimeEngine;
+use App\Services\Scheduling\Plan\WoPlanningEnricher;
 use App\Services\Scheduling\SchedulingRuleEngine;
 use App\Services\Scheduling\WoGenerationService;
 use Assistant\Engine as AssistantEngine;
@@ -1008,6 +1016,200 @@ final class EngineRegistry
                 'writes' => ['tm2sys.sys_assistant_message'],
                 'used' => ['AI assistant drawer', 'Help per screen (F1)'],
                 'tests' => ['tests/Feature/AssistantEngineTest.php'],
+            ],
+            [
+                'key' => 'ppic-auto-plan', 'name' => 'PPIC Auto-Planner', 'group' => 'Production', 'mode' => 'suggest',
+                'purpose' => 'Prepares a Draft plan for every open Work Order: gates, estimates, schedule and the list of what needs a person. Nothing becomes the real schedule until the officer confirms.',
+                'class' => AutoPlanRunner::class,
+                'methods' => ['run', 'solver'],
+                'notes' => ['run' => 'One planning run. Writes a Draft only; the confirmed and locked part of the schedule is never touched.'],
+                'inputs' => [
+                    ['trigger', 'DAILY, SHIFT, EVENT (new Work Order, officer priority, drag) or MANUAL.'],
+                    ['actor', 'ENGINE or the officer who started it.'],
+                    ['now', 'The moment to plan from (default: now).'],
+                ],
+                'outputs' => [
+                    ['Plan run', 'One Draft run with the number of operations planned and the number that need attention.'],
+                    ['Draft schedule', 'Machine, start, finish, setup and gate of each operation, saved as Draft on the operation.'],
+                    ['Exceptions', 'Late risk, material waiting, tooling blocked, no machine, overload.'],
+                ],
+                'steps' => [
+                    'Refreshes Work Orders that have no process ids yet and re-reads the material and tooling gates.',
+                    'Loads open operations outside the confirmed lock, the work calendar, holidays, wait rules and machine changeover values.',
+                    'Hands the facts to the Schedule Solver, which ranks the jobs and places them on machines.',
+                    'Discards the previous Draft, writes the new one and the exception list, and logs the run.',
+                ],
+                'reads' => ['tm2prd.prd_wo', 'tm2prd.prd_wo_operation', 'tm2mst.prod_machine', 'tm2mst.prod_process_machine', 'tm2mst.prod_wait_rule', 'tm2mst.prod_machine_changeover', 'tm2sys.sys_constant (PPIC_*)'],
+                'writes' => ['tm2prd.prd_plan_run', 'tm2prd.prd_wo_operation (Draft columns)', 'tm2prd.prd_plan_decision'],
+                'settings' => ['PPIC_LOCK_SHIFTS', 'PPIC_WEIGHT_URGENCY / SETUP / TIER', 'PPIC_HORIZON_HOURS / DAYS', 'PPIC_BOTTLENECK_LOAD_PCT'],
+                'used' => ['Production Scheduling', 'Work Order (Create Work Order)', 'scheduler: ppic:auto-plan (nightly and at shift start)'],
+                'tests' => ['tests/Unit/Ppic/ScheduleSolverTest.php'],
+                'docs' => ['resources/data/help/ppic_technical_plan.json'],
+            ],
+            [
+                'key' => 'ppic-schedule-solver', 'name' => 'Schedule Solver (finite capacity)', 'group' => 'Production', 'mode' => 'calc',
+                'purpose' => 'Pure calculation: ranks the jobs and places each operation on the machine that finishes it earliest, with setup, wait and calendar included.',
+                'class' => ScheduleSolver::class,
+                'methods' => ['solve'],
+                'inputs' => [
+                    ['wos', 'Work Orders with their operations, candidate machines, rates, gates and fixed (running or locked) placements.'],
+                    ['cal', 'The work calendar: shifts per machine, holidays.'],
+                    ['now', 'The moment to plan from.'],
+                ],
+                'outputs' => [
+                    ['Placements', 'Machine, setup start, run start and finish per operation.'],
+                    ['Exceptions', 'Late risk, blocked, waiting and no-machine operations with a reason.'],
+                ],
+                'steps' => [
+                    'Ranks the Work Orders: Hot job first, then Critical Ratio below one, then due date; inside the similar-urgency window the setup-aware score decides.',
+                    'Places the operations of a Work Order in routing order: each starts after the previous one finishes plus its wait.',
+                    'For each operation picks the eligible machine with the earliest finish including setup, then lower load, then preference rank.',
+                    'Fixed placements (running, locked) are never moved; blocked operations are listed, not placed.',
+                ],
+                'reads' => ['Nothing: it works on the facts it is given.'],
+                'writes' => ['Nothing.'],
+                'used' => ['PPIC Auto-Planner', 'Plan Control (drag impact)'],
+                'tests' => ['tests/Unit/Ppic/ScheduleSolverTest.php'],
+            ],
+            [
+                'key' => 'ppic-setup-time', 'name' => 'Setup Time Engine', 'group' => 'Production', 'mode' => 'calc',
+                'purpose' => 'Setup minutes and extra waste between two jobs on a machine: base setup plus every change (colour, ink type, substrate, size, plate, die) plus tool mounting.',
+                'class' => SetupTimeEngine::class,
+                'methods' => ['between'],
+                'inputs' => [
+                    ['prev, next', 'Facts of the job before and the job after on the machine (colours, ink type, gsm, sheet size, plate, die).'],
+                    ['rules', 'Minutes and waste per kind of change; machine rows override the start values.'],
+                    ['stage', 'PRESS, DIECUT and so on.'],
+                ],
+                'outputs' => [
+                    ['Minutes and waste', 'Total setup minutes and extra waste sheets.'],
+                    ['Breakdown', 'The list of changes that produced them, for display.'],
+                ],
+                'steps' => [
+                    'Starts from the base setup minutes of the machine (or the constant).',
+                    'Adds one item for every difference between the two jobs, using the changeover table.',
+                    'Adds the tool mounting minutes of the next job (first run or repeat run) from the tooling master.',
+                ],
+                'reads' => ['Nothing: rules are passed in.'],
+                'writes' => ['Nothing.'],
+                'settings' => ['PPIC_BASE_SETUP_MIN', 'Setup and Changeover master'],
+                'used' => ['Schedule Solver', 'Work Order screen'],
+                'tests' => ['tests/Unit/Ppic/ScheduleSolverTest.php'],
+            ],
+            [
+                'key' => 'ppic-gates', 'name' => 'Readiness Gates', 'group' => 'Production', 'mode' => 'auto',
+                'purpose' => 'Marks every operation Ready, Waiting (with a date) or Blocked (with a reason) for material, tooling and artwork.',
+                'class' => GateService::class,
+                'methods' => ['material', 'tooling', 'apply'],
+                'inputs' => [
+                    ['wo', 'The Work Order.'],
+                    ['process', 'The process of the operation (tooling needs a die or plates).'],
+                ],
+                'outputs' => [
+                    ['Gates', 'Ready, Waiting or Blocked per gate, with the note and the date material is ready.'],
+                ],
+                'steps' => [
+                    'Material: reads the Material Planning result for the Work Order (stock, booking, incoming purchases); short material becomes Waiting with the incoming date, or Blocked when nothing is coming.',
+                    'Tooling: looks up the plate set or die by dieline reference; Ready or In use passes, Not made, In making or Needs repair blocks; not registered passes with a note.',
+                    'Writes the gates and the note on each operation.',
+                ],
+                'reads' => ['tm2prd.prd_wo_material', 'tm2mst.prod_tooling_asset', 'Material Planning Engine'],
+                'writes' => ['tm2prd.prd_wo_operation (gate columns)'],
+                'used' => ['PPIC Auto-Planner', 'Work Order', 'Production Scheduling'],
+            ],
+            [
+                'key' => 'ppic-wo-enrich', 'name' => 'Work Order Enrichment', 'group' => 'Production', 'mode' => 'suggest',
+                'purpose' => 'Completes a new Work Order with what scheduling must know: process ids, the machines that can run each step, target per hour, waste, spoilage and setup.',
+                'class' => WoPlanningEnricher::class,
+                'methods' => ['enrich'],
+                'inputs' => [
+                    ['wo', 'A Work Order created from Product Development data.'],
+                ],
+                'outputs' => [
+                    ['Operations', 'Process id, quantity in and good out, target, setup minutes, candidate machines with eligibility and the reason when not eligible.'],
+                    ['Header facts', 'Sheet size, ups per sheet, board weight, colours, dieline reference, customer tier.'],
+                ],
+                'steps' => [
+                    'Reads layout, board, colours, dieline and the customer tier from Product Development and the customer master.',
+                    'Matches each operation to its process and checks every machine of that process against sheet size, board weight, colours and certification.',
+                    'Takes the target per hour from the machine and process rates and estimates setup from the changeover table.',
+                    'Flows quantities back from the last step: each step asks for what it needs including its waste and spoilage.',
+                ],
+                'reads' => ['tm2prd.prd_wo', 'tm2mst.prod_part', 'tm2mst.prod_process_machine', 'tm2mst.cust_customer'],
+                'writes' => ['tm2prd.prd_wo', 'tm2prd.prd_wo_operation', 'tm2prd.prd_wo_operation_machine'],
+                'used' => ['Create Work Order', 'Work Order (Refresh from ProDev)'],
+            ],
+            [
+                'key' => 'ppic-plan-control', 'name' => 'Plan Confirm and Change', 'group' => 'Production', 'mode' => 'flow',
+                'purpose' => 'The officer side of the plan: Confirm makes the Draft the real schedule and locks the next shifts; priority and drag changes go into a new Draft with their impact shown first.',
+                'class' => PlanConfirmService::class,
+                'methods' => ['confirm', 'discard'],
+                'notes' => ['confirm' => 'Writes the real start and finish, sets Confirmed and locks the first N running shifts.'],
+                'inputs' => [
+                    ['runId', 'The Draft run.'],
+                    ['login', 'The officer.'],
+                ],
+                'outputs' => [
+                    ['Confirmed plan', 'Number of operations confirmed and locked.'],
+                ],
+                'steps' => [
+                    'Only a Draft can be confirmed.',
+                    'Copies the draft machine and times to the real columns, marks the operations Confirmed and Assigned.',
+                    'Locks operations that start inside the next N running shifts (N = PPIC_LOCK_SHIFTS).',
+                    'Writes the decision log.',
+                ],
+                'reads' => ['tm2prd.prd_plan_run', 'tm2prd.prd_wo_operation'],
+                'writes' => ['tm2prd.prd_wo_operation', 'tm2prd.prd_plan_run', 'tm2prd.prd_plan_decision'],
+                'settings' => ['PPIC_LOCK_SHIFTS'],
+                'used' => ['Production Scheduling (Confirm plan, Hot job, Move up, Gantt drag)'],
+            ],
+            [
+                'key' => 'ppic-operator-timer', 'name' => 'Operator Timer', 'group' => 'Production', 'mode' => 'flow',
+                'purpose' => 'Play, Pause and Stop at the machine: records real setup, run and pause time and the quantities of each job.',
+                'class' => OperatorTimerService::class,
+                'methods' => ['play', 'pause', 'stop', 'addQuantity', 'summary'],
+                'inputs' => [
+                    ['operationId', 'The job in the confirmed queue.'],
+                    ['reason', 'Why the timer is paused: waiting material, break, machine problem, quality hold, waiting crew, other.'],
+                    ['good, waste, reject', 'Quantities at Stop, with the scrap type of the reject and what changed at setup.'],
+                ],
+                'outputs' => [
+                    ['Time log', 'One row per segment: setup, run or pause with its reason.'],
+                    ['Output', 'Good quantity and waste / reject lines in the production output tables.'],
+                ],
+                'steps' => [
+                    'One timer runs per machine at a time; Play on a waiting job starts setup, Play again starts the run.',
+                    'Pause closes the segment and opens a pause with the reason; Play continues the kind it was.',
+                    'Stop closes the timer, saves the quantities, adds the setup minutes to the operation and finishes it.',
+                ],
+                'reads' => ['tm2prd.prd_wo_operation'],
+                'writes' => ['tm2prd.prd_operation_time_log', 'tm2prd.prd_wo_operation', 'tm2prd.prd_wo_operation_output', 'tm2prd.prd_wo_operation_output_defect'],
+                'used' => ['Operator Queue'],
+            ],
+            [
+                'key' => 'ppic-learning', 'name' => 'Learning Engine (changeover)', 'group' => 'Production', 'mode' => 'auto',
+                'purpose' => 'Corrects the Assumed changeover minutes from the setup times operators really needed, in small logged steps that can be put back.',
+                'class' => LearningEngine::class,
+                'methods' => ['run', 'revert'],
+                'notes' => ['revert' => 'Puts the old value back and freezes it so the engine leaves it alone.'],
+                'inputs' => [
+                    ['actor', 'ENGINE or the officer.'],
+                    ['decisionId', 'The logged change to put back.'],
+                ],
+                'outputs' => [
+                    ['Adjusted values', 'Machine, kind of change, old and new minutes and the number of jobs.'],
+                    ['Log', 'One decision row per change (event LEARN or LEARN_REVERT).'],
+                ],
+                'steps' => [
+                    'Takes the setup minutes of finished jobs per machine and kind of change from the time log.',
+                    'Needs at least the minimum number of jobs; the typical actual is the median of the last ones minus the base setup.',
+                    'New value = old + blend x (typical - old), moved by at most the step limit; only Assumed or Learning values that are not frozen.',
+                    'Learns only from jobs finished after the last adjustment.',
+                ],
+                'reads' => ['tm2prd.prd_operation_time_log'],
+                'writes' => ['tm2mst.prod_machine_changeover', 'tm2prd.prd_plan_decision'],
+                'settings' => ['PPIC_LEARN_MIN_SAMPLES', 'PPIC_LEARN_MAX_STEP_PCT', 'PPIC_LEARN_BLEND'],
+                'used' => ['Learning Changes', 'scheduler: ppic:learn'],
             ],
         ];
     }

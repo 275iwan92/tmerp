@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-09 00:14",
+    "generated": "2026-10-09 00:16",
     "database": "ddtsys",
     "totals": {
         "objects": 152,
@@ -17,7 +17,7 @@
         "grid_classes": 163,
         "lookups": 45,
         "report_grids": 42,
-        "engines": 31,
+        "engines": 39,
         "engine_groups": 13,
         "tables": 397,
         "databases": 10,
@@ -26,7 +26,7 @@
         "tests": 133,
         "dictionary": 12028,
         "languages": 4,
-        "commits": "1239",
+        "commits": "1241",
         "since": "2026-08-06"
     },
     "modules": [
@@ -166,13 +166,13 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 41,
+            "commits": 43,
             "days": 3,
             "last": "2026-10-09",
-            "screens": 54,
-            "objects": 4,
-            "engines": 7,
-            "tests": 14
+            "screens": 88,
+            "objects": 6,
+            "engines": 19,
+            "tests": 29
         }
     ],
     "untracked": 1117,
@@ -258,7 +258,7 @@
         {
             "date": "2026-10-09",
             "iwan": 0,
-            "jo": 3,
+            "jo": 5,
             "other": 0
         }
     ],
@@ -320,7 +320,7 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 41,
+            "jo": 43,
             "other": 37
         }
     ],
@@ -498,8 +498,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1178,10 +1178,10 @@
             "name": "Batch",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1189,10 +1189,10 @@
             "name": "Sampling Plan",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -1200,10 +1200,10 @@
             "name": "URGENT Usage",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -1299,10 +1299,10 @@
             "name": "Receiving & Putaway",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1332,10 +1332,10 @@
             "name": "Pre-Booking",
             "module": "Production",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1345,8 +1345,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1378,8 +1378,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -1807,8 +1807,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -1871,10 +1871,10 @@
             "name": "Conditional Stock",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1882,10 +1882,10 @@
             "name": "Sampling Rules",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -1893,10 +1893,10 @@
             "name": "Shortage by Supplier",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1959,10 +1959,10 @@
             "name": "Pick List",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -2399,10 +2399,10 @@
             "name": "First Article",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -2410,10 +2410,10 @@
             "name": "Risk Class",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -2421,10 +2421,10 @@
             "name": "Supplier Claims",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -2432,10 +2432,10 @@
             "name": "Shortage Request",
             "module": "Procurement",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -2443,10 +2443,10 @@
             "name": "Shortage by Supplier",
             "module": "Procurement",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -2762,10 +2762,10 @@
             "name": "Shortage Request",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -3347,8 +3347,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3369,8 +3369,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-08-22",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3380,8 +3380,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3391,8 +3391,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3569,6 +3569,94 @@
             "built_by": null,
             "changed_at": "2026-10-02",
             "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:ppic-auto-plan",
+            "name": "PPIC Auto-Planner",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:ppic-schedule-solver",
+            "name": "Schedule Solver (finite capacity)",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:ppic-setup-time",
+            "name": "Setup Time Engine",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:ppic-gates",
+            "name": "Readiness Gates",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:ppic-wo-enrich",
+            "name": "Work Order Enrichment",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:ppic-plan-control",
+            "name": "Plan Confirm and Change",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:ppic-operator-timer",
+            "name": "Operator Timer",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:ppic-learning",
+            "name": "Learning Engine (changeover)",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -4667,8 +4755,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -4931,8 +5019,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -5625,6 +5713,70 @@
                     "mode": "suggest",
                     "used": 2,
                     "tests": 1
+                },
+                {
+                    "key": "ppic-auto-plan",
+                    "name": "PPIC Auto-Planner",
+                    "purpose": "Prepares a Draft plan for every open Work Order: gates, estimates, schedule and the list of what needs a person. Nothing becomes the real schedule until the officer confirms.",
+                    "mode": "suggest",
+                    "used": 3,
+                    "tests": 1
+                },
+                {
+                    "key": "ppic-schedule-solver",
+                    "name": "Schedule Solver (finite capacity)",
+                    "purpose": "Pure calculation: ranks the jobs and places each operation on the machine that finishes it earliest, with setup, wait and calendar included.",
+                    "mode": "calc",
+                    "used": 2,
+                    "tests": 1
+                },
+                {
+                    "key": "ppic-setup-time",
+                    "name": "Setup Time Engine",
+                    "purpose": "Setup minutes and extra waste between two jobs on a machine: base setup plus every change (colour, ink type, substrate, size, plate, die) plus tool mounting.",
+                    "mode": "calc",
+                    "used": 2,
+                    "tests": 1
+                },
+                {
+                    "key": "ppic-gates",
+                    "name": "Readiness Gates",
+                    "purpose": "Marks every operation Ready, Waiting (with a date) or Blocked (with a reason) for material, tooling and artwork.",
+                    "mode": "auto",
+                    "used": 3,
+                    "tests": 0
+                },
+                {
+                    "key": "ppic-wo-enrich",
+                    "name": "Work Order Enrichment",
+                    "purpose": "Completes a new Work Order with what scheduling must know: process ids, the machines that can run each step, target per hour, waste, spoilage and setup.",
+                    "mode": "suggest",
+                    "used": 2,
+                    "tests": 0
+                },
+                {
+                    "key": "ppic-plan-control",
+                    "name": "Plan Confirm and Change",
+                    "purpose": "The officer side of the plan: Confirm makes the Draft the real schedule and locks the next shifts; priority and drag changes go into a new Draft with their impact shown first.",
+                    "mode": "flow",
+                    "used": 1,
+                    "tests": 0
+                },
+                {
+                    "key": "ppic-operator-timer",
+                    "name": "Operator Timer",
+                    "purpose": "Play, Pause and Stop at the machine: records real setup, run and pause time and the quantities of each job.",
+                    "mode": "flow",
+                    "used": 1,
+                    "tests": 0
+                },
+                {
+                    "key": "ppic-learning",
+                    "name": "Learning Engine (changeover)",
+                    "purpose": "Corrects the Assumed changeover minutes from the setup times operators really needed, in small logged steps that can be put back.",
+                    "mode": "auto",
+                    "used": 2,
+                    "tests": 0
                 }
             ]
         },
