@@ -37,6 +37,8 @@
 | D20 | **Nilai awal pengaturan** sesuai tabel O-5 (semua bisa diubah user). | user 2026-10-08 |
 | D21 | **Kelas risiko awal** A / B / C sesuai O-6, diisi per kategori material oleh kepala QC. | user 2026-10-08 |
 | D22 | **PO Subkon sebagai induk** dokumen kirim bahan ke subkon (O-7). | user 2026-10-08 |
+| D23 | **Stock Card, Stock Summary, dan Warehouse Map tidak diubah** (format yang ada sudah benar dan biasa dipakai); perbaikan hanya lewat preview. Tidak ada kolom baru di Stock Card. | user 2026-10-08 |
+| D24 | **Aturan area** = tiga isian: Mixing, Pick order (FIFO / FEFO), hitung tiap N hari; belum ada aturan lain. | user 2026-10-08 |
 | D16 | **Pengaman URGENT** sesuai saran: yang boleh menandai PPIC, Supervisor Produksi, Ops Manager dan di atasnya; alasan dan tautan WO / CO wajib; bahan FSC / food grade butuh persetujuan kepala QC atau Ops Manager. | user 2026-10-08 (O-12) |
 
 Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-10-08.
@@ -600,6 +602,7 @@ dummy baru (aturan: dummy basi diganti), dan **commit + push per potongan kerja*
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-10-08 | Rev.5: D23 (Stock Card, Stock Summary, Warehouse Map tidak diubah) dan D24 (aturan area tiga isian) |
 | 2026-10-08 | Rev.4: user menyetujui semua saran (D17 sampai D22); status DISETUJUI; rencana Fase 1 dibuat terpisah (`inventorywarehouse_v201_phase1_plan.md`) |
 | 2026-10-08 | Rev.3: O-11 diputuskan per item (D15, 8.5 ditulis ulang dengan rancangan, migrasi tanpa jurnal, dampak kode, risiko); O-12 sesuai saran (D16); saran berikut rujukan untuk O-13, O-14, O-15 dan nilai awal O-5, O-6, O-7; pemeriksaan kode menutup O-8 dan O-9 (transfer satu langkah, opname tanpa kunci, `inv_period` ada, `v_inv_wo_reconcile` tanpa output); V-01b dipindah ke Fase 1 |
 | 2026-10-08 | Rev.2: O-1..O-4 dijawab. QC = sampling + URGENT langsung ke produksi (bagian 7 ditulis ulang, kelas risiko jadi intensitas sampling) dan **kurang kirim**: bila output + waste masih kurang, bahan kurang sejak awal dan kekurangannya diminta dikirim (D14, 7.6, Q-13..Q-16); titipan customer = stok pemilik Customer; Average dengan rumus dan contoh kenaikan harga (bagian 8); temuan kode: Average sudah ada tetapi per bin (O-11), FIFO belum jalan, jurnal koreksi transaksi mundur belum ada (O-14) |

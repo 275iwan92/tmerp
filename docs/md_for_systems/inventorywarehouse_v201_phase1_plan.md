@@ -8,7 +8,7 @@
 
 Setelah Fase 1 selesai, user dapat:
 1. Melihat dan mengelola **master batch** (nomor batch, lot supplier, tanggal produksi, kedaluwarsa, status QC, sertifikasi).
-2. Melihat saldo stok **per pemilik** (Company / Customer / Supplier) dan **per status batch**; stok pemilik Customer tidak dinilai dan tidak ikut Average.
+2. Melihat saldo stok **per pemilik** (Company / Customer / Supplier) dan **per status batch** lewat layar Batch (tab Stock of this batch); stok pemilik Customer tidak dinilai dan tidak ikut Average. **Stock Card, Stock Summary, dan Warehouse Map tidak diubah.**
 3. Mendapatkan **satu Average per item** untuk seluruh perusahaan: biaya keluar sama apa pun bin yang diambil, transfer tidak mengubah Average.
 4. Membuat **lokasi bertipe** (penerimaan, karantina, WIP, scrap, dan virtual: transit, loss) dan mengatur aturan campur bin.
 5. Mengisi semua batas yang terkait lewat layar pengaturan (aturan 7.12: setiap nilai punya inputan).
@@ -40,7 +40,7 @@ Fase 1 **tidak** memuat: sampling QC dan URGENT (Fase 2), booking dari costing (
 | **S3** | Mesin Average per item: `ItemValuationChain` (baru), `StockPostingService` dan `StockTransferService` memakainya | S1 |
 | **S4** | Perintah `inv:revalue-per-item` (peralihan saldo tanpa jurnal), `--check` dan idempoten | S3 |
 | **S5** | Layar pengaturan (konstanta) dan jenis lokasi di layar Storage Areas / Bins yang ada | S1 |
-| **S6** | Mockup JPEG untuk persetujuan user (bagian 6), lalu layar: Batch master, kolom pemilik / status / batch di Stock Balance dan Stock Card, field Batch pada form Stock In | S1, persetujuan mockup |
+| **S6** | Setelah mockup disetujui, layar: Batch master (grid + form), field Batch pada form Stock In, isian aturan area dan jenis area baru di Storage Areas. **Stock Card, Stock Summary, Warehouse Map tidak disentuh** | S1, persetujuan mockup |
 | **S7** | Help (topik layar baru), kamus terjemahan, menu, `php artisan build:catalog --env=mockup` | S6 |
 | **S8** | Dummy baru (bagian 7), uji penuh, perbandingan Σ nilai sebelum dan sesudah | S2 sampai S6 |
 
@@ -123,7 +123,7 @@ Perilaku:
 | # | Perjalanan | Layar | Mockup JPEG |
 |---|---|---|---|
 | J1 | Admin stok membuka **Inventory > Batch & Quality > Batch**, mencari batch per item, membuka satu batch, mengubah tanggal kedaluwarsa atau sertifikasi, melihat saldo batch per bin dan palet | grid + form | **M1**: `inv_v201_batch_grid.jpg`, `inv_v201_batch_form.jpg` |
-| J2 | Admin stok membuka **Stock Card**; kolom **Batch**, **Batch Status**, **Owner** tersedia di menu Columns (tersembunyi secara default). **Stock Card dan Stock Summary tidak diubah** | grid yang ada | **M2**: `inv_v201_stock_card.jpg`, `inv_v201_stock_summary.jpg` |
+| J2 | Admin stok membuka **Stock Card** dan **Stock Summary**: tampilan dan angkanya **tidak berubah sama sekali** (keputusan user: format yang ada adalah format yang biasa dipakai) | grid yang ada | **M2**: `inv_v201_stock_card.jpg` dan `inv_v201_stock_summary.jpg` (keduanya tidak diubah) |
 | J3 | Operator membuat **Stock In RM**: kolom **Batch** (pilih batch yang ada atau buat batch baru dengan lot supplier dan kedaluwarsa) menggantikan teks Lot | form yang ada | **M3**: `inv_v201_stock_in_batch.jpg` |
 | J4 | Admin gudang membuka **Storage Areas**, memilih **jenis area** (termasuk WIP dan area virtual) dan mengisi **aturan area** (Mixing, Pick order, hitung tiap N hari). **Warehouse Map tidak diubah** | form yang ada | **M4**: `wh_v201_storage_area.jpg` |
 | J5 | Admin stok melihat **Stock Summary**: nilai akhir sama sebelum dan sesudah peralihan Average per item, dan Opening + In − Out + Adjustment = Closing di setiap baris | grid yang ada | `inv_v201_stock_summary.jpg` |
@@ -200,5 +200,6 @@ Setiap uji **membersihkan datanya sendiri** di `tearDown()` dan hasilnya **diver
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-10-08 | Rev.3: user memutuskan **Stock Card dibiarkan persis seperti sekarang** (tanpa kolom baru; gambar diganti replika tanpa perubahan) dan **aturan area** cukup tiga isian di gambar 6 (belum ada aturan lain) |
 | 2026-10-08 | Rev.2: laporan Stock Card, Stock Summary dan Warehouse Map dinyatakan benar dan tidak diubah; delapan jenis area dan `inv_pallet` ternyata sudah ada (W-01 menyusut menjadi empat jenis baru, batch ditautkan ke palet, aturan area di `wh_zone`); mockup M1 sampai M4 dibuat; uji T14, T15 ditambahkan |
 | 2026-10-08 | Draft pertama rencana Fase 1 |
