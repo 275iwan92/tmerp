@@ -29,7 +29,14 @@ class Sheet extends DevlibComponent
         public ?string $source = null,
         public bool $lookup = false,
         public ?string $saveUrl = null,
+        public array $stats = [],
     ) {}
+
+    // Jumlah baris yang cocok dengan satu kotak statistik: ['label', 'where' => [kolom => nilai | [nilai, ...]], 'tone'].
+    public function statCount(array $stat): int
+    {
+        return count(array_filter($this->rows, fn (array $r) => collect($stat['where'] ?? [])->every(fn ($v, $k) => in_array($r[$k] ?? null, (array) $v, true))));
+    }
 
     public function tag(): string
     {
@@ -58,6 +65,13 @@ class Sheet extends DevlibComponent
     {
         return <<<'BLADE'
             <div {{ $attributes->class(['dl-sheet', 'dl-sheet--lookup' => $lookup]) }} {!! $dl() !!} data-dl-sheet data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
+                @if ($stats)
+                <div class="dl-grid__stats">
+                    @foreach ($stats as $s)
+                    <x-dl::stat-box :label="$s['label']" :value="(string) $statCount($s)" :tone="$s['tone'] ?? 'accent'" :filter="true" data-where="{{ json_encode($s['where'] ?? []) }}" />
+                    @endforeach
+                </div>
+                @endif
                 @if ($lookup)
                 <div class="dl-sheet__bar">
                     <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search...') }}" data-s-search aria-label="{{ \Devlib\Lang::text('Search') }}"></div>

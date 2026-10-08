@@ -20,6 +20,10 @@ final class BinGenerator
      *  @return list<array<string, mixed>> baris wh_loc yang akan dibuat (termasuk yang sudah ada, ditandai 'exists') */
     public static function plan(WhZone $zone, array $o): array
     {
+        // Area virtual (subkon, In Transit, Loss) tidak punya tempat fisik: binnya dibuat VirtualLocationService, bukan generator ini.
+        if ($zone->isVirtualType()) {
+            return [];
+        }
         $wh = $zone->warehouse;
         $prefix = $wh->warehouse_code.'-'.$zone->zone_code;
         $base = ['warehouse_id' => $zone->warehouse_id, 'zone_id' => $zone->id_zone, 'location_type' => $zone->zone_type, 'is_usable' => true, 'activate' => true,

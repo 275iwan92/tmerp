@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\Schema;
 // App\Services\Planning\MaterialPlanningEngine dan menyiapkan baris grid. Aturan & rumus hanya di engine.
 final class MaterialPlanning
 {
-    public const BOOKING_TONES = ['NOT BOOKED' => 'neutral', 'DRAFT' => 'warn', 'CONFIRMED' => 'success', 'FORECAST' => 'info'];
+    public const BOOKING_TONES = ['NOT BOOKED' => 'neutral', 'DRAFT' => 'warn', 'CONFIRMED' => 'success', 'FORECAST' => 'info', 'PRE-BOOKING' => 'info', 'HELD' => 'warn'];
 
-    public const CO_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'CONFIRMED' => 'success', 'FORECAST' => 'info'];
+    public const CO_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'CONFIRMED' => 'success', 'FORECAST' => 'info', 'Not CO yet' => 'info', 'Quotation' => 'info', 'Held' => 'warn'];
 
     // Kode status engine -> label layar (English; kamus sys_dictionary menerjemahkan).
     public const COVER = ['NEED_LAYOUT' => 'Need layout', 'NEED_ITEM' => 'Need item', 'SHORT' => 'Short', 'LATE_PR' => 'Late', 'LATE_PO' => 'Late',
@@ -113,20 +113,25 @@ final class MaterialPlanning
     {
         $engine = self::engine();
         $bookings = RmBooking::where('stat_cancel', 0)->whereNotNull('co_id')->get()->keyBy('co_id');
+        $pre = RmBooking::where('stat_cancel', 0)->whereNull('co_id')->whereNotNull('chain_key')->get()->keyBy('chain_key');
         $out = [];
         foreach (collect($engine->plan()['lines'])->groupBy(fn ($l) => $l['co_id'] ?: 'F'.$l['co_no']) as $rows) {
             $f = $rows->first();
-            $b = $f['co_id'] ? ($bookings[$f['co_id']] ?? null) : null;
+            $b = $f['co_id'] ? ($bookings[$f['co_id']] ?? null) : ($f['type'] === 'PRE' ? ($pre[(string) $f['inquiry_id']] ?? null) : null);
             $worst = $rows->pluck('status')->sortByDesc(fn ($s) => MaterialPlanningEngine::SEVERITY[$s] ?? 0)->first();
             $out[] = ['id' => $f['co_id'] ?: 0, 'co' => $f['co_no'], 'customer' => $f['customer'], 'co_status' => $f['co_status'],
-                'booking_no' => $b->booking_no ?? '—', 'booking' => $f['type'] === 'FORECAST' ? 'FORECAST' : ($b ? $b->doc_status : 'NOT BOOKED'),
+                'booking_no' => $b->booking_no ?? '—', 'booking' => $f['type'] === 'FORECAST' ? 'FORECAST' : ($f['type'] === 'PRE' && $b?->doc_status !== 'HELD' ? 'PRE-BOOKING' : ($b ? $b->doc_status : 'NOT BOOKED')),
                 'need' => $rows->min('need_date'), 'lines' => $rows->count(),
                 // Baris anak grid (Expand): product + bahan yang dibutuhkan CO ini.
                 'items' => $rows->map(fn ($l) => ['product' => $l['product'], 'part' => $l['part'] ?? '—', 'material' => $l['material'], 'qty' => (float) $l['qty'],
                     'uom' => $l['uom'], 'need' => $l['need_date'], 'status' => self::COVER[$l['status']] ?? $l['status']])->values()->all(),
                 'short' => $rows->filter(fn ($l) => in_array($l['status'], ['SHORT', 'NEED_ITEM', 'NEED_LAYOUT'], true))->count(),
                 'cover' => self::COVER[$worst] ?? $worst,
-                'changed' => $b && $b->stat_confirm && $b->co_fingerprint !== $engine->fingerprint((int) $f['co_id']) ? 'CO changed' : ''];
+                'changed' => match (true) {
+                    $f['co_id'] && $b && $b->stat_confirm && $b->co_fingerprint !== $engine->fingerprint((int) $f['co_id']) => 'CO changed',
+                    $b && $b->stale_warned_on && ! $b->stat_cancel => 'Stale',
+                    default => '',
+                }];
         }
 
         return collect($out)->sortBy('need')->values()->all();
@@ -155,7 +160,9 @@ final class MaterialPlanning
         return collect(self::engine()->plan()['materials'])->values()->map(fn ($m) => ['id' => $m['material_id'] ?: 0, 'material' => $m['material'],
             'code' => $m['code'] ?? t('no item yet'), 'role' => $m['role'], 'uom' => $m['uom'], 'need' => $m['need'], 'stock' => $m['stock'],
             'incoming' => $m['incoming'], 'short' => $m['short'], 'first_need' => $m['first_need'], 'order_by' => $m['order_by'], 'lead' => $m['lead_days'],
-            'status' => self::COVER[$m['status']] ?? $m['status'], 'orders' => implode(', ', $m['orders']), 'supplier' => $suppliers[$m['supplier_id']] ?? '—'])->all();
+            'status' => self::COVER[$m['status']] ?? $m['status'], 'orders' => implode(', ', $m['orders']), 'supplier' => $suppliers[$m['supplier_id']] ?? '—',
+            // B-04: kekurangan yang hanya berasal dari pre-booking (belum ada CO) diberi label supaya PR dini bisa dinilai PPIC.
+            'stage' => $m['pre_short'] > 0 ? ($m['short'] - $m['pre_short'] > 0.00001 ? 'Includes not CO yet' : 'Not CO yet') : ''])->all();
     }
 
     // Proyeksi saldo satu bahan per tanggal: stok Available sekarang, + PO/PR datang, - kebutuhan.

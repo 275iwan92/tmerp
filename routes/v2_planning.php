@@ -4,6 +4,7 @@ use App\Models\Inventory\RmBooking;
 use App\Models\Inventory\RmBookingD;
 use App\Support\Localization\Dictionary;
 use App\Support\V2\Data\MaterialPlanning;
+use App\Support\V2\Data\PreBookings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,47 @@ Route::prefix('v2/planning')->name('v2.planning.')->middleware('module:PROD')->g
 
         return redirect($booking($co))->with('v2_flash', Dictionary::t('Item picked and booking recalculated.'));
     })->name('pick');
+
+    // Pre-Booking sejak ProCost terbit (B-01..B-03): hitung ulang, Pick Item, Hold / Release Hold.
+    $prebooking = fn (?int $id = null) => route('v2.screen', 'material-prebooking').($id ? '?id='.$id : '');
+
+    Route::post('/prebooking/run', function () use ($prebooking) {
+        $n = MaterialPlanning::engine()->runPre();
+        MaterialPlanning::changed();
+
+        return redirect($prebooking())->with('v2_flash', tf('Pre-bookings recalculated: :n.', ['n' => (string) $n]));
+    })->name('prebooking.run');
+
+    Route::post('/prebooking/{id}/act', function (Request $r, int $id) use ($prebooking) {
+        $b = PreBookings::find($id) ?? abort(404);
+        $engine = MaterialPlanning::engine();
+        $msg = match ($r->input('action')) {
+            'hold' => (function () use ($engine, $b, $r) {
+                $engine->hold($b, (string) $r->input('reason', ''));
+
+                return t('Stock is on hold. The hold ends by itself on the date shown.');
+            })(),
+            'release' => (function () use ($engine, $b) {
+                $engine->releaseHold($b);
+
+                return t('Hold released. The stock is available again.');
+            })(),
+            default => abort(422),
+        };
+        MaterialPlanning::changed();
+
+        return redirect($prebooking($id))->with('v2_flash', $msg);
+    })->whereNumber('id')->name('prebooking.act');
+
+    Route::post('/prebooking/{id}/pick', function (Request $r, int $id) use ($prebooking) {
+        $b = PreBookings::find($id) ?? abort(404);
+        $d = $r->validate(['line_id' => ['required', 'integer'], 'material_id' => ['required', 'integer', 'exists:tm2mst.mat_raw,material_id']], [], ['material_id' => t('Stock Item'), 'line_id' => t('Line')]);
+        abort_if($b->stat_confirm, 422, t('This booking is on hold; release the hold first.'));
+        MaterialPlanning::engine()->pick(RmBookingD::where('booking_detail_id', $d['line_id'])->where('booking_id', $b->booking_id)->firstOrFail(), (int) $d['material_id']);
+        MaterialPlanning::changed();
+
+        return redirect($prebooking($id))->with('v2_flash', t('Item picked and booking recalculated.'));
+    })->whereNumber('id')->name('prebooking.pick');
 
     Route::post('/create-pr', function (Request $r) {
         $d = $r->validate(['material_ids' => ['required', 'array', 'min:1'], 'material_ids.*' => ['integer']], [], ['material_ids' => t('Short materials')]);

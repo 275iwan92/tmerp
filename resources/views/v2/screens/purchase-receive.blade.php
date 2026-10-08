@@ -271,4 +271,6 @@
                 :summary="[[t('Lines'), (string) $pv->lines->count()], [t('Received Value'), $money($value), 'grand']]" />
         </x-slot:detail>
     </x-dl::form>
+    {{-- URGENT, sertifikasi batch dan rencana sampling per baris (v2.01, jalur QC): v2.screens._receipt-urgent --}}
+    @include('v2.screens._receipt-urgent', ['pv' => $pv, 'draft' => $draft])
 @endif

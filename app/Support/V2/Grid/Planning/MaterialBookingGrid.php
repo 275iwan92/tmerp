@@ -84,7 +84,7 @@ class MaterialBookingGrid extends DbGrid
             ['key' => 'cover', 'label' => 'Coverage', 'type' => 'badge', 'tones' => MaterialPlanning::COVER_TONES],
             ['key' => 'booking_no', 'label' => 'Booking No.'],
             ['key' => 'booking', 'label' => 'Booking', 'type' => 'badge', 'tones' => MaterialPlanning::BOOKING_TONES],
-            ['key' => 'changed', 'label' => 'Note', 'type' => 'badge', 'tones' => ['CO changed' => 'danger']],
+            ['key' => 'changed', 'label' => 'Note', 'type' => 'badge', 'tones' => ['CO changed' => 'danger', 'Stale' => 'warn']],
         ];
     }
 

@@ -1,0 +1,59 @@
+[
+  {
+    "key": "wh-pick-list",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Pick List",
+    "purpose": {
+      "en": "The list a warehouse officer follows to take material for one Work Order. It is made from the confirmed material booking: the system chooses pallets, batches and bins, and Confirm Pick issues the stock to the work order.",
+      "id": "Daftar yang diikuti petugas gudang untuk mengambil bahan satu Work Order. Dibuat dari booking bahan yang sudah Confirm: sistem memilih palet, batch, dan bin, lalu Confirm Pick mengeluarkan stok ke work order."
+    },
+    "keywords": "pick list, picking, ambil bahan, daftar ambil, pengambilan bahan, work order, wo, palet, pallet, batch, bin, scan, fifo, fefo, stock out, keluar gudang, alokasi, short, kurang",
+    "steps": [
+      {"en": "Click + New Record, choose the Work Order and click Create. Only work orders with a confirmed material booking and no open pick list are offered.", "id": "Klik + New Record, pilih Work Order lalu klik Create. Hanya work order yang bookingnya sudah Confirm dan belum punya pick list terbuka yang ditawarkan."},
+      {"en": "Read each material card: need, allocated quantity and the pallets, batches and bins to take. Paper follows FIFO, ink and glue follow FEFO, as set per storage area.", "id": "Baca tiap kartu bahan: kebutuhan, qty teralokasi, serta palet, batch, dan bin yang diambil. Kertas mengikuti FIFO, tinta dan lem FEFO, sesuai pengaturan area."},
+      {"en": "A line marked Short means no allowed stock is left. Reallocate when stock arrives, or cancel the pick list. Confirm Pick is refused while any line is short.", "id": "Baris bertanda Short berarti tidak ada stok yang boleh dipakai. Klik Reallocate saat stok datang, atau batalkan pick list. Confirm Pick ditolak selama ada baris short."},
+      {"en": "Go to the bin. In Scan type or scan the pallet label, then the bin label, and click Scan. The line becomes Scanned. A wrong pallet or bin is refused.", "id": "Datangi bin. Di Scan ketik atau pindai label palet, lalu label bin, dan klik Scan. Baris menjadi Scanned. Palet atau bin yang salah ditolak."},
+      {"en": "When every line is scanned, click Confirm Pick. A Stock Out to the work order is posted, pallets are reduced and need a new label, and the booking is marked issued.", "id": "Bila semua baris sudah dipindai, klik Confirm Pick. Stock Out ke work order diposting, palet dikurangi dan perlu label baru, dan booking ditandai sudah keluar."},
+      {"en": "Cancel releases the allocation and needs a reason. Print gives the pick list for the floor.", "id": "Cancel melepas alokasi dan butuh alasan. Print menghasilkan pick list untuk dibawa ke lantai gudang."}
+    ],
+    "fields": [
+      {"label": "Work Order", "en": "The work order to take material for. Picked when the pick list is created.", "id": "Work order yang bahannya diambil. Dipilih saat pick list dibuat."},
+      {"label": "Deliver To", "en": "Production staging bin where the material is taken. Left empty, the first staging bin is used.", "id": "Bin staging produksi tempat bahan diantar. Bila kosong, dipakai bin staging pertama."},
+      {"label": "Pick List", "en": "Number given by the system when the pick list is created.", "id": "Nomor yang diberikan sistem saat pick list dibuat."},
+      {"label": "Booking", "en": "The confirmed material booking and Customer Order the pick list comes from. Filled by the system.", "id": "Booking bahan yang sudah Confirm dan Customer Order asal pick list. Diisi sistem."},
+      {"label": "Need Date", "en": "The earliest date any material line is needed. Filled from the booking.", "id": "Tanggal paling awal bahan dibutuhkan. Diisi dari booking."},
+      {"label": "Scanned Code", "en": "The code read from a pallet label or a bin label. The system decides whether it is the pallet or the bin of an open line.", "id": "Kode hasil baca label palet atau label bin. Sistem menentukan apakah itu palet atau bin dari baris yang masih terbuka."},
+      {"label": "Pallet", "en": "The pallet to take from. It carries the batch and the received date.", "id": "Palet yang diambil. Membawa batch dan tanggal datang."},
+      {"label": "Quality", "en": "Status of the batch. Only Released and, for ordinary jobs, Conditional batches are allocated. Quarantine, Rejected and Blocked never are.", "id": "Status batch. Hanya batch Released dan, untuk job biasa, Conditional yang dialokasikan. Quarantine, Rejected, dan Blocked tidak pernah."}
+    ]
+  },
+  {
+    "key": "material-prebooking",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Pre-Booking",
+    "purpose": {
+      "en": "Shows the paper needed for jobs whose Pro-Cost is published but that have no Customer Order yet, so Planning and Purchasing can act early. A pre-booking is soft; Hold keeps the stock for a few working days.",
+      "id": "Menampilkan kertas yang dibutuhkan job yang Pro-Cost-nya sudah terbit tetapi belum punya Customer Order, supaya Planning dan Pembelian bisa bergerak lebih awal. Pre-booking bersifat lunak; Hold menahan stok beberapa hari kerja."
+    },
+    "keywords": "pre booking, prebooking, booking awal, booking dini, belum co, not co yet, procost terbit, hold, tahan stok, kertas, kebutuhan bahan, quotation, short run, pick item",
+    "steps": [
+      {"en": "Open Pre-Booking. Each row is an inquiry whose Pro-Cost is published. Click Recalculate All to refresh them; the nightly planning run does the same.", "id": "Buka Pre-Booking. Tiap baris adalah inquiry yang Pro-Cost-nya sudah terbit. Klik Recalculate All untuk memperbarui; perhitungan malam melakukan hal yang sama."},
+      {"en": "Read the Stage: Not CO yet, Quotation (a quotation is issued), or Customer Order (draft). When the Customer Order is Confirmed, the same booking continues as its booking.", "id": "Baca Stage: Not CO yet, Quotation (quotation sudah terbit), atau Customer Order (draft). Saat Customer Order Confirmed, booking yang sama berlanjut sebagai bookingnya."},
+      {"en": "Double-click a row. Lines marked Need item only have the paper size and weight from the costing, so use Pick Item to choose the stock item.", "id": "Klik dua kali sebuah baris. Baris Need item baru punya ukuran dan gramatur kertas dari costing, jadi pakai Pick Item untuk memilih item stok."},
+      {"en": "A pre-booking does not reduce the available stock. A shortage that only comes from pre-bookings is marked Not CO yet in Material Planning.", "id": "Pre-booking tidak mengurangi stok yang tersedia. Kekurangan yang hanya berasal dari pre-booking diberi tanda Not CO yet di Material Planning."},
+      {"en": "Use Hold, with a reason, to keep the stock for a critical material. The hold ends by itself after the working days set in Constants. Release Hold ends it earlier.", "id": "Pakai Hold, dengan alasan, untuk menahan stok bahan kritis. Hold berakhir sendiri setelah hari kerja yang diatur di Constants. Release Hold mengakhirinya lebih awal."},
+      {"en": "A pre-booking ends by itself when the quotation expires, the Pro-Cost is reversed or the inquiry is cancelled.", "id": "Pre-booking berakhir sendiri bila quotation kedaluwarsa, Pro-Cost dibalik, atau inquiry dibatalkan."}
+    ],
+    "fields": [
+      {"label": "Inquiry / Customer", "en": "Inquiry number and customer of the job. Filled from the inquiry.", "id": "Nomor inquiry dan customer job. Diisi dari inquiry."},
+      {"label": "Stage", "en": "Where the job is on the booking ladder: Not CO yet, Quotation or Customer Order (draft). Set by the system.", "id": "Posisi job pada tangga booking: Not CO yet, Quotation, atau Customer Order (draft). Diatur sistem."},
+      {"label": "Material Needed By", "en": "The inquiry due date, or the working days from today set in Constants when there is none.", "id": "Due date inquiry, atau hari kerja dari hari ini yang diatur di Constants bila belum ada."},
+      {"label": "Coverage", "en": "Whether stock, PO or PR covers the need: Covered by stock, Waiting PO/PR, Late, Short or Need item.", "id": "Apakah stok, PO, atau PR menutup kebutuhan: Covered by stock, Waiting PO/PR, Late, Short, atau Need item."},
+      {"label": "Hold Until", "en": "The date a hold ends by itself. Empty when the stock is not on hold.", "id": "Tanggal Hold berakhir sendiri. Kosong bila stok tidak ditahan."},
+      {"label": "Stock Item", "en": "The raw material chosen for a Need item line. Typed with at least two letters of the name or code. The choice stays on this booking.", "id": "Bahan baku yang dipilih untuk baris Need item. Ketik minimal dua huruf nama atau kode. Pilihan tersimpan di booking ini."},
+      {"label": "Reason", "en": "Why the material must be held. Saved with the hold.", "id": "Alasan bahan harus ditahan. Disimpan bersama Hold."}
+    ]
+  }
+]

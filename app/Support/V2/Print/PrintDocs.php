@@ -44,6 +44,7 @@ final class PrintDocs
         'qc-inspection' => [QcInspectionPrint::class, 'purchase-receive', 'QCI'],
         'customer-complaint' => [CustomerComplaintPrint::class, 'crm-complaint', 'CCR'],
         'stock-transfer' => [StockTransferPrint::class, 'stock-transfer', 'TF'],
+        'pick-list' => [PickListPrint::class, 'wh-pick-list', 'PK'],
         'cash-roster' => [CashRosterPrint::class, 'hrm-cash-roster', null],
     ];
 

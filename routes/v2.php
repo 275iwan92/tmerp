@@ -1025,6 +1025,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
         return $err ? $back->withErrors(['review' => t($err)]) : $back->with('v2_flash', $confirm ? t('Answer confirmed. Sales can now close the complaint.') : t('Saved.'));
     })->whereNumber('id')->middleware('module:PROD')->name('qc.complaint-review.save');
 
+    // Inventory > Batch & Quality (v2.01): keputusan mutu batch, first article, tanda URGENT penerimaan, permintaan kirim kekurangan.
+    require __DIR__.'/v2_quality.php';
+
     // Customer Order v2 (App\Support\V2\Data\CustomerOrder = aturan komponen v1 pages::co.entry). Tombol "+" menyimpan isian dulu.
     Route::prefix('co')->name('co.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'customer-order').'?id='.$id);

@@ -46,7 +46,8 @@ class StorageAreaLookup extends DbLookup
     public function guide(): ?string
     {
         return 'One row per storage area on one floor of a building. X and Y are the top-left corner on the floor plan, Width and Depth its size, all in metres. '
-            .'A saved code cannot be changed because bin codes are made from it.';
+            .'A saved code cannot be changed because bin codes are made from it. Mixing, Pick Order and Count Every are the area rules used by putaway, transfer and counting. '
+            .'At Subcontractor, In Transit and Loss are virtual: they have no place on the map and no bins are generated for them.';
     }
 
     protected function query(): Builder
@@ -79,6 +80,12 @@ class StorageAreaLookup extends DbLookup
             // Berapa palet boleh ditumpuk di satu tapak lantai; kosong = tidak dibatasi, tumpukan hanya dipantau (Stack Monitor).
             ['key' => 'max_stack', 'label' => 'Max. Stacked Pallets', 'type' => 'number', 'decimals' => 0, 'width' => '160px'],
             ['key' => 'sort_order', 'label' => 'Order', 'type' => 'number', 'decimals' => 0, 'width' => '80px'],
+            // Aturan area (v2.01, docs/mockups/wh_v201_storage_area.jpg): dipakai putaway dan transfer (Mixing), urutan ambil (Pick order), jadwal hitung.
+            ['key' => 'mix_rule', 'label' => 'Mixing', 'type' => 'select', 'options' => WhZone::MIX_RULES, 'required' => true, 'width' => '190px'],
+            ['key' => 'pick_order', 'label' => 'Pick Order', 'type' => 'select', 'options' => WhZone::PICK_ORDERS, 'required' => true, 'width' => '230px'],
+            ['key' => 'count_every_days', 'label' => 'Count Every (days)', 'type' => 'number', 'decimals' => 0, 'width' => '150px'],
+            // Mengikuti Use (jenis area virtual): tidak diketik, tidak tampil di peta, tidak dibuatkan bin lewat Generate Bins.
+            ['key' => 'is_virtual', 'label' => 'Virtual', 'type' => 'check', 'readonly' => true, 'width' => '80px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
         ];
     }
@@ -86,10 +93,15 @@ class StorageAreaLookup extends DbLookup
     protected function prepare(array $in): array
     {
         $in['zone_code'] = strtoupper(trim((string) ($in['zone_code'] ?? '')));
-        foreach (['floor_no' => 1, 'zone_type' => 'STORAGE', 'storage_mode' => 'FLOOR', 'stock_class' => 'ANY', 'map_x' => 0, 'map_y' => 0, 'map_w' => 5, 'map_h' => 5, 'sort_order' => 0] as $k => $default) {
+        foreach (['floor_no' => 1, 'zone_type' => 'STORAGE', 'storage_mode' => 'FLOOR', 'stock_class' => 'ANY', 'map_x' => 0, 'map_y' => 0, 'map_w' => 5, 'map_h' => 5, 'sort_order' => 0,
+            'mix_rule' => 'ANY', 'pick_order' => 'FIFO'] as $k => $default) {
             if (($in[$k] ?? '') === '' || ($in[$k] ?? null) === null) {
                 $in[$k] = $default;
             }
+        }
+        // Area virtual = satu bin maya (tanpa lajur / rak); is_virtual diisi WhZone saat disimpan.
+        if (in_array($in['zone_type'], WhZone::VIRTUAL_TYPES, true)) {
+            $in['storage_mode'] = 'AREA';
         }
 
         return $in;
@@ -102,7 +114,8 @@ class StorageAreaLookup extends DbLookup
             'zone_code' => ['string', 'max:6', 'regex:/^[A-Z0-9]+$/'], 'zone_name' => ['string', 'max:100'], 'zone_type' => [Rule::in(array_keys(WhZone::TYPES))],
             'storage_mode' => [Rule::in(array_keys(WhZone::MODES))], 'stock_class' => [Rule::in(array_keys(WhZone::STOCK_CLASSES))],
             'map_x' => ['min:0'], 'map_y' => ['min:0'], 'map_w' => ['min:1'], 'map_h' => ['min:1'], 'stack_height_m' => ['min:0', 'max:50'], 'max_stack' => ['nullable', 'integer', 'min:0', 'max:20'],
-            'sort_order' => ['integer', 'min:0', 'max:65535']];
+            'sort_order' => ['integer', 'min:0', 'max:65535'], 'mix_rule' => [Rule::in(array_keys(WhZone::MIX_RULES))], 'pick_order' => [Rule::in(array_keys(WhZone::PICK_ORDERS))],
+            'count_every_days' => ['nullable', 'integer', 'min:1', 'max:365']];
     }
 
     protected function check(array $in, ?int $id): ?string
@@ -116,6 +129,10 @@ class StorageAreaLookup extends DbLookup
         }
         if (WhZone::query()->where('warehouse_id', $whId)->where('zone_code', $code)->when($id, fn ($q) => $q->whereKeyNot($id))->exists()) {
             return 'This code is already used in that building.';
+        }
+        // Area virtual tidak punya tempat fisik: tidak diperiksa terhadap lantai, tinggi, dan denah gedung.
+        if (in_array($in['zone_type'], WhZone::VIRTUAL_TYPES, true)) {
+            return null;
         }
         if ((int) $in['floor_no'] > $wh->floors()) {
             return 'That building does not have this floor. Raise Floors in Buildings first.';

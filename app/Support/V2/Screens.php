@@ -120,6 +120,7 @@ final class Screens
                 ['label' => 'Warehouse', 'items' => [
                     $it('warehouse-map', ['Warehouse Map', 'fa-solid fa-map-location-dot', 'v2 baru: docs/warehouselayout_tier1.md (tm2mst.wh_warehouse + wh_zone + wh_loc)', 'warehouse_layout_v2.jpg', true]),
                     $it('stock-transfer', ['Stock Transfer', 'fa-solid fa-right-left', 'v2 baru: tm2inv.inv_transfer + inv_transfer_line (pindah stok antar bin / gudang)', null]),
+                    $it('wh-receiving-putaway', ['Receiving & Putaway', 'fa-solid fa-dolly', 'v2 baru: tm2inv.wh_task (tugas putaway) + inv_pallet + inv_batch; usulan bin dari aturan area (WarehouseTaskService, PutawayPlanner)', 'wh_v201_receiving_putaway.jpg']),
                     $it('approval-tf', ['Stock Transfer Approval Center', 'fa-solid fa-stamp', 'v2 baru: flow engine modul TF (bawaan tidak aktif, Setup > Security > Approval Levels)', null]),
                 ]],
                 ['label' => 'Label & QR Code', 'items' => [
@@ -131,11 +132,19 @@ final class Screens
                 ['label' => 'Stock Adjustment', 'items' => [
                     $it('approval-stock', ['Adjustment & Opname Approval Center', 'fa-solid fa-stamp', 'inventory/stock-adjustment-approval.blade.php', null]),
                 ]],
+                ['label' => 'Batch & Quality', 'items' => [
+                    $it('conditional-stock', ['Conditional Stock', 'fa-solid fa-hourglass-half', 'v2 baru: tm2inv.inv_batch (Conditional / Quarantine) + inv_qc_decision + inv_qc_hold + inv_supplier_claim (QcDecisionService, QcTraceService)', 'inv_v201_batch_form.jpg']),
+                    $it('qc-first-article', ['First Article', 'fa-solid fa-clipboard-check', 'v2 baru: tm2inv.inv_qc_first_article (QcDecisionService::firstArticle)', null]),
+                    // Alur kurang kirim lintas peran (gudang, PPIC, pembelian): tanpa gerbang modul, hak tiap langkah dijaga QcAuthority.
+                    [...$it('supplier-shortage', ['Shortage Request', 'fa-solid fa-boxes-packing', 'v2 baru: tm2inv.inv_shortage_request (ShortageRequestService, ShortageDetector)', null]), 'module_code' => 'GENERAL'],
+                ]],
             ]],
             ['code' => 'PROD', 'short' => 'PP', 'label' => 'Production', 'icon' => 'fa-solid fa-industry', 'groups' => [
                 ['label' => 'Planning', 'items' => [
                     $it('production-scheduling', ['Production Scheduling', 'fa-solid fa-chart-gantt', 'v2 baru: PPIC (engine Draft + Confirm officer) -- Gantt, Kanban, Calendar, Grid, Monitoring', 'ppic_sched_gantt.jpg']),
                     $it('production-wo', ['Work Order (PPIC)', 'fa-solid fa-clipboard-list', 'v2 baru: Work Order dari ProDev (BOP, routing, BOM, mesin yang bisa antre)', 'ppic_wo_detail.jpg']),
+                    $it('production-operator', ['Operator Queue', 'fa-solid fa-stopwatch', 'v2 baru: antrean terkonfirmasi per mesin, Play / Pause / Stop, input qty, tombol Problem ke Maintenance Request', 'ppic_operator_queue.jpg']),
+                    $it('production-learning', ['Learning Changes', 'fa-solid fa-graduation-cap', 'v2 baru: nilai changeover Assumed dikoreksi dari waktu setup nyata, tiap perubahan tercatat dan bisa dikembalikan', null]),
                 ]],
                 ['label' => 'Quality', 'items' => [
                     $it('qc-complaint-review', ['Complaint Review (QA)', 'fa-solid fa-magnifying-glass-chart', 'v2 baru: tm2prd.qc_complaint_review (jawaban QA atas tm2sdi.crm_complaint)', null]),
@@ -143,9 +152,6 @@ final class Screens
             ]],
             ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [
                 ['label' => 'Dashboard', 'items' => [
-                    $it('production-operator', ['Operator Queue', 'fa-solid fa-stopwatch', 'v2 baru: antrean terkonfirmasi per mesin, Play / Pause / Stop, input qty, tombol Problem ke Maintenance Request', 'ppic_operator_queue.jpg']),
-                    $it('production-learning', ['Learning Changes', 'fa-solid fa-graduation-cap', 'v2 baru: nilai changeover Assumed dikoreksi dari waktu setup nyata, tiap perubahan tercatat dan bisa dikembalikan', null]),
-                    $it('production-operator', ['Operator Queue', 'fa-solid fa-stopwatch', 'v2 baru: antrean terkonfirmasi per mesin, Play / Pause / Stop, input qty, tombol Problem ke Maintenance Request', 'ppic_operator_queue.jpg']),
                     $it('maintenance-dashboard', ['Maintenance Dashboard', 'fa-solid fa-gauge-high', 'v2 baru: angka dari KpiService (OEE dari Production, order dari tm2mnt)', 'maintenance_v2_dashboard.jpg']),
                 ]],
                 ['label' => 'Preventive Maintenance', 'items' => [

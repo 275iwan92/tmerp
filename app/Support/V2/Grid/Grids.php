@@ -151,6 +151,7 @@ final class Grids
         Inv\BuildingLookup::class,
         Inv\StorageAreaLookup::class,
         Inv\BinLookup::class,
+        Inv\BatchLookup::class,
         Inv\StockByLocationReport::class,
         Inv\StackMonitorReport::class,
         Inv\StockCardAllReport::class,
@@ -160,6 +161,14 @@ final class Grids
         Inv\StockLossGainReport::class,
         Inv\StockInspectionReport::class,
         Inv\LabelHistoryReport::class,
+        Inv\PickListGrid::class,
+        Planning\PreBookingGrid::class,
+        Inv\QcSamplingPlanLookup::class,
+        Inv\QcIntensityRuleLookup::class,
+        Inv\QcRiskClassLookup::class,
+        Inv\UrgentUsageReport::class,
+        Inv\ShortageBySupplierReport::class,
+        Inv\SupplierClaimReport::class,
     ];
 
     public static function find(string $slug): ?DbGrid

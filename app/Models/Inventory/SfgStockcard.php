@@ -22,6 +22,7 @@ class SfgStockcard extends Model
         'reference_detail_id', 'reference_name',
         'qty_bb', 'qty_in', 'qty_out', 'qty_adj', 'qty_eb', 'post_date',
         'value_bb', 'value_in', 'value_out', 'value_adj', 'value_eb', 'avg_unitprice', 'period_id',
+        'batch_id', 'owner_type', 'owner_id',
         'create_by', 'update_by',
     ];
 

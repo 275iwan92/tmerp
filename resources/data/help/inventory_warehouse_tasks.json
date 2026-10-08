@@ -1,0 +1,58 @@
+[
+  {
+    "key": "wh-receiving-putaway",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Receiving & Putaway",
+    "purpose": {
+      "en": "The list of pallets waiting in a receiving or QC hold area. Open a pallet to see the suggested bin, scan the pallet and then the bin, and the stock moves through a real Stock Transfer.",
+      "id": "Daftar palet yang menunggu di area penerimaan atau karantina QC. Buka palet untuk melihat bin usulan, pindai palet lalu bin, dan stok pindah lewat Stock Transfer yang asli."
+    },
+    "keywords": "putaway, receiving, penerimaan, taruh barang, simpan ke rak, usulan bin, suggested bin, dock to line, urgent, tugas gudang, warehouse task, scan palet, pindai, sampling",
+    "steps": [
+      {"en": "Open the screen. A task is made by itself for every pallet that is still in a Receiving or QC Hold area.", "id": "Buka layar. Tugas dibuat sendiri untuk setiap palet yang masih ada di area Receiving atau QC Hold."},
+      {"en": "Use the boxes on top as filters: All today, Waiting sampling, Ready to put away, URGENT to line and Done.", "id": "Pakai kotak di atas sebagai saringan: All today, Waiting sampling, Ready to put away, URGENT to line, dan Done."},
+      {"en": "A pallet whose batch is Waiting sampling cannot be put away yet. When the quality decision is made the task becomes ready.", "id": "Palet yang batch-nya Waiting sampling belum bisa disimpan. Setelah keputusan mutu dibuat, tugasnya menjadi siap."},
+      {"en": "Open a ready row. The suggested bins are listed with the reason. Scan the pallet label, then scan the bin label.", "id": "Buka baris yang siap. Bin usulan tampil beserta alasannya. Pindai label palet, lalu pindai label bin."},
+      {"en": "If the bin is not the first suggestion, fill in the Reason. Then click Confirm; the stock moves and the Stock Transfer number is kept.", "id": "Bila bin bukan usulan pertama, isi Reason. Lalu klik Confirm; stok pindah dan nomor Stock Transfer tersimpan."},
+      {"en": "A Conditional (URGENT) batch shows Send to line: scan the pallet and the bin of the production floor or staging area instead of a storage bin.", "id": "Batch Conditional (URGENT) tampil Send to line: pindai palet dan bin di lantai produksi atau area staging, bukan bin penyimpanan."}
+    ],
+    "fields": [
+      {"label": "Pallet", "en": "The pallet number printed on the pallet label.", "id": "Nomor palet yang tercetak di label palet."},
+      {"label": "Receipt", "en": "The receipt document the pallet came with.", "id": "Dokumen penerimaan asal palet."},
+      {"label": "Item", "en": "The item name and code on the pallet.", "id": "Nama dan kode item di palet."},
+      {"label": "Batch", "en": "The batch number of the pallet. Stock without a batch counts as released.", "id": "Nomor batch palet. Stok tanpa batch dianggap released."},
+      {"label": "Qty", "en": "The quantity on the pallet, in the unit shown next to it.", "id": "Jumlah di palet, dalam satuan di sebelahnya."},
+      {"label": "Arrived", "en": "When the pallet label was made at the receiving area.", "id": "Waktu label palet dibuat di area penerimaan."},
+      {"label": "Quality", "en": "The quality status of the batch: Waiting sampling, Released, Conditional (URGENT), Rejected or Blocked.", "id": "Status mutu batch: Waiting sampling, Released, Conditional (URGENT), Rejected, atau Blocked."},
+      {"label": "Suggested Bin", "en": "The bin chosen by the area rules, with the reason below it. The officer decides by scanning.", "id": "Bin pilihan aturan area, dengan alasan di bawahnya. Petugas memutuskan lewat pindai."},
+      {"label": "Action", "en": "Putaway when ready, Send to line for a Conditional batch, Waiting QC, Not available or Done.", "id": "Putaway bila siap, Send to line untuk batch Conditional, Waiting QC, Not available, atau Done."},
+      {"label": "Scan pallet", "en": "Scan or type the pallet number. It must be the pallet of the task.", "id": "Pindai atau ketik nomor palet. Harus palet milik tugas itu."},
+      {"label": "Scan bin", "en": "Scan or type the bin code. A blocked bin, a bin locked for counting or a bin that breaks the Mixing rule is refused.", "id": "Pindai atau ketik kode bin. Bin yang diblokir, dikunci untuk hitung, atau melanggar aturan Mixing ditolak."},
+      {"label": "Reason", "en": "Required when the scanned bin is not the first suggestion. It is kept on the task.", "id": "Wajib bila bin yang dipindai bukan usulan pertama. Tersimpan di tugas."}
+    ]
+  },
+  {
+    "key": "guide-warehouse-area-rules",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Area Rules and Virtual Locations",
+    "purpose": {
+      "en": "How the rules of a storage area (Mixing, Pick Order, Count Every) and the virtual areas (At Subcontractor, In Transit, Loss) work.",
+      "id": "Cara kerja aturan area penyimpanan (Mixing, Pick Order, Count Every) dan area virtual (At Subcontractor, In Transit, Loss)."
+    },
+    "keywords": "area rules, aturan area, mixing, one item per bin, one batch per bin, pick order, fifo, fefo, count every, virtual, subkon, in transit, loss, lokasi virtual, storage areas",
+    "steps": [
+      {"en": "In Storage Areas choose Mixing: Mixed items, One item per bin, or One batch per bin. Putaway and Stock Transfer refuse a bin that would break the rule.", "id": "Di Storage Areas pilih Mixing: Mixed items, One item per bin, atau One batch per bin. Putaway dan Stock Transfer menolak bin yang melanggar aturan itu."},
+      {"en": "Pick Order tells whether the oldest received (FIFO) or the earliest expiry (FEFO) is taken first from the area. Count Every is the number of days between counts.", "id": "Pick Order menentukan yang diambil lebih dulu dari area: yang paling lama diterima (FIFO) atau yang kedaluwarsanya paling awal (FEFO). Count Every adalah jumlah hari antar hitung."},
+      {"en": "At Subcontractor, In Transit and Loss are virtual areas: stock is in the books but not on the floor. They are not on the Warehouse Map and have no Generate Bins.", "id": "At Subcontractor, In Transit, dan Loss adalah area virtual: stok ada di buku tetapi tidak di lantai. Tidak tampil di Warehouse Map dan tidak punya Generate Bins."},
+      {"en": "Virtual bins are made by the system when needed: one bin for Loss, one for In Transit and one per subcontractor supplier. You do not type them.", "id": "Bin virtual dibuat sistem saat dibutuhkan: satu bin untuk Loss, satu untuk In Transit, dan satu per supplier subkon. Tidak perlu diketik."}
+    ],
+    "fields": [
+      {"label": "Mixing", "en": "Mixed items, One item per bin, or One batch per bin.", "id": "Mixed items, One item per bin, atau One batch per bin."},
+      {"label": "Pick Order", "en": "FIFO (oldest received first) or FEFO (earliest expiry first).", "id": "FIFO (paling lama diterima dulu) atau FEFO (kedaluwarsa paling awal dulu)."},
+      {"label": "Count Every (days)", "en": "Days between two counts of the area. Leave empty when the area has no count schedule.", "id": "Jumlah hari antara dua kali hitung area. Kosongkan bila area tidak punya jadwal hitung."},
+      {"label": "Virtual", "en": "Filled by the system from the Use of the area. It cannot be typed.", "id": "Diisi sistem dari Use area. Tidak bisa diketik."}
+    ]
+  }
+]

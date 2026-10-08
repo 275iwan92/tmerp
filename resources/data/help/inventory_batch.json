@@ -1,0 +1,40 @@
+[
+  {
+    "key": "inv-batch",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Batch",
+    "purpose": {
+      "en": "The list of batches (lots) of raw material, semi finished goods and finished goods. A batch groups units of one item with the same origin and quality. Open it to see the supplier lot, dates, quality status and the stock of each batch.",
+      "id": "Daftar batch (lot) bahan baku, barang setengah jadi, dan barang jadi. Satu batch mengelompokkan unit satu item dengan asal dan mutu yang sama. Buka untuk melihat lot supplier, tanggal, status mutu, dan stok tiap batch."
+    },
+    "keywords": "batch, lot, lot number, supplier lot, kedaluwarsa, expiry, nomor batch, batch bahan, quarantine, released, karantina, fsc, food grade, arah serat",
+    "steps": [
+      {"en": "Click a box at the top (Quarantine, Conditional, Released, Rejected, Expires soon) to show only those batches. Click it again to show all.", "id": "Klik kotak di atas (Quarantine, Conditional, Released, Rejected, Expires soon) untuk menampilkan batch itu saja. Klik lagi untuk menampilkan semua."},
+      {"en": "Type in the search box to find a batch by number, item, supplier lot or notes.", "id": "Ketik di kotak cari untuk mencari batch menurut nomor, item, lot supplier, atau catatan."},
+      {"en": "To add a batch, click Row, choose the Class, type the Item Code, fill the supplier lot and the dates, then click Save. The batch number is given by the system.", "id": "Untuk menambah batch, klik Row, pilih Class, ketik Item Code, isi lot supplier dan tanggalnya, lalu klik Save. Nomor batch diberikan sistem."},
+      {"en": "To change a saved batch, edit its cells and click Save. The class, item code, batch number and status cannot be changed here.", "id": "Untuk mengubah batch yang sudah tersimpan, ubah selnya lalu klik Save. Class, item code, nomor batch, dan status tidak bisa diubah di sini."},
+      {"en": "Untick Active to stop a batch from being picked for new receipts. A batch that has stock is never deleted.", "id": "Hilangkan centang Active agar batch tidak dipilih untuk penerimaan baru. Batch yang punya stok tidak pernah dihapus."},
+      {"en": "Click Undo to drop unsaved changes.", "id": "Klik Undo untuk membuang perubahan yang belum disimpan."}
+    ],
+    "fields": [
+      {"label": "Batch", "en": "Batch number, given by the system when the batch is saved (for example BT2600031). It cannot be typed.", "id": "Nomor batch, diberikan sistem saat batch disimpan (misalnya BT2600031). Tidak bisa diketik."},
+      {"label": "Class", "en": "Raw Material, Semi Finished Goods or Finished Goods. Chosen for a new batch; fixed once saved.", "id": "Raw Material, Semi Finished Goods, atau Finished Goods. Dipilih untuk batch baru; tetap setelah disimpan."},
+      {"label": "Item Code", "en": "Code of the item in the master data of that class. The system finds the item and fills Item. Fixed once saved.", "id": "Kode item di master data kelas itu. Sistem mencari itemnya dan mengisi kolom Item. Tetap setelah disimpan."},
+      {"label": "Item", "en": "Name of the item, filled by the system from the master data.", "id": "Nama item, diisi sistem dari master data."},
+      {"label": "Supplier", "en": "Supplier that delivered the batch, picked from the supplier master. Can stay empty.", "id": "Supplier yang mengirim batch, dipilih dari master supplier. Boleh kosong."},
+      {"label": "Supplier Lot", "en": "Lot number printed by the supplier. One item cannot have two batches with the same supplier lot.", "id": "Nomor lot dari supplier. Satu item tidak boleh punya dua batch dengan lot supplier yang sama."},
+      {"label": "Production", "en": "Production date of the batch, if known.", "id": "Tanggal produksi batch, bila diketahui."},
+      {"label": "Expiry", "en": "Expiry date. Required for an item that has a shelf life in the master data. A red date is inside the Expires soon limit or already past.", "id": "Tanggal kedaluwarsa. Wajib untuk item yang punya umur simpan di master data. Tanggal merah berada dalam batas Expires soon atau sudah lewat."},
+      {"label": "Retest", "en": "Date when the batch must be tested again, if the supplier or the quality plan asks for it.", "id": "Tanggal batch harus diuji ulang, bila supplier atau rencana mutu memintanya."},
+      {"label": "Status", "en": "Quality status: Quarantine, Conditional, Released, Rejected or Blocked. It is set by quality control and only shown here.", "id": "Status mutu: Quarantine, Conditional, Released, Rejected, atau Blocked. Diatur oleh QC dan hanya ditampilkan di sini."},
+      {"label": "Certification", "en": "Certification of the material: None, FSC, PEFC or Other.", "id": "Sertifikasi bahan: None, FSC, PEFC, atau Other."},
+      {"label": "Food Grade", "en": "Tick when the batch is food grade material.", "id": "Centang bila batch adalah bahan food grade."},
+      {"label": "Grain Direction", "en": "Long grain or short grain, for paper and board only.", "id": "Long grain atau short grain, hanya untuk kertas dan karton."},
+      {"label": "Notes", "en": "Free note about the batch.", "id": "Catatan bebas tentang batch."},
+      {"label": "On Hand (kg / unit)", "en": "Stock of the batch in all locations, counted from its stock card rows. Filled by the system.", "id": "Stok batch di semua lokasi, dihitung dari baris kartu stoknya. Diisi sistem."},
+      {"label": "Pallets", "en": "Number of active pallet labels linked to the batch. Filled by the system.", "id": "Jumlah label palet aktif yang tertaut ke batch. Diisi sistem."},
+      {"label": "Active", "en": "Untick to stop the batch from being picked for new receipts.", "id": "Hilangkan centang agar batch tidak dipilih untuk penerimaan baru."}
+    ]
+  }
+]

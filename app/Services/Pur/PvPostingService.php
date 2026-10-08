@@ -12,6 +12,7 @@ use App\Models\Pur\PoOrder;
 use App\Models\Pur\PvReceipt;
 use App\Models\Sys\SysConstant;
 use App\Services\Acc\JournalPostingService;
+use App\Services\Inventory\ReceiptBatchService;
 use App\Services\Inventory\StockDocumentService;
 use App\Services\Inventory\StockPostingService;
 use Illuminate\Support\Facades\Auth;
@@ -55,7 +56,11 @@ class PvPostingService
                 continue;
             }
 
-            if ($line->qc_quality_status === 'PENDING') {
+            // Baris URGENT (v2.01, Q-03): QC mutu yang masih PENDING tidak menahan posting, tetapi alasan, WO tujuan, hak penanda dan
+            // persetujuan FSC / food grade wajib beres. Baris biasa tetap menunggu hasil sampling.
+            if ($line->is_urgent) {
+                $blockers = array_merge($blockers, UrgentReceiptService::postBlockers($line));
+            } elseif ($line->qc_quality_status === 'PENDING') {
                 $blockers[] = tf('Line :line has not had its quality QC yet.', ['line' => $line->line_no]);
 
                 continue;
@@ -82,6 +87,7 @@ class PvPostingService
         }
 
         $login = Auth::user()->login;
+        UrgentReceiptService::prepareForPost($pv);
         // Nomor SPB lahir saat posting (user 2026-10-02) supaya urutannya tidak bolong oleh Draft yang dihapus. Dokumen stok
         // dan jurnal merujuk nomor ini, jadi ditetapkan dulu di memori; baru tersimpan bersama status POSTED di bawah.
         $numbered = (bool) $pv->doc_no;
@@ -115,8 +121,10 @@ class PvPostingService
         });
 
         $journalWarning = static::postPurchaseJournal($pv, $login);
+        // Batch lahir dari penerimaan ini (v2.01): URGENT = Conditional, biasa = Released. Gagal = peringatan saja.
+        $batchWarning = implode(' ', ReceiptBatchService::forPostedReceipt($pv->refresh(), $login));
 
-        return ['ok' => true, 'message' => null, 'journal_warning' => $journalWarning, 'stock_warning' => $stockWarning];
+        return ['ok' => true, 'message' => null, 'journal_warning' => $journalWarning, 'stock_warning' => trim($stockWarning.' '.$batchWarning) ?: null];
     }
 
     // CANCEL SPB (user 2026-10-01) -- pengganti trigger legacy pur_prcv_detail AFTER DELETE (hitung ulang barang masuk
@@ -140,6 +148,11 @@ class PvPostingService
         $returns = DB::connection('tm2pur')->table('prt_return')->where('pv_id', $pv->pv_id)->where('status', '!=', 'CANCELLED')->pluck('doc_no');
         if ($returns->isNotEmpty()) {
             return ['ok' => false, 'message' => tf('There is already a Purchase Return (:list) from this receipt — cancel the return first.', ['list' => $returns->implode(', ')])];
+        }
+
+        // Penerimaan yang qty-nya sudah dikoreksi permintaan kirim kekurangan tidak dibalik utuh (stok dan jurnal koreksinya sudah terpisah).
+        if (ShortageRequestService::hasCorrections($pv)) {
+            return ['ok' => false, 'message' => t('A shortage request has already corrected this receipt — it cannot be cancelled. Use Purchase Return / Stock Adjustment.')];
         }
 
         $login = Auth::user()->login;
@@ -344,6 +357,50 @@ class PvPostingService
             : null;
     }
 
+    // KURANG KIRIM penerimaan supplier (v2.01, ShortageRequestService): jurnal koreksi Dr GR/IR / Cr Persediaan sebesar qty kurang x harga
+    // penerimaan (pola postPurchaseJournal, sumber PV_SHORT seperti kekurangan subkon). null = terjurnal, teks = peringatan akun belum lengkap.
+    public static function postShortageJournal(PvReceipt $pv, \App\Models\Pur\PvLine $line, float $stockQty, string $login): ?string
+    {
+        $material = MatRaw::find($line->item_id);
+        $prefix1 = $material ? MatCategory::level(1)->where('category_name', $material->category1)->first() : null;
+        $stockAccountId = app(JournalPostingService::class)->resolveAccount($material?->stock_asset_account_id, $prefix1?->default_stock_asset_account_id);
+        $grIrAccountId = app(JournalPostingService::class)->resolveAccount($material?->gr_ir_account_id, $prefix1?->default_gr_ir_account_id);
+        $value = round($stockQty * (float) $line->c_unit_price, 2);
+        if (! $stockAccountId || ! $grIrAccountId || $value <= 0) {
+            return tf('Line :line has no Inventory/GR-IR account yet (item or category) -- the shortage journal was not posted.', ['line' => $line->line_no]);
+        }
+        app(JournalPostingService::class)->post('PUR', 'PV_SHORT', $pv->pv_id, "Kurang kirim {$pv->doc_no} baris {$line->line_no}", [
+            ['account_id' => $grIrAccountId, 'debit' => $value, 'narration' => "GR/IR {$pv->doc_no} (kurang kirim)"],
+            ['account_id' => $stockAccountId, 'credit' => $value, 'narration' => "Koreksi persediaan kurang kirim {$pv->doc_no}"],
+        ], $login, now()->toDateString());
+
+        return null;
+    }
+
+    // KURANG KIRIM: stok ikut turun lewat dokumen Stock Out RM ber-ref PV_SHORT (jalur sah StockPostingService). Saldo yang tidak cukup
+    // (bahan sudah keluar ke WO) membuat posting ditolak: dikembalikan sebagai peringatan, koreksinya lewat Stock Adjustment. null = beres.
+    public static function correctStockForShortage(PvReceipt $pv, \App\Models\Pur\PvLine $line, float $stockQty, string $login): ?string
+    {
+        $in = $pv->rm_stock_doc_id ? RmStock::with('lines')->find($pv->rm_stock_doc_id) : null;
+        $source = $in?->lines->firstWhere('material_id', $line->item_id);
+        if (! $in || ! $in->stat_confirm || ! $source) {
+            return t('No stock document was found for this receipt line -- correct the stock with a Stock Adjustment.');
+        }
+        $docService = app(StockDocumentService::class);
+        $docId = $docService->saveDraft('RM', null, [
+            'doc_no' => $docService->nextDocNo('RM', 'OUT'), 'doc_date' => now()->toDateString(), 'doc_type' => -1, 'doc_cat' => 'STOCK', 'ref_doc_type' => 'PV_SHORT',
+            'ref_doc_id' => $pv->pv_id, 'ref_doc_no' => $pv->doc_no, 'warehouse_id' => $in->warehouse_id, 'notes' => "Koreksi kurang kirim Penerimaan Barang {$pv->doc_no} baris {$line->line_no}",
+        ], [['material_id' => $source->material_id, 'qty' => $stockQty, 'uom_code' => $source->uom_code, 'unit_price' => (float) $source->unit_price, 'lot_no' => $source->lot_no, 'location_id' => $source->location_id]], $login);
+        $result = app(StockPostingService::class)->postDocument('RM', $docId, $login);
+        if (! $result['posted']) {
+            $docService->cancel('RM', $docId, $login);
+
+            return tf('The stock was not reduced (:error) -- correct it with a Stock Adjustment.', ['error' => $result['error'] ?? t('unknown')]);
+        }
+
+        return null;
+    }
+
     public static function recalcPo(int $poId): void
     {
         $po = PoOrder::with('lines')->find($poId);
@@ -364,7 +421,9 @@ class PvPostingService
             $tolPct = (float) ($line->c_tol_pct ?? SysConstant::number('RECEIVE_TOLERANCE_PCT', 5));
             $variancePct = $line->i_qty > 0 ? ($outstanding / $line->i_qty * 100) : 0;
 
+            // Baris yang ditutup di qty terima karena pemasok menolak / lewat jendela kirim kekurangan (ShortageRequestService) tetap tertutup.
             $status = match (true) {
+                $line->c_line_status === ShortageRequestService::LINE_CLOSED => ShortageRequestService::LINE_CLOSED,
                 $received >= (float) $line->i_qty => 'RECEIVED',
                 $variancePct <= $tolPct && $received > 0 => 'CLOSED_BY_TOLERANCE',
                 $received > 0 => 'PARTIALLY_RECEIVED',
@@ -375,7 +434,7 @@ class PvPostingService
         }
 
         $receivableLines = $po->lines->where('is_receivable', true);
-        $allClosed = $receivableLines->every(fn ($l) => in_array($l->fresh()->c_line_status, ['RECEIVED', 'CLOSED_BY_TOLERANCE']));
+        $allClosed = $receivableLines->every(fn ($l) => in_array($l->fresh()->c_line_status, ['RECEIVED', 'CLOSED_BY_TOLERANCE', ShortageRequestService::LINE_CLOSED]));
         $anyReceived = $receivableLines->sum(fn ($l) => (float) $l->fresh()->c_qty_received) > 0;
 
         $newStatus = match (true) {

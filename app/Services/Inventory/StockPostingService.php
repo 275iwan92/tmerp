@@ -132,7 +132,10 @@ class StockPostingService
                         default => 'OUT',
                     };
 
-                    $unitPrice = (float) ($line->unit_price ?? 0);
+                    // Pemilik v2.01: stok milik customer / supplier (titipan, consignment) tidak dinilai dan tidak dijurnal.
+                    $ownerType = $line->owner_type ?: 'COMPANY';
+                    $valued = $ownerType === 'COMPANY';
+                    $unitPrice = $valued ? (float) ($line->unit_price ?? 0) : 0.0;
                     $qtyIn = ($cat !== 'AD' && $cat !== 'OP' && ((int) $header->doc_type === 1 || $cat === 'RETURN')) ? abs((float) $line->qty) : 0;
                     $qtyOut = ($cat !== 'AD' && $cat !== 'OP' && (int) $header->doc_type === -1 && $cat !== 'RETURN') ? abs((float) $line->qty) : 0;
                     $qtyAdj = in_array($cat, ['AD', 'OP'], true) ? $qtyFinal : 0;
@@ -156,7 +159,10 @@ class StockPostingService
                         'qty_out' => $qtyOut,
                         'qty_adj' => $qtyAdj,
                         'qty_eb' => 0,
-                        'value_in' => $qtyIn > 0 ? $qtyIn * $unitPrice : null,
+                        'value_in' => $valued && $qtyIn > 0 ? $qtyIn * $unitPrice : null,
+                        'batch_id' => $line->batch_id,
+                        'owner_type' => $ownerType,
+                        'owner_id' => $line->owner_id,
                         'period_id' => $header->period_id,
                         'create_by' => $actingUser,
                         'update_by' => $actingUser,
@@ -185,7 +191,7 @@ class StockPostingService
                     // keluar membawa harga rata-rata baris sebelumnya).
                     // Pembalik penerimaan (Cancel SPB, ref PV_CANCEL) bukan pemakaian produksi: jurnalnya = pembalik jurnal
                     // pembelian (PvPostingService::cancel), jadi TIDAK ikut jurnal HPP di sini.
-                    if (in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT' && $header->ref_doc_type !== 'PV_CANCEL') {
+                    if ($valued && in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT' && $header->ref_doc_type !== 'PV_CANCEL') {
                         $usageJournalRows[] = ['category' => $category, 'item_id' => $itemId, 'qty' => abs($qtyFinal), 'unit_cost' => (float) $card->avg_unitprice];
                     }
 

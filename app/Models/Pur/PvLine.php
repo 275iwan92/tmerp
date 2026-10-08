@@ -31,6 +31,10 @@ class PvLine extends Model
         'is_tol_exceeded' => 'boolean',
         'qc_at' => 'datetime',
         'tol_override_at' => 'datetime',
+        'is_urgent' => 'boolean',
+        'i_food_grade' => 'boolean',
+        'urgent_at' => 'datetime',
+        'urgent_approved_at' => 'datetime',
     ];
 
     public function receipt(): BelongsTo

@@ -1,10 +1,13 @@
 <?php
 
 use App\Models\Inventory\InvPallet;
+use App\Models\Inventory\WhTask;
 use App\Models\Master\WhLoc;
 use App\Models\Master\WhZone;
 use App\Services\Inventory\BinGenerator;
 use App\Services\Inventory\PalletService;
+use App\Services\Inventory\WarehouseTaskRefused;
+use App\Services\Inventory\WarehouseTaskService;
 use App\Support\V2\Data\Labels;
 use App\Support\V2\Data\Pallets;
 use App\Support\V2\Data\StockTransfer;
@@ -67,6 +70,9 @@ Route::prefix('v2/warehouse')->name('v2.wh.')->middleware('module:INV')->group(f
             'cols_from' => ['nullable', 'integer', 'min:1', 'max:99'], 'cols_to' => ['nullable', 'integer', 'min:1', 'max:99'], 'levels' => ['nullable', 'integer', 'min:1', 'max:9'],
             'capacity_kg' => ['nullable', 'numeric', 'min:0'], 'capacity_pallet' => ['nullable', 'integer', 'min:0']], [], ['zone_id' => 'Storage area']);
         $zone = WhZone::query()->with('warehouse')->findOrFail((int) $d['zone_id']);
+        if ($zone->isVirtualType()) {
+            return redirect($map($zone->warehouse_id, ['floor' => $zone->floor_no]))->with('v2_flash', t('A virtual area has no physical bins to generate.'));
+        }
         $res = BinGenerator::generate($zone, ['rows_from' => $d['rows_from'] ?? 1, 'rows_to' => $d['rows_to'] ?? ($d['rows_from'] ?? 1), 'cols_from' => $d['cols_from'] ?? 1,
             'cols_to' => $d['cols_to'] ?? ($d['cols_from'] ?? 1), 'levels' => $d['levels'] ?? 1, 'capacity_kg' => $d['capacity_kg'] ?? null, 'capacity_pallet' => $d['capacity_pallet'] ?? null], $login());
 
@@ -231,4 +237,19 @@ Route::prefix('v2/warehouse')->name('v2.wh.')->middleware('module:INV')->group(f
 
         return redirect()->route('v2.wh.labels.sheet', ['type' => 'location', 'keys' => $bin->location_id, 'size' => 'md', 'copies' => 1, 'paper' => 'a4', 'back' => 'warehouse-map']);
     })->whereNumber('id')->name('bin.label');
+
+    // ------------------------------------------------------------ Receiving & Putaway: konfirmasi tugas (pindai palet, lalu bin)
+    Route::post('/task/{id}/confirm', function (Request $r, int $id) use ($login) {
+        $d = $r->validate(['scan_pallet' => ['required', 'string', 'max:200'], 'scan_bin' => ['required', 'string', 'max:200'], 'reason' => ['nullable', 'string', 'max:255']],
+            [], ['scan_pallet' => 'Pallet', 'scan_bin' => 'Bin']);
+        $task = WhTask::query()->where('task_type', 'PUTAWAY')->findOrFail($id);
+        $back = route('v2.screen', 'wh-receiving-putaway');
+        try {
+            $done = (new WarehouseTaskService)->confirm($task, $d['scan_pallet'], $d['scan_bin'], $d['reason'] ?? null, $login());
+        } catch (WarehouseTaskRefused $e) {
+            return redirect($back.'?task='.$id)->withInput()->withErrors(['task' => $e->getMessage()]);
+        }
+
+        return redirect($back)->with('v2_flash', tf('Pallet :no moved to :bin.', ['no' => $done->pallet?->pallet_no, 'bin' => WhLoc::query()->whereKey($done->to_location_id)->value('location_code')]));
+    })->whereNumber('id')->name('task.confirm');
 });

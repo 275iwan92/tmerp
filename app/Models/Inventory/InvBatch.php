@@ -39,6 +39,11 @@ class InvBatch extends Model
         return $this->hasMany(InvPallet::class, 'batch_id', 'id_batch');
     }
 
+    public function decisions(): HasMany
+    {
+        return $this->hasMany(InvQcDecision::class, 'batch_id', 'id_batch');
+    }
+
     public function isAvailable(): bool
     {
         return self::STATUSES[$this->qc_status]['available'] ?? false;

@@ -23,6 +23,7 @@ class RmStockD extends Model
         'doc_id', 'seq_no', 'material_id', 'qty', 'qty_returned', 'uom_code',
         'qty_system', 'qty_physical', 'action_type', 'return_condition', 'source_detail_id',
         'unit_price', 'qty_unitprice', 'lot_no', 'location_id',
+        'batch_id', 'owner_type', 'owner_id',
         'create_by', 'update_by',
     ];
 

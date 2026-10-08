@@ -2,6 +2,7 @@
 
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Inventory\FgStock;
+use App\Models\Inventory\InvBatch;
 use App\Models\Inventory\RmStock;
 use App\Models\Inventory\SfgStock;
 use App\Models\Master\MatRaw;
@@ -9,10 +10,13 @@ use App\Models\Master\WhWarehouse;
 use App\Models\Master\WhLoc;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
+use App\Services\Inventory\BatchService;
 use App\Services\Inventory\StockDocumentService;
 use App\Services\Inventory\StockPostingService;
 use App\Support\Localization\Translator;
+use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use App\Livewire\Concerns\OpensFromQuery;
@@ -120,9 +124,34 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
     {
         $this->lines[] = [
             'item_id' => $itemId, 'code' => $code, 'name' => $name,
-            'lot_no' => '', 'location_id' => null, 'qty' => '', 'uom_code' => $uom ?: '', 'unit_price' => '0',
+            'lot_no' => '', 'batch_id' => '', 'new_lot' => '', 'new_production' => '', 'new_expiry' => '', 'needs_expiry' => BatchService::needsExpiry($this->category, $itemId),
+            'location_id' => null, 'qty' => '', 'uom_code' => $uom ?: '', 'unit_price' => '0',
         ];
         $this->itemSearch = '';
+    }
+
+    // Batch yang sudah ada untuk satu item (nomor batch · lot supplier · kedaluwarsa), batch baru lewat opsi terakhir.
+    public function batchOptions(int $itemId): array
+    {
+        $options = InvBatch::query()->where('stock_class', $this->category)->where('item_id', $itemId)->where('activate', true)->orderByDesc('batch_no')->limit(200)->get()
+            ->mapWithKeys(fn (InvBatch $b) => [$b->id_batch => $b->batch_no.' · '.($b->supplier_lot ?: t('no lot')).' · '.($b->expiry_date ? Locale::date($b->expiry_date) : t('no expiry'))])->all();
+
+        return ['' => t('— no batch —')] + $options + ['new' => t('+ New batch…')];
+    }
+
+    // Baris yang minta batch baru: dibuat lewat BatchService (lot yang sama dengan batch yang sudah ada memakai batch itu, tidak dobel).
+    private function resolveBatches(string $login): void
+    {
+        foreach ($this->lines as $i => $l) {
+            if (($l['batch_id'] ?? '') === 'new') {
+                $batch = BatchService::ensure($this->category, (int) $l['item_id'], $l['new_lot'] ?: null, ['item_code' => $l['code'] ?: null, 'item_name' => $l['name'],
+                    'production_date' => $l['new_production'] ?: null, 'expiry_date' => $l['new_expiry'] ?: null], $login);
+                $this->lines[$i]['batch_id'] = (string) $batch->id_batch;
+                $this->lines[$i]['lot_no'] = (string) $batch->supplier_lot;
+            } elseif (($l['batch_id'] ?? '') !== '') {
+                $this->lines[$i]['lot_no'] = (string) (InvBatch::query()->whereKey((int) $l['batch_id'])->value('supplier_lot') ?? $l['lot_no']);
+            }
+        }
     }
 
     public function removeLine(int $index): void
@@ -188,7 +217,8 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
         $itemKey = match ($this->category) { 'SFG' => 'parts_id', 'FG' => 'product_id', default => 'material_id' };
         $this->lines = $doc->lines->map(fn ($l) => [
             'item_id' => $l->{$itemKey}, 'code' => '', 'name' => $this->itemLabel($l->{$itemKey}),
-            'lot_no' => (string) $l->lot_no, 'location_id' => $l->location_id,
+            'lot_no' => (string) $l->lot_no, 'batch_id' => (string) ($l->batch_id ?? ''), 'new_lot' => '', 'new_production' => '', 'new_expiry' => '', 'needs_expiry' => false,
+            'location_id' => $l->location_id,
             'qty' => (string) $l->qty, 'uom_code' => (string) $l->uom_code, 'unit_price' => (string) $l->unit_price,
         ])->all();
 
@@ -223,27 +253,45 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
             'warehouse_id' => 'Gudang', 'doc_date' => 'Tanggal Dokumen', 'doc_cat' => 'Kategori Dokumen',
         ]);
 
+        // Batch baru wajib berkedaluwarsa bila item-nya punya umur simpan di master (user 2026-10-08, v2.01).
+        $missing = false;
+        foreach ($this->lines as $i => $l) {
+            if (($l['batch_id'] ?? '') === 'new' && ! empty($l['needs_expiry']) && trim((string) $l['new_expiry']) === '') {
+                $this->addError("lines.$i.new_expiry", t('This item has a shelf life: fill in the expiry date.'));
+                $missing = true;
+            }
+        }
+        if ($missing) {
+            return;
+        }
+
         $itemKey = match ($this->category) { 'SFG' => 'parts_id', 'FG' => 'product_id', default => 'material_id' };
         $docNo = $this->editingId ? $this->doc_no : $svc->nextDocNo($this->category, self::DOC_PREFIX[$this->category]);
+        $login = Auth::user()->login;
 
-        $lines = array_map(fn ($l) => [
-            $itemKey => $l['item_id'],
-            'qty' => $l['qty'],
-            'uom_code' => $l['uom_code'],
-            'lot_no' => $l['lot_no'] ?: null,
-            'location_id' => $l['location_id'],
-            'unit_price' => $l['unit_price'] ?: 0,
-        ], $this->lines);
+        // Batch baru dan dokumen draft tersimpan bersama: gagal satu, batal semua.
+        $this->editingId = DB::connection('tm2inv')->transaction(function () use ($svc, $itemKey, $docNo, $login) {
+            $this->resolveBatches($login);
+            $lines = array_map(fn ($l) => [
+                $itemKey => $l['item_id'],
+                'qty' => $l['qty'],
+                'uom_code' => $l['uom_code'],
+                'lot_no' => $l['lot_no'] ?: null,
+                'batch_id' => ($l['batch_id'] ?? '') !== '' ? (int) $l['batch_id'] : null,
+                'location_id' => $l['location_id'],
+                'unit_price' => $l['unit_price'] ?: 0,
+            ], $this->lines);
 
-        $this->editingId = $svc->saveDraft($this->category, $this->editingId, [
-            'doc_no' => $docNo,
-            'doc_date' => $this->doc_date,
-            'doc_type' => 1,
-            'doc_cat' => $this->doc_cat,
-            'ref_doc_type' => 'MANUAL',
-            'warehouse_id' => $this->warehouse_id,
-            'notes' => $this->notes ?: null,
-        ], $lines, Auth::user()->login);
+            return $svc->saveDraft($this->category, $this->editingId, [
+                'doc_no' => $docNo,
+                'doc_date' => $this->doc_date,
+                'doc_type' => 1,
+                'doc_cat' => $this->doc_cat,
+                'ref_doc_type' => 'MANUAL',
+                'warehouse_id' => $this->warehouse_id,
+                'notes' => $this->notes ?: null,
+            ], $lines, $login);
+        });
 
         $this->doc_no = $docNo;
         unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
@@ -451,7 +499,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
                             <thead>
                                 <tr class="bg-[#fafbfd]">
                                     <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ Translator::t('inv_line_col_item', 'Item') }}</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[110px]">{{ Translator::t('inv_line_col_lot', 'Lot/Batch') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[260px]">{{ t('Batch') }}</th>
                                     <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[160px]">{{ Translator::t('inv_line_col_location', 'Lokasi *') }}</th>
                                     <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">{{ Translator::t('inv_line_col_qty', 'Qty *') }}</th>
                                     <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[70px]">{{ Translator::t('proc_pv_col_uom', 'UoM') }}</th>
@@ -465,7 +513,13 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
                                 @forelse ($lines as $i => $line)
                                     <tr wire:key="line-{{ $i }}" class="border-b border-[#eef1f5]">
                                         <td class="px-2 py-1.5">{{ $line['name'] }}</td>
-                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.lot_no" :disabled="$readOnly" class="!py-1" /></td>
+                                        <td class="px-2 py-1.5">
+                                            <x-form.select wire:model.live="lines.{{ $i }}.batch_id" :disabled="$readOnly" class="!py-1" liveSync :placeholder="false"
+                                                :options="$this->batchOptions((int) $line['item_id'])" :selected="$line['batch_id'] ?? ''" />
+                                            @if (($line['batch_id'] ?? '') === '' && ($line['lot_no'] ?? '') !== '')
+                                                <span class="text-[10.5px] text-muted">{{ t('Lot') }}: {{ $line['lot_no'] }}</span>
+                                            @endif
+                                        </td>
                                         <td class="px-2 py-1.5">
                                             <x-form.select wire:model="lines.{{ $i }}.location_id" :disabled="$readOnly" class="!py-1"
                                                 :options="$this->selectedWarehouseLocations->pluck('location_code', 'location_id')" :selected="$line['location_id'] ?? null" />
@@ -477,6 +531,18 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
                                             <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="{{ Translator::t('inv_line_remove_title', 'Hapus baris') }}">✕</button></td>
                                         @endif
                                     </tr>
+                                    @if (($line['batch_id'] ?? '') === 'new' && ! $readOnly)
+                                        <tr wire:key="line-new-{{ $i }}" class="border-b border-[#eef1f5] bg-accent-soft">
+                                            <td class="px-2 py-1.5 text-[11px] text-muted">{{ t('New batch') }}</td>
+                                            <td colspan="6" class="px-2 py-1.5">
+                                                <div class="flex gap-2.5 flex-wrap">
+                                                    <div class="flex-1 min-w-[160px]"><x-form.input label="{{ t('Supplier Lot') }}" wire:model="lines.{{ $i }}.new_lot" /></div>
+                                                    <div class="flex-1 min-w-[160px]"><x-form.date-picker label="{{ t('Production Date') }}" name="lines.{{ $i }}.new_production" wire:model="lines.{{ $i }}.new_production" /></div>
+                                                    <div class="flex-1 min-w-[160px]"><x-form.date-picker label="{{ t('Expiry Date') }}{{ ! empty($line['needs_expiry']) ? ' *' : '' }}" name="lines.{{ $i }}.new_expiry" wire:model="lines.{{ $i }}.new_expiry" /></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @empty
                                     <tr><td colspan="7" class="text-center py-6 text-muted text-xs">{{ Translator::t('inv_stockin_no_lines', 'Belum ada baris — cari item di atas utk ditambahkan.') }}</td></tr>
                                 @endforelse

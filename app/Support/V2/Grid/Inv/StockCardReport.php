@@ -3,13 +3,26 @@
 namespace App\Support\V2\Grid\Inv;
 
 use App\Models\Inventory\InvMovement;
+use App\Services\Inventory\ItemBalanceChain;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 // Stock Card (v1: pages::inventory.print.stock-card): semua mutasi satu kelas stok, terbaru di atas. v1 memilih satu item
 // dulu; di sini item disaring lewat kotak cari / saring kolom, atau dikelompokkan per item.
+// RUMUS BERSAMBUNG per item (user 2026-10-08, sama dengan StockCardAllReport): BB = saldo item (semua lokasi) sebelum baris,
+// EB = BB + In - Out + Adj, BB baris berikutnya = EB baris sebelumnya (App\Services\Inventory\ItemBalanceChain). Opening / Balance
+// lama yang per lokasi tetap ada sebagai kolom opsional tersembunyi Location Opening / Location Balance.
 abstract class StockCardReport extends StockReportGrid
 {
+    /** @var array<int, array{bb: float, eb: float}> doc_id => saldo item sebelum / sesudah baris */
+    private array $chain = [];
+
+    protected function prefetch(Collection $items): void
+    {
+        $this->chain = ItemBalanceChain::forNewest($this->category(), $items);
+    }
+
     protected function report(): array
     {
         return ['card', 'Stock Card'];
@@ -23,7 +36,7 @@ abstract class StockCardReport extends StockReportGrid
     public function guide(): ?string
     {
         return 'Every stock movement, newest first. To read the card of one item, type its code in the search box or group by Item; '
-            .'Balance is the stock of that item in that location right after the movement.';
+            .'BB is the balance of the item (all locations) before the movement, the same as the EB of the row before it; EB is the balance after it.';
     }
 
     public function search(): string
@@ -53,11 +66,13 @@ abstract class StockCardReport extends StockReportGrid
             ['key' => 'location', 'label' => 'Location'],
             ['key' => 'lot', 'label' => 'Lot No.', 'visible' => false],
             ['key' => 'ref_no', 'label' => 'Reference'],
-            ['key' => 'begin', 'label' => 'Opening', 'type' => 'number'],
+            ['key' => 'bb', 'label' => raw('BB'), 'type' => 'number'],
             ['key' => 'in', 'label' => 'In', 'type' => 'number', 'sum' => true],
             ['key' => 'out', 'label' => 'Out', 'type' => 'number', 'sum' => true],
             ['key' => 'adj', 'label' => 'Adjustment', 'type' => 'number', 'sum' => true],
-            ['key' => 'balance', 'label' => 'Balance', 'type' => 'number'],
+            ['key' => 'eb', 'label' => raw('EB'), 'type' => 'number'],
+            ['key' => 'loc_begin', 'label' => 'Location Opening', 'type' => 'number', 'visible' => false],
+            ['key' => 'loc_balance', 'label' => 'Location Balance', 'type' => 'number', 'visible' => false],
             ['key' => 'unit', 'label' => 'Unit'],
         ];
     }
@@ -79,8 +94,8 @@ abstract class StockCardReport extends StockReportGrid
                 default => 'Opening',
             },
             'item' => $m->item_name, 'item_code' => $m->item_code, 'warehouse' => $m->warehouse_name, 'location' => $m->location_name,
-            'lot' => $m->lot_no, 'ref_no' => $m->ref_doc_no, 'begin' => (float) $m->qty_bb, 'in' => $in, 'out' => $out, 'adj' => $adj,
-            'balance' => (float) $m->qty_eb, 'unit' => $m->uom_code,
+            'lot' => $m->lot_no, 'ref_no' => $m->ref_doc_no, 'bb' => $this->chain[$m->doc_id]['bb'] ?? (float) $m->qty_bb, 'in' => $in, 'out' => $out, 'adj' => $adj,
+            'eb' => $this->chain[$m->doc_id]['eb'] ?? (float) $m->qty_eb, 'loc_begin' => (float) $m->qty_bb, 'loc_balance' => (float) $m->qty_eb, 'unit' => $m->uom_code,
         ];
     }
 

@@ -54,6 +54,7 @@ class MaterialPlanningGrid extends MaterialBookingGrid
             ['key' => 'status', 'label' => 'Coverage', 'type' => 'badge', 'tones' => MaterialPlanning::COVER_TONES],
             ['key' => 'supplier', 'label' => 'Suggested Supplier'],
             ['key' => 'orders', 'label' => 'For Orders'],
+            ['key' => 'stage', 'label' => 'Stage', 'type' => 'badge', 'tones' => ['Not CO yet' => 'info', 'Includes not CO yet' => 'info']],
             ['key' => 'code', 'label' => 'Code', 'visible' => false],
         ];
     }

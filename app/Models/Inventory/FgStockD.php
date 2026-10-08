@@ -23,6 +23,7 @@ class FgStockD extends Model
         'doc_id', 'seq_no', 'product_id', 'parts_id', 'qty', 'qty_returned',
         'qty_system', 'qty_physical', 'action_type', 'return_condition', 'source_detail_id',
         'uom_code', 'lot_no', 'unit_price', 'qty_unitprice', 'location_id',
+        'batch_id', 'owner_type', 'owner_id',
         'create_by', 'update_by',
     ];
 

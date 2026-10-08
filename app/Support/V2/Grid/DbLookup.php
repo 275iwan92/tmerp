@@ -45,6 +45,15 @@ abstract class DbLookup extends DbGrid
     // Akibat simpan satu baris pada baris lain (mis. hanya satu baris aktif per jenis) -- masih di dalam transaksi yang sama.
     protected function saved(Model $row): void {}
 
+    // Baris baru. Bawaan: model baru diisi kolom layar; turunan boleh membuatnya lewat service (mis. nomor otomatis, kolom turunan).
+    protected function create(Model $model, array $data, ?string $login): Model
+    {
+        $row = $model->newInstance(['created_by' => $login] + $this->defaults());
+        $row->fill($data + ['updated_by' => $login])->save();
+
+        return $row;
+    }
+
     // Nilai kolom wajib yang tidak tampil di sheet, hanya untuk baris baru (mis. company_id selama perusahaannya satu).
     protected function defaults(): array
     {
@@ -69,7 +78,7 @@ abstract class DbLookup extends DbGrid
     public function props(): array
     {
         return ['rows' => $this->rows(), 'columns' => $this->typedColumns(), 'saveUrl' => route('v2.lookup.save', $this->slug()),
-            'source' => $this->sourceText()];
+            'stats' => $this->stats(), 'source' => $this->sourceText()];
     }
 
     // Simpan baris yang berubah dari layar. Semua atau tidak sama sekali (satu transaksi); kembalian = isi terbaru.
@@ -97,8 +106,12 @@ abstract class DbLookup extends DbGrid
                 // server tetap mengabaikan kiriman untuk baris yang sudah tersimpan).
                 $data = $cols->reject(fn ($c) => $id && ! empty($c['lockSaved']))
                     ->mapWithKeys(fn ($c) => [$c['key'] => ($in[$c['key']] ?? null) === '' ? null : ($in[$c['key']] ?? null)])->all();
-                $row = $id ? $model->newQuery()->findOrFail($id) : $model->newInstance(['created_by' => $login] + $this->defaults());
-                $row->fill($data + ['updated_by' => $login])->save();
+                if ($id) {
+                    $row = $model->newQuery()->findOrFail($id);
+                    $row->fill($data + ['updated_by' => $login])->save();
+                } else {
+                    $row = $this->create($model, $data, $login);
+                }
                 $this->saved($row);
             }
         });

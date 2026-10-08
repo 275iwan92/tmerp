@@ -27,6 +27,9 @@
       this.caseMode = this.cols.map(c => CASES.includes(c.case) ? c.case : 'none');
       const srch = $(this.el, '[data-s-search]');
       if (srch) srch.addEventListener('input', () => { this.term = srch.value.trim().toLowerCase(); this.render(); });
+      // Kotak statistik di atas sheet (prop stats) = saringan: klik menyalakan, klik lagi melepas.
+      this.statWhere = null;
+      this.el.addEventListener('dl:stat', e => { const box = e.target.closest('[data-dl-stat]'); this.statWhere = e.detail.active && box ? JSON.parse(box.dataset.where || '{}') : null; this.render(); });
       this.wrap.addEventListener('keydown', e => {
         if (this.edit) {
           if (e.key === 'Escape') { e.preventDefault(); this.commit(true); }
@@ -234,13 +237,29 @@
       return (c.required && (v === '' || v == null)) || (this.num(c) && v !== '' && v != null && typeof v !== 'number') || (c.type === 'select' && v && c.options && !(v in c.options));
     }
 
+    // Angka di kotak statistik dihitung dari isi sheet (ikut berubah setelah Save).
+    countStats() {
+      $$(this.el, '[data-dl-stat]').forEach(b => { const w = JSON.parse(b.dataset.where || '{}'), v = $(b, '.dl-stat__value'); if (v) v.textContent = this.data.filter(r => this.inWhere(r, w)).length; });
+    }
+
     dirty(r, c) { const o = this.orig.get(String(r[this.cfg.rowKey])); return !o || String(o[c.key] ?? '') !== String(r[c.key] ?? ''); }
     rng() { const a = this.anchor || this.cur; return {r0: Math.min(a.r, this.cur.r), r1: Math.max(a.r, this.cur.r), c0: Math.min(a.c, this.cur.c), c1: Math.max(a.c, this.cur.c)}; }
 
+    // Baris disembunyikan di Grid Lookup: tidak cocok dengan kotak statistik yang aktif atau kotak Cari.
+    hide(r) {
+      if (!this.lookup) return false;
+      if (this.statWhere && !this.inWhere(r, this.statWhere)) return true;
+      return !!this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term));
+    }
+
+    // Syarat kotak statistik {kolom: nilai | [nilai, ...]}; kolom bisa kunci baris yang tidak tampil sebagai kolom.
+    inWhere(r, where) { return Object.keys(where).every(k => [].concat(where[k]).some(v => r[k] === v || String(r[k]) === String(v))); }
+
     render() {
+      this.countStats();
       const R = this.rng();
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.num(c) && !this.int(c) ? 'is-dec' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''} ${c.emptyWarn && (v === '' || v == null) ? 'is-empty' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? (this.int(c) ? `<span class="dl-sheet__spin"><button type="button" data-s-spin="1" tabindex="-1">▲</button><button type="button" data-s-spin="-1" tabindex="-1">▼</button></span>` : this.num(c) ? `<button type="button" class="dl-sheet__cal dl-sheet__dec" data-s-dec tabindex="-1" title="${esc(T('nt_tip'))}">${this.decLabel(c)}</button>` : `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${esc(T(c.type === 'date' ? 's_tip_date' : 's_tip_time'))}"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : 'fa-regular fa-clock'}"></i></button>`) : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="' + esc(T('s_fill_tip')) + '"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+        + this.data.map((r, i) => this.hide(r) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.num(c) && !this.int(c) ? 'is-dec' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''} ${c.emptyWarn && (v === '' || v == null) ? 'is-empty' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? (this.int(c) ? `<span class="dl-sheet__spin"><button type="button" data-s-spin="1" tabindex="-1">▲</button><button type="button" data-s-spin="-1" tabindex="-1">▼</button></span>` : this.num(c) ? `<button type="button" class="dl-sheet__cal dl-sheet__dec" data-s-dec tabindex="-1" title="${esc(T('nt_tip'))}">${this.decLabel(c)}</button>` : `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${esc(T(c.type === 'date' ? 's_tip_date' : 's_tip_time'))}"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : 'fa-regular fa-clock'}"></i></button>`) : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="' + esc(T('s_fill_tip')) + '"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
       sv.disabled = !changed.length;
       if (this.lookup) {

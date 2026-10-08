@@ -1,0 +1,234 @@
+[
+  {
+    "key": "conditional-stock",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Conditional Stock",
+    "purpose": {
+      "en": "Batches that still wait for a quality decision, oldest first. Open one to record the sampling or usage decision: Release, Reject, Block or Conditional. A rejected batch holds the work orders that used it and opens a supplier claim.",
+      "id": "Batch yang masih menunggu keputusan mutu, yang terlama dulu. Buka satu batch untuk mencatat keputusan sampling atau pemakaian: Release, Reject, Block atau Conditional. Batch yang ditolak menahan WO yang memakainya dan membuka klaim supplier."
+    },
+    "keywords": "conditional stock, stok bersyarat, quarantine, karantina, qc, sampling, release, reject, block, keputusan mutu, usage decision, batch, lot, urgent, tenggat, eskalasi",
+    "steps": [
+      {"en": "The list shows Conditional and Quarantine batches with the hours they have waited. Escalate and Overdue mean the settings for the decision time have passed. Click a row to open the batch.", "id": "Daftar menampilkan batch Conditional dan Quarantine beserta jam menunggunya. Escalate dan Overdue berarti batas waktu keputusan sudah lewat. Klik satu baris untuk membuka batch."},
+      {"en": "Read the Sampling Plan for this Lot: risk class, intensity and how many pieces to sample. Test the sample.", "id": "Baca Sampling Plan for this Lot: kelas risiko, intensitas, dan jumlah sampel yang diambil. Uji sampel itu."},
+      {"en": "Under Quality Decision choose the Inspection type, fill Lot Quantity, Sample Size, Defective in Sample and Test Result.", "id": "Di Quality Decision pilih jenis Inspection, isi Lot Quantity, Sample Size, Defective in Sample dan Test Result."},
+      {"en": "Click Release when the lot is good. Click Reject or Block with a Reason of at least 5 characters when it is not. Conditional keeps it usable with a mark.", "id": "Klik Release bila lot baik. Klik Reject atau Block dengan Reason minimal 5 karakter bila tidak. Conditional membuat batch tetap bisa dipakai dengan tanda."},
+      {"en": "After Reject the page lists where the batch was used and which work orders are held. The Supplier Claim block lets you mark the claim Sent, Settled or Dropped.", "id": "Setelah Reject halaman menampilkan di mana batch dipakai dan WO mana yang ditahan. Blok Supplier Claim dipakai untuk menandai klaim Sent, Settled atau Dropped."}
+    ],
+    "fields": [
+      {"label": "Inspection", "en": "Which check this decision belongs to: sampling at the dock, first article, usage decision or deviation. Picked from a list.", "id": "Pemeriksaan mana yang diputuskan: sampling di dok, first article, usage decision atau deviasi. Dipilih dari daftar."},
+      {"label": "Lot Quantity", "en": "Quantity of the lot that was sampled. Filled from the receipt; it decides the sample size and is kept in the decision history.", "id": "Jumlah lot yang disampel. Terisi dari penerimaan; menentukan ukuran sampel dan tersimpan di riwayat keputusan."},
+      {"label": "Sample Size", "en": "Pieces actually taken for the test. Suggested from the sampling plan, you may change it.", "id": "Jumlah sampel yang benar-benar diuji. Disarankan dari rencana sampling, boleh diubah."},
+      {"label": "Defective in Sample", "en": "How many of the sampled pieces failed. Typed.", "id": "Berapa sampel yang gagal uji. Diketik."},
+      {"label": "Test Result", "en": "Short note of the measurements, for example gsm, moisture, colour. Typed, shown in the decision history.", "id": "Catatan singkat hasil ukur, misalnya gsm, kelembapan, warna. Diketik, tampil di riwayat keputusan."},
+      {"label": "Reason", "en": "Why the batch is rejected or blocked. Required for Reject and Block, at least 5 characters.", "id": "Alasan batch ditolak atau diblokir. Wajib untuk Reject dan Block, minimal 5 karakter."}
+    ]
+  },
+  {
+    "key": "qc-first-article",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "First Article",
+    "purpose": {
+      "en": "Record the first good piece at the machine for a work order and the material batch used. A pass releases the batch; a fail rejects it, holds the work orders that used it and opens a supplier claim.",
+      "id": "Catat hasil barang pertama yang baik di mesin untuk satu WO dan batch bahan yang dipakai. Lulus melepas batch; gagal menolaknya, menahan WO yang memakainya dan membuka klaim supplier."
+    },
+    "keywords": "first article, barang pertama, uji mesin, fa, first piece, qc mesin, release, reject, work order, wo, batch bahan",
+    "steps": [
+      {"en": "The list shows the first article results recorded so far. Click + New Record to add one.", "id": "Daftar menampilkan hasil first article yang sudah dicatat. Klik + New Record untuk menambah."},
+      {"en": "Choose the Work Order and the Material Batch that is on the machine.", "id": "Pilih Work Order dan Material Batch yang ada di mesin."},
+      {"en": "Choose the Result, Pass or Fail. A Fail needs a note.", "id": "Pilih Result, Pass atau Fail. Fail wajib diberi catatan."},
+      {"en": "Click Save. Only Quality Assurance or an operations manager can save.", "id": "Klik Save. Hanya Quality Assurance atau operations manager yang dapat menyimpan."}
+    ],
+    "fields": [
+      {"label": "Work Order", "en": "The work order being run. Picked from the work order list.", "id": "WO yang sedang dijalankan. Dipilih dari daftar WO."},
+      {"label": "Material Batch", "en": "The material batch used for the first piece, shown with its status. Picked from the batch list.", "id": "Batch bahan yang dipakai untuk barang pertama, tampil dengan statusnya. Dipilih dari daftar batch."},
+      {"label": "Result", "en": "Pass releases the batch. Fail rejects it and holds the work orders that used it.", "id": "Pass melepas batch. Fail menolaknya dan menahan WO yang memakainya."},
+      {"label": "Notes", "en": "What was checked or what went wrong. Required when the result is Fail.", "id": "Apa yang diperiksa atau apa yang salah. Wajib bila hasilnya Fail."}
+    ]
+  },
+  {
+    "key": "supplier-shortage",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Shortage Request",
+    "purpose": {
+      "en": "Ask a supplier, subcontractor or customer to send material that was short from the start. It starts from a work order where output plus standard waste is less than the material issued. Waste above the standard is a usage variance, not a shortage.",
+      "id": "Meminta supplier, subkon atau customer mengirim bahan yang kurang sejak awal. Dimulai dari WO yang output ditambah waste standarnya lebih kecil daripada bahan yang dikeluarkan. Waste di atas standar adalah varians pemakaian, bukan kurang kirim."
+    },
+    "keywords": "kurang kirim, shortage, short shipment, permintaan kirim kekurangan, backorder, bahan kurang, hitung ulang, recount, supplier, subkon, customer, waste standar, debit note",
+    "steps": [
+      {"en": "Click + New Record. Choose the Work Order / Material Issued and the Receipt Line the material came with, then fill Good Output and Standard Waste in the material unit and save.", "id": "Klik + New Record. Pilih Work Order / Material Issued dan Receipt Line asal bahan, lalu isi Good Output dan Standard Waste dalam satuan bahan dan simpan."},
+      {"en": "The request is refused when the difference is within the PO tolerance or when output plus standard waste already cover the issue.", "id": "Permintaan ditolak bila selisihnya masih dalam toleransi PO atau bila output ditambah waste standar sudah menutup bahan yang dikeluarkan."},
+      {"en": "The head of the warehouse recounts or weighs the material and saves the Recount with the Proven Shortage.", "id": "Kepala gudang menghitung atau menimbang ulang bahan lalu menyimpan Recount dengan Proven Shortage."},
+      {"en": "PPIC clicks Confirm: the received quantity, the PO line, the GR/IR journal and the stock are corrected and the PO line opens again. Dismiss keeps the difference as a usage variance.", "id": "PPIC klik Confirm: qty terima, baris PO, jurnal GR/IR dan stok dikoreksi dan baris PO terbuka lagi. Dismiss mempertahankan selisih sebagai varians pemakaian."},
+      {"en": "Purchasing clicks Send to ask the supplier. The supplier has the days set in INV_SHORTAGE_WINDOW_DAYS. Then click Receive when it arrives, or Refuse.", "id": "Pembelian klik Send untuk meminta ke supplier. Supplier punya waktu sesuai INV_SHORTAGE_WINDOW_DAYS. Lalu klik Receive saat barang datang, atau Refuse."},
+      {"en": "Refuse, or Close Lapsed after the window, closes the PO line at the received quantity and marks that a debit note is needed. Click Close to finish.", "id": "Refuse, atau Close Lapsed setelah jendela lewat, menutup baris PO di qty terima dan menandai butuh debit note. Klik Close untuk menyelesaikan."}
+    ],
+    "fields": [
+      {"label": "Work Order / Material Issued", "en": "A work order and the material issued to it, with the net quantity. Picked from the issue documents.", "id": "Satu WO dan bahan yang dikeluarkan ke WO itu beserta qty bersih. Dipilih dari dokumen keluar bahan."},
+      {"label": "Receipt Line", "en": "The confirmed goods receipt line the material came with. It gives the supplier, the PO tolerance and the line to correct.", "id": "Baris penerimaan barang Confirmed asal bahan. Dari sini diambil supplier, toleransi PO dan baris yang dikoreksi."},
+      {"label": "Good Output (material unit)", "en": "Good output expressed in the material unit. Typed; production output is not converted automatically.", "id": "Output baik dalam satuan bahan. Diketik; output produksi belum dikonversi otomatis."},
+      {"label": "Standard Waste (material unit)", "en": "Standard waste in the material unit. Empty uses the work order standard.", "id": "Waste standar dalam satuan bahan. Kosong memakai standar WO."},
+      {"label": "Needed By", "en": "The date the material is needed. Today when left empty.", "id": "Tanggal bahan dibutuhkan. Hari ini bila dikosongkan."},
+      {"label": "Counted Quantity", "en": "The quantity counted again by the head of the warehouse. Typed.", "id": "Jumlah hasil hitung ulang kepala gudang. Diketik."},
+      {"label": "Proven Shortage", "en": "The quantity proven missing, not more than the suspected shortage. This is the quantity that is corrected and asked from the supplier.", "id": "Jumlah yang terbukti kurang, tidak melebihi dugaan. Jumlah inilah yang dikoreksi dan diminta dari supplier."},
+      {"label": "How It Was Counted", "en": "How the material was counted or weighed. Required.", "id": "Cara bahan dihitung atau ditimbang. Wajib."}
+    ]
+  },
+  {
+    "key": "qc-sampling-plan",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Sampling Plan",
+    "purpose": {
+      "en": "The table that says how many pieces are sampled from a lot, per intensity and lot size. Quality assurance keeps it up to date; the first values follow a simplified ANSI/ASQ Z1.4 level II table.",
+      "id": "Tabel yang menentukan berapa sampel diambil dari satu lot, menurut intensitas dan ukuran lot. Quality assurance memeliharanya; nilai awalnya mengikuti tabel ANSI/ASQ Z1.4 level II yang disederhanakan."
+    },
+    "keywords": "sampling plan, rencana sampling, ukuran sampel, sample size, aql, tightened, normal, reduced, ketat, ringan, ansi z1.4, lot",
+    "steps": [
+      {"en": "Each row is one intensity and the lot quantity from which it applies. The row with the highest start that is not above the lot quantity is used.", "id": "Tiap baris adalah satu intensitas dan jumlah lot mulai berlakunya. Dipakai baris dengan batas bawah tertinggi yang tidak melebihi jumlah lot."},
+      {"en": "Add a row with a new line, or change Sample Size in place, then click Save.", "id": "Tambah baris baru, atau ubah Sample Size langsung di sel, lalu klik Save."},
+      {"en": "Untick Active to stop using a row. Skip needs no row: the supplier certificate is enough.", "id": "Hilangkan centang Active untuk berhenti memakai baris. Skip tidak butuh baris: sertifikat supplier sudah cukup."}
+    ],
+    "fields": [
+      {"label": "Intensity", "en": "Tightened, Normal or Reduced. Picked from a list.", "id": "Tightened, Normal atau Reduced. Dipilih dari daftar."},
+      {"label": "Lot Quantity From", "en": "The lot quantity from which this row applies. Typed.", "id": "Jumlah lot mulai baris ini berlaku. Diketik."},
+      {"label": "To (note)", "en": "Upper end of the range, for information only.", "id": "Batas atas rentang, hanya keterangan."},
+      {"label": "Sample Size", "en": "Pieces to sample. Never more than the lot itself.", "id": "Jumlah sampel. Tidak pernah melebihi lotnya."},
+      {"label": "Note", "en": "Free note.", "id": "Catatan bebas."},
+      {"label": "Active", "en": "Only active rows are used.", "id": "Hanya baris aktif yang dipakai."}
+    ]
+  },
+  {
+    "key": "qc-sampling-rules",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Sampling Rules",
+    "purpose": {
+      "en": "Per risk class A, B and C: the starting intensity, the AQL and when a supplier moves to lighter or stricter sampling according to its history of passed and rejected lots.",
+      "id": "Per kelas risiko A, B dan C: intensitas awal, AQL, dan kapan supplier pindah ke sampling lebih ringan atau lebih ketat menurut riwayat lot yang lulus dan ditolak."
+    },
+    "keywords": "sampling rules, aturan sampling, kelas risiko, intensitas, aql, reduced, tightened, supplier baru, pindah intensitas, riwayat supplier",
+    "steps": [
+      {"en": "There is one row per risk class. Change the values in place and click Save.", "id": "Ada satu baris per kelas risiko. Ubah nilai langsung di sel lalu klik Save."},
+      {"en": "A supplier with fewer decided lots than INV_QC_NEW_SUPPLIER_LOTS is always sampled Tightened.", "id": "Supplier dengan lot yang sudah diputuskan lebih sedikit dari INV_QC_NEW_SUPPLIER_LOTS selalu disampel Tightened."},
+      {"en": "After a reject the supplier stays Tightened until it passes the Recover lots in a row. After the Reduced After lots in a row the sampling becomes Reduced.", "id": "Setelah satu reject supplier tetap Tightened sampai lulus sejumlah lot Recover berturut-turut. Setelah lulus sejumlah lot Reduced After berturut-turut, sampling menjadi Reduced."}
+    ],
+    "fields": [
+      {"label": "Risk Class", "en": "A, B or C. Fixed once saved.", "id": "A, B atau C. Tidak bisa diubah setelah tersimpan."},
+      {"label": "Start Intensity", "en": "The intensity for a known, clean supplier of this class.", "id": "Intensitas untuk supplier dikenal yang bersih pada kelas ini."},
+      {"label": "AQL %", "en": "Acceptable quality level in percent, for information with the plan.", "id": "Acceptable quality level dalam persen, sebagai keterangan rencana."},
+      {"label": "Reduced After (lots passed)", "en": "Passed lots in a row after which sampling becomes Reduced.", "id": "Jumlah lot lulus berturut-turut sampai sampling menjadi Reduced."},
+      {"label": "Recover After Reject (lots passed)", "en": "Passed lots in a row after a reject before Tightened ends.", "id": "Jumlah lot lulus berturut-turut setelah reject sebelum Tightened berakhir."}
+    ]
+  },
+  {
+    "key": "qc-risk-class",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Risk Class",
+    "purpose": {
+      "en": "Set the risk class A, B or C per material category or per single item. The class decides the sampling intensity. An item rule beats a category rule; without a rule the class is B.",
+      "id": "Menetapkan kelas risiko A, B atau C per kategori material atau per satu item. Kelas menentukan intensitas sampling. Aturan item mengalahkan aturan kategori; tanpa aturan kelasnya B."
+    },
+    "keywords": "risk class, kelas risiko, kategori material, kelas a b c, food grade, fsc, pefc, bahan berbahaya, sampling, qa",
+    "steps": [
+      {"en": "Add a row, then pick a Material Category or type an Item Code, not both.", "id": "Tambah baris, lalu pilih Material Category atau ketik Item Code, jangan keduanya."},
+      {"en": "Choose the Risk Class: A food grade, FSC or PEFC claim, hazardous; B paper, board, film, glue; C small auxiliary materials.", "id": "Pilih Risk Class: A food grade, klaim FSC atau PEFC, bahan berbahaya; B kertas, board, film, lem; C bahan penolong kecil."},
+      {"en": "Click Save. The deepest category wins over its parent; an item wins over its category.", "id": "Klik Save. Kategori terdalam mengalahkan induknya; item mengalahkan kategorinya."}
+    ],
+    "fields": [
+      {"label": "Material Category", "en": "A category of the raw material master, shown with its parents. Picked from a list.", "id": "Kategori dari master bahan baku, tampil dengan induknya. Dipilih dari daftar."},
+      {"label": "or Item Code", "en": "The code of one raw material. Must exist in the raw material master.", "id": "Kode satu bahan baku. Harus ada di master bahan baku."},
+      {"label": "Risk Class", "en": "A, B or C.", "id": "A, B atau C."},
+      {"label": "Note", "en": "Free note.", "id": "Catatan bebas."},
+      {"label": "Active", "en": "Only active rows are used.", "id": "Hanya baris aktif yang dipakai."}
+    ]
+  },
+  {
+    "key": "qc-urgent-usage",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "URGENT Usage",
+    "purpose": {
+      "en": "Every receipt line marked URGENT: who asked, for which work order, who approved FSC or food grade material, and what the sampling that followed decided. It shows whether URGENT is used too freely.",
+      "id": "Setiap baris penerimaan yang ditandai URGENT: siapa yang meminta, untuk WO mana, siapa yang menyetujui bahan FSC atau food grade, dan apa keputusan sampling yang menyusul. Menunjukkan apakah URGENT dipakai terlalu longgar."
+    },
+    "keywords": "urgent, mendesak, penerimaan urgent, pemakaian urgent, pemohon, supplier, hasil sampling, conditional, release",
+    "steps": [
+      {"en": "Use the boxes on top to see only batches still Awaiting (Conditional), Released or Rejected.", "id": "Pakai kotak di atas untuk melihat batch yang masih Awaiting (Conditional), Released atau Rejected."},
+      {"en": "Group by Supplier, Requested By or Batch Status to see where URGENT is used most.", "id": "Kelompokkan menurut Supplier, Requested By atau Batch Status untuk melihat di mana URGENT paling sering dipakai."}
+    ],
+    "fields": [
+      {"label": "Requested By", "en": "The person who marked the line URGENT.", "id": "Orang yang menandai baris sebagai URGENT."},
+      {"label": "Work Order", "en": "The work order that needed the material.", "id": "WO yang membutuhkan bahan."},
+      {"label": "Approved By", "en": "Head of QC or operations manager who approved FSC or food grade material.", "id": "Kepala QC atau operations manager yang menyetujui bahan FSC atau food grade."},
+      {"label": "Batch Status", "en": "The status of the batch now: Conditional until the sampling decision.", "id": "Status batch sekarang: Conditional sampai ada keputusan sampling."},
+      {"label": "Sampling Result", "en": "The test result of the last decision on the batch.", "id": "Hasil uji dari keputusan terakhir atas batch."}
+    ]
+  },
+  {
+    "key": "shortage-by-supplier",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Shortage by Supplier",
+    "purpose": {
+      "en": "Per supplier or subcontractor: how many shortage requests were confirmed, the quantity proven short, and how many were delivered afterwards, refused or still open. Input for judging supplier quality.",
+      "id": "Per supplier atau subkon: berapa permintaan kirim kekurangan yang dikonfirmasi, jumlah yang terbukti kurang, dan berapa yang dikirim kemudian, ditolak atau masih terbuka. Bahan menilai mutu supplier."
+    },
+    "keywords": "kurang kirim per supplier, shortage by supplier, skor supplier, debit note, ditolak, dikirim, terbuka",
+    "steps": [
+      {"en": "Read one row per supplier, with the largest shortage first.", "id": "Baca satu baris per supplier, kekurangan terbesar di atas."},
+      {"en": "Requests closed as a usage variance are not counted.", "id": "Permintaan yang ditutup sebagai varians pemakaian tidak dihitung."}
+    ],
+    "fields": [
+      {"label": "Requests", "en": "Number of confirmed shortage requests.", "id": "Jumlah permintaan kirim kekurangan yang dikonfirmasi."},
+      {"label": "Qty Proven Short", "en": "Total quantity proven short after the recount.", "id": "Total jumlah yang terbukti kurang setelah hitung ulang."},
+      {"label": "Delivered After", "en": "Requests where the shortfall was delivered.", "id": "Permintaan yang kekurangannya sudah dikirim."},
+      {"label": "Refused / Lapsed", "en": "Requests refused or past the sending window.", "id": "Permintaan yang ditolak atau lewat jendela kirim."},
+      {"label": "Still Open", "en": "Requests confirmed or sent and not answered yet.", "id": "Permintaan Confirmed atau Sent yang belum dijawab."},
+      {"label": "Debit Notes Needed", "en": "Requests closed at the received quantity that need a debit note or an invoice deduction.", "id": "Permintaan yang ditutup di qty terima dan butuh debit note atau potongan tagihan."}
+    ]
+  },
+  {
+    "key": "supplier-claims",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Supplier Claims",
+    "purpose": {
+      "en": "Claims to suppliers for batches that were rejected after receipt. A claim opens by itself when a batch is rejected. Click a row to open the batch and mark the claim Sent, Settled or Dropped.",
+      "id": "Klaim ke supplier atas batch yang ditolak setelah diterima. Klaim terbuka sendiri saat batch ditolak. Klik satu baris untuk membuka batch dan menandai klaim Sent, Settled atau Dropped."
+    },
+    "keywords": "klaim supplier, supplier claim, batch ditolak, reject, retur, klaim, pemasok, mutu",
+    "steps": [
+      {"en": "Use the boxes on top to see Open, Sent or Settled claims.", "id": "Pakai kotak di atas untuk melihat klaim Open, Sent atau Settled."},
+      {"en": "Click a row to open the batch. The Supplier Claim block there changes the status and the notes.", "id": "Klik satu baris untuk membuka batch. Blok Supplier Claim di sana mengubah status dan catatan."}
+    ],
+    "fields": [
+      {"label": "Claim No.", "en": "Number given by the system when the claim opens.", "id": "Nomor yang diberikan sistem saat klaim dibuka."},
+      {"label": "Qty Claimed", "en": "Quantity received for the batch on the goods receipt.", "id": "Jumlah yang diterima untuk batch pada penerimaan barang."},
+      {"label": "Reason", "en": "The reason typed when the batch was rejected.", "id": "Alasan yang diketik saat batch ditolak."}
+    ]
+  },
+  {
+    "key": "guide-inv-urgent-receipt",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Marking a Receipt URGENT",
+    "purpose": {
+      "en": "How to receive material that production needs now, before the quality sampling is finished. The line is posted and goes straight to production; its batch stays Conditional until the sampling decision.",
+      "id": "Cara menerima bahan yang dibutuhkan produksi sekarang, sebelum sampling mutu selesai. Baris diposting dan langsung ke produksi; batchnya tetap Conditional sampai ada keputusan sampling."
+    },
+    "keywords": "urgent, mendesak, penerimaan urgent, langsung ke produksi, dock to line, conditional, fsc, food grade, persetujuan",
+    "steps": [
+      {"en": "Open the Goods Receipt in Draft. Under URGENT and Sampling the table shows each line with its sampling plan.", "id": "Buka Goods Receipt yang masih Draft. Di URGENT and Sampling tabel menampilkan tiap baris beserta rencana samplingnya."},
+      {"en": "Only PPIC, a production supervisor or an operations manager can mark URGENT. Pick the Line, the Work Order, type the URGENT Reason and click URGENT.", "id": "Hanya PPIC, supervisor produksi atau operations manager yang dapat menandai URGENT. Pilih Line dan Work Order, ketik URGENT Reason lalu klik URGENT."},
+      {"en": "For FSC, PEFC or food grade material set the Certification and Food grade, click Save, then the head of QC or an operations manager clicks Approve.", "id": "Untuk bahan FSC, PEFC atau food grade isi Certification dan Food grade, klik Save, lalu kepala QC atau operations manager klik Approve."},
+      {"en": "Confirm the receipt as usual. The quality QC may stay Pending on an URGENT line. The batch is created as Conditional.", "id": "Confirm penerimaan seperti biasa. QC mutu boleh tetap Pending pada baris URGENT. Batch dibuat dengan status Conditional."},
+      {"en": "Quality assurance then records the sampling decision under Conditional Stock. Clear removes the mark before the receipt is confirmed.", "id": "Quality assurance lalu mencatat keputusan sampling di Conditional Stock. Clear menghapus tanda sebelum penerimaan dikonfirmasi."}
+    ],
+    "fields": []
+  }
+]

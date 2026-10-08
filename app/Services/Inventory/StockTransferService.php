@@ -82,6 +82,8 @@ class StockTransferService
                 $errors[] = self::msg(':item: only :qty on hand in the source bin.', ['item' => $l->item_code, 'qty' => Locale::decimal($onhand, 4)]);
             }
         }
+        // Aturan Mixing area tujuan (v2.01): satu item / satu batch per bin.
+        $errors = array_merge($errors, BinRules::transferViolations($t->lines));
 
         return $errors;
     }

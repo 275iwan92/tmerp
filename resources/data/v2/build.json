@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-08 21:12",
+    "generated": "2026-10-09 00:14",
     "database": "ddtsys",
     "totals": {
-        "objects": 151,
+        "objects": 152,
         "modules": 10,
-        "modules_done": 6,
-        "screens": 246,
-        "v2": 236,
+        "modules_done": 7,
+        "screens": 264,
+        "v2": 257,
         "v1": 5,
-        "not_built": 5,
-        "waiting_qc": 240,
+        "not_built": 2,
+        "waiting_qc": 261,
         "locked": 1,
-        "forms": 96,
-        "grids": 91,
-        "reports": 59,
-        "grid_classes": 151,
-        "lookups": 38,
-        "report_grids": 39,
+        "forms": 104,
+        "grids": 97,
+        "reports": 63,
+        "grid_classes": 163,
+        "lookups": 45,
+        "report_grids": 42,
         "engines": 31,
         "engine_groups": 13,
-        "tables": 379,
+        "tables": 397,
         "databases": 10,
-        "models": 335,
-        "migrations": 564,
-        "tests": 115,
-        "dictionary": 11900,
+        "models": 351,
+        "migrations": 577,
+        "tests": 133,
+        "dictionary": 12028,
         "languages": 4,
-        "commits": "1225",
+        "commits": "1239",
         "since": "2026-08-06"
     },
     "modules": [
@@ -56,38 +56,38 @@
         },
         {
             "label": "Procurement",
-            "total": 11,
-            "v2": 11,
+            "total": 13,
+            "v2": 13,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 11,
+            "waiting_qc": 13,
             "locked": 0,
-            "form": 4,
+            "form": 5,
             "grid": 4,
-            "report": 3
+            "report": 4
         },
         {
             "label": "Inventory",
-            "total": 47,
-            "v2": 47,
+            "total": 59,
+            "v2": 59,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 47,
+            "waiting_qc": 59,
             "locked": 0,
-            "form": 22,
-            "grid": 7,
-            "report": 18
+            "form": 26,
+            "grid": 12,
+            "report": 21
         },
         {
             "label": "Production",
-            "total": 19,
-            "v2": 16,
+            "total": 23,
+            "v2": 23,
             "v1": 0,
-            "not_built": 3,
-            "waiting_qc": 16,
+            "not_built": 0,
+            "waiting_qc": 23,
             "locked": 0,
-            "form": 4,
-            "grid": 14,
+            "form": 7,
+            "grid": 15,
             "report": 1
         },
         {
@@ -166,23 +166,17 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 27,
-            "days": 2,
-            "last": "2026-10-08",
-            "screens": 36,
-            "objects": 2,
-            "engines": 2,
-            "tests": 9
+            "commits": 41,
+            "days": 3,
+            "last": "2026-10-09",
+            "screens": 54,
+            "objects": 4,
+            "engines": 7,
+            "tests": 14
         }
     ],
     "untracked": 1117,
     "days": [
-        {
-            "date": "2026-09-25",
-            "iwan": 0,
-            "jo": 0,
-            "other": 8
-        },
         {
             "date": "2026-09-26",
             "iwan": 0,
@@ -258,8 +252,14 @@
         {
             "date": "2026-10-08",
             "iwan": 0,
-            "jo": 26,
+            "jo": 37,
             "other": 2
+        },
+        {
+            "date": "2026-10-09",
+            "iwan": 0,
+            "jo": 3,
+            "other": 0
         }
     ],
     "weeks": [
@@ -320,7 +320,7 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 27,
+            "jo": 41,
             "other": 37
         }
     ],
@@ -390,6 +390,17 @@
             "built_by": null,
             "changed_at": "2026-10-05",
             "changed_by": "iwan"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_OPERATOR",
+            "name": "Operator Queue",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -531,8 +542,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -707,8 +718,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -1125,7 +1136,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-08",
+            "changed_at": "2026-10-09",
             "changed_by": "jo"
         },
         {
@@ -1145,6 +1156,39 @@
             "name": "Maintenance Order Report",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:MAINT_DASH",
+            "name": "Maintenance Dashboard",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_BQ_BATCH",
+            "name": "Batch",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_BQ_PLAN",
+            "name": "Sampling Plan",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
             "built_at": null,
             "built_by": null,
             "changed_at": null,
@@ -1152,9 +1196,9 @@
         },
         {
             "type": "REPORT",
-            "key": "menu:MAINT_DASH",
-            "name": "Maintenance Dashboard",
-            "module": "Maintenance",
+            "key": "menu:INV_BQ_URG",
+            "name": "URGENT Usage",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": null,
             "built_by": null,
@@ -1164,13 +1208,13 @@
         {
             "type": "FORM",
             "key": "menu:PROD_MPS",
-            "name": "MPS - Gantt Chart",
+            "name": "Production Scheduling",
             "module": "Production",
-            "qc": "NOT_BUILT",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1181,17 +1225,6 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-03",
-            "changed_by": null
-        },
-        {
-            "type": "GRID",
-            "key": "menu:PROD_MON_WO",
-            "name": "MPS - Kanban Board",
-            "module": "Production",
-            "qc": "NOT_BUILT",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
             "changed_by": null
         },
         {
@@ -1229,17 +1262,6 @@
         },
         {
             "type": "GRID",
-            "key": "menu:PROD_MPS_SHEET",
-            "name": "MPS - Spreadsheet",
-            "module": "Production",
-            "qc": "NOT_BUILT",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
-        },
-        {
-            "type": "GRID",
             "key": "menu:MD_SALES_PERSON",
             "name": "Sales Person",
             "module": "Master Data",
@@ -1273,6 +1295,17 @@
         },
         {
             "type": "GRID",
+            "key": "menu:INV_WH_RCV",
+            "name": "Receiving & Putaway",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
             "key": "menu:PROD_RULE_LIB",
             "name": "Rule Library",
             "module": "Production",
@@ -1291,6 +1324,17 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_PREBOOK",
+            "name": "Pre-Booking",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -1816,6 +1860,39 @@
             "name": "Machine Reliability",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_BQ_COND",
+            "name": "Conditional Stock",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_BQ_RULES",
+            "name": "Sampling Rules",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_BQ_SHRT",
+            "name": "Shortage by Supplier",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
             "built_at": null,
             "built_by": null,
             "changed_at": null,
@@ -1831,6 +1908,17 @@
             "built_by": null,
             "changed_at": "2026-10-02",
             "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_LEARNING",
+            "name": "Learning Changes",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1864,6 +1952,17 @@
             "built_by": null,
             "changed_at": "2026-10-05",
             "changed_by": "iwan"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_PICK",
+            "name": "Pick List",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -2295,6 +2394,61 @@
             "changed_by": "jo"
         },
         {
+            "type": "FORM",
+            "key": "menu:INV_BQ_FA",
+            "name": "First Article",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_BQ_RISK",
+            "name": "Risk Class",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_BQ_CLAIM",
+            "name": "Supplier Claims",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROC_SHORT",
+            "name": "Shortage Request",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:PROC_RPT_SHORT",
+            "name": "Shortage by Supplier",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "GRID",
             "key": "menu:PROD_ROUTING_TPL",
             "name": "Master Routing Template",
@@ -2603,6 +2757,17 @@
             "changed_by": "jo"
         },
         {
+            "type": "FORM",
+            "key": "menu:INV_BQ_SHORT",
+            "name": "Shortage Request",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "GRID",
             "key": "menu:PROD_MACHINE_MODEL",
             "name": "Machine Model Catalog",
@@ -2890,6 +3055,28 @@
         },
         {
             "type": "GRID",
+            "key": "menu:PROD_MST_TOOLING",
+            "name": "Tooling Master",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MST_CHANGEOVER",
+            "name": "Setup and Changeover",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "GRID",
             "key": "menu:ACC_RPT_DP_LEDGER",
             "name": "Down Payment Ledger",
             "module": "Finance & Accounting",
@@ -2898,6 +3085,17 @@
             "built_by": null,
             "changed_at": "2026-10-02",
             "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MST_WAIT_RULE",
+            "name": "Wait Rules",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -3226,8 +3424,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-08-28",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3290,10 +3488,10 @@
             "name": "Maintenance Request Engine",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3301,10 +3499,10 @@
             "name": "Maintenance Spare Part Supply",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3312,10 +3510,10 @@
             "name": "Maintenance KPI",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3323,10 +3521,10 @@
             "name": "Maintenance Machine Hold (Scheduling)",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -4238,8 +4436,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -4911,6 +5109,17 @@
             "built_by": null,
             "changed_at": "2026-10-03",
             "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Timer",
+            "name": "Timer",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",

@@ -125,6 +125,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_account.php';
         require __DIR__.'/v2_finance.php';
         require __DIR__.'/v2_warehouse.php';
+        require __DIR__.'/v2_picklist.php';
 
         Route::middleware('module:SALES')->group(function () {
             Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');

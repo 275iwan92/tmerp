@@ -48,6 +48,7 @@ class PvBuilderService
                 ->where('stat_cancel', false))
             ->where('is_receivable', true)
             ->whereColumn('c_qty_received', '<', 'i_qty')
+            ->where(fn ($w) => $w->whereNull('c_line_status')->orWhere('c_line_status', '<>', ShortageRequestService::LINE_CLOSED))
             ->get()
             ->sortBy(['c_po_doc_no' => 0, 'line_no' => 0]);
     }

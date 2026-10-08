@@ -13,8 +13,9 @@ class LookupGrid extends Sheet
         string $title = '',
         ?string $source = null,
         ?string $saveUrl = null,
+        array $stats = [],
     ) {
-        parent::__construct($columns, $rows, $rowKey, $title, $source, lookup: true, saveUrl: $saveUrl);
+        parent::__construct($columns, $rows, $rowKey, $title, $source, lookup: true, saveUrl: $saveUrl, stats: $stats);
     }
 
     public function tag(): string

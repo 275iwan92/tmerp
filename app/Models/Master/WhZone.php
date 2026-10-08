@@ -42,6 +42,14 @@ class WhZone extends Model
     protected $casts = ['activate' => 'boolean', 'floor_no' => 'integer', 'map_x' => 'float', 'map_y' => 'float', 'map_w' => 'float', 'map_h' => 'float', 'stack_height_m' => 'float', 'max_stack' => 'integer',
         'is_virtual' => 'boolean', 'count_every_days' => 'integer'];
 
+    // is_virtual selalu mengikuti jenis area (satu sumber kebenaran; layar Storage Areas tidak mengisinya).
+    protected static function booted(): void
+    {
+        static::saving(function (self $zone) {
+            $zone->is_virtual = $zone->isVirtualType();
+        });
+    }
+
     public function isVirtualType(): bool
     {
         return in_array($this->zone_type, self::VIRTUAL_TYPES, true);
