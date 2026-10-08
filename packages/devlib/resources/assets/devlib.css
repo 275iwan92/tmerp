@@ -3544,3 +3544,25 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 @keyframes dl-track-blink{50%{transform:scale(1.2);opacity:.65}}
 @media (prefers-reduced-motion:reduce){.dl-track--incident .dl-track__truck circle{animation:none}}
 .dl-flat{display:contents}
+
+/* Coverage: matriks kelengkapan (baris = kelompok, kolom = jenis dokumen, sel = chip status) */
+.dl-cov__bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0}
+.dl-cov__scroll{overflow-x:auto}
+.dl-cov__table{width:100%;border-collapse:collapse;font-size:calc(13px * var(--dl-font-scale))}
+.dl-cov__table th{text-align:left;font-size:calc(11px * var(--dl-font-scale));text-transform:uppercase;color:var(--dl-muted);background:var(--dl-surface-alt);padding:8px;white-space:nowrap}
+.dl-cov__table td{padding:8px;border-top:1px solid var(--dl-border);vertical-align:middle}
+.dl-cov__row:hover{background:var(--dl-hover)}
+.dl-cov__row[hidden],.dl-cov__detail[hidden]{display:none}
+.dl-cov__arrow{width:32px;padding-right:0}
+.dl-cov__toggle{border:none;background:none;color:var(--dl-muted);cursor:pointer;transition:transform .15s}
+.dl-cov__row.is-open .dl-cov__toggle{transform:rotate(90deg)}
+.dl-cov__title b{color:var(--dl-accent);margin-right:4px}
+.dl-cov__sub{color:var(--dl-muted)}
+.dl-cov__chip{text-decoration:none}.dl-cov__chip:hover{filter:brightness(.95)}
+.dl-cov__none{color:var(--dl-muted)}
+.dl-cov__detail td{background:var(--dl-surface-alt)}
+.dl-cov__groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.dl-cov__group h4{margin:0 0 4px;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-ink-strong)}
+.dl-cov__group ol{margin:0;padding-left:18px;color:var(--dl-ink)}
+.dl-cov__empty{padding:16px;text-align:center;color:var(--dl-muted)}
+.dl-cov__group--wide{grid-column:1/-1}.dl-cov__group--wide ol{columns:2 380px;column-gap:24px}.dl-cov__group--wide li{break-inside:avoid;margin-bottom:3px}

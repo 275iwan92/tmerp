@@ -263,4 +263,40 @@ final class Maintenance
     {
         return $doc->lines->map(fn ($l) => ['seq' => $l->seq_no, 'section' => DocumentTranslator::t($l->section), 'text' => DocumentTranslator::t($l->line_text)])->values()->all();
     }
+
+    /** Kolom matriks kelengkapan SOP / WI: kunci => label. WI dipetakan dari akhiran nomor (-01 Daily, -02 Weekly, -03 Monthly, -04 Breakdown). */
+    public const COVERAGE_COLUMNS = ['sop' => 'SOP', 'daily' => 'WI Daily', 'weekly' => 'WI Weekly', 'monthly' => 'WI Monthly', 'breakdown' => 'WI Breakdown'];
+
+    private const COVERAGE_TONES = ['DRAFT' => ['Draft', 'warn', 'fa-pen-to-square'], 'APPROVED' => ['Approved', 'success', 'fa-circle-check'], 'REVISION' => ['Revision', 'info', 'fa-code-branch']];
+
+    /** Baris matriks kelengkapan: satu baris per set mesin, sel = status tiap SOP / WI (dibuka di layar Documents). */
+    public static function coverageRows(): array
+    {
+        $docs = MntDocument::query()->whereNotNull('doc_set')->where('doc_set', '<>', '')->orderBy('doc_no')->get();
+        $links = \Illuminate\Support\Facades\DB::connection('tm2mnt')->table('mnt_asset_document')->whereIn('document_id', $docs->pluck('id_document'))->get(['document_id', 'asset_id']);
+        $codes = MntAsset::whereIn('id_asset', $links->pluck('asset_id')->unique())->pluck('asset_code', 'id_asset');
+        $url = route('v2.screen', 'maintenance-documents');
+        $slots = ['01' => 'daily', '02' => 'weekly', '03' => 'monthly', '04' => 'breakdown'];
+
+        return $docs->groupBy('doc_set')->map(function ($set, $code) use ($links, $codes, $url, $slots) {
+            $cells = [];
+            foreach ($set as $d) {
+                $col = $d->kind === 'SOP' ? 'sop' : ($d->kind === 'WI' ? ($slots[substr($d->doc_no, -2)] ?? null) : null);
+                if ($col) {
+                    $key = $d->status === 'DRAFT' && $d->revision !== '00' ? 'REVISION' : $d->status;
+                    [$label, $tone, $icon] = self::COVERAGE_TONES[$key] ?? [$d->status, 'neutral', null];
+                    $cells[$col] = ['label' => $label, 'tone' => $tone, 'icon' => $icon, 'url' => $url.'?id='.$d->id_document];
+                }
+            }
+            $sop = $set->firstWhere('kind', 'SOP');
+            $assets = $links->whereIn('document_id', $set->pluck('id_document'))->pluck('asset_id')->unique()->map(fn ($id) => $codes[$id] ?? null)->filter()->sort()->values()->all();
+            $detail = [['title' => t('Assets'), 'items' => $assets]];
+            if ($sop) {
+                $detail[] = ['title' => t('SOP content'), 'items' => $sop->lines->map(fn ($l) => DocumentTranslator::t($l->section).': '.DocumentTranslator::t($l->line_text))->all(), 'wide' => true];
+            }
+
+            return ['code' => $code, 'title' => DocumentTranslator::t($sop?->title ?? $set->first()->title), 'sub' => count($assets).' · '.implode(', ', array_slice($assets, 0, 3)).(count($assets) > 3 ? ' +'.(count($assets) - 3) : ''),
+                'cells' => $cells, 'flags' => collect($cells)->contains(fn ($c) => $c['label'] !== 'Approved') || count($cells) < count(self::COVERAGE_COLUMNS) ? ['pending'] : [], 'detail' => $detail];
+        })->values()->all();
+    }
 }

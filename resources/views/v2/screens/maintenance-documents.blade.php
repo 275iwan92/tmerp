@@ -17,8 +17,16 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $document && ! request('new'))
-    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Maint\DocumentListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
-    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Maint\DocumentListGrid]])
+    {{-- Coverage = objek x-dl::coverage (satu baris per set mesin, kolom SOP + 4 WI). All list = objek Grid Transactional
+         App\Support\V2\Grid\Maint\DocumentListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    <x-dl::tabs :tabs="['coverage' => 'Coverage', 'list' => 'All list']">
+        <x-slot:coverage>
+            <x-dl::coverage head="Set" sub-head="Assets" search="Search set, asset…" :columns="Maintenance::COVERAGE_COLUMNS" :filters="['pending' => 'Not fully approved']" :rows="Maintenance::coverageRows()" />
+        </x-slot:coverage>
+        <x-slot:list>
+            @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Maint\DocumentListGrid]])
+        </x-slot:list>
+    </x-dl::tabs>
 @else
     @php
         $new = ! $document;

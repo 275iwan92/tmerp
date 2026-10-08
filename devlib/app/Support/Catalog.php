@@ -130,6 +130,7 @@ final class Catalog
                         'grid-photos' => ['Grid with Photos (table ↔ cards)', $c('Grid')],
                         'grid-mix' => ['Grid with Mix Component', $c('Grid')],
                         'grid-sheet' => ['Grid Spreadsheet (bulk edit, Excel copy/paste, drag-fill)', $c('Sheet')],
+                        'grid-coverage' => ['Grid Coverage (matrix: rows x document types, status chips, expand = details)', $c('Coverage')],
                     ]),
                 ]],
             // Tiga keluarga form (user 2026-09-26): Single, Master-Detail, Special.
