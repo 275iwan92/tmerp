@@ -764,5 +764,67 @@
         "id": "Satuan (lembar atau pcs), qty masuk, hasil baik, qty waste, qty spoilage dan persen, dari kaskade."
       }
     ]
+  },
+  {
+    "key": "guide-ppic-build-status",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "PPIC: What Is Built and How to Use It",
+    "purpose": {
+      "en": "The autopilot as it works today on the dummy site: where to click, what the engines do by themselves, and what is still to come.",
+      "id": "Autopilot seperti yang berjalan sekarang di situs dummy: di mana mengklik, apa yang dikerjakan engine sendiri, dan apa yang masih akan datang."
+    },
+    "keywords": "ppic, autopilot, create work order, operator queue, learning, tooling, wait rules, changeover, status, cara pakai",
+    "steps": [
+      {
+        "en": "Production > Work Order > Create Work Order lists delivery plan lines of Confirmed Customer Orders that have no Work Order. Create Work Order (one) or Create all builds them from Product Development.",
+        "id": "Production > Work Order > Create Work Order mendaftar baris rencana kirim dari Customer Order Confirmed yang belum punya Work Order. Create Work Order (satu) atau Create all membuatnya dari Product Development."
+      },
+      {
+        "en": "After creating, the engines add machines, targets, setup and material and tooling gates, and leave a Draft plan. Nothing becomes the real schedule until the officer confirms.",
+        "id": "Setelah dibuat, engine menambah mesin, target, setup, dan gerbang bahan dan tooling, lalu meninggalkan rencana Draft. Tidak ada yang menjadi jadwal nyata sebelum officer mengonfirmasi."
+      },
+      {
+        "en": "Production > Production Scheduling: review Needs attention, give priority (Hot job or Move up with a reason) if needed, then Confirm plan. The next N shifts are then locked.",
+        "id": "Production > Production Scheduling: tinjau Needs attention, beri prioritas (Hot job atau Move up dengan alasan) bila perlu, lalu Confirm plan. N shift berikutnya lalu dikunci."
+      },
+      {
+        "en": "The engines also make a new Draft every night, at each shift start, when a Work Order is created, and when a machine goes down or comes back in service.",
+        "id": "Engine juga membuat Draft baru tiap malam, tiap awal shift, saat Work Order dibuat, dan saat mesin rusak atau pulih."
+      },
+      {
+        "en": "Work Order screen: the real dieline from Product Development, BOP and routing with the machines that can queue each step, BOM with gates and the substitution link, schedule and output.",
+        "id": "Layar Work Order: dieline asli dari Product Development, BOP dan routing dengan mesin yang bisa mengantre tiap langkah, BOM dengan gerbang dan tautan substitusi, jadwal dan output."
+      },
+      {
+        "en": "Production > Output > Operator Queue (tablet at the machine): choose the machine, Play for setup, Play again for run, Pause with a reason, Add quantity, Stop with good, waste and reject.",
+        "id": "Production > Output > Operator Queue (tablet di mesin): pilih mesin, Play untuk setup, Play lagi untuk jalan, Pause dengan alasan, Add quantity, Stop dengan jumlah baik, waste dan reject."
+      },
+      {
+        "en": "The Problem button, and the pause reason Machine problem, open a Maintenance Request already filled with the machine and the Work Order.",
+        "id": "Tombol Problem, dan alasan jeda Machine problem, membuka Maintenance Request yang sudah terisi mesin dan Work Order."
+      },
+      {
+        "en": "Production > Planning > Learning Changes: the engine corrects Assumed changeover minutes from real setup times in small logged steps. Put back and freeze any change.",
+        "id": "Production > Planning > Learning Changes: engine mengoreksi menit changeover Assumed dari waktu setup nyata dalam langkah kecil yang tercatat. Kembalikan dan bekukan perubahan mana pun."
+      },
+      {
+        "en": "Masters: Tooling Master, Setup and Changeover, Wait Rules (drying and curing), and Customer Tier in Master Customer (Sales). Scheduling settings are rows PPIC_* in Settings > Constants.",
+        "id": "Master: Tooling Master, Setup and Changeover, Wait Rules (pengeringan), dan Tier Customer di Master Customer (Sales). Pengaturan penjadwalan adalah baris PPIC_* di Settings > Constants."
+      },
+      {
+        "en": "Access flags in Security: PPIC_SCHEDULING (run, confirm, priority, move) and PPIC_INVENTORY (bookings, shortages, ready dates). Administrators hold both.",
+        "id": "Flag akses di Security: PPIC_SCHEDULING (jalankan, konfirmasi, prioritas, pindah) dan PPIC_INVENTORY (booking, kekurangan, tanggal siap). Administrator memegang keduanya."
+      },
+      {
+        "en": "Still to come: fixed waste (make-ready) in the ProDev waste chain needs the user to approve a ProDev change, and the Work Order print format is not approved yet.",
+        "id": "Belum ada: waste tetap (make-ready) di rantai waste ProDev butuh persetujuan user untuk mengubah ProDev, dan format cetak Work Order belum disetujui."
+      },
+      {
+        "en": "All start values stay Assumed until real jobs are recorded. Release to live (tm2*) waits for the user.",
+        "id": "Semua nilai awal tetap Assumed sampai job nyata tercatat. Rilis ke live (tm2*) menunggu user."
+      }
+    ],
+    "fields": []
   }
 ]

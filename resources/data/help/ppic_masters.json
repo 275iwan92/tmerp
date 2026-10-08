@@ -1,0 +1,127 @@
+[
+  {
+    "key": "prod-tooling",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Tooling Master",
+    "purpose": {
+      "en": "Plate sets and dies by dieline reference, with status and mounting minutes. Scheduling blocks a job whose tool is not ready and adds the mounting time to the setup.",
+      "id": "Set plat dan pisau menurut referensi dieline, dengan status dan menit pasang. Penjadwalan menahan job yang tooling-nya belum siap dan menambah waktu pasang ke setup."
+    },
+    "keywords": "tooling, plat, pisau, die, plate set, cutting die, setup, dieline, master tooling",
+    "steps": [
+      {
+        "en": "Open Tooling Master. The list is a sheet where you type in the cells.",
+        "id": "Buka Tooling Master. Daftarnya berupa lembar yang diisi langsung di sel."
+      },
+      {
+        "en": "Add a row: Code, Type, Dieline Reference and Status are required. Use the Dieline Reference of the part in Product Development.",
+        "id": "Tambah baris: Code, Type, Dieline Reference dan Status wajib. Pakai Dieline Reference part di Product Development."
+      },
+      {
+        "en": "Fill Setup First Run and Setup Repeat Run in minutes. They are assumed values until real jobs are recorded.",
+        "id": "Isi Setup First Run dan Setup Repeat Run dalam menit. Keduanya nilai asumsi sampai job nyata tercatat."
+      },
+      {
+        "en": "Change Status when the tool is made, in use or needs repair. Click Save.",
+        "id": "Ubah Status saat tooling selesai dibuat, dipakai atau perlu perbaikan. Klik Save."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Status",
+        "en": "Ready or In use lets scheduling plan the job. Not made, In making or Needs repair blocks it with a reason.",
+        "id": "Ready atau In use membuat penjadwalan menjadwalkan job. Not made, In making atau Needs repair menahannya dengan alasan."
+      },
+      {
+        "label": "Setup First Run (min)",
+        "en": "Minutes to mount this tool when it is new on the machine.",
+        "id": "Menit memasang tooling ini saat baru di mesin."
+      },
+      {
+        "label": "Setup Repeat Run (min)",
+        "en": "Minutes to mount it again for a repeat order.",
+        "id": "Menit memasangnya lagi untuk order ulang."
+      }
+    ]
+  },
+  {
+    "key": "prod-wait-rule",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Wait Rules",
+    "purpose": {
+      "en": "Minutes the next process must wait after a process, for example ink drying or coating curing. Scheduling puts the wait between the two steps of a Work Order.",
+      "id": "Menit yang harus ditunggu proses berikutnya setelah sebuah proses, misalnya tinta kering atau coating curing. Penjadwalan menaruh tunggu di antara dua langkah Work Order."
+    },
+    "keywords": "wait rule, tunggu, pengeringan, curing, drying, jeda proses",
+    "steps": [
+      {
+        "en": "Open Wait Rules and add a row.",
+        "id": "Buka Wait Rules dan tambah baris."
+      },
+      {
+        "en": "Type the start of the process name (for example CETAK or VARNISH) and the wait in minutes.",
+        "id": "Ketik awal nama proses (misalnya CETAK atau VARNISH) dan waktu tunggu dalam menit."
+      },
+      {
+        "en": "Click Save. The next plan run uses it; the machine is free during the wait.",
+        "id": "Klik Save. Rencana berikutnya memakainya; mesin bebas selama menunggu."
+      }
+    ],
+    "fields": [
+      {
+        "label": "After Process (name starts with)",
+        "en": "The process the wait follows. A name that starts with these letters matches.",
+        "id": "Proses yang diikuti waktu tunggu. Nama yang diawali huruf ini cocok."
+      },
+      {
+        "label": "Wait (min)",
+        "en": "Minimum minutes before the next process may start.",
+        "id": "Menit minimum sebelum proses berikutnya boleh mulai."
+      }
+    ]
+  },
+  {
+    "key": "prod-changeover",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Setup and Changeover",
+    "purpose": {
+      "en": "Extra minutes and waste sheets when a machine changes colour, ink type, substrate, size, plate or die. Scheduling adds them to the base setup between two jobs; the learning engine corrects Assumed values.",
+      "id": "Menit dan lembar waste tambahan saat mesin ganti warna, jenis tinta, bahan, ukuran, plat atau pisau. Penjadwalan menambahkannya ke setup dasar; engine pembelajar mengoreksi nilai Assumed."
+    },
+    "keywords": "changeover, setup, ganti warna, ganti plat, ganti pisau, waktu setup, pembelajaran",
+    "steps": [
+      {
+        "en": "Open Setup and Changeover and add a row for a machine and a kind of change.",
+        "id": "Buka Setup and Changeover dan tambah baris untuk sebuah mesin dan jenis perubahan."
+      },
+      {
+        "en": "Fill Extra Minutes and Extra Waste. Leave Value Status on Assumed for a start value.",
+        "id": "Isi Extra Minutes dan Extra Waste. Biarkan Value Status Assumed untuk nilai awal."
+      },
+      {
+        "en": "Tick Frozen to stop the learning engine from changing a row. Click Save.",
+        "id": "Centang Frozen agar engine pembelajar tidak mengubah baris. Klik Save."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Value Status",
+        "en": "Assumed is a start value; Learning and Calibrated were adjusted from real jobs.",
+        "id": "Assumed adalah nilai awal; Learning dan Calibrated sudah disesuaikan dari job nyata."
+      },
+      {
+        "label": "Samples",
+        "en": "How many finished jobs the current value is based on. Set by the engine.",
+        "id": "Berapa job selesai yang mendasari nilai sekarang. Diisi engine."
+      },
+      {
+        "label": "Frozen",
+        "en": "The learning engine never changes a frozen row.",
+        "id": "Engine pembelajar tidak pernah mengubah baris yang dibekukan."
+      }
+    ]
+  }
+]
