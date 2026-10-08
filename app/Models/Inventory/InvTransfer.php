@@ -22,7 +22,7 @@ class InvTransfer extends Model
 
     protected $guarded = ['id_transfer'];
 
-    protected $casts = ['transfer_date' => 'date', 'stat_confirm' => 'boolean', 'stat_cancel' => 'boolean', 'confirmed_at' => 'datetime'];
+    protected $casts = ['transfer_date' => 'date', 'stat_confirm' => 'boolean', 'stat_cancel' => 'boolean', 'confirmed_at' => 'datetime', 'shipped_at' => 'datetime', 'received_at' => 'datetime'];
 
     public function lines(): HasMany
     {

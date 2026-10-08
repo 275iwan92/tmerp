@@ -265,6 +265,10 @@ final class PickListService
         if ($picked->isEmpty()) {
             throw new PickListRefused(t('There is nothing picked yet.'));
         }
+        // Bin yang dikunci hitung sesudah alokasi: pick ditahan sampai hitungnya selesai (CountTaskService).
+        if ($locked = WhLoc::query()->whereKey($picked->pluck('from_location_id')->unique()->all())->where('count_lock', true)->pluck('location_code')->implode(', ')) {
+            throw new PickListRefused(tf('The bin :bin is locked for counting.', ['bin' => $locked]));
+        }
         $warning = null;
         if (! $list->stock_out_doc_id) {
             [$ids, $nos, $warning] = self::issueStock($list, $picked, $login);

@@ -36,6 +36,8 @@ class StockTransferService
 
     public const REF = 'tm2inv.inv_transfer_line';
 
+    public const TWO_STEP = 'TWO_STEP';
+
     // Pesan untuk user: teksnya English dan diterjemahkan kamus, nilai datanya (:n, :item, ...) disisipkan sesudahnya
     // supaya nomor / kode tidak tercatat di kamus.
     private static function msg(string $text, array $values = []): string
@@ -84,6 +86,8 @@ class StockTransferService
         }
         // Aturan Mixing area tujuan (v2.01): satu item / satu batch per bin.
         $errors = array_merge($errors, BinRules::transferViolations($t->lines));
+        // Bin yang sedang dihitung (opname) tidak boleh dipakai sebagai asal maupun tujuan.
+        $errors = array_merge($errors, BinRules::countLockViolations($t->lines));
 
         return $errors;
     }
@@ -177,9 +181,18 @@ class StockTransferService
                     throw new RuntimeException(self::msg('Only a Confirmed transfer can be cancelled.'));
                 }
                 if ($t->status() === 'CONFIRMED') {
-                    $bins = WhLoc::query()->whereKey($t->lines->pluck('from_location_id')->merge($t->lines->pluck('to_location_id'))->unique()->all())->get()->keyBy('location_id');
+                    // Dua langkah: sebelum diterima stok ada di bin In Transit, bukan di bin tujuan; sesudah diterima tidak bisa dibatalkan.
+                    $twoStep = $t->transit_mode === self::TWO_STEP;
+                    if ($twoStep && $t->transit_status !== 'SHIPPED') {
+                        throw new RuntimeException(self::msg('A two-step transfer cannot be cancelled after it was received. Make a new transfer instead.'));
+                    }
+                    $transitId = $twoStep ? (int) (new VirtualLocationService($login))->transit()->location_id : null;
+                    $bins = $this->bins($t, $transitId);
                     foreach ($t->lines as $l) {
-                        $this->move($l, (int) $l->to_location_id, (int) $l->from_location_id, $bins, 'CANCEL_OUT', 'CANCEL_IN', $login);
+                        $this->move($l, $transitId ?? (int) $l->to_location_id, (int) $l->from_location_id, $bins, 'CANCEL_OUT', 'CANCEL_IN', $login);
+                    }
+                    if ($twoStep) {
+                        $t->forceFill(['transit_status' => 'CANCELLED']);
                     }
                     PalletService::revertTransfer($t, $login);
                 }
@@ -190,6 +203,142 @@ class StockTransferService
         }
 
         return null;
+    }
+
+    // ---------------------------------------------------------------- transfer dua langkah lewat In Transit (v2.01, I-31)
+    // Dokumen transit_mode TWO_STEP: Ship memindahkan stok bin asal -> bin TRANSIT (virtual); Receive memindahkan TRANSIT -> bin tujuan
+    // sebesar qty_received. Kekurangan (qty_diff) tetap di bin TRANSIT sebagai Discrepancy sampai diselesaikan: LOSS (ke bin Loss) atau
+    // RETURN (kembali ke bin asal). Tanpa jurnal. Transfer DIRECT (confirm / post / cancel di atas) tidak berubah. Approval modul TF tidak berlaku
+    // untuk dua langkah (sama dengan putaway): petugas gudang yang mengirim dan menerima.
+
+    // Ship: kembalian = pesan salah, null = berhasil (stok sudah di bin In Transit, nomor lahir, dokumen Confirmed, transit_status SHIPPED).
+    public function ship(InvTransfer $transfer, string $login): ?string
+    {
+        try {
+            DB::connection('tm2inv')->transaction(function () use ($transfer, $login) {
+                $t = InvTransfer::query()->with('lines')->lockForUpdate()->findOrFail($transfer->id_transfer);
+                if ($t->transit_mode !== self::TWO_STEP) {
+                    throw new RuntimeException(self::msg('This is not a two-step transfer.'));
+                }
+                if ($t->status() !== 'DRAFT') {
+                    throw new RuntimeException(self::msg('Only a Draft can be shipped.'));
+                }
+                if ($errors = $this->confirmErrors($t)) {
+                    throw new RuntimeException(implode(' ', $errors));
+                }
+                $transitId = (int) (new VirtualLocationService($login))->transit()->location_id;
+                $bins = $this->bins($t, $transitId);
+                $dead = WarehouseStock::positions($t->lines->pluck('from_location_id')->unique()->all())->where('dead', true)->pluck('key')->flip();
+                foreach ($t->lines as $l) {
+                    $cost = $this->move($l, (int) $l->from_location_id, $transitId, $bins, 'SHIP_OUT', 'SHIP_IN', $login);
+                    $l->forceFill(['unit_cost' => $cost, 'updated_by' => $login,
+                        'was_dead_stock' => $dead->has(WarehouseStock::key($l->stock_class, (int) $l->item_id, $l->part_id, (int) $l->from_location_id))])->save();
+                }
+                $t->forceFill(['transfer_no' => $t->transfer_no ?: InvTransfer::nextNo(), 'stat_confirm' => true, 'confirmed_by' => $login, 'confirmed_at' => now(),
+                    'transit_status' => 'SHIPPED', 'shipped_by' => $login, 'shipped_at' => now(), 'updated_by' => $login])->save();
+                PalletService::followTransfer($this->leg($t, null, $transitId), $login);
+            });
+        } catch (RuntimeException $e) {
+            return $e->getMessage();
+        }
+
+        return null;
+    }
+
+    // Receive: $received = [id baris => qty diterima]; baris yang tidak disebut dianggap diterima penuh. Lebih dari yang dikirim ditolak.
+    public function receive(InvTransfer $transfer, array $received, string $login): ?string
+    {
+        try {
+            DB::connection('tm2inv')->transaction(function () use ($transfer, $received, $login) {
+                $t = InvTransfer::query()->with('lines')->lockForUpdate()->findOrFail($transfer->id_transfer);
+                if ($t->transit_mode !== self::TWO_STEP || $t->transit_status !== 'SHIPPED' || $t->status() !== 'CONFIRMED') {
+                    throw new RuntimeException(self::msg('This transfer is not waiting to be received.'));
+                }
+                $errors = [];
+                foreach ($t->lines as $l) {
+                    $got = round((float) ($received[$l->id_transfer_line] ?? $l->qty), 4);
+                    if ($got < 0 || $got > (float) $l->qty + 0.00005) {
+                        $errors[] = self::msg('Line :n: the received quantity must be between 0 and :qty.', ['n' => $l->line_no, 'qty' => Locale::decimal((float) $l->qty, 4)]);
+                    }
+                }
+                $errors = array_merge($errors, BinRules::countLockViolations($t->lines), BinRules::transferViolations($t->lines));
+                if ($errors) {
+                    throw new RuntimeException(implode(' ', array_unique($errors)));
+                }
+                $transitId = (int) (new VirtualLocationService($login))->transit()->location_id;
+                $bins = $this->bins($t, $transitId);
+                $arrived = collect();
+                foreach ($t->lines as $l) {
+                    $got = round((float) ($received[$l->id_transfer_line] ?? $l->qty), 4);
+                    if ($got > 0) {
+                        $this->move($l, $transitId, (int) $l->to_location_id, $bins, 'RECV_OUT', 'RECV_IN', $login, $got);
+                        $arrived->push($l);
+                    }
+                    $l->forceFill(['qty_received' => $got, 'qty_diff' => round((float) $l->qty - $got, 4), 'updated_by' => $login])->save();
+                }
+                PalletService::followTransfer($this->leg($t, $transitId, null, $arrived, 'qty_received'), $login);
+                $short = $t->lines->contains(fn (InvTransferLine $l) => (float) $l->qty_diff > 0.00005);
+                $t->forceFill(['transit_status' => $short ? 'DISCREPANCY' : 'RECEIVED', 'received_by' => $login, 'received_at' => now(), 'updated_by' => $login])->save();
+            });
+        } catch (RuntimeException $e) {
+            return $e->getMessage();
+        }
+
+        return null;
+    }
+
+    // Discrepancy satu baris diselesaikan: $how LOSS (kekurangan dibukukan ke bin Loss) atau RETURN (kembali ke bin asal). Semua selesai = CLOSED.
+    public function resolveDiscrepancy(InvTransfer $transfer, int $lineId, string $how, string $login): ?string
+    {
+        try {
+            DB::connection('tm2inv')->transaction(function () use ($transfer, $lineId, $how, $login) {
+                $t = InvTransfer::query()->with('lines')->lockForUpdate()->findOrFail($transfer->id_transfer);
+                $l = $t->lines->firstWhere('id_transfer_line', $lineId);
+                if (! $l || $t->transit_status !== 'DISCREPANCY' || (float) $l->qty_diff <= 0.00005 || $l->diff_resolution) {
+                    throw new RuntimeException(self::msg('This line has no open discrepancy.'));
+                }
+                if (! in_array($how, ['LOSS', 'RETURN'], true)) {
+                    throw new RuntimeException(self::msg('Choose how to settle the difference: Loss or Return.'));
+                }
+                $virtual = new VirtualLocationService($login);
+                $transitId = (int) $virtual->transit()->location_id;
+                $toId = $how === 'LOSS' ? (int) $virtual->loss()->location_id : (int) $l->from_location_id;
+                $this->move($l, $transitId, $toId, $this->bins($t, $transitId, $toId), 'DIFF_OUT', 'DIFF_IN', $login, (float) $l->qty_diff);
+                $l->forceFill(['diff_resolution' => $how, 'diff_resolved_by' => $login, 'diff_resolved_at' => now(), 'updated_by' => $login])->save();
+                $t->load('lines');
+                PalletService::followTransfer($this->leg($t, $transitId, $toId, collect([$l]), 'qty_diff'), $login);
+                $open = $t->lines->contains(fn (InvTransferLine $x) => (float) $x->qty_diff > 0.00005 && ! $x->diff_resolution);
+                $t->forceFill(['transit_status' => $open ? 'DISCREPANCY' : 'CLOSED', 'updated_by' => $login])->save();
+            });
+        } catch (RuntimeException $e) {
+            return $e->getMessage();
+        }
+
+        return null;
+    }
+
+    // Bin-bin yang disentuh dokumen (+ bin tambahan), kunci location_id, untuk pesan salah dan warehouse_id kartu stok.
+    private function bins(InvTransfer $t, ?int ...$extra)
+    {
+        return WhLoc::query()->whereKey($t->lines->pluck('from_location_id')->merge($t->lines->pluck('to_location_id'))->merge($extra)->filter()->unique()->all())->get()->keyBy('location_id');
+    }
+
+    // Salinan dokumen dalam memori untuk PalletService::followTransfer pada SATU langkah (asal / tujuan / qty diganti), supaya label palet ikut
+    // pindah ke bin In Transit, ke bin tujuan, atau ke bin penyelesaian tanpa mengubah PalletService. Tidak disimpan.
+    private function leg(InvTransfer $t, ?int $fromId, ?int $toId, $lines = null, string $qtyKey = 'qty'): InvTransfer
+    {
+        $copy = $t->replicate();
+        $copy->transfer_no = $t->transfer_no;
+        $copy->setRelation('lines', ($lines ?? $t->lines)->map(function (InvTransferLine $l) use ($fromId, $toId, $qtyKey) {
+            $c = $l->replicate();
+            $c->qty = (float) $l->{$qtyKey};
+            $c->from_location_id = $fromId ?? $l->from_location_id;
+            $c->to_location_id = $toId ?? $l->to_location_id;
+
+            return $c;
+        })->values());
+
+        return $copy;
     }
 
     // Saldo sekarang satu posisi (baris kartu terakhir).
@@ -210,11 +359,11 @@ class StockTransferService
     }
 
     // Dua baris kartu untuk satu baris transfer. Kembalian = harga rata-rata asal (nilai yang ikut pindah), null = tidak bernilai.
-    private function move(InvTransferLine $l, int $fromId, int $toId, $bins, string $outTag, string $inTag, string $login): ?float
+    private function move(InvTransferLine $l, int $fromId, int $toId, $bins, string $outTag, string $inTag, string $login, ?float $qtyOverride = null): ?float
     {
         [$card, $itemKey] = self::CARDS[$l->stock_class];
         $itemId = (int) $l->item_id;
-        $qty = (float) $l->qty;
+        $qty = $qtyOverride ?? (float) $l->qty;
         $from = $this->last($l->stock_class, $itemId, $l->part_id, $fromId)->lockForUpdate()->first();
         $to = $this->last($l->stock_class, $itemId, $l->part_id, $toId)->lockForUpdate()->first();
         $balFrom = (float) ($from?->qty_eb ?? 0);

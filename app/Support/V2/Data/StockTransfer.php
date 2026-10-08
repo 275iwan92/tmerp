@@ -164,6 +164,8 @@ final class StockTransfer
             'to_warehouse_id' => WhWarehouse::query()->whereKey($to)->exists() ? $to : $t->to_warehouse_id,
             'reason' => isset(InvTransfer::REASONS[$in['reason'] ?? '']) ? $in['reason'] : null,
             'carried_by' => $text('carried_by', 80), 'notes' => $text('notes', 255), 'updated_by' => $login,
+            // Dua langkah (Ship lalu Receive lewat In Transit) atau langsung (bawaan).
+            'transit_mode' => ($in['transit_mode'] ?? '') === StockTransferService::TWO_STEP ? StockTransferService::TWO_STEP : 'DIRECT',
         ]);
         $positions = self::positions($t);
         $toBins = WhLoc::query()->where('warehouse_id', $t->to_warehouse_id)->pluck('location_id')->flip();
@@ -275,7 +277,12 @@ final class StockTransfer
     {
         $svc = new StockTransferService;
 
-        return $action === 'confirm' ? $svc->confirm($t, Auth::user()->login) : $svc->cancel($t, $reason, Auth::user()->login);
+        if ($action === 'confirm') {
+            // Dua langkah: Confirm = Ship (stok ke bin In Transit); diterima di Warehouse > In Transit.
+            return $t->transit_mode === StockTransferService::TWO_STEP ? $svc->ship($t, Auth::user()->login) : $svc->confirm($t, Auth::user()->login);
+        }
+
+        return $svc->cancel($t, $reason, Auth::user()->login);
     }
 
     // ---------------------------------------------------------------- approval (modul flow TF)

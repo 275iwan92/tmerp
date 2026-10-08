@@ -49,6 +49,25 @@ final class BinRules
             ? tf('The bin :bin allows one batch only and already holds another batch.', ['bin' => $bin->location_code]) : null;
     }
 
+    // Bin yang dikunci hitung (wh_loc.count_lock) tidak boleh menjadi asal maupun tujuan transfer. Kunci dipasang dan dilepas CountTaskService.
+    /** @param  Collection<int, InvTransferLine>  $lines
+     *  @return list<string> */
+    public static function countLockViolations(Collection $lines): array
+    {
+        $ids = $lines->pluck('from_location_id')->merge($lines->pluck('to_location_id'))->filter()->unique()->all();
+        $locked = WhLoc::query()->whereKey($ids ?: [0])->where('count_lock', true)->pluck('location_code', 'location_id');
+        $errors = [];
+        foreach ($lines as $l) {
+            foreach ([$l->from_location_id, $l->to_location_id] as $binId) {
+                if ($binId && isset($locked[$binId])) {
+                    $errors[] = tf('Line :n: the bin :bin is locked for counting.', ['n' => $l->line_no, 'bin' => $locked[$binId]]);
+                }
+            }
+        }
+
+        return array_values(array_unique($errors));
+    }
+
     // Pemeriksaan untuk satu dokumen Stock Transfer: tiap baris terhadap bin tujuannya, dan baris-baris di dokumen yang sama.
     /** @param  Collection<int, InvTransferLine>  $lines
      *  @return list<string> */

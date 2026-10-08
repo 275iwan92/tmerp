@@ -1,0 +1,140 @@
+[
+  {
+    "key": "wh-in-transit",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "In Transit",
+    "purpose": {
+      "en": "Two-step transfers that were shipped and are not received yet, with their age. Open one to receive it or to settle a difference.",
+      "id": "Transfer dua langkah yang sudah dikirim dan belum diterima, beserta umurnya. Buka satu untuk menerimanya atau menyelesaikan selisih."
+    },
+    "keywords": "in transit, transit, dalam perjalanan, transfer dua langkah, two-step, ship, kirim, receive, terima, discrepancy, selisih, loss, return",
+    "steps": [
+      {"en": "In Stock Transfer choose Transfer Type Two-step, add the lines, then click Confirm. Confirm ships: the stock leaves the source bin and sits in the In Transit bin.", "id": "Di Stock Transfer pilih Transfer Type Two-step, tambah baris, lalu klik Confirm. Confirm berarti kirim: stok keluar dari bin asal dan ada di bin In Transit."},
+      {"en": "Open this screen. The boxes on top filter In transit, Discrepancy, Received and Closed. Age counts the days since shipping.", "id": "Buka layar ini. Kotak di atas menyaring In transit, Discrepancy, Received, dan Closed. Age menghitung hari sejak dikirim."},
+      {"en": "Open a shipped transfer. For each line enter what really arrived and click Receive. The stock moves from In Transit to the destination bin.", "id": "Buka transfer yang sudah dikirim. Isi jumlah yang benar-benar tiba untuk tiap baris lalu klik Receive. Stok pindah dari In Transit ke bin tujuan."},
+      {"en": "If less arrived, the transfer becomes Discrepancy and the missing quantity stays in In Transit.", "id": "Bila yang tiba lebih sedikit, transfer menjadi Discrepancy dan jumlah yang kurang tetap di In Transit."},
+      {"en": "Settle each difference: Loss books it to the Loss bin, Return puts it back in the source bin. When all are settled the transfer is Closed.", "id": "Selesaikan tiap selisih: Loss membukukannya ke bin Loss, Return mengembalikannya ke bin asal. Bila semua selesai, transfer menjadi Closed."},
+      {"en": "A shipped transfer can be cancelled in Stock Transfer until it is received; the stock returns to the source bin.", "id": "Transfer yang sudah dikirim bisa dibatalkan di Stock Transfer sampai diterima; stok kembali ke bin asal."}
+    ],
+    "fields": [
+      {"label": "Transfer No. / Route", "en": "The transfer number and the source and destination warehouse codes.", "id": "Nomor transfer dan kode gudang asal dan tujuan."},
+      {"label": "Shipped", "en": "When and by whom the transfer was shipped.", "id": "Kapan dan oleh siapa transfer dikirim."},
+      {"label": "Age (days)", "en": "Days since shipping; for a received transfer, the days it took.", "id": "Hari sejak dikirim; untuk transfer yang sudah diterima, lamanya perjalanan."},
+      {"label": "Short Qty", "en": "The quantity that did not arrive and is not settled yet.", "id": "Jumlah yang tidak tiba dan belum diselesaikan."},
+      {"label": "Received", "en": "Per line, typed by the receiver. It cannot be more than the quantity sent.", "id": "Per baris, diisi penerima. Tidak boleh lebih dari jumlah yang dikirim."},
+      {"label": "Loss", "en": "Books the missing quantity to the Loss bin. It stays in the books until a Stock Adjustment writes it off.", "id": "Membukukan jumlah yang kurang ke bin Loss. Tetap ada di buku sampai Stock Adjustment menghapusnya."},
+      {"label": "Return", "en": "Puts the missing quantity back in the source bin of the line.", "id": "Mengembalikan jumlah yang kurang ke bin asal baris itu."}
+    ]
+  },
+  {
+    "key": "wh-count-tasks",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Count Tasks",
+    "purpose": {
+      "en": "Stock counting by area. Starting a count makes a task for every item in the area's bins and locks those bins until they are counted.",
+      "id": "Hitung stok per area. Memulai hitung membuat tugas untuk tiap item di bin area itu dan mengunci bin sampai selesai dihitung."
+    },
+    "keywords": "count, hitung, opname, stock opname, count lock, kunci bin, inventory count, cycle count, hitung stok, count tasks, selisih",
+    "steps": [
+      {"en": "Choose an area under Start Counting and click Start Count. Areas marked due have passed their Count Every days in Storage Areas.", "id": "Pilih area di Start Counting lalu klik Start Count. Area bertanda due sudah lewat hari Count Every di Storage Areas."},
+      {"en": "Start Due Areas starts every due area at once. The command inv:count-due does the same and can be scheduled.", "id": "Start Due Areas memulai semua area yang jatuh tempo sekaligus. Perintah inv:count-due melakukan hal yang sama dan bisa dijadwalkan."},
+      {"en": "While a bin is locked, Stock Transfer, putaway and picking refuse it. Count the items physically.", "id": "Selama bin terkunci, Stock Transfer, putaway, dan pick menolaknya. Hitung item secara fisik."},
+      {"en": "Open a task, enter the Counted Quantity and click Confirm. A difference to the system quantity makes a Stock Opname document that is posted like any adjustment.", "id": "Buka tugas, isi Counted Quantity lalu klik Confirm. Selisih terhadap qty sistem membuat dokumen Stock Opname yang diposting seperti adjustment lain."},
+      {"en": "When every task of a bin is done or cancelled, the bin is unlocked.", "id": "Bila semua tugas sebuah bin selesai atau dibatalkan, bin dibuka kembali."}
+    ],
+    "fields": [
+      {"label": "Area", "en": "Chosen from the storage areas that are not virtual.", "id": "Dipilih dari area penyimpanan yang bukan virtual."},
+      {"label": "System Qty", "en": "The stock card balance when the task was made.", "id": "Saldo kartu stok saat tugas dibuat."},
+      {"label": "Counted Quantity", "en": "What was really counted. The difference is taken against the balance at the moment you confirm.", "id": "Yang benar-benar dihitung. Selisih dihitung terhadap saldo saat Anda konfirmasi."},
+      {"label": "Stock Opname", "en": "The number of the opname document made for the difference.", "id": "Nomor dokumen opname yang dibuat untuk selisih."}
+    ]
+  },
+  {
+    "key": "subcon-send",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Send to Subcontractor",
+    "purpose": {
+      "en": "Sends our material to a subcontractor against an open Subcon PO. The stock moves to the subcontractor's virtual bin; it stays ours and keeps its value.",
+      "id": "Mengirim bahan kita ke subkon atas PO Subkon yang terbuka. Stok pindah ke bin virtual subkon; tetap milik kita dan tetap bernilai."
+    },
+    "keywords": "subkon, subcon, subcontractor, kirim bahan, send material, po subkon, stock at vendor, bahan di vendor, jasa luar",
+    "steps": [
+      {"en": "Click + New Record. Choose the Subcon PO and the material with its bin, then enter the quantity and the Due Back date.", "id": "Klik + New Record. Pilih PO Subkon dan bahan beserta bin-nya, lalu isi jumlah dan tanggal Due Back."},
+      {"en": "Click Send. The stock moves from the bin to the subcontractor's bin through a Stock Transfer. There is no journal.", "id": "Klik Send. Stok pindah dari bin ke bin subkon lewat Stock Transfer. Tidak ada jurnal."},
+      {"en": "When the subcontract receipt is confirmed in Procurement, the material is used at the vendor in the same share as the PO quantity received.", "id": "Saat penerimaan subkon dikonfirmasi di Procurement, bahan tercatat terpakai di vendor sebanding bagian jumlah PO yang diterima."},
+      {"en": "Open a send to settle by hand: Return brings unused material back to a bin, Used records it as used at the vendor (a normal stock out).", "id": "Buka kiriman untuk menyelesaikan manual: Return membawa bahan yang tidak terpakai kembali ke bin, Used mencatatnya terpakai di vendor (stock out biasa)."},
+      {"en": "A send can be cancelled only while nothing was used or returned. Check what is still at the vendor in Stock at Vendor.", "id": "Kiriman hanya bisa dibatalkan selama belum ada yang terpakai atau kembali. Cek sisa di vendor di Stock at Vendor."}
+    ],
+    "fields": [
+      {"label": "Subcon PO", "en": "Only open purchase orders of type Subcontract are listed.", "id": "Hanya PO bertipe Subcontract yang masih terbuka yang tampil."},
+      {"label": "Material and Bin", "en": "Raw material in a real bin with its quantity. Customer-owned stock cannot be sent.", "id": "Bahan baku di bin nyata beserta jumlahnya. Stok milik customer tidak bisa dikirim."},
+      {"label": "Quantity", "en": "More than zero and not more than the bin holds.", "id": "Lebih dari nol dan tidak lebih dari isi bin."},
+      {"label": "Due Back", "en": "When the result should be back. A send past this date shows Overdue.", "id": "Kapan hasil harus kembali. Kiriman yang lewat tanggal ini tampil Overdue."}
+    ]
+  },
+  {
+    "key": "stock-at-vendor",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stock at Vendor",
+    "purpose": {
+      "en": "Our material that is at subcontractors: sent minus used minus returned, with its age since sending.",
+      "id": "Bahan kita yang ada di subkon: dikirim dikurangi terpakai dan dikembalikan, beserta umur sejak dikirim."
+    },
+    "keywords": "stock at vendor, bahan di vendor, subkon, umur, overdue, jatuh tempo, subcontractor stock",
+    "steps": [
+      {"en": "Open the report. Each row is one material of one send that is not used up or returned yet.", "id": "Buka laporan. Tiap baris adalah satu bahan dari satu kiriman yang belum habis terpakai atau kembali."},
+      {"en": "Filter by Subcontractor. Overdue means the Due Back date has passed.", "id": "Saring per Subcontractor. Overdue berarti tanggal Due Back sudah lewat."}
+    ],
+    "fields": [
+      {"label": "At Vendor", "en": "Quantity sent minus used minus returned.", "id": "Jumlah dikirim dikurangi terpakai dan dikembalikan."},
+      {"label": "Age (days)", "en": "Days since the material was sent.", "id": "Hari sejak bahan dikirim."}
+    ]
+  },
+  {
+    "key": "customer-material",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Customer Material",
+    "purpose": {
+      "en": "Material that belongs to a customer and sits in our warehouse. It has no value, no journal, and is picked only for that customer's jobs.",
+      "id": "Bahan milik customer yang ada di gudang kita. Tidak bernilai, tidak dijurnal, dan hanya di-pick untuk pekerjaan customer itu."
+    },
+    "keywords": "customer material, bahan titipan, titipan customer, consignment, bahan dari customer, stok milik customer",
+    "steps": [
+      {"en": "In Procurement, make a Customer receipt and add the material lines (pick the raw material). Confirm it.", "id": "Di Procurement, buat penerimaan Customer dan tambah baris bahan (pilih bahan baku). Lalu Confirm."},
+      {"en": "The material goes into a bin of a Consignment area as stock owned by the customer. If no such bin exists, Confirm is refused.", "id": "Bahan masuk ke bin area Consignment sebagai stok milik customer. Bila bin seperti itu tidak ada, Confirm ditolak."},
+      {"en": "Open this report to see what each customer has in the warehouse, where, and how long.", "id": "Buka laporan ini untuk melihat isi gudang milik tiap customer, di mana, dan berapa lama."}
+    ],
+    "fields": [
+      {"label": "Customer", "en": "The customer who owns the material.", "id": "Customer pemilik bahan."},
+      {"label": "Bin", "en": "The bin in the Consignment area.", "id": "Bin di area Consignment."},
+      {"label": "Last Movement", "en": "The date of the last stock card row of this material in the bin.", "id": "Tanggal baris kartu stok terakhir bahan ini di bin."}
+    ]
+  },
+  {
+    "key": "inv-tools",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Tool Register",
+    "purpose": {
+      "en": "The list of dies, plates and blocks with their status and the bin where each is kept.",
+      "id": "Daftar die, plat, dan klise beserta status dan bin tempat disimpan."
+    },
+    "keywords": "tool, alat, die, pisau, plat, plate, klise, block, register alat, tool register, impresi",
+    "steps": [
+      {"en": "Add a row: type the Tool No., choose the Type, Status and Location (Bin), then click Save.", "id": "Tambah baris: ketik Tool No., pilih Type, Status, dan Location (Bin), lalu klik Save."},
+      {"en": "Change the Status when the tool moves on: In use, At vendor, In repair or Retired. Untick Active to hide a tool.", "id": "Ubah Status saat alat berpindah: In use, At vendor, In repair, atau Retired. Hilangkan centang Active untuk menyembunyikan alat."}
+    ],
+    "fields": [
+      {"label": "Tool No.", "en": "The tool number, in capitals. It is unique and cannot be changed after saving.", "id": "Nomor alat, huruf besar. Unik dan tidak bisa diubah setelah disimpan."},
+      {"label": "Type", "en": "Die, Plate or Block.", "id": "Die, Plate, atau Block."},
+      {"label": "Status", "en": "Available, In use, At vendor, In repair or Retired.", "id": "Available, In use, At vendor, In repair, atau Retired."},
+      {"label": "Location (Bin)", "en": "Picked from the bins of the warehouses.", "id": "Dipilih dari bin gudang."},
+      {"label": "Impressions", "en": "Number of impressions made so far, typed by the officer.", "id": "Jumlah impresi sampai sekarang, diisi petugas."}
+    ]
+  }
+]

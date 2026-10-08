@@ -191,7 +191,7 @@ class StockPostingService
                     // keluar membawa harga rata-rata baris sebelumnya).
                     // Pembalik penerimaan (Cancel SPB, ref PV_CANCEL) bukan pemakaian produksi: jurnalnya = pembalik jurnal
                     // pembelian (PvPostingService::cancel), jadi TIDAK ikut jurnal HPP di sini.
-                    if ($valued && in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT' && $header->ref_doc_type !== 'PV_CANCEL') {
+                    if ($valued && in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT' && ! in_array($header->ref_doc_type, ['PV_CANCEL', 'REVERSAL'], true)) {
                         $usageJournalRows[] = ['category' => $category, 'item_id' => $itemId, 'qty' => abs($qtyFinal), 'unit_cost' => (float) $card->avg_unitprice];
                     }
 

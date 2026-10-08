@@ -74,6 +74,17 @@
                     <x-dl::field.display label="Confirmed" :value="Locale::stamp($doc->confirmed_at).' · '.(PrintDocs::person($doc->confirmed_by) ?? '—')" :source="Src::of('tm2inv.inv_transfer.confirmed_at')" />
                 @endif
             </x-dl::form.row>
+            <x-dl::form.row :cols="3">
+                <x-dl::field.select name="transit_mode" label="Transfer Type" :options="['DIRECT' => t('Direct (one step)'), 'TWO_STEP' => t('Two-step (ship, then receive)')]" :value="$doc->transit_mode ?: 'DIRECT'" :disabled="! $draft"
+                    hint="Two-step: Confirm ships the stock to In Transit; the other warehouse receives it in Warehouse > In Transit." :source="Src::of('tm2inv.inv_transfer.transit_mode')" />
+                @if ($doc->transit_status)
+                    <x-dl::field.display label="In Transit" :value="raw(t(\App\Support\V2\Data\InTransit::STATUS[$doc->transit_status] ?? $doc->transit_status))" :source="Src::of('tm2inv.inv_transfer.transit_status')" />
+                @endif
+            </x-dl::form.row>
+            @if (in_array($doc->transit_status, ['SHIPPED', 'DISCREPANCY'], true))
+                <x-dl::alert tone="info" message="This transfer is on its way. Receive it, or settle a difference, in Warehouse > In Transit." />
+                <x-dl::button size="sm" variant="secondary" icon="fa-truck-ramp-box" label="In Transit" :href="route('v2.screen', 'wh-in-transit').'?id='.$doc->id_transfer" />
+            @endif
             @if ($doc->stat_cancel)
                 <x-dl::field.display label="Cancel Reason" :value="$doc->cancel_reason ?? '—'" :source="Src::of('tm2inv.inv_transfer.cancel_reason')" />
             @endif

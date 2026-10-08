@@ -7,6 +7,9 @@ use App\Models\Pur\PoLine;
 use App\Models\Pur\PvLine;
 use App\Models\Pur\PvReceipt;
 use App\Services\Acc\JournalPostingService;
+use App\Services\Inventory\CustomerMaterialService;
+use App\Services\Inventory\SubconStockRefused;
+use App\Services\Inventory\SubconStockService;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -140,19 +143,39 @@ final class SpecialReceiptService
                 }
             }
         }
+        // Bahan titipan customer menjadi stok pemilik Customer di area CONSIGN (v2.01, D3).
+        $customer = new CustomerMaterialService;
+        if ($pv->i_receipt_type === 'CUSTOMER' && $customer->stockLines($pv)->isNotEmpty() && ! $customer->consignBin($pv->i_warehouse_code)) {
+            $err[] = t('There is no usable bin in a Consignment area. Add one in Storage Areas and Bins first.');
+        }
         if ($err) {
             return $err;
         }
 
-        DB::connection('tm2pur')->transaction(function () use ($pv, $login) {
-            // Nomor lahir di sini (seri PBC / PBS), di dalam transaksi yang sama dengan perubahan status.
-            $pv->update(['doc_no' => $pv->doc_no ?: PvReceipt::nextDocNo((string) $pv->i_receipt_type), 'status' => 'POSTED', 'posted_at' => now(), 'posted_by' => $login, 'updated_by' => $login]);
-            foreach ($pv->lines->pluck('c_po_id')->filter()->unique() as $poId) {
-                PvPostingService::recalcPo((int) $poId);
-            }
-        });
+        try {
+            DB::connection('tm2pur')->transaction(function () use ($pv, $login) {
+                // Nomor lahir di sini (seri PBC / PBS), di dalam transaksi yang sama dengan perubahan status.
+                $pv->update(['doc_no' => $pv->doc_no ?: PvReceipt::nextDocNo((string) $pv->i_receipt_type), 'status' => 'POSTED', 'posted_at' => now(), 'posted_by' => $login, 'updated_by' => $login]);
+                foreach ($pv->lines->pluck('c_po_id')->filter()->unique() as $poId) {
+                    PvPostingService::recalcPo((int) $poId);
+                }
+                if ($pv->i_receipt_type === 'CUSTOMER') {
+                    if ($stockDoc = (new CustomerMaterialService)->receive($pv, $login)) {
+                        $pv->update(['rm_stock_doc_id' => $stockDoc]);
+                    }
+                }
+            });
+        } catch (\RuntimeException $e) {
+            return [$e->getMessage()];
+        }
         if ($pv->i_receipt_type === 'SUBCON') {
             self::journal($pv, 'PV', $pv->lines->mapWithKeys(fn ($l) => [$l->pv_line_id => (float) $l->i_qty_purchase])->all(), false, $login, "Penerimaan dari subkon {$pv->doc_no}");
+            // Hasil subkon diterima = bahan yang dikirim ke vendor terpakai sebanding; gagal tidak membatalkan penerimaan (Stock at Vendor tetap memperlihatkan sisanya).
+            try {
+                (new SubconStockService)->settleReceipt($pv, $login);
+            } catch (SubconStockRefused $e) {
+                report($e);
+            }
         }
 
         return [];

@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Concerns\HasGridStatFilter;
+use App\Livewire\Concerns\HasStockReversal;
 use App\Models\Inventory\FgStock;
 use App\Models\Inventory\InvBatch;
 use App\Models\Inventory\RmStock;
@@ -32,7 +33,7 @@ use Livewire\Component;
 // lewat StockPostingService (bukan sekadar ubah status).
 new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
 {
-    use HasGridStatFilter, OpensFromQuery;
+    use HasGridStatFilter, HasStockReversal, OpensFromQuery;
 
     public const CATEGORY_LABELS = [
         'RM' => 'Bahan Baku & Bahan Pembantu',
@@ -454,6 +455,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
                     @if ($readOnly)
                         <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 {{ Translator::t('inv_readonly_prefix', 'Dokumen sudah') }} {{ $flow_status === 'POSTED' ? Translator::t('inv_readonly_posted', 'diposting') : Translator::t('inv_readonly_cancelled', 'dibatalkan') }} {{ Translator::t('inv_readonly_suffix', '— lihat-saja, tidak bisa diedit. Koreksi lewat Stock Adjustment.') }}</div>
                     @endif
+                    @include('partials.inventory-reversal')
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ Translator::t('inv_section_header', 'Header') }}</div>
                     <div class="flex gap-2.5 flex-wrap">

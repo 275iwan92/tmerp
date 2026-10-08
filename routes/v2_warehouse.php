@@ -121,6 +121,10 @@ Route::prefix('v2/warehouse')->name('v2.wh.')->middleware('module:INV')->group(f
                 return $open($id)->withErrors(['confirm' => $err]);
             }
 
+            if ($doc->refresh()->transit_mode === 'TWO_STEP') {
+                return $open($id)->with('v2_flash', t('Shipped. The stock is in transit: receive it in Warehouse > In Transit.'));
+            }
+
             return $open($id)->with('v2_flash', $doc->refresh()->status() === 'SUBMITTED'
                 ? t('Confirmed and sent for approval. The stock moves after the last approval.') : t('Confirmed. The stock has moved; the transfer is ready to print.'));
         }

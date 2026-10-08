@@ -1,0 +1,25 @@
+[
+  {
+    "key": "guide-inventory-reversal",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Cancelling a Posted Stock Document",
+    "purpose": {
+      "en": "A posted Stock In, Stock Out or Return is never edited or deleted. To fix a wrong entry, Cancel it: the system posts a reversal document and the Stock Card stays continuous. Duplicate gives a Draft copy to correct.",
+      "id": "Dokumen Stock In, Stock Out, atau Return yang sudah posted tidak pernah diedit atau dihapus. Untuk membetulkan salah input, klik Cancel: sistem memposting dokumen pembalik dan Stock Card tetap bersambung. Duplicate membuat salinan Draft untuk dibetulkan."
+    },
+    "keywords": "cancel, batal, pembalik, reversal, salah input, koreksi, stock out salah, stock in salah, duplicate, kesalahan transaksi, posted, batalkan dokumen stok, rantai kartu stok",
+    "steps": [
+      {"en": "Open the posted document from its list and click Cancel. A box asks for the reason; it is filled with 'Kesalahan transaksi no.' and the document number. You may change it, but it cannot stay empty.", "id": "Buka dokumen posted dari daftarnya lalu klik Cancel. Kotak meminta alasan; terisi awal 'Kesalahan transaksi no.' dan nomor dokumen. Boleh diubah, tetapi tidak boleh kosong."},
+      {"en": "Click Cancel Document. The system posts a reversal document (number starts with RV) in the opposite direction; stock and the average price follow the normal posting rules.", "id": "Klik Cancel Document. Sistem memposting dokumen pembalik (nomor diawali RV) berlawanan arah; stok dan harga rata-rata mengikuti aturan posting biasa."},
+      {"en": "The original document becomes Cancelled and shows its reversal. The usage journal of a Stock Out is reversed too. The original rows stay visible on the Stock Card, marked Cancelled and Reversal.", "id": "Dokumen asal menjadi Cancelled dan menampilkan pembaliknya. Jurnal pemakaian Stock Out ikut dibalik. Baris asal tetap terlihat di Stock Card, bertanda Cancelled dan Reversal."},
+      {"en": "Click Duplicate to make a Draft copy of the document. Correct it, then Confirm it as usual.", "id": "Klik Duplicate untuk membuat salinan Draft dokumen. Betulkan, lalu Confirm seperti biasa."},
+      {"en": "Cancel is refused when the date falls in a closed inventory period, or when the reversal would make a stock balance negative (for example the goods are already used).", "id": "Cancel ditolak bila tanggalnya jatuh di periode inventory yang sudah ditutup, atau bila pembalik membuat saldo stok minus (misalnya barang sudah terpakai)."},
+      {"en": "Not covered: Stock Adjustment and Opname (own screens), a reversal itself, and documents made by another process such as a receipt; cancel those from their source screen.", "id": "Tidak termasuk: Stock Adjustment dan Opname (layar sendiri), dokumen pembalik itu sendiri, dan dokumen buatan proses lain seperti penerimaan; batalkan dari layar asalnya."}
+    ],
+    "fields": [
+      {"label": "Reason", "en": "Why the document is cancelled. Required, at most 255 characters; saved on the cancelled document and in the reversal notes.", "id": "Alasan dokumen dibatalkan. Wajib, maksimal 255 karakter; disimpan pada dokumen yang dibatalkan dan di catatan pembalik."},
+      {"label": "Reversal", "en": "The document the system posted to undo the original. Filled by the system and shown on the cancelled document.", "id": "Dokumen yang diposting sistem untuk membatalkan dokumen asal. Diisi sistem dan tampil pada dokumen yang dibatalkan."}
+    ]
+  }
+]

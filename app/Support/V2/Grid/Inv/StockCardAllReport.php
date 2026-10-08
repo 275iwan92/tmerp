@@ -2,7 +2,11 @@
 
 namespace App\Support\V2\Grid\Inv;
 
+use App\Models\Inventory\FgStock;
+use App\Models\Inventory\RmStock;
+use App\Models\Inventory\SfgStock;
 use App\Services\Inventory\StockLedger;
+use App\Services\Inventory\StockReversalService;
 use Devlib\Locale;
 
 // Stock Card semua kelas stok untuk satu periode (user 2026-10-03): kepala = nama item lalu periode; rinci = Date, Location, BB, In, Out, Adj, EB.
@@ -86,6 +90,7 @@ class StockCardAllReport extends AllStockReport
         $items = $ledger->items();
         $this->loadMeta($items);
         $find = mb_strtolower($this->param('item'));
+        $cancelled = $this->cancelledDocs($ledger->movements());
         $moved = [];
         foreach ($ledger->movements() as $m) {
             $moved[StockLedger::itemKey($m['class'], $m['item_id'])][] = $m;
@@ -118,7 +123,7 @@ class StockCardAllReport extends AllStockReport
                 $bb = $running;
                 $running = round($bb + $m['qty_in'] - $m['qty_out'] + $m['adj'], 4);
                 $rows[] = ['id' => $m['class'].'-'.$m['doc_id'], 'doc_date' => $m['date'], 'location' => implode(' · ', array_filter([$m['warehouse'], $m['location']])),
-                    'bb' => $bb, 'in' => $m['qty_in'], 'out' => $m['qty_out'], 'adj' => $m['adj'], 'eb' => $running, 'loc_eb' => $m['location_balance'], 'doc_no' => $m['doc_no'], 'move' => $m['kind'],
+                    'bb' => $bb, 'in' => $m['qty_in'], 'out' => $m['qty_out'], 'adj' => $m['adj'], 'eb' => $running, 'loc_eb' => $m['location_balance'], 'doc_no' => $this->docLabel($m, $cancelled), 'move' => $m['kind'],
                     'lot' => $m['lot'], 'ref_no' => $m['ref_no'], 'warehouse' => $m['warehouse'], 'tone' => null, 'unit' => $m['uom'] ?: $i['uom']] + $base;
             }
             // Rantai harus berakhir di saldo akhir semua lokasi; bila data lama tidak konsisten, baris Total diberi warna bahaya (tidak disembunyikan).
@@ -132,6 +137,27 @@ class StockCardAllReport extends AllStockReport
         }
 
         return $this->built[$cacheKey] = $rows;
+    }
+
+    // Dokumen yang dibatalkan dan pembaliknya tetap tampil di kartu (rantai tetap bersambung); diberi tanda di Doc No.
+    private function cancelledDocs(array $movements): array
+    {
+        $nos = collect($movements)->pluck('doc_no')->filter()->unique()->all();
+        if (! $nos) {
+            return [];
+        }
+
+        return collect([RmStock::class, SfgStock::class, FgStock::class])
+            ->flatMap(fn ($h) => $h::query()->whereIn('doc_no', $nos)->where('stat_cancel', true)->pluck('doc_no'))->flip()->all();
+    }
+
+    private function docLabel(array $m, array $cancelled): ?string
+    {
+        return match (true) {
+            $m['doc_cat'] === StockReversalService::DOC_CAT => $m['doc_no'].' · '.t('Reversal'),
+            isset($cancelled[$m['doc_no']]) => $m['doc_no'].' · '.t('Cancelled'),
+            default => $m['doc_no'],
+        };
     }
 
     // Urutan baris = urutan kartu (tanggal, lalu urutan posting): kolom tidak bisa diurutkan. BB, In, Out, Adj, EB = istilah

@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Concerns\HasGridStatFilter;
+use App\Livewire\Concerns\HasStockReversal;
 use App\Models\Inventory\RmStock;
 use App\Models\Inventory\RmStockcard;
 use App\Models\Inventory\RmStockD;
@@ -33,7 +34,7 @@ use Livewire\Component;
 // Stock Out -- sudah tervalidasi POSTED, menahan retur cuma menahan lantai produksi).
 new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Component
 {
-    use HasGridStatFilter, OpensFromQuery;
+    use HasGridStatFilter, HasStockReversal, OpensFromQuery;
 
     private const DOC_PREFIX = 'RTN';
 
@@ -502,6 +503,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                     @if ($readOnly)
                         <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 Dokumen sudah {{ $flow_status === 'POSTED' ? 'diterima/diposting' : 'dibatalkan' }} — lihat-saja, tidak bisa diedit.</div>
                     @endif
+                    @include('partials.inventory-reversal')
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Header</div>
                     <div class="flex gap-2.5 flex-wrap items-end">
