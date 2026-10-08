@@ -99,11 +99,11 @@ return new class extends Migration
         $add('MAINT', null, 'Maintenance', 'fa-solid fa-screwdriver-wrench', 'module', ['short_label' => 'MT', 'sort_order' => 42, 'required_object' => 'MAINT', 'doc_slug' => 'maintenance']);
 
         $add('MAINT_GRP_PM', 'MAINT', 'Preventive Maintenance', 'fa-solid fa-calendar-check', 'group', ['sort_order' => 10]);
-        $item('MAINT_PLAN', 'MAINT_GRP_PM', 'Preventive Plan', 'fa-solid fa-calendar-check', 10);
-        $item('MAINT_PM_CAL', 'MAINT_GRP_PM', 'PM Calendar', 'fa-solid fa-calendar-days', 20);
-        $item('MAINT_PMO', 'MAINT_GRP_PM', 'Preventive Maintenance Order', 'fa-solid fa-screwdriver-wrench', 30);
-        $item('MAINT_DAILY', 'MAINT_GRP_PM', 'Daily Check', 'fa-solid fa-clipboard-check', 40);
-        $item('MAINT_METER', 'MAINT_GRP_PM', 'Meter Readings', 'fa-solid fa-gauge-high', 50);
+        $item('MAINT_PLAN', 'MAINT_GRP_PM', 'Preventive Plan', 'fa-solid fa-calendar-check', 10, 'form', ['target' => 'v2:maintenance-plan']);
+        $item('MAINT_PM_CAL', 'MAINT_GRP_PM', 'PM Calendar', 'fa-solid fa-calendar-days', 20, 'form', ['target' => 'v2:maintenance-pm-calendar']);
+        $item('MAINT_PMO', 'MAINT_GRP_PM', 'Preventive Maintenance Order', 'fa-solid fa-screwdriver-wrench', 30, 'form', ['target' => 'v2:maintenance-pmo']);
+        $item('MAINT_DAILY', 'MAINT_GRP_PM', 'Daily Check', 'fa-solid fa-clipboard-check', 40, 'form', ['target' => 'v2:maintenance-daily-check']);
+        $item('MAINT_METER', 'MAINT_GRP_PM', 'Meter Readings', 'fa-solid fa-gauge-high', 50, 'form', ['target' => 'v2:maintenance-meter']);
 
         $add('MAINT_GRP_BD', 'MAINT', 'Breakdown Maintenance', 'fa-solid fa-triangle-exclamation', 'group', ['sort_order' => 20]);
         $item('MAINT_REQ', 'MAINT_GRP_BD', 'Maintenance Request', 'fa-solid fa-triangle-exclamation', 10);
@@ -124,7 +124,7 @@ return new class extends Migration
         $add('MAINT_GRP_RPT', 'MAINT', 'Report', 'fa-solid fa-chart-column', 'group', ['sort_order' => 50]);
         $item('MAINT_ORDER_RPT', 'MAINT_GRP_RPT', 'Maintenance Order Report', 'fa-solid fa-table-list', 10, 'report');
         $item('MAINT_RELIAB', 'MAINT_GRP_RPT', 'Machine Reliability', 'fa-solid fa-chart-column', 20, 'report');
-        $item('MAINT_PMCOMP', 'MAINT_GRP_RPT', 'PM Compliance', 'fa-solid fa-percent', 30, 'report');
+        $item('MAINT_PMCOMP', 'MAINT_GRP_RPT', 'PM Compliance', 'fa-solid fa-percent', 30, 'report', ['target' => 'v2:maintenance-pm-compliance']);
     }
 
     public function down(): void

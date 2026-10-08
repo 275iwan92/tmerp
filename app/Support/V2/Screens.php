@@ -138,6 +138,15 @@ final class Screens
                 ]],
             ]],
             ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [
+                ['label' => 'Preventive Maintenance', 'items' => [
+                    $it('maintenance-plan', ['Preventive Plan', 'fa-solid fa-calendar-check', 'v2 baru: tm2mnt.mnt_plan + mnt_plan_task + mnt_plan_part (mockup maintenance_v2_work.jpg)', 'maintenance_v2_work.jpg']),
+                    $it('maintenance-pmo', ['Preventive Maintenance Order', 'fa-solid fa-screwdriver-wrench', 'v2 baru: tm2mnt.mnt_order (PMO: Preventive, Inspection)', 'maintenance_v2_work.jpg']),
+                    $it('maintenance-pm-calendar', ['PM Calendar', 'fa-solid fa-calendar-days', 'v2 baru: kalender PMO dari tm2mnt.mnt_order', 'maintenance_v2_flow.jpg']),
+                    $it('maintenance-daily-check', ['Daily Check', 'fa-solid fa-clipboard-check', 'v2 baru: tm2mnt.mnt_daily_check + mnt_daily_check_line', 'maintenance_v2_flow.jpg']),
+                ]],
+                ['label' => 'Breakdown Maintenance', 'items' => [
+                    $it('maintenance-bmo', ['Breakdown Maintenance Order', 'fa-solid fa-screwdriver-wrench', 'v2 baru: tm2mnt.mnt_order (BMO: Breakdown, Corrective); menu menyusul di Fase 3', 'maintenance_v2_work.jpg']),
+                ]],
                 ['label' => 'Master Data', 'items' => [
                     $it('maintenance-profile', ['Asset Maintenance Profile', 'fa-solid fa-gears', 'v2 baru: tm2mnt.mnt_asset + mnt_watch_point + mnt_asset_part (mockup maintenance_v2_master.jpg)', 'maintenance_v2_master.jpg']),
                     $it('maintenance-documents', ['SOP and Work Instructions', 'fa-solid fa-file-lines', 'v2 baru: tm2mnt.mnt_document + mnt_document_line (draf: resources/data/maintenance/sop_wi.json)', null]),

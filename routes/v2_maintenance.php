@@ -3,11 +3,20 @@
 use App\Models\Master\MatRaw;
 use App\Models\Mnt\MntAsset;
 use App\Models\Mnt\MntAssetPart;
+use App\Models\Mnt\MntDailyCheck;
 use App\Models\Mnt\MntDocument;
 use App\Models\Mnt\MntLog;
+use App\Models\Mnt\MntOrder;
+use App\Models\Mnt\MntPlan;
+use App\Models\Mnt\MntPlanPart;
+use App\Models\Mnt\MntPlanTask;
 use App\Models\Mnt\MntWatchPoint;
 use App\Services\Maintenance\AssetProfileService;
+use App\Services\Maintenance\DailyCheckService;
 use App\Services\Maintenance\MaintenanceAccess;
+use App\Services\Maintenance\OrderService;
+use App\Services\Maintenance\PlanService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -165,4 +174,200 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
 
         return redirect($doc($m->id_document))->with('v2_flash', $msg);
     })->name('document.save');
+
+    // ------------------------------------------------------------ Preventive Plan
+    $plan = fn (int $id) => route('v2.screen', 'maintenance-plan').'?id='.$id;
+    $orderScreen = fn (MntOrder $o) => route('v2.screen', MntOrder::prefixOf($o->order_type) === 'PMO' ? 'maintenance-pmo' : 'maintenance-bmo').'?id='.$o->id_order;
+
+    Route::post('/plan/generate-due', function () use ($head) {
+        $head();
+        $made = (new PlanService)->generateDue();
+
+        return redirect(route('v2.screen', 'maintenance-pmo'))->with('v2_flash', count($made)
+            ? tf(':n preventive order(s) created as Draft. Set the schedule and technician, then Confirm.', ['n' => count($made)])
+            : 'No plan is due (or its order already exists).');
+    })->name('plan.generate-due');
+
+    Route::post('/plan/save', function (Request $r) use ($head, $plan, $orderScreen) {
+        $head();
+        $action = (string) $r->input('action', 'save');
+        $p = $r->filled('id') ? MntPlan::findOrFail($r->integer('id')) : null;
+        $login = Auth::user()->login;
+        if ($p && in_array($action, ['activate', 'deactivate'], true)) {
+            $p->update(['activate' => $action === 'activate', 'updated_by' => $login]);
+            MntLog::add('PLAN', $p->id_plan, $action === 'activate' ? 'Activated' : 'Deactivated');
+
+            return redirect($plan($p->id_plan))->with('v2_flash', $action === 'activate' ? 'Plan activated.' : 'Plan deactivated. It no longer creates orders.');
+        }
+        $d = $r->validate([
+            'plan_code' => ['required', 'string', 'max:40', 'unique:tm2mnt.mnt_plan,plan_code'.($p ? ','.$p->id_plan.',id_plan' : '')],
+            'plan_name' => ['required', 'string', 'max:150'], 'asset_id' => ['required', 'integer', 'exists:tm2mnt.mnt_asset,id_asset'],
+            'order_type' => ['required', Rule::in(array_keys(MntPlan::TYPES))], 'trigger_mode' => ['required', Rule::in(array_keys(MntPlan::TRIGGERS))],
+            'interval_value' => ['nullable', 'integer', 'min:1', 'required_unless:trigger_mode,METER'], 'interval_unit' => ['nullable', Rule::in(array_keys(MntPlan::UNITS)), 'required_unless:trigger_mode,METER'],
+            'meter_type' => ['nullable', Rule::in(array_keys(MntPlan::METERS)), 'required_unless:trigger_mode,TIME'], 'meter_interval' => ['nullable', 'numeric', 'min:1', 'required_unless:trigger_mode,TIME'],
+            'schedule_mode' => ['required', Rule::in(array_keys(MntPlan::MODES))], 'lead_days' => ['nullable', 'integer', 'min:0', 'max:60'], 'est_minutes' => ['nullable', 'integer', 'min:0'],
+            'last_done_date' => ['nullable', 'date'], 'last_done_meter' => ['nullable', 'numeric', 'min:0'], 'next_due_date' => ['nullable', 'date'],
+            'certificate_valid_until' => ['nullable', 'date'], 'notes' => ['nullable', 'string', 'max:2000'],
+        ], [], ['plan_code' => t('Plan code'), 'plan_name' => t('Plan name'), 'asset_id' => t('Asset'), 'interval_value' => t('Every'), 'meter_interval' => t('Or every (meter)')]);
+        $d['needs_stop'] = $r->boolean('needs_stop');
+        $d['lead_days'] = (int) ($d['lead_days'] ?? 3);
+        $isNew = ! $p;
+        $p = $p ? tap($p)->update($d + ['updated_by' => $login]) : MntPlan::create($d + ['activate' => true, 'created_by' => $login, 'updated_by' => $login]);
+        MntLog::add('PLAN', $p->id_plan, $isNew ? 'Created' : 'Saved');
+
+        foreach (array_keys((array) $r->input('remove', [])) as $tid) {
+            $p->tasks()->whereKey((int) $tid)->delete();
+        }
+        foreach ((array) $r->input('tasks', []) as $tid => $row) {
+            $min = ($row['min_value'] ?? '') === '' ? null : (float) $row['min_value'];
+            $max = ($row['max_value'] ?? '') === '' ? null : (float) $row['max_value'];
+            if ($min !== null && $max !== null && $min > $max) {
+                throw ValidationException::withMessages(['tasks' => t('Normal limit: the minimum cannot be above the maximum.')]);
+            }
+            $p->tasks()->whereKey((int) $tid)->update(['task_text' => $row['task_text'] ?? '', 'task_kind' => array_key_exists($row['task_kind'] ?? '', MntPlanTask::KINDS) ? $row['task_kind'] : 'INSPECT',
+                'measure_uom' => ($row['measure_uom'] ?? '') ?: null, 'min_value' => $min, 'max_value' => $max, 'is_required' => filter_var($row['is_required'] ?? false, FILTER_VALIDATE_BOOL), 'updated_by' => $login]);
+        }
+        foreach (array_keys((array) $r->input('remove_parts', [])) as $pid) {
+            $p->parts()->whereKey((int) $pid)->delete();
+        }
+        foreach ((array) $r->input('parts', []) as $pid => $row) {
+            $p->parts()->whereKey((int) $pid)->update(['qty' => max(0.001, (float) ($row['qty'] ?? 1)), 'updated_by' => $login]);
+        }
+        $msg = 'Plan saved.';
+        if ($action === 'add_task' && trim((string) $r->input('new_task')) !== '') {
+            $p->tasks()->create(['seq_no' => (int) $p->tasks()->max('seq_no') + 1, 'task_text' => trim((string) $r->input('new_task')),
+                'task_kind' => array_key_exists($r->input('new_task_kind'), MntPlanTask::KINDS) ? $r->input('new_task_kind') : 'INSPECT', 'is_required' => true, 'created_by' => $login, 'updated_by' => $login]);
+            $msg = 'Task added.';
+        } elseif ($action === 'add_part' && $r->filled('material_id')) {
+            $mat = MatRaw::findOrFail($r->integer('material_id'));
+            MntPlanPart::create(['plan_id' => $p->id_plan, 'material_id' => $mat->material_id, 'qty' => max(0.001, (float) $r->input('new_part_qty', 1)),
+                'uom_code' => $mat->uom_stock ?: $mat->uom_purchase, 'created_by' => $login, 'updated_by' => $login]);
+            $msg = 'Spare part added.';
+        }
+        // Jatuh tempo berikutnya selalu dihitung sistem (bukan diketik), kecuali FIXED yang tanggal pertamanya diisi user.
+        $p->refresh();
+        $svc = new PlanService($login);
+        if (! ($p->schedule_mode === 'FIXED' && $r->filled('next_due_date'))) {
+            $p->update($svc->nextDue($p, $p->last_done_date ? CarbonImmutable::parse($p->last_done_date) : null, $p->last_done_meter));
+        }
+        if ($action === 'generate') {
+            $o = $svc->generateFromPlan($p->refresh()->load(['tasks', 'parts']), true);
+            if ($o) {
+                return redirect($orderScreen($o))->with('v2_flash', 'Preventive order created (Draft) from this plan.');
+            }
+            $msg = 'This plan still has an open order or is inactive. No new order was created.';
+        }
+
+        return redirect($plan($p->id_plan))->with('v2_flash', $msg);
+    })->name('plan.save');
+
+    // ------------------------------------------------------------ Maintenance Order (PMO, BMO, IMO)
+    Route::post('/order/create', function (Request $r) use ($head, $orderScreen) {
+        $head();
+        $d = $r->validate(['asset_id' => ['required', 'integer', 'exists:tm2mnt.mnt_asset,id_asset'], 'order_type' => ['required', Rule::in(array_keys(MntOrder::TYPES))],
+            'description' => ['required', 'string', 'max:255']], [], ['asset_id' => t('Asset'), 'description' => t('Description')]);
+        $o = (new OrderService)->create($d);
+
+        return redirect($orderScreen($o))->with('v2_flash', 'Draft order created. Complete it, then Confirm.');
+    })->name('order.create');
+
+    Route::post('/order/{id}/save', function (Request $r, int $id) use ($head, $orderScreen) {
+        $o = MntOrder::findOrFail($id);
+        $action = (string) $r->input('action', 'save');
+        $s = new OrderService;
+        $r->validate(['planned_start' => ['nullable', 'date'], 'planned_end' => ['nullable', 'date'], 'cost_vendor' => ['nullable', 'numeric', 'min:0'],
+            'meter_at_done' => ['nullable', 'numeric', 'min:0'], 'asset_id' => ['nullable', 'integer', 'exists:tm2mnt.mnt_asset,id_asset']]);
+        switch ($action) {
+            case 'delete':
+                $head();
+                $s->deleteDraft($o);
+
+                return redirect(route('v2.screen', MntOrder::prefixOf($o->order_type) === 'PMO' ? 'maintenance-pmo' : 'maintenance-bmo'))->with('v2_flash', 'Draft order deleted.');
+            case 'cancel':
+                $head();
+                $s->cancel($o, (string) $r->input('_reason', ''));
+
+                return redirect($orderScreen($o))->with('v2_flash', 'Order cancelled.');
+            case 'draft':
+                $head();
+                $s->backToDraft($o);
+
+                return redirect($orderScreen($o))->with('v2_flash', 'Order is back to Draft.');
+            case 'start':
+                $s->start($o);
+
+                return redirect($orderScreen($o))->with('v2_flash', 'Order started (In Progress). Downtime and machine status are recorded for machines.');
+            case 'close':
+                $head();
+                $s->close($o);
+
+                return redirect($orderScreen($o))->with('v2_flash', 'Order closed. Cost is final and the next preventive due date is calculated.');
+        }
+        if ($o->docStatus() === 'DRAFT') {
+            $head();
+        }
+        if ($o->docStatus() === 'DRAFT' || $o->isWorking()) {
+            $s->save($o, $r->all());
+        }
+        $o->refresh();
+        switch ($action) {
+            case 'add_task':
+                $s->addTask($o, (string) $r->input('new_task'));
+                $msg = 'Task added.';
+                break;
+            case 'add_part':
+                abort_unless($r->filled('material_id'), 422, t('Choose a spare part from the material master.'));
+                $s->addPart($o, $r->integer('material_id'), max(0.001, (float) $r->input('new_part_qty', 1)));
+                $msg = 'Spare part added.';
+                break;
+            case 'add_labor':
+                abort_unless($r->filled('labor_employee_id'), 422, t('Choose a technician.'));
+                $s->addLabor($o, $r->integer('labor_employee_id'), $r->integer('labor_minutes'), $r->input('labor_date') ?: null);
+                $msg = 'Labor added.';
+                break;
+            case 'confirm':
+                $head();
+                $s->confirm($o);
+                $msg = tf('Order confirmed: :no (Scheduled).', ['no' => $o->refresh()->doc_no]);
+                break;
+            case 'hold':
+                $s->hold($o, (string) $r->input('_reason', ''));
+                $msg = 'Order on hold (Waiting Part).';
+                break;
+            case 'resume':
+                $s->resume($o);
+                $msg = 'Order resumed (In Progress).';
+                break;
+            case 'done':
+                $s->done($o);
+                $msg = 'Order done. Downtime closed and the machine is Ready again. Waiting for Close by the head of maintenance.';
+                break;
+            default:
+                $msg = 'Order saved.';
+        }
+
+        return redirect($orderScreen($o))->with('v2_flash', $msg);
+    })->name('order.save');
+
+    // ------------------------------------------------------------ Daily Check
+    Route::post('/daily/open', function (Request $r) {
+        $d = $r->validate(['asset_id' => ['required', 'integer', 'exists:tm2mnt.mnt_asset,id_asset'], 'check_date' => ['required', 'date'], 'shift_code' => ['required', Rule::in(array_keys(MntDailyCheck::SHIFTS))]],
+            [], ['asset_id' => t('Asset'), 'check_date' => t('Date'), 'shift_code' => t('Shift')]);
+        $sheet = (new DailyCheckService)->open(MntAsset::findOrFail($d['asset_id']), $d['check_date'], $d['shift_code']);
+
+        return redirect(route('v2.screen', 'maintenance-daily-check').'?id='.$sheet->id_daily_check)->with('v2_flash', 'Check sheet opened.');
+    })->name('daily.open');
+
+    Route::post('/daily/{id}/save', function (Request $r, int $id) {
+        $sheet = MntDailyCheck::findOrFail($id);
+        $svc = new DailyCheckService;
+        $svc->save($sheet, (array) $r->input('lines', []));
+        $msg = 'Check sheet saved.';
+        if ($r->input('action') === 'submit') {
+            $n = $svc->submit($sheet->refresh());
+            $msg = $n ? tf('Check sheet submitted. :n request(s) opened for the head of maintenance.', ['n' => $n]) : 'Check sheet submitted. Everything is OK.';
+        }
+
+        return redirect(route('v2.screen', 'maintenance-daily-check').'?id='.$id)->with('v2_flash', $msg);
+    })->name('daily.save');
 });

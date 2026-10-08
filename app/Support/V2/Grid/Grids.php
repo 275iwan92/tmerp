@@ -74,6 +74,8 @@ final class Grids
         Acc\AmortizationGrid::class,
         Maint\MaintenanceCodeLookup::class,
         Maint\AssetReadinessReport::class,
+        Maint\MeterReadingLookup::class,
+        Maint\PmComplianceReport::class,
         Setup\TranslationDictionaryLookup::class,
         Setup\MenuSetupLookup::class,
         Setup\DocSeriesLookup::class,

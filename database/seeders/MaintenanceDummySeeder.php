@@ -4,8 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\Mnt\MntAsset;
 use App\Models\Mnt\MntDocument;
+use App\Models\Mnt\MntPlan;
 use App\Models\Mnt\MntWatchPoint;
 use App\Services\Maintenance\AssetProfileService;
+use App\Services\Maintenance\MeterService;
+use App\Services\Maintenance\PlanService;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -28,6 +32,46 @@ class MaintenanceDummySeeder extends Seeder
         $this->exampleAssets();
         $this->sopAndWorkInstructions();
         $this->exampleWatchPoints();
+        $this->examplePlans();
+    }
+
+    // Plan contoh (struktur saja, ditandai Example): bulanan mesin offset dari WI bulanan, inspeksi tahunan kompresor, AC tiga bulanan,
+    // servis kendaraan berbasis meter. Interval dan angka hanya contoh di ddtmnt; isi nyata diketik kepala maintenance dari manual pabrikan.
+    private function examplePlans(): void
+    {
+        if (MntPlan::query()->exists()) {
+            return;
+        }
+        $data = json_decode((string) file_get_contents(resource_path('data/maintenance/sop_wi.json')), true, 512, JSON_THROW_ON_ERROR);
+        $monthly = collect($data['documents'])->firstWhere('doc_no', 'WI-MNT-OFF-03')['steps'] ?? [];
+        $tasks = array_slice($monthly, 4, max(0, count($monthly) - 6));
+        $asset = fn (string $code) => MntAsset::where('asset_code', $code)->firstOrFail();
+        $make = function (string $code, string $assetCode, string $name, array $attrs, array $taskTexts) use ($asset) {
+            $plan = MntPlan::create(['plan_code' => $code, 'asset_id' => $asset($assetCode)->id_asset, 'plan_name' => $name, 'activate' => true,
+                'notes' => 'Example plan (dummy). Real intervals and tasks come from the manufacturer manual.', 'created_by' => 'seeder', 'updated_by' => 'seeder'] + $attrs);
+            foreach (array_values($taskTexts) as $i => $text) {
+                $plan->tasks()->create(['seq_no' => $i + 1, 'task_text' => $text, 'task_kind' => 'INSPECT', 'is_required' => true, 'created_by' => 'seeder', 'updated_by' => 'seeder']);
+            }
+
+            return $plan;
+        };
+        $make('PM-OFF01-01', 'OFF-01', 'Monthly care (example)', ['order_type' => 'PREVENTIVE', 'trigger_mode' => 'TIME', 'interval_value' => 1, 'interval_unit' => 'MONTH',
+            'schedule_mode' => 'FLOATING', 'lead_days' => 3, 'est_minutes' => 240, 'needs_stop' => true, 'last_done_date' => today()->subDays(28), 'next_due_date' => today()->addDays(2)], $tasks);
+        $make('PM-CMP01-INS', 'CMP-01', 'Annual pressure equipment inspection (example)', ['order_type' => 'INSPECTION', 'trigger_mode' => 'TIME', 'interval_value' => 1, 'interval_unit' => 'YEAR',
+            'schedule_mode' => 'FIXED', 'lead_days' => 14, 'est_minutes' => 120, 'needs_stop' => true, 'next_due_date' => today()->addMonths(2)], ['Check that the legal inspection certificate of the pressure vessel is valid.']);
+        $make('PM-AC01-01', 'AC-OFFICE-01', 'Filter cleaning (example)', ['order_type' => 'PREVENTIVE', 'trigger_mode' => 'TIME', 'interval_value' => 3, 'interval_unit' => 'MONTH',
+            'schedule_mode' => 'FLOATING', 'lead_days' => 7, 'est_minutes' => 60, 'needs_stop' => false, 'last_done_date' => today()->subMonths(3)->addDays(5), 'next_due_date' => today()->addDays(5)],
+            ['Clean the indoor unit filters.', 'Check that the drain is clear.', 'Check that the unit cools normally.']);
+        $svc = new MeterService('seeder');
+        $veh = $asset('VEH-01');
+        $svc->record($veh, 'ODOMETER_KM', 41250, CarbonImmutable::now()->subDays(20), 'MANUAL', 'Example reading');
+        $svc->record($veh, 'ODOMETER_KM', 42800, CarbonImmutable::now()->subDays(2), 'MANUAL', 'Example reading');
+        $make('PM-VEH01-01', 'VEH-01', 'Engine service by odometer (example)', ['order_type' => 'PREVENTIVE', 'trigger_mode' => 'TIME_OR_METER', 'interval_value' => 6, 'interval_unit' => 'MONTH',
+            'meter_type' => 'ODOMETER_KM', 'meter_interval' => 5000, 'schedule_mode' => 'FLOATING', 'lead_days' => 7, 'est_minutes' => 180, 'needs_stop' => false,
+            'last_done_date' => today()->subMonths(4), 'last_done_meter' => 38000, 'next_due_date' => today()->addMonths(2), 'next_due_meter' => 43000], ['Change the engine oil and filter.', 'Check the tyres and the brakes.']);
+
+        $made = (new PlanService('seeder'))->generateDue();
+        $this->command?->info('Example plans created; '.count($made).' Draft order(s) generated.');
     }
 
     private function exampleAssets(): void

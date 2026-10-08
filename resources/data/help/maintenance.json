@@ -1144,14 +1144,14 @@
         "id": "Fase 2. Satu lembar cek per mesin per shift, dan satu baris hasil per watch point (OK, NOT_OK, NA, nilai ukur)."
       },
       {
-        "label": "mnt_request, mnt_order",
-        "en": "Phase 3. Request (MR) and Maintenance Order. Five order types: PREVENTIVE and INSPECTION (prefix PMO), BREAKDOWN and CORRECTIVE (prefix BMO), IMPROVEMENT (prefix IMO).",
-        "id": "Fase 3. Request (MR) dan Maintenance Order. Lima jenis order: PREVENTIVE dan INSPECTION (prefiks PMO), BREAKDOWN dan CORRECTIVE (prefiks BMO), IMPROVEMENT (prefiks IMO)."
+        "label": "mnt_order, mnt_order_task, mnt_order_part, mnt_order_labor",
+        "en": "Phase 2. Maintenance Order with five order types: PREVENTIVE and INSPECTION (prefix PMO), BREAKDOWN and CORRECTIVE (prefix BMO), IMPROVEMENT (prefix IMO). Tasks, parts and technician hours.",
+        "id": "Fase 2. Maintenance Order dengan lima jenis: PREVENTIVE dan INSPECTION (prefiks PMO), BREAKDOWN dan CORRECTIVE (prefiks BMO), IMPROVEMENT (prefiks IMO). Tugas, part dan jam teknisi."
       },
       {
-        "label": "mnt_order_task, mnt_order_part, mnt_order_labor",
-        "en": "Phase 3. Checklist copy, parts used and technician hours of a maintenance order.",
-        "id": "Fase 3. Salinan checklist, part terpakai dan jam teknisi sebuah order perawatan."
+        "label": "mnt_request",
+        "en": "Phase 2 table, Phase 3 screen. Problem report with priority and status. Daily Check creates it for every Not OK point.",
+        "id": "Tabel Fase 2, layar Fase 3. Laporan masalah dengan prioritas dan status. Daily Check membuatnya untuk setiap titik Not OK."
       },
       {
         "label": "mnt_log",
@@ -1725,8 +1725,8 @@
     "keywords": "fase 2, fase 3, fase 4, preventive, breakdown, improvement, urutan bangun, batas, zona beku, scheduling board",
     "steps": [
       {
-        "en": "Phase 2 Preventive: PM Calendar, Meter Readings with accumulation from production output, Daily Check on web and phone, the machine-blocked slot on the Scheduling Board, and the PM Compliance report.",
-        "id": "Fase 2 Preventive: PM Calendar, Meter Readings dengan akumulasi dari output produksi, Daily Check di web dan HP, slot mesin terblokir di Scheduling Board, dan laporan PM Compliance."
+        "en": "Phase 2 Preventive (built): Preventive Plan, Preventive Maintenance Order, PM Calendar, Daily Check, Meter Readings, PM Compliance. Still to come in Phase 2: the machine-blocked slot on the Scheduling Board.",
+        "id": "Fase 2 Preventive (dibangun): Preventive Plan, Preventive Maintenance Order, PM Calendar, Daily Check, Meter Readings, PM Compliance. Yang masih menyusul di Fase 2: slot mesin terblokir di Scheduling Board."
       },
       {
         "en": "Phase 3 Breakdown: the Breakdown button on the production work list creates a request of priority P1, spare part issue to stock, purchase request with status Waiting Part, and the Machine Reliability report.",
@@ -1895,6 +1895,441 @@
         "label": "Waiting for others",
         "en": "The legal inspection rules for forklift and compressor are to be checked with HR or K3.",
         "id": "Aturan inspeksi wajib forklift dan kompresor perlu dicek ke HR atau K3."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-plan",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Preventive Plan",
+    "purpose": {
+      "en": "Defines when an asset needs a scheduled job, which tasks and parts it needs, and creates a Preventive Maintenance Order when the job falls due. Open it to prepare or adjust a plan.",
+      "id": "Menentukan kapan aset butuh pekerjaan terjadwal, tugas dan part yang dibutuhkan, dan membuat Preventive Maintenance Order saat pekerjaan jatuh tempo. Buka untuk menyiapkan atau mengubah plan."
+    },
+    "keywords": "preventive plan, plan perawatan, jadwal perawatan, jatuh tempo, pm, meter, interval, inspeksi, floating, fixed",
+    "steps": [
+      {
+        "en": "Open Preventive Plan. The boxes are Overdue, Due soon and Inspection. Search by plan code or asset.",
+        "id": "Buka Preventive Plan. Kotaknya Overdue, Due soon dan Inspection. Cari menurut kode plan atau aset."
+      },
+      {
+        "en": "Click + New Record. Type the plan code and name, pick the asset and the order type (Preventive or Inspection), then Save.",
+        "id": "Klik + New Record. Ketik kode dan nama plan, pilih aset dan jenis order (Preventive atau Inspection), lalu Save."
+      },
+      {
+        "en": "On the Trigger tab choose Time, Meter or Time OR Meter and fill the interval from the manufacturer manual. Floating counts from the last completion, Fixed keeps calendar dates.",
+        "id": "Di tab Trigger pilih Time, Meter atau Time OR Meter dan isi interval dari manual pabrikan. Floating dihitung dari selesai terakhir, Fixed menjaga tanggal kalender."
+      },
+      {
+        "en": "Add the checklist in the Tasks tab with + Task. Give a measure and limits only when the manual has them. Add standard parts in the Spare Parts tab.",
+        "id": "Tambah checklist di tab Tasks dengan + Task. Isi ukuran dan batas hanya bila ada di manual. Tambah part standar di tab Spare Parts."
+      },
+      {
+        "en": "The next due date and meter are calculated by the system when you save. For a Fixed plan you type only the first date.",
+        "id": "Jatuh tempo berikutnya (tanggal dan meter) dihitung sistem saat Anda menyimpan. Untuk plan Fixed Anda hanya mengetik tanggal pertama."
+      },
+      {
+        "en": "Every morning the system creates a Draft Preventive Maintenance Order for each plan that is due. Generate Order or Generate due orders does the same at once.",
+        "id": "Tiap pagi sistem membuat Preventive Maintenance Order Draft untuk setiap plan yang jatuh tempo. Generate Order atau Generate due orders melakukannya seketika."
+      },
+      {
+        "en": "Only the head of maintenance and administrators can change a plan.",
+        "id": "Hanya kepala maintenance dan administrator yang bisa mengubah plan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Plan Code",
+        "en": "Short unique code of the plan.",
+        "id": "Kode singkat plan yang unik."
+      },
+      {
+        "label": "Order Type",
+        "en": "Preventive for routine care, Inspection for legal or periodic inspections.",
+        "id": "Preventive untuk perawatan rutin, Inspection untuk inspeksi wajib atau berkala."
+      },
+      {
+        "label": "Trigger",
+        "en": "Time, Meter, or Time OR Meter (whichever comes first).",
+        "id": "Time, Meter, atau Time OR Meter (mana yang lebih dulu)."
+      },
+      {
+        "label": "Every / Unit",
+        "en": "The time interval, for example 1 Month.",
+        "id": "Interval waktu, misalnya 1 Month."
+      },
+      {
+        "label": "Meter / Or every (meter)",
+        "en": "The meter type and its interval, for example Odometer every 5,000 km.",
+        "id": "Jenis meter dan intervalnya, misalnya Odometer tiap 5.000 km."
+      },
+      {
+        "label": "Schedule Mode",
+        "en": "Floating counts from the last completion. Fixed keeps calendar dates such as legal inspections.",
+        "id": "Floating dihitung dari selesai terakhir. Fixed menjaga tanggal kalender seperti inspeksi wajib."
+      },
+      {
+        "label": "Create order before due (days)",
+        "en": "How many days before the due date the Draft order is created.",
+        "id": "Berapa hari sebelum jatuh tempo order Draft dibuat."
+      },
+      {
+        "label": "Asset Stop",
+        "en": "Yes means the asset stops during the job. For a machine this records planned downtime.",
+        "id": "Yes berarti aset berhenti selama pekerjaan. Untuk mesin ini mencatat downtime terencana."
+      },
+      {
+        "label": "Certificate valid until",
+        "en": "For inspections: the date the current certificate expires.",
+        "id": "Untuk inspeksi: tanggal sertifikat berjalan berakhir."
+      },
+      {
+        "label": "Next due",
+        "en": "Calculated by the system. Only the first date of a Fixed plan is typed.",
+        "id": "Dihitung sistem. Hanya tanggal pertama plan Fixed yang diketik."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-pmo",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Preventive Maintenance Order",
+    "purpose": {
+      "en": "The scheduled job of an asset (PMO): who does it, when, which checklist, which parts, how long it took and what it cost. Open it daily to follow the planned work.",
+      "id": "Pekerjaan terjadwal sebuah aset (PMO): siapa mengerjakan, kapan, checklist, part, berapa lama dan biayanya. Buka tiap hari untuk memantau pekerjaan terencana."
+    },
+    "keywords": "pmo, preventive maintenance order, order perawatan, perawatan terjadwal, inspeksi, checklist, downtime terencana",
+    "steps": [
+      {
+        "en": "Open Preventive Maintenance Order. The boxes are All Open, In Progress, Waiting Part, Overdue and Done.",
+        "id": "Buka Preventive Maintenance Order. Kotaknya All Open, In Progress, Waiting Part, Overdue dan Done."
+      },
+      {
+        "en": "Orders mostly arrive as Draft from a Preventive Plan. For a one-off job click + New Record and type the asset, type and description.",
+        "id": "Order sebagian besar datang sebagai Draft dari Preventive Plan. Untuk pekerjaan sekali jalan klik + New Record dan ketik aset, jenis dan deskripsi."
+      },
+      {
+        "en": "Open a Draft order, set the planned start, the technician and the priority, then press Confirm. The number PMO-yymm-nnnn is created and the status is Scheduled.",
+        "id": "Buka order Draft, atur rencana mulai, teknisi dan prioritas, lalu tekan Confirm. Nomor PMO-yymm-nnnn dibuat dan status menjadi Scheduled."
+      },
+      {
+        "en": "The technician presses Start. For a machine that must stop, the system opens a planned downtime and sets the machine status to Maintenance.",
+        "id": "Teknisi menekan Start. Untuk mesin yang harus berhenti, sistem membuka downtime terencana dan mengubah status mesin menjadi Maintenance."
+      },
+      {
+        "en": "Fill the checklist results, add parts and technician hours. Press Hold when waiting for a part and Resume when it arrives.",
+        "id": "Isi hasil checklist, tambah part dan jam teknisi. Tekan Hold saat menunggu part dan Resume saat part tiba."
+      },
+      {
+        "en": "Press Done when finished. Every required checklist task needs a result first. Downtime is closed and the machine is Ready again.",
+        "id": "Tekan Done bila selesai. Setiap tugas checklist wajib harus punya hasil lebih dulu. Downtime ditutup dan mesin kembali Ready."
+      },
+      {
+        "en": "The head of maintenance presses Close. Cost becomes final and the plan moves to its next due date.",
+        "id": "Kepala maintenance menekan Close. Biaya menjadi final dan plan maju ke jatuh tempo berikutnya."
+      },
+      {
+        "en": "Cancel needs a reason. Back to Draft is possible only while the order is Scheduled and has not started.",
+        "id": "Cancel butuh alasan. Back to Draft hanya bisa saat order masih Scheduled dan belum dimulai."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Asset",
+        "en": "The asset the work is for. Picked from the asset list.",
+        "id": "Aset yang dikerjakan. Dipilih dari daftar aset."
+      },
+      {
+        "label": "Order Type",
+        "en": "Preventive or Inspection for this screen.",
+        "id": "Preventive atau Inspection untuk layar ini."
+      },
+      {
+        "label": "Priority",
+        "en": "P1 Emergency, P2 High, P3 Normal or P4 Low.",
+        "id": "P1 Emergency, P2 High, P3 Normal atau P4 Low."
+      },
+      {
+        "label": "Technician",
+        "en": "The employee who does the work.",
+        "id": "Pegawai yang mengerjakan."
+      },
+      {
+        "label": "Asset Stop",
+        "en": "Yes records downtime for a machine and changes its status while the work runs.",
+        "id": "Yes mencatat downtime untuk mesin dan mengubah statusnya selama pekerjaan berjalan."
+      },
+      {
+        "label": "Planned Start / End",
+        "en": "The scheduled window. The calendar and the compliance report use the start date as the due date.",
+        "id": "Jendela jadwal. Kalender dan laporan kepatuhan memakai tanggal mulai sebagai jatuh tempo."
+      },
+      {
+        "label": "Checklist",
+        "en": "Tasks copied from the plan. Each gets a result OK, Not OK or N/A and an optional measured value.",
+        "id": "Tugas yang disalin dari plan. Tiap tugas diberi hasil OK, Not OK atau N/A dan nilai ukur opsional."
+      },
+      {
+        "label": "Spare Parts",
+        "en": "Parts planned and used. The cost uses the average price at the time the part was added.",
+        "id": "Part yang direncanakan dan dipakai. Biaya memakai harga rata-rata saat part ditambahkan."
+      },
+      {
+        "label": "Labor",
+        "en": "Technician minutes. The cost uses the hourly rate set in Settings, Constants.",
+        "id": "Menit teknisi. Biaya memakai tarif per jam yang diatur di Settings, Constants."
+      },
+      {
+        "label": "Meter at Done",
+        "en": "Counter reading when the work finished, used to calculate the next meter-based due.",
+        "id": "Pembacaan counter saat pekerjaan selesai, dipakai menghitung jatuh tempo berikutnya berbasis meter."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-pm-calendar",
+    "type": "REPORT",
+    "module": "MAINT",
+    "title": "PM Calendar",
+    "purpose": {
+      "en": "Shows the scheduled Preventive Maintenance Orders on a month calendar, so the head of maintenance sees the load of the month at a glance. Open it to plan or to avoid clashes.",
+      "id": "Menampilkan Preventive Maintenance Order terjadwal di kalender bulanan, supaya kepala maintenance melihat beban satu bulan sekaligus. Buka untuk merencanakan atau menghindari bentrok."
+    },
+    "keywords": "pm calendar, kalender perawatan, jadwal pmo, kalender preventive, bulan",
+    "steps": [
+      {
+        "en": "Open PM Calendar. The month view shows each order with its number and asset.",
+        "id": "Buka PM Calendar. Tampilan bulan menunjukkan tiap order dengan nomor dan asetnya."
+      },
+      {
+        "en": "Use the arrows or Today to move between months. Draft orders show without a number.",
+        "id": "Pakai panah atau Today untuk berpindah bulan. Order Draft tampil tanpa nomor."
+      },
+      {
+        "en": "The list under the calendar shows the next open orders in date order.",
+        "id": "Daftar di bawah kalender menampilkan order terbuka berikutnya menurut tanggal."
+      },
+      {
+        "en": "To change a schedule open the order in Preventive Maintenance Order and edit its planned dates there.",
+        "id": "Untuk mengubah jadwal buka order di Preventive Maintenance Order dan ubah tanggal rencananya di sana."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Order",
+        "en": "Order number, or Draft when it is not confirmed yet.",
+        "id": "Nomor order, atau Draft bila belum dikonfirmasi."
+      },
+      {
+        "label": "Asset",
+        "en": "Code and name of the asset.",
+        "id": "Kode dan nama aset."
+      },
+      {
+        "label": "Planned",
+        "en": "Planned start date and time.",
+        "id": "Tanggal dan jam rencana mulai."
+      },
+      {
+        "label": "Status",
+        "en": "Draft, Scheduled, In Progress, Waiting Part or Done.",
+        "id": "Draft, Scheduled, In Progress, Waiting Part atau Done."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-daily-check",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Daily Check",
+    "purpose": {
+      "en": "The operator check of an asset each shift, built from its operator watch points. Anything Not OK becomes a Maintenance Request before it turns into a breakdown. Open it at the start of the shift.",
+      "id": "Cek operator atas sebuah aset tiap shift, dibuat dari watch point operatornya. Hal yang Not OK menjadi Maintenance Request sebelum berubah menjadi kerusakan. Buka di awal shift."
+    },
+    "keywords": "daily check, cek harian, operator, shift, watch point, not ok, tpm, request",
+    "steps": [
+      {
+        "en": "Open Daily Check and click + New Record. Pick the asset, the date and the shift, then Open Sheet.",
+        "id": "Buka Daily Check dan klik + New Record. Pilih aset, tanggal dan shift, lalu Open Sheet."
+      },
+      {
+        "en": "The sheet lists the active operator watch points that are Every shift or Daily. If the asset has none, add them in Asset Maintenance Profile first.",
+        "id": "Lembar berisi watch point operator aktif yang frekuensinya Every shift atau Daily. Bila aset tidak punya, tambahkan dulu di Asset Maintenance Profile."
+      },
+      {
+        "en": "Mark each point OK, Not OK or N/A. Type the measured value when the point has limits. A value outside the limits is suggested as Not OK.",
+        "id": "Tandai tiap titik OK, Not OK atau N/A. Ketik nilai ukur bila titik punya batas. Nilai di luar batas disarankan sebagai Not OK."
+      },
+      {
+        "en": "Add a note for anything abnormal and click Save to keep the sheet while you work.",
+        "id": "Tambah catatan untuk hal tidak normal dan klik Save untuk menyimpan lembar selama bekerja."
+      },
+      {
+        "en": "Click Submit when every point has a result. The sheet is locked and each Not OK point opens a Maintenance Request for the head of maintenance.",
+        "id": "Klik Submit bila semua titik punya hasil. Lembar terkunci dan tiap titik Not OK membuka Maintenance Request untuk kepala maintenance."
+      },
+      {
+        "en": "Opening the same asset, date and shift again shows the same sheet, never a second one.",
+        "id": "Membuka aset, tanggal dan shift yang sama lagi menampilkan lembar yang sama, bukan lembar kedua."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Sheet",
+        "en": "Number DC-yymm-nnnn.",
+        "id": "Nomor DC-yymm-nnnn."
+      },
+      {
+        "label": "What to check",
+        "en": "Copied from the watch point so history stays correct if the watch point changes.",
+        "id": "Disalin dari watch point sehingga riwayat tetap benar bila watch point berubah."
+      },
+      {
+        "label": "Normal limit",
+        "en": "Minimum and maximum from the watch point. Empty means the system never judges the value.",
+        "id": "Minimum dan maksimum dari watch point. Kosong berarti sistem tidak pernah menilai nilainya."
+      },
+      {
+        "label": "Result",
+        "en": "OK, Not OK or N/A.",
+        "id": "OK, Not OK atau N/A."
+      },
+      {
+        "label": "Measured",
+        "en": "The value you read, for points with a measure.",
+        "id": "Nilai yang Anda baca, untuk titik yang punya ukuran."
+      },
+      {
+        "label": "Request",
+        "en": "Shows Request opened for a Not OK point after Submit.",
+        "id": "Menampilkan Request opened untuk titik Not OK setelah Submit."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-meter",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Meter Readings",
+    "purpose": {
+      "en": "Records the counter of an asset (run hours, impressions, odometer) so meter-based plans fall due at the right time. Open it to type a reading or to correct a counter.",
+      "id": "Mencatat counter aset (jam jalan, impresi, odometer) supaya plan berbasis meter jatuh tempo pada waktu yang tepat. Buka untuk mengetik pembacaan atau mengoreksi counter."
+    },
+    "keywords": "meter, odometer, jam jalan, impresi, counter, pembacaan meter",
+    "steps": [
+      {
+        "en": "Open Meter Readings. Rows are typed directly in the cells.",
+        "id": "Buka Meter Readings. Barisnya diketik langsung di sel."
+      },
+      {
+        "en": "Add a row: pick the asset, the meter, the date and the reading, then Save.",
+        "id": "Tambah baris: pilih aset, meter, tanggal dan pembacaan, lalu Save."
+      },
+      {
+        "en": "Production machines with a run-hours or impressions meter are also updated every morning from production output, starting from your first typed reading.",
+        "id": "Mesin produksi dengan meter jam jalan atau impresi juga diperbarui tiap pagi dari output produksi, mulai dari pembacaan pertama yang Anda ketik."
+      },
+      {
+        "en": "A reading lower than the last one needs a note, for example the counter was replaced.",
+        "id": "Pembacaan yang lebih rendah dari yang terakhir butuh catatan, misalnya counter diganti."
+      },
+      {
+        "en": "An old reading is never changed. To correct it add a new row.",
+        "id": "Pembacaan lama tidak pernah diubah. Untuk mengoreksi tambahkan baris baru."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Asset",
+        "en": "The asset the counter belongs to.",
+        "id": "Aset pemilik counter."
+      },
+      {
+        "label": "Meter",
+        "en": "Run hours, Impressions or Odometer (km).",
+        "id": "Run hours, Impressions atau Odometer (km)."
+      },
+      {
+        "label": "Date",
+        "en": "When the counter was read.",
+        "id": "Kapan counter dibaca."
+      },
+      {
+        "label": "Reading",
+        "en": "The counter value, not the difference.",
+        "id": "Nilai counter, bukan selisihnya."
+      },
+      {
+        "label": "Source",
+        "en": "Typed by user or Production output. Filled by the system.",
+        "id": "Typed by user atau Production output. Diisi sistem."
+      },
+      {
+        "label": "Note",
+        "en": "Required when the reading is lower than the last one.",
+        "id": "Wajib bila pembacaan lebih rendah dari yang terakhir."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-pm-compliance",
+    "type": "REPORT",
+    "module": "MAINT",
+    "title": "PM Compliance",
+    "purpose": {
+      "en": "Shows whether the scheduled Preventive Maintenance Orders were done on time. Open it to find the assets or months where preventive work slips.",
+      "id": "Menunjukkan apakah Preventive Maintenance Order terjadwal selesai tepat waktu. Buka untuk menemukan aset atau bulan tempat pekerjaan preventive tertunda."
+    },
+    "keywords": "pm compliance, kepatuhan pm, tepat waktu, terlambat, preventive, laporan",
+    "steps": [
+      {
+        "en": "Open PM Compliance. The boxes are All, On time, Late and Not done.",
+        "id": "Buka PM Compliance. Kotaknya All, On time, Late dan Not done."
+      },
+      {
+        "en": "Group by Month or Asset. The three count columns give subtotals per group.",
+        "id": "Kelompokkan menurut Month atau Asset. Tiga kolom hitung memberi subtotal per kelompok."
+      },
+      {
+        "en": "Compliance percent is On time divided by On time plus Late plus Not done.",
+        "id": "Persen kepatuhan adalah On time dibagi On time ditambah Late ditambah Not done."
+      },
+      {
+        "en": "An order that is not yet past its due date plus tolerance and not done is Not yet due and is not counted.",
+        "id": "Order yang belum lewat jatuh tempo ditambah toleransi dan belum selesai berstatus Not yet due dan tidak dihitung."
+      },
+      {
+        "en": "Click a row to open the order.",
+        "id": "Klik sebuah baris untuk membuka order."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Order",
+        "en": "The Preventive Maintenance Order number.",
+        "id": "Nomor Preventive Maintenance Order."
+      },
+      {
+        "label": "Due",
+        "en": "The planned start date of the order.",
+        "id": "Tanggal rencana mulai order."
+      },
+      {
+        "label": "Done On",
+        "en": "The date the work finished.",
+        "id": "Tanggal pekerjaan selesai."
+      },
+      {
+        "label": "Result",
+        "en": "On time, Late, Not done or Not yet due.",
+        "id": "On time, Late, Not done atau Not yet due."
+      },
+      {
+        "label": "On time tolerance",
+        "en": "Set in Settings, Constants as a percent of the plan interval, at least one day.",
+        "id": "Diatur di Settings, Constants sebagai persen dari interval plan, minimal satu hari."
       }
     ]
   }
