@@ -9,6 +9,14 @@ namespace Devlib\Components;
 // categories: [kunci => ['label', 'tone']]  -> warna blok, legenda, filter proses.
 // Drag = geser mulai (snap), tepi kanan = durasi, klik = detail, klik 2x = ubah resource/proses.
 // QC Hold terkunci. Blok bertumpuk ditandai bentrok. Perubahan -> event dl:gantt; Submit -> dl:gantt-submit.
+// Production scheduling board options (all optional, backward compatible):
+//   originDate 'Y-m-d' = the date hour 0 means (multi-day axis; start/end are hours from origin, e.g. 6..54).
+//   lockUntil (hour offset or 'HH:MM'), nowAt (hour offset from the server).
+//   task: locked, movable, setup (minutes), gates [ok|wait|block x3: material, tooling, artwork], forecastEnd (hour), eligible [row keys].
+//   row: down [{from,to,label}], load 0-100, bottleneck.
+//   impactUrl / moveUrl: after a drag, JSON {task,row,start,end} is checked by the server first:
+//     {ok, reason?, lines?: [{label,value,tone?}], row?, start?, end?}; moveUrl receives the same JSON when the user accepts.
+//   draftLabel: amber badge in the toolbar (JS: el.dlGantt.setDraft(text)).
 class Gantt extends DevlibComponent
 {
     public function __construct(
@@ -25,6 +33,12 @@ class Gantt extends DevlibComponent
         public ?string $submitLabel = 'Submit to Master Schedule',
         public string $resourceLabel = 'Machine / Crew',
         public ?string $source = null,
+        public ?string $originDate = null,
+        public int|float|string|null $lockUntil = null,
+        public ?float $nowAt = null,
+        public ?string $impactUrl = null,
+        public ?string $moveUrl = null,
+        public ?string $draftLabel = null,
     ) {}
 
     public function tag(): string
@@ -40,7 +54,8 @@ class Gantt extends DevlibComponent
     public function config(): array
     {
         return ['rows' => $this->rows, 'tasks' => $this->tasks, 'categories' => (object) $this->categories, 'start' => $this->start, 'end' => $this->end,
-            'px' => $this->pxPerHour, 'snap' => $this->snap, 'idle' => $this->idleHours, 'unscheduled' => $this->unscheduled, 'resourceLabel' => \Devlib\Lang::text($this->resourceLabel)];
+            'px' => $this->pxPerHour, 'snap' => $this->snap, 'idle' => $this->idleHours, 'unscheduled' => $this->unscheduled, 'resourceLabel' => \Devlib\Lang::text($this->resourceLabel),
+            'originDate' => $this->originDate, 'lockUntil' => $this->lockUntil, 'nowAt' => $this->nowAt, 'impactUrl' => $this->impactUrl, 'moveUrl' => $this->moveUrl];
     }
 
     public function render()
@@ -52,6 +67,7 @@ class Gantt extends DevlibComponent
                     <span class="dl-gantt__spacer"></span>
                     <x-dl::field.select name="gantt_resource" :options="['' => \Devlib\Lang::text('All Resources')] + collect($rows)->pluck('label', 'key')->all()" placeholder="All Resources" />
                     <x-dl::field.select name="gantt_process" :options="['' => \Devlib\Lang::text('All Processes')] + collect($categories)->map(fn ($c) => $c['label'])->all()" placeholder="All Processes" />
+                    @if ($draftLabel !== null)<span class="dl-gantt__draft" data-g2-draft>{{ $draftLabel }}</span>@endif
                     {{ $actions ?? '' }}
                     @if ($submitLabel)<x-dl::button preset="submit" :label="$submitLabel" data-g2-submit />@endif
                 </div>

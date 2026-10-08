@@ -1,7 +1,9 @@
 /* DevLib · Gantt */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, TZ, fmt, setField, T, Tf} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, TZ, fmt, setField, T, Tf, NUM} = Devlib.h;
+  const GATES = [['material', 'gt_gate_material'], ['tooling', 'gt_gate_tooling'], ['artwork', 'gt_gate_artwork']];
+  const GATE_STATE = {ok: 'gt_gate_ok', wait: 'gt_gate_wait', block: 'gt_gate_block'};
   /* ============================ GANTT ============================ */
   class Gantt extends Devlib.Component {
     static selector = "[data-dl-gantt]";
@@ -20,40 +22,53 @@
       this.fRes = '';
       this.fProc = '';
       this.pop = null;
-      this.tasks.forEach(t => { t.s = this.h(t.start); t.e = t.end ? this.h(t.end) : t.s + (+t.duration || 1); });
+      this.origin = this.cfg.originDate ? this.cfg.originDate.split('-').map(Number) : null;  // [y, m, d] = the date hour 0 means
+      this.LK = this.cfg.lockUntil != null && this.cfg.lockUntil !== '' ? this.h(this.cfg.lockUntil) : null;  // lock window end (hour)
+      this.pending = null;  // a moved block waiting for the server check / the user's decision
+      this.impact = null;
+      this.tasks.forEach(t => {
+        t.s = this.h(t.start); t.e = t.end ? this.h(t.end) : t.s + (+t.duration || 1);
+        t.over = t.forecastEnd != null && t.forecastEnd !== '' ? Math.max(0, this.h(t.forecastEnd) - t.e) : 0;  // overrun past the planned end (hours)
+      });
       this.W = (this.E - this.S) * this.PX;
       this.op = null;
       this.board.addEventListener('pointerdown', e => {
         const b = e.target.closest('[data-g2-task]'); if (!b || e.button !== 0) return;
         const t = this.task(b.dataset.g2Task);
         this.closePop();
-        if (this.live()) return;
-        if (t.state === 'qchold') { this.op = {t, b, x0: e.clientX, locked: true}; return; }
-        this.op = {t, b, x0: e.clientX, s0: t.s, e0: t.e, rz: !!e.target.closest('[data-g2-rz]'), moved: false};
+        if (this.live() || this.pending) return;
+        if (t.state === 'qchold') { this.op = {t, b, x0: e.clientX, locked: true, msg: 'gt_qc_locked'}; return; }
+        if (this.lockedFor(t)) { this.op = {t, b, x0: e.clientX, locked: true, msg: 'gt_task_locked'}; return; }
+        this.op = {t, b, x0: e.clientX, y0: e.clientY, s0: t.s, e0: t.e, row0: t.row, target: t.row, rz: !!e.target.closest('[data-g2-rz]'), moved: false};
         b.setPointerCapture(e.pointerId);
       });
       this.board.addEventListener('pointermove', e => {
         if (!this.op || this.op.locked) return;
-        const dh = (e.clientX - this.op.x0) / this.PX; if (Math.abs(e.clientX - this.op.x0) > 3) this.op.moved = true; if (!this.op.moved) return;
+        const o = this.op, dh = (e.clientX - o.x0) / this.PX, dy = e.clientY - o.y0;
+        if (Math.abs(e.clientX - o.x0) > 3 || Math.abs(dy) > 3) o.moved = true;
+        if (!o.moved) return;
         const sn = v => Math.round(v / this.SNAP) * this.SNAP;
-        if (this.op.rz) this.op.t.e = Math.min(this.E, Math.max(this.op.t.s + this.SNAP, this.op.s0 + sn(this.op.e0 - this.op.s0 + dh)));
-        else { const d = this.op.e0 - this.op.s0; this.op.t.s = Math.min(this.E - d, Math.max(this.S, sn(this.op.s0 + dh))); this.op.t.e = this.op.t.s + d; }
-        this.op.b.style.left = (this.op.t.s - this.S) * this.PX + 'px'; this.op.b.style.width = (this.op.t.e - this.op.t.s) * this.PX + 'px';
-        $(this.op.b, 'small').textContent = `${this.hm(this.op.t.s)}–${this.hm(this.op.t.e)}`;
+        if (o.rz) o.t.e = Math.min(this.E, Math.max(o.t.s + this.SNAP, o.s0 + sn(o.e0 - o.s0 + dh)));
+        else { const d = o.e0 - o.s0; o.t.s = Math.min(this.E - d, Math.max(this.minStart(o.t), sn(o.s0 + dh))); o.t.e = o.t.s + d; }
+        this.place(o.t, o.b);
+        if (!o.rz) { o.b.style.transform = `translateY(${dy}px)`; o.b.style.zIndex = 6; o.target = this.rowAt(e.clientY) ?? o.row0; this.markRows(o.t, o.target); }
       });
       this.board.addEventListener('pointerup', e => {
         if (!this.op) { const b = e.target.closest('[data-g2-task]'); if (b && this.live()) this.showPop(this.task(b.dataset.g2Task), b); return; }
         const o = this.op; this.op = null;
-        if (o.locked) { if (Math.abs(e.clientX - o.x0) > 3) toast(T('gt_qc_locked'), 'warn'); else this.showPop(o.t, o.b); return; }
+        if (o.locked) { if (Math.abs(e.clientX - o.x0) > 3) toast(T(o.msg), 'warn'); else this.showPop(o.t, o.b); return; }
         if (!o.moved) return this.showPop(o.t, o.b);
-        if (o.t.s !== o.s0 || o.t.e !== o.e0) this.touch(o.t, o.rz ? 'resize' : 'move');
-        this.render();
+        if (o.target !== o.row0 && !this.canRun(o.t, o.target)) { o.t.s = o.s0; o.t.e = o.e0; toast(T('gt_not_eligible'), 'warn'); return this.render(); }
+        o.t.row = o.target;
+        if (o.t.s === o.s0 && o.t.e === o.e0 && o.t.row === o.row0) return this.render();
+        this.commit(o.t, {row: o.row0, s: o.s0, e: o.e0, process: o.t.process}, o.t.row !== o.row0 ? 'reassign' : o.rz ? 'resize' : 'move');
       });
       this.board.addEventListener('dblclick', e => {
-        const b = e.target.closest('[data-g2-task]'); if (!b || this.live()) return;
+        const b = e.target.closest('[data-g2-task]'); if (!b || this.live() || this.pending) return;
         this.closePop();
         const t = this.task(b.dataset.g2Task);
         if (t.state === 'qchold') { toast(T('gt_qc_locked'), 'warn'); return; }
+        if (this.lockedFor(t)) { toast(T('gt_task_locked'), 'warn'); return; }
         const ov = document.createElement('div'); ov.className = 'dl-mov is-on';
         ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="dialog" aria-modal="true"><div class="dl-modal__head"><h3>${esc(T('gt_edit_task'))}</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div>
           <div class="dl-modal__body dl-gantt__edit"><label><span>${esc(T('gt_code'))}</span><input value="${esc(t.label)}" disabled></label>
@@ -62,7 +77,15 @@
           <div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-x>Cancel</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-e-save>Save</button></div></div>`;
         ov.addEventListener('click', ev => {
           if (ev.target === ov || ev.target.closest('[data-x]')) return ov.remove();
-          if (ev.target.closest('[data-e-save]')) { const nr = $(ov, '[data-e-row]').value, np = $(ov, '[data-e-proc]').value; if (nr !== t.row || np !== t.process) { t.row = nr; t.process = np; this.touch(t, 'reassign'); toast(Tf('gt_moved', {task: t.label, res: this.rows.find(r => r.key === nr).label}), 'success'); } ov.remove(); this.render(); }
+          if (ev.target.closest('[data-e-save]')) {
+            const nr = $(ov, '[data-e-row]').value, np = $(ov, '[data-e-proc]').value;
+            if (nr !== t.row && !this.canRun(t, nr)) { toast(T('gt_not_eligible'), 'warn'); return; }
+            if (nr !== t.row || np !== t.process) {
+              const orig = {row: t.row, s: t.s, e: t.e, process: t.process}; t.row = nr; t.process = np;
+              this.commit(t, orig, 'reassign'); toast(Tf('gt_moved', {task: t.label, res: this.rows.find(r => r.key === nr).label}), 'success');
+            }
+            ov.remove(); this.render();
+          }
         });
         document.body.appendChild(ov); $(ov, '[data-e-row]').focus();
       });
@@ -77,8 +100,9 @@
         if (e.target.name === 'gantt_process') { this.fProc = e.target.value; this.render(); }
       });
       document.addEventListener('pointerdown', e => { if (this.pop && !e.target.closest('.dl-gantt__pop,[data-g2-task]')) this.closePop(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && this.impact) this.revert(); });
       this.legend();this.render();
-      this.el.dlGantt = {tasks: this.tasks, rows: this.rows, render: this.render, changed: this.changed};
+      this.el.dlGantt = {tasks: this.tasks, rows: this.rows, render: this.render, changed: this.changed, setDraft: this.setDraft};
     }
     h(t) { const [a, b] = String(t).split(':'); return +a + (+b || 0) / 60; }
 
@@ -86,10 +110,135 @@
       return `${String(Math.floor(x + 1e-9)).padStart(2, '0')}:${String(Math.round((x % 1) * 60) % 60).padStart(2, '0')}`;
     }
 
+    // Time label for people: with an origin date "Thu 08:30" (hour modulo 24), otherwise plain HH:MM.
+    lbl(x) {
+      if (!this.origin) return this.hm(x);
+      const day = Math.floor((x + 1e-9) / 24);
+      return `${this.dayName(day)} ${this.hm(x - day * 24)}`;
+    }
+
+    // Date of day n after the origin (UTC math, so no time zone drift).
+    dayDate(n) {
+      return new Date(Date.UTC(this.origin[0], this.origin[1] - 1, this.origin[2] + n));
+    }
+
+    dayName(n, full = false) {
+      return this.dayDate(n).toLocaleDateString(NUM.lang === 'id' ? 'id-ID' : 'en-GB', full ? {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'} : {weekday: 'short', timeZone: 'UTC'});
+    }
+
     live() {
       return this.el.dataset.mode === 'live';
     }
 
+    // Locked tasks cannot be dragged: explicit locked:true, or starting before the lock window ends (hot / movable tasks excepted).
+    lockedFor(t) {
+      if (t.locked === true) return true;
+      return this.LK != null && !t.movable && t.state !== 'hot' && t.s < this.LK - 1e-9;
+    }
+
+    minStart(t) {
+      return this.LK != null && !t.movable && t.state !== 'hot' ? Math.max(this.S, this.LK) : this.S;
+    }
+
+    canRun(t, key) {
+      return !Array.isArray(t.eligible) || t.eligible.includes(key);
+    }
+
+    // Row under the pointer, found by geometry (the dragged block covers the lane, so hit testing would return the old row).
+    rowAt(y) {
+      const el = $$(this.board, '[data-g2-row]').find(r => { const b = r.getBoundingClientRect(); return y >= b.top && y < b.bottom; });
+      return el ? el.dataset.g2Row : null;
+    }
+
+    markRows(t, over) {
+      $$(this.board, '[data-g2-row]').forEach(r => {
+        const ok = this.canRun(t, r.dataset.g2Row) || r.dataset.g2Row === t.row;
+        r.classList.toggle('is-elig', ok); r.classList.toggle('is-nelig', !ok); r.classList.toggle('is-over', r.dataset.g2Row === over);
+      });
+    }
+
+    // Position a block (and its forecast tail) from the task's current times.
+    place(t, b) {
+      b.style.left = (t.s - this.S) * this.PX + 'px'; b.style.width = Math.max(0.25, t.e - t.s) * this.PX + 'px';
+      $(b, 'small').textContent = `${this.lbl(t.s)}–${this.lbl(t.e)}`;
+      const fc = $(this.board, `[data-g2-fc="${t.id}"]`); if (fc) { fc.style.left = (t.e - this.S) * this.PX + 'px'; fc.style.width = this.fcWidth(t) + 'px'; }
+    }
+
+    fcWidth(t) {
+      return Math.max(0, Math.min(t.over, this.E - t.e)) * this.PX;
+    }
+
+    fcText(t) {
+      return t.over < 1 ? Tf('gt_over_min', {n: Math.round(t.over * 60)}) : Tf('gt_over_h', {n: t.over.toFixed(1)});
+    }
+
+    setDraft(text) {
+      const d = $(this.el, '[data-g2-draft]'); if (d) d.textContent = text;
+    }
+
+    /* ---------- server check before commit (impactUrl / moveUrl) ---------- */
+    // Without impactUrl the change is committed at once (old behaviour); with it the server judges the move first.
+    commit(t, orig, type) {
+      if (!this.cfg.impactUrl) { this.touch(t, type); return this.render(); }
+      return this.check(t, orig, type);
+    }
+
+    async post(url, t) {
+      const r = await fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.DL_CSRF || document.querySelector('meta[name="csrf-token"]')?.content || ''},
+        body: JSON.stringify({task: t.id, row: t.row, start: this.hm(t.s), end: this.hm(t.e)})});
+      const body = await r.json().catch(() => ({}));
+      if (body.ok === undefined) body.ok = r.ok;
+      if (!body.ok && !body.reason) body.reason = body.message || r.statusText;
+      return body;
+    }
+
+    async check(t, orig, type) {
+      this.pending = {t, orig, type, checking: true}; this.render();
+      let res;
+      try { res = await this.post(this.cfg.impactUrl, t); } catch (e) { this.revert(); return toast(String(e.message || T('gt_check_failed')), 'danger'); }
+      if (!this.pending || this.pending.t !== t) return;
+      if (!res.ok) { this.revert(); return toast(res.reason || T('gt_check_failed'), 'warn'); }
+      if (res.row != null) t.row = res.row;
+      if (res.start != null) t.s = this.h(res.start);
+      if (res.end != null) t.e = this.h(res.end);
+      this.pending.checking = false; this.pending.res = res; this.render(); this.showImpact();
+    }
+
+    revert() {
+      const p = this.pending; this.pending = null; this.closeImpact();
+      if (p) { p.t.row = p.orig.row; p.t.s = p.orig.s; p.t.e = p.orig.e; p.t.process = p.orig.process; }
+      this.render();
+    }
+
+    async accept() {
+      const p = this.pending; if (!p || p.checking) return;
+      if (this.cfg.moveUrl) {
+        p.checking = true; $(this.impact, '[data-g2-imp-ok]').disabled = true;
+        let res;
+        try { res = await this.post(this.cfg.moveUrl, p.t); } catch (e) { this.revert(); return toast(String(e.message || T('gt_check_failed')), 'danger'); }
+        if (!res.ok) { this.revert(); return toast(res.reason || T('gt_check_failed'), 'warn'); }
+        if (res.draft) this.setDraft(res.draft);
+      }
+      this.pending = null; this.closeImpact();
+      this.touch(p.t, p.type); this.render();
+    }
+
+    closeImpact() { if (this.impact) { this.impact.remove(); this.impact = null; } }
+
+    showImpact() {
+      this.closeImpact();
+      const p = this.pending, b = p && $(this.board, `[data-g2-task="${p.t.id}"]`); if (!b) return;
+      const lines = p.res.lines || [];
+      this.impact = document.createElement('div'); this.impact.className = 'dl-gantt__imp';
+      this.impact.innerHTML = `<h3>${esc(T('gt_impact_title'))}</h3><p>${esc(p.t.label)} · ${esc(this.lbl(p.t.s))}–${esc(this.lbl(p.t.e))}</p>${lines.length ? `<ul>${lines.map(l => `<li class="is-${esc(l.tone || 'ok')}"><span>${esc(l.label)}</span><b>${esc(l.value)}</b></li>`).join('')}</ul>` : ''}
+        <div class="dl-gantt__impf"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-g2-imp-x>${esc(T('gt_cancel'))}</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-g2-imp-ok>${esc(T('gt_move_draft'))}</button></div>`;
+      $(this.impact, '[data-g2-imp-x]').addEventListener('click', this.revert);
+      $(this.impact, '[data-g2-imp-ok]').addEventListener('click', this.accept);
+      const r = b.getBoundingClientRect(); this.impact.style.cssText = `left:${Math.max(8, Math.min(r.left + scrollX, innerWidth - 300))}px;top:${r.bottom + scrollY + 6}px`;
+      document.body.appendChild(this.impact);
+    }
+
+    /* ---------- board ---------- */
     catOf(t) {
       return this.cats[t.process] || {label: t.process || '', tone: 'accent'};
     }
@@ -123,29 +272,84 @@
         + '<span class="dl-gantt__lsep"></span><span><i class="dl-gantt__sw dl-gantt--breakdown"></i>Breakdown</span><span><i class="dl-gantt__sw is-qchold"></i>QC Hold</span><span><i class="dl-gantt__sw is-hot"></i>🔥 Hot Job</span><span class="dl-gantt__lsep"></span><span>▬ ' + esc(T('gt_legend_progress')) + '</span>';
     }
 
+    gatesHtml(t) {
+      if (!Array.isArray(t.gates) || !t.gates.length) return '';
+      return `<span class="dl-gantt__gates">${GATES.map(([k, key], i) => t.gates[i] ? `<i class="is-${esc(t.gates[i])}" title="${esc(T(key))} · ${esc(T(GATE_STATE[t.gates[i]] || 'gt_gate_ok'))}"></i>` : '').join('')}</span>`;
+    }
+
     block(t) {
       const c = this.catOf(t), cls = t.state === 'breakdown' ? 'breakdown' : c.tone;
       const dim = this.hi && this.hi !== 'all' && !(this.hi === 'risk' ? t.risk : this.hi === 'idle' ? this.bigIdle(t.row) : false);
-      return `<div class="dl-gantt__blk dl-gantt--${esc(cls)} ${t.state === 'hot' ? 'is-hot' : ''} ${t.state === 'qchold' ? 'is-qchold' : ''} ${this.conflict(t) ? 'is-conflict' : ''} ${dim ? 'is-dim' : ''} ${this.hi && !dim && this.hi !== 'all' ? 'is-match' : ''} ${this.changed.has(t.id) ? 'is-changed' : ''}"
-        style="left:${(t.s - this.S) * this.PX}px;width:${Math.max(0.25, t.e - t.s) * this.PX}px" data-g2-task="${esc(t.id)}" title="${esc(t.label)} · ${this.hm(t.s)}–${this.hm(t.e)}">
-        <b>${t.state === 'hot' ? '🔥 ' : t.state === 'breakdown' ? '⚠ ' : t.state === 'qchold' ? '🔍 ' : ''}${esc(t.label)}${t.state !== 'breakdown' && c.label ? ' · ' + esc(c.label) : ''}</b>
-        <small>${this.hm(t.s)}–${this.hm(t.e)}</small><span class="dl-gantt__prog"><span style="width:${+t.progress || 0}%"></span></span>
-        ${t.state === 'qchold' || this.live() ? '' : '<span class="dl-gantt__rz" data-g2-rz></span>'}</div>`;
+      const gates = Array.isArray(t.gates) ? t.gates : [], p = this.pending && this.pending.t === t ? this.pending : null;
+      const setupPx = Math.min((t.e - t.s) * this.PX, (+t.setup || 0) / 60 * this.PX);
+      const flags = [t.state === 'hot' ? 'is-hot' : '', t.state === 'qchold' ? 'is-qchold' : '', this.conflict(t) ? 'is-conflict' : '', dim ? 'is-dim' : '', this.hi && !dim && this.hi !== 'all' ? 'is-match' : '',
+        this.changed.has(t.id) ? 'is-changed' : '', this.lockedFor(t) && t.state !== 'qchold' ? 'is-locked' : '', gates.includes('block') ? 'has-gate-block' : gates.includes('wait') ? 'has-gate-wait' : '',
+        gates.length ? 'has-gates' : '', p ? (p.checking ? 'is-checking' : 'is-pending') : ''].filter(Boolean).join(' ');
+      return `<div class="dl-gantt__blk dl-gantt--${esc(cls)} ${flags}"
+        style="left:${(t.s - this.S) * this.PX}px;width:${Math.max(0.25, t.e - t.s) * this.PX}px" data-g2-task="${esc(t.id)}" title="${esc(t.label)} · ${esc(this.lbl(t.s))}–${esc(this.lbl(t.e))}">
+        ${setupPx > 0 ? `<span class="dl-gantt__setup" style="width:${setupPx}px">${setupPx >= 40 ? 'S ' + (+t.setup) : ''}</span>` : ''}
+        <b>${t.state === 'hot' ? '🔥 ' : t.state === 'breakdown' ? '⚠ ' : t.state === 'qchold' ? '🔍 ' : ''}${this.lockedFor(t) && t.state !== 'qchold' ? '<i class="fa-solid fa-lock dl-gantt__lk"></i> ' : ''}${esc(t.label)}${t.state !== 'breakdown' && c.label ? ' · ' + esc(c.label) : ''}</b>
+        <small>${esc(this.lbl(t.s))}–${esc(this.lbl(t.e))}</small>${this.gatesHtml(t)}<span class="dl-gantt__prog"><span style="width:${+t.progress || 0}%"></span></span>
+        ${t.state === 'qchold' || this.live() || this.lockedFor(t) ? '' : '<span class="dl-gantt__rz" data-g2-rz></span>'}</div>`;
+    }
+
+    forecast(t) {
+      return t.over > 1e-9 ? `<div class="dl-gantt__fc" data-g2-fc="${esc(t.id)}" style="left:${(t.e - this.S) * this.PX}px;width:${this.fcWidth(t)}px"><em>${esc(this.fcText(t))}</em></div>` : '';
+    }
+
+    // Vertical day separators (multi-day axis only), shared by header and lanes.
+    seps() {
+      if (!this.origin) return '';
+      let out = '';
+      for (let m = Math.floor(this.S / 24 + 1) * 24; m < this.E; m += 24) out += `<i class="dl-gantt__dsep" style="left:${(m - this.S) * this.PX}px"></i>`;
+      return out;
+    }
+
+    headHtml() {
+      const ticks = Array.from({length: this.E - this.S + 1}, (_, i) => { const hr = this.S + i; return `<span style="left:${i * this.PX}px">${String(this.origin ? hr % 24 : hr).padStart(2, '0')}:00</span>`; }).join('');
+      let days = '';
+      if (this.origin) for (let d = Math.floor(this.S / 24); d * 24 < this.E; d++) {
+        const a = Math.max(this.S, d * 24), b = Math.min(this.E, (d + 1) * 24);
+        days += `<em class="dl-gantt__day" style="left:${(a - this.S) * this.PX}px;width:${(b - a) * this.PX}px">${esc(this.dayName(d, true))}</em>`;
+      }
+      return `<div class="dl-gantt__row dl-gantt__head ${this.origin ? 'is-days' : ''}"><div class="dl-gantt__res">${esc(this.cfg.resourceLabel)}</div><div class="dl-gantt__lane" style="width:${this.W}px">${days}${this.seps()}${ticks}</div></div>`;
+    }
+
+    resHtml(r) {
+      const load = r.load != null && r.load !== '' ? Math.max(0, Math.min(100, +r.load)) : null;
+      return `<div class="dl-gantt__res"><b>${esc(r.label)}</b>${r.bottleneck ? `<span class="dl-gantt__bn">${esc(T('gt_bottleneck'))}</span>` : ''}${r.sub ? `<small><i class="fa-solid fa-user"></i> ${esc(r.sub)}</small>` : ''}`
+        + (load != null ? `<span class="dl-gantt__load" title="${esc(T('gt_load'))} ${load}%"><span class="dl-gantt__bar2 ${load >= 90 ? 'is-bad' : load >= 75 ? 'is-warn' : ''}"><i style="width:${load}%"></i></span><small>${load}%</small></span>` : '') + '</div>';
+    }
+
+    laneExtras(r) {
+      let out = this.seps();
+      if (this.LK != null && this.LK > this.S) out += `<div class="dl-gantt__lock" style="width:${(Math.min(this.LK, this.E) - this.S) * this.PX}px"></div>`;
+      (r.down || []).forEach(d => {
+        const a = Math.max(this.S, this.h(d.from)), b = Math.min(this.E, this.h(d.to)); if (b <= a) return;
+        out += `<div class="dl-gantt__down" style="left:${(a - this.S) * this.PX}px;width:${(b - a) * this.PX}px" title="${esc(d.label || '')}"><span>${esc(d.label || '')}</span></div>`;
+      });
+      return out;
     }
 
     render() {
       const vis = this.rows.filter(r => (!this.fRes || r.key === this.fRes) && (!this.fProc || this.rowTasks(r.key).some(t => t.process === this.fProc)));
-      let html = `<div class="dl-gantt__row dl-gantt__head"><div class="dl-gantt__res">${esc(this.cfg.resourceLabel)}</div><div class="dl-gantt__lane" style="width:${this.W}px">${Array.from({length: this.E - this.S + 1}, (_, i) => `<span style="left:${i * this.PX}px">${String(this.S + i).padStart(2, '0')}:00</span>`).join('')}</div></div>`;
+      let html = this.headHtml();
       let sec = null;
       vis.forEach(r => {
         if (r.section && r.section !== sec) { sec = r.section; html += `<div class="dl-gantt__sec">${esc(sec)}</div>`; }
         const list = this.rowTasks(r.key).filter(t => !this.fProc || t.process === this.fProc);
-        html += `<div class="dl-gantt__row" data-g2-row="${esc(r.key)}"><div class="dl-gantt__res"><b>${esc(r.label)}</b>${r.sub ? `<small><i class="fa-solid fa-user"></i> ${esc(r.sub)}</small>` : ''}</div>
-          <div class="dl-gantt__lane" style="width:${this.W}px;background-size:${this.PX}px 100%">${this.fProc ? '' : this.gaps(r.key).map(([a, b]) => `<div class="dl-gantt__idle" style="left:${(a - this.S) * this.PX}px;width:${(b - a) * this.PX}px">idle</div>`).join('')}${list.map(this.block).join('')}</div></div>`;
+        html += `<div class="dl-gantt__row" data-g2-row="${esc(r.key)}">${this.resHtml(r)}
+          <div class="dl-gantt__lane" style="width:${this.W}px;background-size:${this.PX}px 100%">${this.laneExtras(r)}${this.fProc ? '' : this.gaps(r.key).map(([a, b]) => `<div class="dl-gantt__idle" style="left:${(a - this.S) * this.PX}px;width:${(b - a) * this.PX}px">idle</div>`).join('')}${list.map(this.forecast).join('')}${list.map(this.block).join('')}</div></div>`;
       });
       if (!vis.length) html += '<div class="dl-empty"><b class="dl-empty__title">' + esc(T('gt_no_resource')) + '</b></div>';
-      const now = new Date(new Date().toLocaleString('en-US', {timeZone: TZ()})), nh = now.getHours() + now.getMinutes() / 60;
-      if (nh >= this.S && nh <= this.E) html += `<div class="dl-gantt__now" style="left:calc(var(--dl-gantt-res) + ${(nh - this.S) * this.PX}px)" title="${esc(T('gt_now'))} ${fmt.time()}"></div>`;
+      let nh, nowTitle;
+      if (this.cfg.nowAt != null && this.cfg.nowAt !== '') { nh = +this.cfg.nowAt; nowTitle = this.lbl(nh); } else {
+        const now = new Date(new Date().toLocaleString('en-US', {timeZone: TZ()}));
+        nh = now.getHours() + now.getMinutes() / 60; nowTitle = fmt.time();
+        if (this.origin) nh += (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(this.origin[0], this.origin[1] - 1, this.origin[2])) / 3600000;
+      }
+      if (nh >= this.S && nh <= this.E) html += `<div class="dl-gantt__now" style="left:calc(var(--dl-gantt-res) + ${(nh - this.S) * this.PX}px)" title="${esc(T('gt_now'))} ${esc(nowTitle)}"></div>`;
+      if (this.LK != null && this.LK > this.S && this.LK <= this.E) html += `<div class="dl-gantt__lockline" style="left:calc(var(--dl-gantt-res) + ${(this.LK - this.S) * this.PX}px)"><span>${esc(Tf('gt_locked_until', {t: this.lbl(this.LK)}))}</span></div>`;
       this.board.innerHTML = html;
       this.stats();
       const chips = [...(this.fRes ? [['res', 'Resource: ' + this.rows.find(r => r.key === this.fRes).label]] : []), ...(this.fProc ? [['proc', T('gt_process') + ': ' + this.catOf({process: this.fProc}).label]] : [])];
@@ -167,7 +371,8 @@
     showPop(t, b) {
       this.closePop();
       this.pop = document.createElement('div'); this.pop.className = 'dl-gantt__pop';
-      this.pop.innerHTML = `<button type="button" class="dl-gantt__popx" aria-label="${esc(T('close'))}">&times;</button><h3>${esc(t.label)}</h3><dl><dt>Resource</dt><dd>${esc(this.rows.find(r => r.key === t.row)?.label || '')}</dd><dt>${esc(T('gt_process'))}</dt><dd>${esc(this.catOf(t).label)}</dd><dt>${esc(T('gt_time'))}</dt><dd>${this.hm(t.s)}–${this.hm(t.e)}</dd><dt>Progress</dt><dd>${+t.progress || 0}%</dd><dt>Status</dt><dd>${esc(t.status || {hot: 'Hot Job', qchold: 'QC Hold', breakdown: 'Breakdown'}[t.state] || T('gt_scheduled'))}</dd></dl>`;
+      const extra = (+t.setup ? `<dt>${esc(T('gt_setup'))}</dt><dd>${+t.setup} min</dd>` : '') + (t.over > 1e-9 ? `<dt>${esc(T('gt_forecast'))}</dt><dd>${esc(this.lbl(t.e + t.over))} (${esc(this.fcText(t))})</dd>` : '');
+      this.pop.innerHTML = `<button type="button" class="dl-gantt__popx" aria-label="${esc(T('close'))}">&times;</button><h3>${esc(t.label)}</h3><dl><dt>Resource</dt><dd>${esc(this.rows.find(r => r.key === t.row)?.label || '')}</dd><dt>${esc(T('gt_process'))}</dt><dd>${esc(this.catOf(t).label)}</dd><dt>${esc(T('gt_time'))}</dt><dd>${esc(this.lbl(t.s))}–${esc(this.lbl(t.e))}</dd>${extra}<dt>Progress</dt><dd>${+t.progress || 0}%</dd><dt>Status</dt><dd>${esc(t.status || {hot: 'Hot Job', qchold: 'QC Hold', breakdown: 'Breakdown'}[t.state] || T('gt_scheduled'))}</dd></dl>`;
       const r = b.getBoundingClientRect(); this.pop.style.cssText = `left:${Math.min(r.left + scrollX, innerWidth - 260)}px;top:${r.bottom + scrollY + 6}px`;
       this.pop.querySelector('.dl-gantt__popx').addEventListener('click', this.closePop);
       document.body.appendChild(this.pop);

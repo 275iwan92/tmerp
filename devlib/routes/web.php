@@ -3,6 +3,7 @@
 use App\Support\AgentHistory;
 use App\Support\BoardDemo;
 use App\Support\Catalog;
+use App\Support\GanttDemo;
 use App\Support\Generator;
 use App\Support\Qc;
 use App\Support\Summary;
@@ -60,6 +61,10 @@ Route::post('/logout', function (Request $r) {
 })->name('logout');
 
 Route::middleware('devlib.auth')->group(function () {
+    // Gantt demo (Production Scheduling Board): impact check, then "Move into Draft".
+    Route::post('/demo/gantt/impact', fn (Request $r) => response()->json(GanttDemo::impact($r->all())));
+    Route::post('/demo/gantt/move', fn (Request $r) => response()->json(GanttDemo::impact($r->all()) + ['draft' => 'DRAFT '.$r->session()->increment('gantt_demo_draft').' change']));
+
     Route::get('/', fn () => view('home', ['modules' => Catalog::modules(), 'user' => session('devlib_user')]))->name('home');
 
     // Halaman komponen: komponen hidup + ikon </> berisi kode pemakaiannya.

@@ -166,7 +166,7 @@ final class Catalog
             ['code' => 'PJ', 'short' => 'PJ', 'label' => 'Boards, Schedules & Charts', 'icon' => 'fa-solid fa-chart-pie',
                 'pages' => [
                     'p5-kanban' => $page('Kanban', 'fa-solid fa-table-columns', ['kanban-production' => ['Production Board (drag, WIP, move rules, card detail)', $c('Kanban')]], 'mockup_UIUX_kanban.html'),
-                    'p5-gantt' => $page('Gantt', 'fa-solid fa-bars-staggered', ['gantt-scheduling' => ['Scheduling Board (resource × hours)', $c('Gantt')]], 'mockup_scheduling_board.html'),
+                    'p5-gantt' => $page('Gantt', 'fa-solid fa-bars-staggered', ['gantt-scheduling' => ['Scheduling Board (resource × hours)', $c('Gantt')], 'gantt-production' => ['Gantt: production scheduling (2 days, lock window, setup, gates, forecast, down time, eligible machines, impact check)', $c('Gantt')]], 'mockup_scheduling_board.html'),
                     'p5-calendar' => $page('Calendar', 'fa-solid fa-calendar-days', ['calendar-events' => ['Event Calendar (day / week / month)', $c('Calendar')], 'calendar-year' => ['Year Calendar (12 months, colored marks: holidays, working days)', $c('YearCalendar')]], 'mockup_UIUX_calendar.html'),
                     'p5-org' => $page('Org Chart', 'fa-solid fa-sitemap', ['org-chart' => ['Organization Structure (drag to change superior, vacancies, multiple holders)', $c('OrgChart')]], 'Organization-Structure-Mockup.html'),
                     'p6-charts' => $page('Charts', 'fa-solid fa-chart-pie', ['chart-bars' => ['Bars: bar, stacked, horizontal, combo', $c('Chart')], 'chart-lines' => ['Line, area, radar, heatmap', $c('Chart')], 'chart-pies' => ['Pie, donut, funnel', $c('Chart')]], 'mockup_dashboardcolor.html'),
