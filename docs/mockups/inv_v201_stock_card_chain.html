@@ -1,0 +1,42 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Stock Card — perbaikan saldo bersambung (pratinjau)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{navy:'#2c3e69',accent:'#2c7be5',muted:'#8a94a6'}}}};</script>
+<style>
+body{font-family:'Instrument Sans','Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#1e293b}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px}
+.lbl{font-size:10px;color:#8a94a6;text-transform:uppercase;font-weight:600;margin-bottom:2px}
+.inp{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 8px;font-size:12px;background:#eef4fd;position:relative}
+.inp.ro{background:#f8fafc;color:#64748b}
+.bd{font-size:9px;color:#2c7be5;background:#dbe8fb;border-radius:4px;padding:0 4px;font-weight:700;float:right}
+.mk{position:absolute;width:20px;height:20px;border-radius:50%;background:#e11d48;color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;z-index:20}
+.stat{position:relative;border-radius:8px;padding:8px 12px;min-width:92px;border:2px solid transparent}
+.stat b{font-size:18px;display:block}
+.stat.sel{border-color:#2c7be5;box-shadow:0 0 0 2px #cfe0fb}
+th{font-size:10px;text-transform:uppercase;color:#64748b;font-weight:700;text-align:left;padding:8px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.b{display:inline-block;border-radius:999px;padding:1px 9px;font-size:10px;font-weight:700}
+.g{background:#dcfce7;color:#15803d}.r{background:#fee2e2;color:#b91c1c}.y{background:#fef3c7;color:#a16207}.bl{background:#dbeafe;color:#1d4ed8}.n0{background:#e2e8f0;color:#475569}.v{background:#ede9fe;color:#6d28d9}
+.leg{background:#fff;border:1px dashed #e11d48;border-radius:10px;padding:10px 14px;font-size:12px}
+.leg li{margin:3px 0;display:flex;gap:8px;align-items:flex-start}
+.leg .c{flex:none;width:18px;height:18px;border-radius:50%;background:#e11d48;color:#fff;font-weight:700;font-size:10px;display:flex;align-items:center;justify-content:center}
+</style></head><body class="text-xs">
+<div class="px-5 pt-4 pb-2 text-[13px] font-semibold text-slate-700"><i class="fa-solid fa-circle-info text-accent mr-1"></i>Inventory › Gudang › Report › Kartu Stok — perbaikan: BB berikutnya = EB sebelumnya</div><div class="mx-5 mb-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 px-3 py-2 text-[12px]"><b>Aturan user:</b> saldo 5.000 ditambah 1.000 = EB 6.000; transaksi keluar 500 besoknya harus tertulis BB 6.000, Out 500, EB 5.500. Bila EB terakhir 5.000, baris berikutnya BB-nya 5.000. Gambar atas = <b>tangkapan layar asli</b> sekarang (item PYJ31, data dummy). Gambar bawah = <b>usulan</b> dengan data yang sama. Pratinjau saja; <b>belum dibangun</b>.</div><div class="mx-5 card p-3"><div class="font-bold mb-2 text-rose-700">SEKARANG (asli): angka tidak bersambung</div>
+<div style="position:relative;width:1400px"><img src="inventory_report_app/1_stock_card.png" style="width:1400px;display:block;border:1px solid #e2e8f0;border-radius:8px">
+<span class="mk" style="left:1318px;top:303px">1</span><span class="mk" style="left:812px;top:326px">2</span><span class="mk" style="left:808px;top:397px">3</span></div>
+<ul class="mt-2 text-[12px] leading-5"><li><b>1</b> Baris pertama berakhir EB <b>5.000</b>, tetapi baris berikutnya mulai BB <b>6.440</b>.</li>
+<li><b>2</b> Penyebab: BB dan EB tiap baris adalah saldo <b>lokasi itu</b> (Receiving, lalu PPR L05-01, dan seterusnya), padahal baris berurutan berasal dari lokasi yang berbeda.</li>
+<li><b>3</b> Baris Total memakai saldo <b>seluruh item</b> (BB 41.440). Jumlah BB yang tampil hanya 20.440, jadi Total tidak cocok dengan baris di atasnya (lima lokasi, dua di antaranya tidak bergerak di periode ini dan tidak tampil).</li></ul></div>
+<div class="h-3"></div>
+<div class="mx-5 card p-3"><div class="font-bold mb-2 text-emerald-700">USULAN: saldo berjalan per item, selalu bersambung</div>
+<div class="border rounded-md px-3 py-2 mb-2 text-[12px]" style="background:#eef4ff;color:#2c5fb3">Kartu stok per item untuk periode itu. Tiap baris = satu pergerakan; <b>BB = saldo item sebelum baris itu (sama dengan EB baris sebelumnya)</b>, In, Out, Adj, <b>EB = saldo item sesudahnya</b>. Baris Total mencakup semua lokasi item.</div>
+<div class="flex items-center gap-2 mb-2"><div class="border rounded-md px-3 py-1 bg-white">Periode 01-Okt-2026 → 03-Okt-2026</div><div class="border rounded-md px-3 py-1 bg-white">Item: PYJ31 <span class="bd">aa</span></div><div class="font-semibold text-slate-600 px-2">⟳ Show</div><div class="font-semibold text-slate-600 px-2"><i class="fa-solid fa-print"></i> Print</div></div>
+<div class="flex gap-5 text-[12px] text-slate-500 mb-2 border-b pb-1"><b class="text-slate-900 border-b-2 border-slate-900 pb-1">Semua 5</b><span>Masuk 1</span><span>Keluar 0</span><span>Penyesuaian 1</span><span>Transfer 2</span></div>
+<table class="w-full relative"><thead><tr><th>Tanggal</th><th>Lokasi</th><th class="n" style="position:relative">BB<span class="mk" style="right:-4px;top:-22px">1</span></th><th class="n">In</th><th class="n">Out</th><th class="n">Adj</th><th class="n" style="position:relative">EB<span class="mk" style="right:-4px;top:-22px">2</span></th></tr></thead>
+<tbody><tr class="bg-blue-50"><td colspan="7" class="font-bold"><i class="fa-solid fa-chevron-down text-[9px] mr-1"></i>Item: IVORY 300 79 X 109 · PYJ31 · LBR · 01-Okt-2026 – 03-Okt-2026 <span class="text-muted font-normal">4 baris</span></td></tr>
+<tr><td>01-Okt-2026</td><td>Warehouse A10 · Receiving</td><td class="n">41.440</td><td class="n">5.000</td><td class="n">0</td><td class="n">0</td><td class="n font-bold">46.440</td></tr><tr><td>02-Okt-2026</td><td>Warehouse A5 · PPR L05-01</td><td class="n">46.440</td><td class="n">0</td><td class="n">0</td><td class="n">25</td><td class="n font-bold">46.465</td></tr><tr><td>02-Okt-2026</td><td>Warehouse A5 · PPR L01-01</td><td class="n">46.465</td><td class="n">0</td><td class="n">4.000</td><td class="n">0</td><td class="n font-bold">42.465</td></tr><tr><td>02-Okt-2026</td><td>Warehouse A10 · PPR L05-03</td><td class="n">42.465</td><td class="n">4.000</td><td class="n">0</td><td class="n">0</td><td class="n font-bold">46.465</td></tr>
+<tr class="bg-slate-50 font-bold" style="border-top:2px solid #2c7be5"><td></td><td style="position:relative">Total<span class="mk" style="left:46px;top:5px">3</span></td><td class="n">41.440</td><td class="n">9.000</td><td class="n">4.000</td><td class="n">25</td><td class="n">46.465</td></tr></tbody></table>
+<div class="mt-3 grid grid-cols-2 gap-3 text-[12px]"><div class="card p-3" style="background:#f0fdf4"><b>Pemeriksaan sambungan</b><br>46.440 → 46.440 → 46.465 → 42.465 → 46.465 (EB tiap baris = BB baris berikutnya).<br>BB + In − Out + Adj = EB di <b>setiap baris</b>.</div>
+<div class="card p-3" style="background:#f0fdf4"><b>Pemeriksaan Total</b><br>41.440 + 9.000 − 4.000 + 25 = <b>46.465</b>. BB Total = BB baris pertama, EB Total = EB baris terakhir. Angka In 9.000 dan Out 4.000 sama dengan Total yang tampil sekarang.</div></div></div>
+<div class="h-3"></div><div class="px-5 pb-5"><div class="leg"><div class="font-bold mb-1 text-rose-700">Yang berubah (lingkaran merah)</div><ul><li><span class="c">1</span><span><b>BB dan EB menjadi saldo seluruh item</b> (jumlah semua lokasi), bukan saldo satu lokasi. Hasilnya BB baris berikutnya selalu sama dengan EB baris sebelumnya.</span></li><li><span class="c">2</span><span><b>EB tiap baris</b> = BB + In − Out + Adj. Transfer tetap dua baris (Out di lokasi asal, In di lokasi tujuan), sehingga saldo item turun lalu naik kembali dan totalnya tidak berubah.</span></li><li><span class="c">3</span><span><b>Baris Total tidak berubah angkanya</b> (BB 41.440, In 9.000, Out 4.000, Adj 25, EB 46.465); kini cocok dengan baris di atasnya karena berasal dari rantai yang sama.</span></li></ul><div class="mt-2 text-slate-600">Kolom, tab, filter, kepala kartu, dan urutan baris tetap seperti sekarang. Kolom Lokasi tetap tampil sebagai keterangan. Pilihan untuk Anda: bila perlu saldo per lokasi, ditambahkan sebagai kolom opsional <b>Saldo lokasi</b> yang tersembunyi secara default.</div></div></div></body></html>
