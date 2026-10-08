@@ -3613,3 +3613,9 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-gantt__imp li.is-warn b{color:var(--dl-amber)}
 .dl-gantt__imp li.is-bad b{color:var(--dl-danger)}
 .dl-gantt__impf{display:flex;justify-content:flex-end;gap:8px}
+
+/* Timer (stopwatch hh:mm:ss) */
+.dl-timer{display:inline-flex;align-items:baseline;gap:10px;color:var(--dl-accent)}
+.dl-timer__t{font-size:calc(46px * var(--dl-font-scale));font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1.1}
+.dl-timer__l{font-size:calc(13px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted)}
+.dl-timer--warn{color:var(--dl-amber-2)}.dl-timer--success{color:var(--dl-success)}.dl-timer--danger{color:var(--dl-danger)}.dl-timer--muted{color:var(--dl-muted)}

@@ -26,15 +26,15 @@
     <x-dl::action-form action="{{ route('v2.mnt.request.create') }}">
         <x-dl::card title="+ New Record — Maintenance Request" description="Report a problem. Leave Priority on Auto: safety, or a stopped critical machine, is P1 and becomes a Breakdown Maintenance Order at once.">
             <x-dl::form.row :cols="3">
-                <x-dl::field.select name="asset_id" label="Asset" required :options="Maintenance::assetOptions()" :source="Src::of('tm2mnt.mnt_asset')" />
+                <x-dl::field.select name="asset_id" label="Asset" required :options="Maintenance::assetOptions()" :value="request('asset_id')" :source="Src::of('tm2mnt.mnt_asset')" />
                 <x-dl::field.select name="request_kind" label="Kind" required :options="array_map('t', RequestService::OPEN_KINDS)" value="BREAKDOWN" :source="Src::of('tm2mnt.mnt_request.request_kind')" />
                 <x-dl::field.select name="priority" label="Priority" :options="['' => t('Auto')] + array_map('t', MntOrder::PRIORITIES)" value="" :source="Src::of('tm2mnt.mnt_request.priority')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="2">
-                <x-dl::field.checkbox name="asset_stopped" text="The asset is stopped" :source="Src::of('tm2mnt.mnt_request.asset_stopped')" />
+                <x-dl::field.checkbox name="asset_stopped" text="The asset is stopped" :value="request()->boolean('asset_stopped')" :source="Src::of('tm2mnt.mnt_request.asset_stopped')" />
                 <x-dl::field.date-time name="stopped_at" label="Stopped Since" :value="now()->format('Y-m-d H:i')" :source="Src::of('tm2mnt.mnt_request.stopped_at')" />
             </x-dl::form.row>
-            <x-dl::field.text name="symptom" label="What is wrong? (symptom)" multiline required :source="Src::of('tm2mnt.mnt_request.symptom')" />
+            <x-dl::field.text name="symptom" label="What is wrong? (symptom)" multiline required :value="request('symptom')" :source="Src::of('tm2mnt.mnt_request.symptom')" />
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 <x-dl::button preset="save" label="Send Request" />
