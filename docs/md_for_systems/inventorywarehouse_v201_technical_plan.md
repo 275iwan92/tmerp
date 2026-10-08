@@ -12,7 +12,7 @@
 |---|---|
 | Tujuan | Memperbaiki Inventory dan Warehouse untuk percetakan offset dan packaging: batch dan kedaluwarsa, pemilik stok, booking sejak costing, QC sampling dengan jalur URGENT, kurang kirim, subkon, titipan customer, alokasi gudang, dan nilai Average per item |
 | Dua modul | **INVENTORY** (apa, berapa, nilai, pemilik) dan **WAREHOUSE** (di mana, bagaimana fisik); dokumen Transfer dan Opname dimiliki Inventory, eksekusi lapangan di Warehouse (D1) |
-| Tidak diubah | Stock Card, Stock Summary, **Warehouse Map**; Stock In / Out / Return / Adjustment per kelas; Inquiry, ProDev, ProCost (zona beku) |
+| Tidak diubah | Stock Summary, **Warehouse Map**; Stock Card hanya **rumus BB / EB dibuat bersambung** (D25); Stock In / Out / Return / Adjustment per kelas; Inquiry, ProDev, ProCost (zona beku) |
 | Dibangun di | `ddt*` (mockup.test) sampai rilis; **tidak menulis ke `tm2*`** |
 | Prinsip kode | OO dan modular, objek DevLib (`x-dl::*`), logika di `app/Services/*`, setiap nilai punya layar inputan |
 
@@ -151,6 +151,18 @@ Aturan lain (D17, D18): landed cost terlambat ke qty yang ada, bagian yang sudah
 
 ![Stock Summary yang ada (asli, tidak diubah)](../mockups/inventory_report_app/3_stock_summary.png)
 
+### 8.1 Rumus bersambung dan koreksi salah input (D25, D26)
+
+Semua angka adalah **rantai**: `EB = BB + In − Out + Adj`, **BB baris berikutnya = EB baris sebelumnya**; nilai: `Nilai EB = Nilai BB + In − Out ± Adj`, `Avg = Nilai EB ÷ EB`; Stock Summary: `Opening + In − Out + Adj = Closing`. Contoh user: saldo 5.000 + 1.000 = 6.000; keluar 500 besoknya: BB 6.000, EB 5.500.
+
+**Temuan:** Stock Card sekarang memakai BB / EB **per lokasi** pada tiap baris tetapi Total memakai saldo **seluruh item**, jadi baris yang berurutan (lokasi berbeda) tidak bersambung dan Total BB (41.440) bukan jumlah BB yang tampil (20.440). Perbaikan: BB / EB menjadi saldo item (di `StockCardAllReport`; ledger sudah menghitung `item_balance`, transfer harus ikut sebagai dua baris).
+
+![Stock Card: sekarang vs usulan bersambung](../mockups/inv_v201_stock_card_chain.jpg)
+
+**Koreksi salah input:** dokumen POSTED tidak diedit; koreksi = dokumen baru yang menunjuk dokumen asal. **Pembalik** untuk salah input (tidak mencemari Stock Loss & Gain); **Adjustment** hanya untuk selisih fisik. Periode tertutup menolak; koreksi nilai membuat jurnal koreksi bersusun.
+
+![Rumus bersambung dan contoh koreksi](../mockups/inv_v201_chain_correction.jpg)
+
 ## 9. Skema (ringkas, belum final)
 
 | Entitas | DB | Isi inti |
@@ -192,6 +204,8 @@ Hak harga: Sales tidak melihat harga; nilai stok hanya yang berhak membuka lapor
 | `warehouse_layout_v2.jpg` | Warehouse Map yang disetujui | **Tidak diubah** |
 | `menu_v201_split.jpg` | Menu sekarang dan usulan dua modul | **Menunggu persetujuan** |
 | `inv_v201_coverage.jpg` | Peta cakupan aspek dan status preview | Informasi |
+| `inv_v201_stock_card_chain.jpg` | Stock Card asli vs usulan saldo bersambung (BB berikutnya = EB sebelumnya) | **Menunggu persetujuan** (aturan user D25) |
+| `inv_v201_chain_correction.jpg` | Rumus bersambung dan koreksi salah input (Pembalik) | Menunggu persetujuan (D26) |
 | `inv_v201_batch_grid.jpg`, `inv_v201_batch_form.jpg` | Master batch (layar baru) | Menunggu persetujuan |
 | `inv_v201_stock_in_batch.jpg` | Field Batch di Stock In | Menunggu persetujuan |
 | `wh_v201_storage_area.jpg` | Jenis area baru dan aturan area (tiga isian) | **Aturan area disetujui** (D24); jenis area menunggu |

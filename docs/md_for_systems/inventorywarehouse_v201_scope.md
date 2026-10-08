@@ -37,8 +37,10 @@
 | D20 | **Nilai awal pengaturan** sesuai tabel O-5 (semua bisa diubah user). | user 2026-10-08 |
 | D21 | **Kelas risiko awal** A / B / C sesuai O-6, diisi per kategori material oleh kepala QC. | user 2026-10-08 |
 | D22 | **PO Subkon sebagai induk** dokumen kirim bahan ke subkon (O-7). | user 2026-10-08 |
-| D23 | **Stock Card, Stock Summary, dan Warehouse Map tidak diubah** (format yang ada sudah benar dan biasa dipakai); perbaikan hanya lewat preview. Tidak ada kolom baru di Stock Card. | user 2026-10-08 |
+| D23 | **Stock Summary dan Warehouse Map tidak diubah**; Stock Card tidak diubah **kecuali rumus BB / EB (D25)**. Format, kolom, dan filter tetap; tidak ada kolom baru. Perbaikan apa pun lewat preview dulu. | user 2026-10-08 |
 | D24 | **Aturan area** = tiga isian: Mixing, Pick order (FIFO / FEFO), hitung tiap N hari; belum ada aturan lain. | user 2026-10-08 |
+| D25 | **Stock Card: rumus bersambung.** BB baris berikutnya = EB baris sebelumnya; BB dan EB = saldo **seluruh item** (bukan per lokasi); EB = BB + In − Out + Adj; baris Total tidak berubah angkanya. Contoh user: saldo 5.000 + 1.000 = 6.000; keluar 500 besoknya: BB 6.000, EB 5.500. Preview: `inv_v201_stock_card_chain.jpg`. | user 2026-10-08 |
+| D26 | **Koreksi salah input** (usulan, menunggu persetujuan preview): dokumen POSTED tidak diedit; koreksi lewat dokumen baru yang menunjuk dokumen asal. **Pembalik** untuk salah input, **Adjustment hanya untuk selisih fisik**. Preview: `inv_v201_chain_correction.jpg`. | usulan 2026-10-08 |
 | D16 | **Pengaman URGENT** sesuai saran: yang boleh menandai PPIC, Supervisor Produksi, Ops Manager dan di atasnya; alasan dan tautan WO / CO wajib; bahan FSC / food grade butuh persetujuan kepala QC atau Ops Manager. | user 2026-10-08 (O-12) |
 
 Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-10-08.
@@ -165,13 +167,14 @@ Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-1
 
 | Kode | Laporan | Status | Prio |
 |---|---|---|---|
-| I-50 | Kartu stok, saldo per tanggal (as of), ringkasan, rekap | ADA | – |
+| I-50 | Kartu stok, saldo per tanggal (as of), ringkasan, rekap | ADA; **kartu stok diperbaiki: BB / EB saldo item bersambung (D25)**, di `StockCardAllReport` (sekarang BB / EB per lokasi, Total per item) dan laporan Stock Card per kelas | P1 |
 | I-51 | Aging dan Dead Stock dengan batas hari yang bisa diatur | SEBAGIAN (slow moving) | P2 |
 | I-52 | Kedaluwarsa (near expiry, expired) dengan nilai | BARU | P1 |
 | I-53 | In Transit; Discrepancy transfer | BARU | P2 |
 | I-54 | Reservasi dan Available (RM dan FG) satu sumber | SEBAGIAN | P1 |
 | I-55 | Traceability maju dan mundur per batch | BARU | P1 |
 | I-56 | ABC, reorder, pemakaian; commitment value | BARU | P3 |
+| I-57 | **Pembalik** dokumen POSTED untuk salah input (sekarang sistem menolak membatalkan dokumen POSTED); koreksi batch; Adjustment hanya untuk selisih fisik (D26) | BARU | P1 |
 
 ---
 
@@ -604,6 +607,7 @@ dummy baru (aturan: dummy basi diganti), dan **commit + push per potongan kerja*
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-10-08 | Rev.6: D25 (Stock Card bersambung: BB / EB saldo item, user), D26 (koreksi salah input lewat Pembalik, usulan), I-57; D23 diberi pengecualian |
 | 2026-10-08 | Rev.5: D23 (Stock Card, Stock Summary, Warehouse Map tidak diubah) dan D24 (aturan area tiga isian) |
 | 2026-10-08 | Rev.4: user menyetujui semua saran (D17 sampai D22); status DISETUJUI; rencana Fase 1 dibuat terpisah (`inventorywarehouse_v201_phase1_plan.md`) |
 | 2026-10-08 | Rev.3: O-11 diputuskan per item (D15, 8.5 ditulis ulang dengan rancangan, migrasi tanpa jurnal, dampak kode, risiko); O-12 sesuai saran (D16); saran berikut rujukan untuk O-13, O-14, O-15 dan nilai awal O-5, O-6, O-7; pemeriksaan kode menutup O-8 dan O-9 (transfer satu langkah, opname tanpa kunci, `inv_period` ada, `v_inv_wo_reconcile` tanpa output); V-01b dipindah ke Fase 1 |

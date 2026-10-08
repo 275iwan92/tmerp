@@ -167,8 +167,10 @@ Setiap uji **membersihkan datanya sendiri** di `tearDown()` dan hasilnya **diver
 | T10 | `ClosedPeriodOnChainTest` | Dokumen bertanggal di periode CLOSED | Ditolak; koreksi lewat Adjustment di periode terbuka berhasil |
 | T11 | `LocationTypesTest` | Buat zona Quarantine dan lokasi virtual Transit | Tersimpan; `is_virtual`, `mix_rule` terbaca; lokasi virtual tidak muncul di peta fisik |
 | T12 | `PrimaryKeyRuleTest` (yang ada) | otomatis | Tabel baru lolos aturan PK BIGINT auto number |
-| T14 | `ReportsUnchangedByCutoverTest` | Rekam Stock Card (kolom qty) dan Stock Summary (Opening, In, Out, Adjustment, Closing per kelas dan kategori) sebelum `inv:revalue-per-item`, jalankan peralihan, rekam lagi | Stock Card identik; Closing per kelas dan kategori identik; Opening + In − Out + Adjustment = Closing di setiap baris |
+| T14 | `ReportsUnchangedByCutoverTest` | Rekam Stock Card (kolom qty) dan Stock Summary (Opening, In, Out, Adjustment, Closing per kelas dan kategori) sebelum `inv:revalue-per-item`, jalankan peralihan, rekam lagi | Stock Summary: Closing per kelas dan kategori identik; Opening + In − Out + Adjustment = Closing di setiap baris. Stock Card: baris (tanggal, lokasi, In, Out, Adj) identik, BB / EB mengikuti T16 |
 | T15 | Peta gudang tidak berubah | Data dan tampilan Warehouse Map sebelum dan sesudah migrasi skema | Sama; area virtual tidak muncul di peta |
+| T16 | `StockCardChainTest` | Item PYJ31 (data dummy): saldo semua posisi sebelum periode 41.440; periode 01 sampai 03 Okt | BB / EB baris: 41.440 → 46.440 → 46.465 → 42.465 → 46.465; BB baris berikutnya = EB sebelumnya; Total BB 41.440, In 9.000, Out 4.000, Adj 25, EB 46.465; Total = BB baris pertama dan EB baris terakhir |
+| T17 | `ReversalDocumentTest` | Saldo 5.000, Stock In 1.000 (EB 6.000), Stock Out diketik 5.000 (EB 1.000), Pembalik, Stock Out 500 | EB 6.000 lalu 5.500; baris asal tetap ada; Adjustment dan Stock Loss & Gain tidak berubah. Harga salah: Avg 65.000 vs 15.500, issue 800 kg 52.000.000 vs 12.400.000, jurnal koreksi 39.600.000; periode tertutup menolak |
 | T13 | **Regresi** | `StockPostingOrderTest`, `StockTransferServiceTest`, `PalletServiceTest`, `StockReportsTest`, `PvStockIntegrationTest`, `BoardStockDocumentsTest`, `HelpContentTest`, `DevlibOnlyRatchetTest`, `MultiLanguageRatchetTest`, `InventoryReportInteractivityTest` | Semua tetap lulus; uji lama yang mengandung asumsi Average per bin diperbarui dan dicatat di commit |
 
 ## 9. Migrasi saldo ke Average per item (`inv:revalue-per-item`)
@@ -204,6 +206,7 @@ Setiap uji **membersihkan datanya sendiri** di `tearDown()` dan hasilnya **diver
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-10-08 | Rev.4: D25 Stock Card bersambung (T16) dan D26 Pembalik (T17); T14 disesuaikan |
 | 2026-10-08 | Rev.3: user memutuskan **Stock Card dibiarkan persis seperti sekarang** (tanpa kolom baru; gambar diganti replika tanpa perubahan) dan **aturan area** cukup tiga isian di gambar 6 (belum ada aturan lain) |
 | 2026-10-08 | Rev.2: laporan Stock Card, Stock Summary dan Warehouse Map dinyatakan benar dan tidak diubah; delapan jenis area dan `inv_pallet` ternyata sudah ada (W-01 menyusut menjadi empat jenis baru, batch ditautkan ke palet, aturan area di `wh_zone`); mockup M1 sampai M4 dibuat; uji T14, T15 ditambahkan |
 | 2026-10-08 | Draft pertama rencana Fase 1 |
