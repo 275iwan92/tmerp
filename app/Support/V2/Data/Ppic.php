@@ -355,6 +355,20 @@ final class Ppic
             }
         }
 
+        $now = self::now();
+        foreach (self::operations() as $o) {
+            if ($o['bucket'] === 'done' || $o['plan_status'] === 'NONE') {
+                continue;
+            }
+            if (in_array($o['machine_status'], ['BREAKDOWN', 'MAINTENANCE'], true)) {
+                $out[] = ['kind' => 'Machine down', 'wo' => $o['wo_no'], 'text' => sprintf('%s on %s: the machine is %s.', $o['process'], $o['machine'], strtolower((string) $o['machine_status'])),
+                    'options' => 'Re-plan: the engine plans around the downtime, or move the job to another eligible machine'];
+            } elseif ($o['plan_status'] === 'CONFIRMED' && $o['finish'] && $o['finish']->lessThan($now) && $o['task_status'] !== 'DONE') {
+                $out[] = ['kind' => 'Behind plan', 'wo' => $o['wo_no'], 'text' => sprintf('%s on %s should have finished %s and is not done (%d percent output).', $o['process'], $o['machine'], Locale::dt($o['finish']), $o['progress']),
+                    'options' => 'Check with the operator, then Re-plan around locked jobs'];
+            }
+        }
+
         return $out;
     }
 
