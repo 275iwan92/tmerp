@@ -1,6 +1,6 @@
 # Inventory & Warehouse v2.01 — Dokumen Cakupan (Scope)
 
-> **Status: DRAFT rev.3 2026-10-08.** O-1 sampai O-4, O-11, O-12 diputuskan user; sisanya berisi saran menunggu persetujuan (bagian 13). Belum ada kode. Versi: 2.01 (perbaikan modul Inventory dan Warehouse).
+> **Status: DISETUJUI user 2026-10-08 (rev.4).** Semua butir terbuka sudah diputuskan (bagian 13). Rencana Fase 1: `inventorywarehouse_v201_phase1_plan.md`. Belum ada kode. Versi: 2.01 (perbaikan modul Inventory dan Warehouse).
 > Isi: keputusan user, kondisi nyata sekarang (dicek ke kode dan skema), pembagian Inventory vs Warehouse, daftar kebutuhan
 > bernomor (I-, W-, B-, Q-, V-), usulan jalan keluar QC, booking sejak costing, skema yang diusulkan, fasing, dan hal terbuka.
 > Rujukan terkait: `inventory_tier1.md`..`inventory_tier4.md`, `warehouselayout_tier1.md`, `materialbooking_tier1.md`,
@@ -31,6 +31,12 @@
 | D9 | Booking tetap di **Production > Planning**; Inventory hanya membaca Reserved dan Available; **pick list di Warehouse**. | user 2026-10-08, setuju saran 5 |
 | D13 | Metode nilai = **AVERAGE** (rata-rata bergerak). Rumus dan contoh kenaikan harga di bagian 8. | user 2026-10-08 (O-4) |
 | D15 | **Average per item** (satu angka untuk seluruh perusahaan), bukan per bin. Rancangan dan migrasi di 8.5. | user 2026-10-08 (O-11) |
+| D17 | **Landed cost terlambat**: ke qty yang masih ada; bagian yang sudah keluar ke akun Selisih Landed Cost, ditutup ke HPP akhir periode (O-13). | user 2026-10-08 |
+| D18 | **Transaksi mundur**: satu jurnal koreksi bersusun per proses hitung ulang, jurnal lama tidak diubah; laporan Repost (O-14). | user 2026-10-08 |
+| D19 | **Kurang kirim**: toleransi mengikuti toleransi PO; Kepala Gudang menghitung ulang, PPIC mengonfirmasi, Pembelian menindaklanjuti; pemasok 7 hari mengirim; bila menolak atau lewat batas, baris PO ditutup di qty terima dan diminta debit note / potong tagihan (O-15). | user 2026-10-08 |
+| D20 | **Nilai awal pengaturan** sesuai tabel O-5 (semua bisa diubah user). | user 2026-10-08 |
+| D21 | **Kelas risiko awal** A / B / C sesuai O-6, diisi per kategori material oleh kepala QC. | user 2026-10-08 |
+| D22 | **PO Subkon sebagai induk** dokumen kirim bahan ke subkon (O-7). | user 2026-10-08 |
 | D16 | **Pengaman URGENT** sesuai saran: yang boleh menandai PPIC, Supervisor Produksi, Ops Manager dan di atasnya; alasan dan tautan WO / CO wajib; bahan FSC / food grade butuh persetujuan kepala QC atau Ops Manager. | user 2026-10-08 (O-12) |
 
 Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-10-08.
@@ -555,7 +561,7 @@ dummy baru (aturan: dummy basi diganti), dan **commit + push per potongan kerja*
 **Sudah diputuskan user:** O-1 (booking dari costing), O-2 (QC sampling, URGENT, kurang kirim), O-3 (titipan = stok pemilik Customer), O-4 (Average),
 **O-11 (Average per item)**, **O-12 (pengaman URGENT sesuai saran)**.
 
-**Menunggu persetujuan user (saran saya di kolom tengah; semuanya usulan):**
+**Disetujui user 2026-10-08 ("setuju"): semua saran di kolom tengah menjadi keputusan** (D17 landed cost, D18 jurnal koreksi, D19 kurang kirim, D20 nilai awal pengaturan, D21 kelas risiko, D22 PO Subkon sebagai induk):
 
 | # | Hal | Saran | Rujukan / dasar |
 |---|---|---|---|
@@ -594,6 +600,7 @@ dummy baru (aturan: dummy basi diganti), dan **commit + push per potongan kerja*
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-10-08 | Rev.4: user menyetujui semua saran (D17 sampai D22); status DISETUJUI; rencana Fase 1 dibuat terpisah (`inventorywarehouse_v201_phase1_plan.md`) |
 | 2026-10-08 | Rev.3: O-11 diputuskan per item (D15, 8.5 ditulis ulang dengan rancangan, migrasi tanpa jurnal, dampak kode, risiko); O-12 sesuai saran (D16); saran berikut rujukan untuk O-13, O-14, O-15 dan nilai awal O-5, O-6, O-7; pemeriksaan kode menutup O-8 dan O-9 (transfer satu langkah, opname tanpa kunci, `inv_period` ada, `v_inv_wo_reconcile` tanpa output); V-01b dipindah ke Fase 1 |
 | 2026-10-08 | Rev.2: O-1..O-4 dijawab. QC = sampling + URGENT langsung ke produksi (bagian 7 ditulis ulang, kelas risiko jadi intensitas sampling) dan **kurang kirim**: bila output + waste masih kurang, bahan kurang sejak awal dan kekurangannya diminta dikirim (D14, 7.6, Q-13..Q-16); titipan customer = stok pemilik Customer; Average dengan rumus dan contoh kenaikan harga (bagian 8); temuan kode: Average sudah ada tetapi per bin (O-11), FIFO belum jalan, jurnal koreksi transaksi mundur belum ada (O-14) |
 | 2026-10-08 | Draft pertama v2.01: keputusan D1-D9 (user menyetujui saran 1, 4 dan 5 dengan penyesuaian, nilai valuasi masuk), cek kode dan skema, daftar kebutuhan bernomor, wayout QC, booking sejak costing, skema, fasing, hal terbuka |
