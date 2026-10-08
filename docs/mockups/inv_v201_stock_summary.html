@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Stock Summary — pratinjau v2.01</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{navy:'#2c3e69',accent:'#2c7be5',muted:'#8a94a6'}}}};</script>
+<style>
+body{font-family:'Instrument Sans','Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#1e293b}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px}
+.lbl{font-size:10px;color:#8a94a6;text-transform:uppercase;font-weight:600;margin-bottom:2px}
+.inp{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 8px;font-size:12px;background:#eef4fd;position:relative}
+.inp.ro{background:#f8fafc;color:#64748b}
+.bd{font-size:9px;color:#2c7be5;background:#dbe8fb;border-radius:4px;padding:0 4px;font-weight:700;float:right}
+.mk{position:absolute;width:20px;height:20px;border-radius:50%;background:#e11d48;color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;z-index:20}
+.stat{position:relative;border-radius:8px;padding:8px 12px;min-width:92px;border:2px solid transparent}
+.stat b{font-size:18px;display:block}
+.stat.sel{border-color:#2c7be5;box-shadow:0 0 0 2px #cfe0fb}
+th{font-size:10px;text-transform:uppercase;color:#64748b;font-weight:700;text-align:left;padding:8px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.b{display:inline-block;border-radius:999px;padding:1px 9px;font-size:10px;font-weight:700}
+.g{background:#dcfce7;color:#15803d}.r{background:#fee2e2;color:#b91c1c}.y{background:#fef3c7;color:#a16207}.bl{background:#dbeafe;color:#1d4ed8}.n0{background:#e2e8f0;color:#475569}.v{background:#ede9fe;color:#6d28d9}
+.leg{background:#fff;border:1px dashed #e11d48;border-radius:10px;padding:10px 14px;font-size:12px}
+.leg li{margin:3px 0;display:flex;gap:8px;align-items:flex-start}
+.leg .c{flex:none;width:18px;height:18px;border-radius:50%;background:#e11d48;color:#fff;font-weight:700;font-size:10px;display:flex;align-items:center;justify-content:center}
+</style></head><body class="text-xs">
+<div class="px-5 pt-4 pb-2 text-[13px] font-semibold text-slate-700"><i class="fa-solid fa-circle-info text-accent mr-1"></i>Inventory › Reports › Stock Summary — v2.01</div><div class="mx-5 mb-3 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 px-3 py-2 text-[12px]"><b>Laporan ini sudah benar dan TIDAK diubah:</b> kolom, pengelompokan per kelas, dan rumus sama seperti sekarang. Yang dijaga: <b>nilai akhir tidak berubah saat peralihan ke Average per item</b>, dan Opening + In − Out + Adjustment = Closing tetap berlaku di setiap baris.</div><div class="mx-5 card p-4">
+<div class="flex items-center gap-2 mb-3"><div class="border rounded-md px-3 py-1.5 bg-white"><i class="fa-regular fa-calendar mr-1"></i>Period: 01-Oct-2026 – 08-Oct-2026 ▾</div>
+<div class="flex-1 border rounded-md px-3 py-1.5 text-muted bg-white"><i class="fa-solid fa-magnifying-glass mr-1"></i>Search class, category...</div>
+<div class="border rounded-md px-3 py-1.5 bg-white">Class ▾</div><div class="border rounded-md px-3 py-1.5 bg-white">Category ▾</div><div class="border rounded-md px-3 py-1.5 bg-white"><i class="fa-solid fa-print mr-1"></i>Print</div></div>
+<div class="text-[11px] text-muted mb-2">Value of all stock for the period, one row per stock class and item category. Amounts in IDR. Quantities are not added up because items have different units.</div>
+<table class="w-full"><thead><tr><th>Class</th><th>Category</th><th class="n">Items</th><th class="n">Opening Value</th><th class="n">In Value</th><th class="n">Out Value</th><th class="n">Adjustment Value</th><th class="n">Closing Value</th><th class="n">Share (%)</th></tr></thead><tbody><tr class="bg-slate-50"><td colspan="9" class="font-bold text-slate-700"><i class="fa-solid fa-chevron-down text-[9px] mr-1"></i>Raw Material</td></tr><tr><td>Raw Material</td><td>Paper & Board</td><td class="n">1</td><td class="n">15,000,000</td><td class="n">19,050,000</td><td class="n">29,053,846</td><td class="n">0</td><td class="n font-bold">4,996,154</td><td class="n">25.7</td></tr><tr><td>Raw Material</td><td>Ink</td><td class="n">3</td><td class="n">6,200,000</td><td class="n">3,100,000</td><td class="n">4,800,000</td><td class="n">0</td><td class="n font-bold">4,500,000</td><td class="n">23.1</td></tr><tr><td>Raw Material</td><td>Glue & Chemicals</td><td class="n">2</td><td class="n">1,100,000</td><td class="n">600,000</td><td class="n">900,000</td><td class="n">−50,000</td><td class="n font-bold">750,000</td><td class="n">3.9</td></tr><tr class="bg-slate-50"><td colspan="9" class="font-bold text-slate-700"><i class="fa-solid fa-chevron-down text-[9px] mr-1"></i>Semi Finished Goods</td></tr><tr><td>Semi Finished Goods</td><td>Printed Sheet</td><td class="n">2</td><td class="n">2,400,000</td><td class="n">5,200,000</td><td class="n">4,900,000</td><td class="n">0</td><td class="n font-bold">2,700,000</td><td class="n">13.9</td></tr><tr class="bg-slate-50"><td colspan="9" class="font-bold text-slate-700"><i class="fa-solid fa-chevron-down text-[9px] mr-1"></i>Finished Goods</td></tr><tr><td>Finished Goods</td><td>Folding Carton</td><td class="n">4</td><td class="n">8,000,000</td><td class="n">21,000,000</td><td class="n">22,500,000</td><td class="n">0</td><td class="n font-bold">6,500,000</td><td class="n">33.4</td></tr></tbody>
+<tfoot><tr class="bg-slate-100 font-bold"><td colspan="2" class="text-right">Total</td><td class="n">12</td><td class="n">32,700,000</td><td class="n">48,950,000</td><td class="n">62,153,846</td><td class="n">−50,000</td><td class="n">19,446,154</td><td class="n">100.0</td></tr></tfoot></table>
+<div class="mt-3 flex gap-3 items-center"><span class="b g"><i class="fa-solid fa-check mr-1"></i>Reconciles</span><span class="text-[11px] text-slate-600">32,700,000 + 48,950,000 − 62,153,846 − 50,000 = 19,446,154</span></div></div>
+<div class="mx-5 mt-3 mb-5 card p-3 text-[12px]"><div class="font-bold mb-1">Asal angka baris Paper &amp; Board (contoh kenaikan harga)</div>
+Out Value 29,053,846 = 12,400,000 (issue 800 kg × Average 15,500) + 16,653,846 (issue 1,000 kg × Average 16,653.85). Dengan <b>Average per item</b>, kedua issue memakai satu Average yang sama <b>apa pun bin yang diambil</b>.
+Closing 4,996,154 = 300 kg × 16,653.85. In Value 19,050,000 = 8,250,000 + 10,800,000.</div></body></html>

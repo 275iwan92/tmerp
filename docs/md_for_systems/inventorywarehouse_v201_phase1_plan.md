@@ -1,6 +1,6 @@
 # Inventory & Warehouse v2.01 — Rencana Fase 1 (Fondasi)
 
-> **Status: DRAFT 2026-10-08, menunggu persetujuan user sebelum kode.** Cakupan induk: `inventorywarehouse_v201_scope.md` (disetujui user 2026-10-08).
+> **Status: DRAFT rev.2 2026-10-08, menunggu persetujuan user sebelum kode. ATURAN USER: semua perubahan di-PREVIEW (JPEG) dan disetujui dulu; Warehouse Map, Stock Card, dan Stock Summary yang ada sudah benar dan tidak diubah.** Cakupan induk: `inventorywarehouse_v201_scope.md` (disetujui user 2026-10-08).
 > Rencana ini memuat urutan kerja, skema rinci, perjalanan pengguna, mockup yang diperlukan, rencana uji dengan angka yang diharapkan, dummy, migrasi saldo, dan risiko.
 > **Tidak menyentuh zona beku** (Inquiry Product, ProDev, ProCost) dan **tidak menulis ke `tm2*`**; semua pekerjaan di `ddt*` (mockup.test) sampai rilis.
 
@@ -23,8 +23,8 @@ Fase 1 **tidak** memuat: sampling QC dan URGENT (Fase 2), booking dari costing (
 | I-04 | Pemilik stok | Belum ada kolom pemilik |
 | I-05 | Status stok per batch | Belum ada |
 | V-01b | **Average per item** | Sekarang per bin (`StockCardChain`) |
-| W-01 | Jenis lokasi + lokasi virtual | `location_type` hanya STORAGE / WASTE |
-| W-02 | Atribut bin: aturan campur dan tipe penyimpanan | `capacity_kg`, `is_usable` sudah ada |
+| W-01 | Jenis area + area virtual | **8 jenis area sudah ada** (`WhZone::TYPES`: Receiving, QC Hold, Storage, Production Staging, Shipping, Reject, Customer Consignment, Tooling). Fase 1 hanya menambah **WIP, At Subcontractor, In Transit, Loss** (tiga terakhir virtual, tidak tampil di peta) |
+| W-02 | **Aturan area**: Mixing, Pick order (FIFO / FEFO), hitung tiap N hari | **Belum ada di database** (hanya `max_stack`, `stack_height_m`); gambar peta lama baru rancangan. Kolom dibuat di `wh_zone`, bukan `wh_loc` |
 | V-13 | Cut-off (tanggal posting mengikuti penerimaan fisik) | Hanya diperiksa dan diuji; `post_date`, `period_id` sudah ada |
 | O-10 | Migrasi `lot_no` teks ke master batch | Satu batch per item + lot |
 | I-42 | Larangan stok minus | **Sudah ada** (`StockPostingService` menolak saldo minus); tidak dikerjakan ulang, hanya diuji pada rantai per item |
@@ -36,7 +36,7 @@ Fase 1 **tidak** memuat: sampling QC dan URGENT (Fase 2), booking dari costing (
 |---|---|---|
 | **S0** | Pastikan cara menjalankan uji terhadap `ddt*` (lihat risiko R-1) dan catat baseline: jalankan suite inventory yang ada | – |
 | **S1** | Migrasi skema (ddt saja): `inv_batch`, kolom pemilik dan batch, `inv_item_valuation`, jenis lokasi, atribut bin, kunci pengaturan | S0 |
-| **S2** | Perintah `inv:backfill-batch` (lot teks → batch), `--check` dan idempoten | S1 |
+| **S2** | Perintah `inv:backfill-batch`: batch dari `lot_no` kartu stok **dan** dari `inv_pallet` (item + lot, kedaluwarsa dari palet), `--check` dan idempoten | S1 |
 | **S3** | Mesin Average per item: `ItemValuationChain` (baru), `StockPostingService` dan `StockTransferService` memakainya | S1 |
 | **S4** | Perintah `inv:revalue-per-item` (peralihan saldo tanpa jurnal), `--check` dan idempoten | S3 |
 | **S5** | Layar pengaturan (konstanta) dan jenis lokasi di layar Storage Areas / Bins yang ada | S1 |
@@ -75,9 +75,10 @@ Aturan: PK `id_<entitas>` BIGINT auto number; nama English; **tanpa FK lintas da
 | `rm_stockcard`, `sfg_stockcard`, `fg_stockcard` | `batch_id` bigint null (indeks), `owner_type` varchar(10) default `COMPANY`, `owner_id` bigint null |
 | `rm_stock_d`, `sfg_stock_d`, `fg_stock_d` | `batch_id`, `owner_type`, `owner_id` |
 | `inv_stock_layer` | tidak diubah (belum dipakai, FIFO ditunda) |
-| `tm2mst.wh_loc` | `is_virtual` tinyint default 0, `mix_rule` varchar(12) default `ANY` (ANY / ONE_ITEM / ONE_BATCH), `storage_type` varchar(15) null |
-| `tm2mst.wh_warehouse` | nilai `warehouse_type` baru `VIRTUAL` |
-| zona (`wh_zone.zone_type`) | nilai baru: RECEIVING, SHIPPING, QUARANTINE, WIP, SCRAP, VENDOR, TRANSIT, LOSS (selain STORAGE, WASTE) |
+| `tm2mst.wh_zone` | `is_virtual` tinyint default 0, `mix_rule` varchar(12) default `ANY` (ANY / ONE_ITEM / ONE_BATCH), `pick_order` varchar(5) default `FIFO` (FIFO / FEFO), `count_every_days` smallint null |
+| `tm2inv.inv_pallet` | `batch_id` bigint null (indeks). **Palet tetap satuan fisik berlabel** (item, lot, kode palet supplier, tanggal datang, kedaluwarsa, qty, bin, tumpukan); batch adalah master mutu per lot yang ditautkan palet. Kedaluwarsa: batch memberi nilai awal, palet boleh menimpa (perilaku `PalletService::suggestedExpiry` dipertahankan) |
+| `tm2mst.wh_warehouse` | nilai `warehouse_type` baru `VIRTUAL` (gudang maya untuk area virtual) |
+| `wh_zone.zone_type` | nilai baru **WIP, SUBCON, TRANSIT, LOSS** (delapan nilai lama tidak berubah; `QC_HOLD` sudah menjadi area karantina) |
 
 `lot_no` **tidak dihapus** di Fase 1 (dipertahankan sebagai kolom lama sampai semua pembaca berpindah ke `batch_id`).
 
@@ -121,13 +122,13 @@ Perilaku:
 
 | # | Perjalanan | Layar | Mockup JPEG |
 |---|---|---|---|
-| J1 | Admin stok membuka **Inventory > Batch & Quality > Batch**, mencari batch per item, membuka satu batch, mengubah tanggal kedaluwarsa atau sertifikasi, melihat saldo batch per bin | grid + form | **M1** |
-| J2 | Admin stok membuka **Stock Balance** dan menyaring menurut **Owner** (Company / Customer / Supplier) dan **Status batch**; kolom Batch, Owner, Status tampil | grid yang ada + kolom | **M2** |
-| J3 | Operator membuat **Stock In RM**: kolom **Batch** (pilih batch yang ada atau buat batch baru dengan lot supplier dan kedaluwarsa) menggantikan teks Lot | form yang ada | **M3** |
-| J4 | Admin gudang membuka **Storage Areas**, memilih **jenis lokasi** (Receiving, Quarantine, WIP, Scrap, Transit, Loss, ...) dan **aturan campur**, membuat lokasi virtual | form yang ada | **M4** |
-| J5 | Admin stok membandingkan **Average item** pada Stock Card: dua bin berbeda menampilkan Average yang sama; transfer tidak mengubahnya | grid yang ada | M2 (contoh baris) |
+| J1 | Admin stok membuka **Inventory > Batch & Quality > Batch**, mencari batch per item, membuka satu batch, mengubah tanggal kedaluwarsa atau sertifikasi, melihat saldo batch per bin dan palet | grid + form | **M1**: `inv_v201_batch_grid.jpg`, `inv_v201_batch_form.jpg` |
+| J2 | Admin stok membuka **Stock Card**; kolom **Batch**, **Batch Status**, **Owner** tersedia di menu Columns (tersembunyi secara default). **Stock Card dan Stock Summary tidak diubah** | grid yang ada | **M2**: `inv_v201_stock_card.jpg`, `inv_v201_stock_summary.jpg` |
+| J3 | Operator membuat **Stock In RM**: kolom **Batch** (pilih batch yang ada atau buat batch baru dengan lot supplier dan kedaluwarsa) menggantikan teks Lot | form yang ada | **M3**: `inv_v201_stock_in_batch.jpg` |
+| J4 | Admin gudang membuka **Storage Areas**, memilih **jenis area** (termasuk WIP dan area virtual) dan mengisi **aturan area** (Mixing, Pick order, hitung tiap N hari). **Warehouse Map tidak diubah** | form yang ada | **M4**: `wh_v201_storage_area.jpg` |
+| J5 | Admin stok melihat **Stock Summary**: nilai akhir sama sebelum dan sesudah peralihan Average per item, dan Opening + In − Out + Adjustment = Closing di setiap baris | grid yang ada | `inv_v201_stock_summary.jpg` |
 
-Mockup dibuat dengan skill `tmerp-ui-mockup`, dikirim sebagai JPEG, dan **tidak dibangun sebelum disetujui**. Layar mengikuti objek DevLib (`x-dl::*`) dan komponen yang ada.
+Mockup dibuat dengan skill `tmerp-ui-mockup` dan sudah dirender di `docs/mockups/`. **Tidak ada yang dibangun sebelum user menyetujui tiap gambar.** Gambar untuk layar yang sudah ada memakai kolom asli dari kode (`StockCardReport`, `StockSummaryReport`). Layar mengikuti objek DevLib (`x-dl::*`) dan komponen yang ada.
 
 ## 7. Dummy baru (aturan: dummy basi diganti, bukan ditambah)
 
@@ -162,6 +163,8 @@ Setiap uji **membersihkan datanya sendiri** di `tearDown()` dan hasilnya **diver
 | T10 | `ClosedPeriodOnChainTest` | Dokumen bertanggal di periode CLOSED | Ditolak; koreksi lewat Adjustment di periode terbuka berhasil |
 | T11 | `LocationTypesTest` | Buat zona Quarantine dan lokasi virtual Transit | Tersimpan; `is_virtual`, `mix_rule` terbaca; lokasi virtual tidak muncul di peta fisik |
 | T12 | `PrimaryKeyRuleTest` (yang ada) | otomatis | Tabel baru lolos aturan PK BIGINT auto number |
+| T14 | `ReportsUnchangedByCutoverTest` | Rekam Stock Card (kolom qty) dan Stock Summary (Opening, In, Out, Adjustment, Closing per kelas dan kategori) sebelum `inv:revalue-per-item`, jalankan peralihan, rekam lagi | Stock Card identik; Closing per kelas dan kategori identik; Opening + In − Out + Adjustment = Closing di setiap baris |
+| T15 | Peta gudang tidak berubah | Data dan tampilan Warehouse Map sebelum dan sesudah migrasi skema | Sama; area virtual tidak muncul di peta |
 | T13 | **Regresi** | `StockPostingOrderTest`, `StockTransferServiceTest`, `PalletServiceTest`, `StockReportsTest`, `PvStockIntegrationTest`, `BoardStockDocumentsTest`, `HelpContentTest`, `DevlibOnlyRatchetTest`, `MultiLanguageRatchetTest`, `InventoryReportInteractivityTest` | Semua tetap lulus; uji lama yang mengandung asumsi Average per bin diperbarui dan dicatat di commit |
 
 ## 9. Migrasi saldo ke Average per item (`inv:revalue-per-item`)
@@ -190,11 +193,12 @@ Setiap uji **membersihkan datanya sendiri** di `tearDown()` dan hasilnya **diver
 ## 11. Yang membutuhkan keputusan user sebelum kode
 
 1. **Setujui rencana ini** (urutan, skema, uji).
-2. **Mockup M1 sampai M4**: izinkan saya membuatnya sebagai JPEG sekarang.
+2. **Mockup M1 sampai M4**: **sudah dibuat** (enam JPEG di `docs/mockups/`); tunggu persetujuan per gambar.
 3. **R-1**: izin memverifikasi cara menjalankan uji ke `ddt*` (`--env=mockup`); bila tidak bisa, pilihan penanganannya.
 
 ## 12. Riwayat
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-10-08 | Rev.2: laporan Stock Card, Stock Summary dan Warehouse Map dinyatakan benar dan tidak diubah; delapan jenis area dan `inv_pallet` ternyata sudah ada (W-01 menyusut menjadi empat jenis baru, batch ditautkan ke palet, aturan area di `wh_zone`); mockup M1 sampai M4 dibuat; uji T14, T15 ditambahkan |
 | 2026-10-08 | Draft pertama rencana Fase 1 |
