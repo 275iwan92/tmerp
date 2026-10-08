@@ -23,6 +23,8 @@ final class ScheduleSolver
 
     private const MANUAL_MINUTES = 30;
 
+    private const LOAD_HORIZON_DAYS = 7;
+
     /** @var array<int, list<array{from: int, to: int, facts: array, opId: int}>> machine => blocks sorted by start (work minutes) */
     private array $blocks = [];
 
@@ -359,7 +361,7 @@ final class ScheduleSolver
     }
 
     /**
-     * Load per machine over the planned horizon: busy work minutes between now and the last block over the same span.
+     * Load per machine over the next week of working time: busy work minutes in the horizon over the work minutes available in it.
      *
      * @return array<int, array{busy: int, span: int, pct: float}>
      */
@@ -367,14 +369,12 @@ final class ScheduleSolver
     {
         $out = [];
         foreach ($this->blocks as $m => $blocks) {
-            $from = $cal->workMinute($now, $m);
+            $from = $cal->workMinute($now, (int) $m);
+            $span = max(1, $cal->workMinute($now->addDays(self::LOAD_HORIZON_DAYS), (int) $m) - $from);
             $busy = 0;
-            $last = $from;
             foreach ($blocks as $b) {
-                $busy += max(0, $b['to'] - max($b['from'], $from));
-                $last = max($last, $b['to']);
+                $busy += max(0, min($b['to'], $from + $span) - max($b['from'], $from));
             }
-            $span = max(1, $last - $from);
             $out[(int) $m] = ['busy' => $busy, 'span' => $span, 'pct' => round(min(100, $busy / $span * 100), 1)];
         }
 

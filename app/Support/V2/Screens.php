@@ -133,6 +133,10 @@ final class Screens
                 ]],
             ]],
             ['code' => 'PROD', 'short' => 'PP', 'label' => 'Production', 'icon' => 'fa-solid fa-industry', 'groups' => [
+                ['label' => 'Planning', 'items' => [
+                    $it('production-scheduling', ['Production Scheduling', 'fa-solid fa-chart-gantt', 'v2 baru: PPIC (engine Draft + Confirm officer) -- Gantt, Kanban, Calendar, Grid, Monitoring', 'ppic_sched_gantt.jpg']),
+                    $it('production-wo', ['Work Order (PPIC)', 'fa-solid fa-clipboard-list', 'v2 baru: Work Order dari ProDev (BOP, routing, BOM, mesin yang bisa antre)', 'ppic_wo_detail.jpg']),
+                ]],
                 ['label' => 'Quality', 'items' => [
                     $it('qc-complaint-review', ['Complaint Review (QA)', 'fa-solid fa-magnifying-glass-chart', 'v2 baru: tm2prd.qc_complaint_review (jawaban QA atas tm2sdi.crm_complaint)', null]),
                 ]],

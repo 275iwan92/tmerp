@@ -121,6 +121,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_master_card.php';
         require __DIR__.'/v2_maintenance.php';
         require __DIR__.'/v2_planning.php';
+        require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
         require __DIR__.'/v2_finance.php';
         require __DIR__.'/v2_warehouse.php';

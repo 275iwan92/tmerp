@@ -505,6 +505,7 @@ final class Lang
         'gt_impact_title' => ['Dampak pemindahan ini', 'Impact of this move'],
         'gt_cancel' => ['Batal', 'Cancel'],
         'gt_move_draft' => ['Pindahkan ke Draft', 'Move into Draft'],
+        'gt_replanned' => ['Draft dihitung ulang. Memuat ulang jadwal.', 'Draft re-planned. Reloading the schedule.'],
         'gt_check_failed' => ['Pengecekan jadwal gagal.', 'The schedule check failed.'],
         'gt_over_min' => ['+{n} mnt', '+{n} min'],
         'gt_over_h' => ['+{n} jam', '+{n} h'],

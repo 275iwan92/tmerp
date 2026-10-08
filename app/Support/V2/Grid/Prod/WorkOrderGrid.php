@@ -47,9 +47,10 @@ class WorkOrderGrid extends ProdGrid
         return 'fa-solid fa-clipboard-list';
     }
 
+    // Open = the v2 Work Order screen (PPIC): BOP, routing, BOM, machines that can run each step, gates, output.
     public function openUrl(): ?string
     {
-        return $this->routeUrl('production.wo.entry', 'wo');
+        return route('v2.screen', 'production-wo').'?id={id}';
     }
 
     public function newUrl(): ?string

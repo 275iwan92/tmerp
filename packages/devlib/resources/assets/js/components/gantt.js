@@ -218,6 +218,7 @@
         try { res = await this.post(this.cfg.moveUrl, p.t); } catch (e) { this.revert(); return toast(String(e.message || T('gt_check_failed')), 'danger'); }
         if (!res.ok) { this.revert(); return toast(res.reason || T('gt_check_failed'), 'warn'); }
         if (res.draft) this.setDraft(res.draft);
+        if (res.reload) { toast(T('gt_replanned'), 'success'); setTimeout(() => location.reload(), 600); }
       }
       this.pending = null; this.closeImpact();
       this.touch(p.t, p.type); this.render();
