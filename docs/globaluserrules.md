@@ -258,13 +258,13 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 **A.26 Inventory & Warehouse v2.01 (user 2026-10-08).** Dokumen cakupan: `docs/md_for_systems/inventorywarehouse_v201_scope.md`.
 - Dua modul besar: **INVENTORY** (apa, berapa, nilai, pemilik) dan **WAREHOUSE** (di mana, bagaimana fisik). **Dokumen Transfer dan Opname
   dimiliki Inventory**; eksekusi lapangan (tugas, scan, hitung) di Warehouse.
-- **QC = sampling, dan barang langsung dibawa ke produksi bila URGENT** (user 2026-10-08). Penerimaan URGENT diposting langsung berstatus Conditional (dock-to-line), sampling berjalan paralel; penerimaan normal menunggu hasil sampling. Pengaman URGENT (siapa boleh menandai, persetujuan bahan FSC / food grade) = usulan menunggu persetujuan user.
+- **QC = sampling, dan barang langsung dibawa ke produksi bila URGENT** (user 2026-10-08). Penerimaan URGENT diposting langsung berstatus Conditional (dock-to-line), sampling berjalan paralel; penerimaan normal menunggu hasil sampling.
 - **Kurang kirim** (user 2026-10-08): bila (output + waste standar) masih kurang dibanding bahan yang dikeluarkan, berarti qty bahan sudah kurang sejak awal; sistem **meminta kekurangannya dikirim** (supplier, subkon, atau customer), setelah hitung ulang sebagai bukti. Waste di atas standar = varians pemakaian, bukan kurang kirim.
 - **Booking dimulai sejak product costing sudah menghitung** (bukan menunggu CO) karena proses cepat dan metode short run. Tafsir kerja dibenarkan user: pre-booking lunak yang tidak mengunci stok, naik menjadi booking keras pada CO Confirmed dalam satu rantai (`inquiry_id`).
 - Booking tetap di Production > Planning; Inventory hanya membaca Reserved / Available; **pick list di Warehouse**.
 - Cakupan 2.01 **mencakup valuasi dan jurnal otomatis**; **metode nilai = AVERAGE** (rata-rata bergerak; rumus dan contoh kenaikan harga di dokumen cakupan bagian 8). 
   Subkon = vendor sebagai lokasi virtual milik perusahaan; **material titipan customer = stok dengan pemilik Customer** (tidak dinilai, tidak dijurnal, punya lokasi, bisa di-pick); 
-  RM dan FG sampai bin, WIP sampai area; SFG per tahap proses. Terbuka: Average per bin (sekarang) atau per item (saran), batas pengaturan awal.
+  RM dan FG sampai bin, WIP sampai area; SFG per tahap proses. Terbuka: nilai awal pengaturan, kelas risiko awal, dan aturan landed cost / kurang kirim (saran di dokumen cakupan bagian 13).
 - **Average per item** (user 2026-10-08): satu rata-rata untuk seluruh perusahaan, bin hanya menyimpan qty; transfer tidak mengubah Average. Migrasi saldo tanpa jurnal (Avg awal = total nilai / total qty semua bin).
 - **Pengaman URGENT sesuai saran** (user 2026-10-08): yang boleh menandai PPIC, Supervisor Produksi, Ops Manager dan di atasnya; alasan dan tautan WO / CO wajib; bahan FSC / food grade butuh persetujuan kepala QC atau Ops Manager.
 
