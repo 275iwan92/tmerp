@@ -68,10 +68,14 @@ class PpicSeedDummy extends Command
         $this->info('CO dummy: '.count($plan).', baris kirim: '.$made->count());
 
         $n = 0;
+        // One GateService for the whole run: it keeps the Material Planning result, which is slow to compute.
+        $generate = app(WoGenerationService::class);
+        $enricher = app(WoPlanningEnricher::class);
+        $gates = app(GateService::class);
         foreach ($made->take((int) $this->option('create')) as $line) {
-            foreach (app(WoGenerationService::class)->generateFromDelivery($line->fresh(['order', 'item'])) as $wo) {
-                app(WoPlanningEnricher::class)->enrich($wo);
-                app(GateService::class)->apply($wo);
+            foreach ($generate->generateFromDelivery($line->fresh(['order', 'item'])) as $wo) {
+                $enricher->enrich($wo);
+                $gates->apply($wo);
                 $n++;
             }
             $line->forceFill(['posted_at' => now(), 'posted_by' => self::USER])->save();

@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-10-09 -- PPIC autopilot (Jo, malam, kerja mandiri): Create Work Order sampai Learning, hanya situs dummy ddt*
+
+User: "jalankan mandiri tanpa saya ... NO PROMPTING"; serah terima PPIC (scheduling + Work Order).
+
+- **Dibangun:** kartu Create Work Order (`Ppic::pendingDeliveries`, `PpicController::createWo` lewat `Cpdel::post`), dieline asli ProDev di layar WO, 
+  master Tooling / Setup and Changeover / Wait Rules + Customer Tier + konstanta `PPIC_*` (`PpicSettings`), layar Operator Queue 
+  (`OperatorTimerService`, objek DevLib `x-dl::timer`), `LearningEngine` + layar Learning Changes, flag akses `PPIC_SCHEDULING` / `PPIC_INVENTORY`, 
+  `ppic:auto-plan` / `ppic:learn` di scheduler, replan saat mesin rusak / pulih, 9 engine di `EngineRegistry`, Help, `ppic:seed-dummy`.
+- **Menunggu user:** rilis ke tm2*, waste tetap (make-ready) di rantai ProDev, format cetak Work Order, siapa pegang status tooling.
+- Detail dan asumsi: memori `project_handoff_ppic_scheduling_2026_10_08`.
+
 ## 2026-10-03 -- Purchase: semua daftar modul = objek grid DevLib (DbGrid) sesuai keluarganya
 
 User: "Apakah all grids under purchase module sudah menggunakan inherit from object oriented grid on devlib? Jika belum, tolong di update
