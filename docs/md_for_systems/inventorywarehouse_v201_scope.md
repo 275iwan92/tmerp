@@ -519,6 +519,8 @@ Semua angka batas adalah **pengaturan** yang bisa diubah user berwenang lewat la
 
 ## 11. Usulan struktur menu 2.01
 
+> **Preview:** `docs/mockups/menu_v201_split.jpg` (menu sekarang dari `ddtsys` dibanding usulan). Peta cakupan dan status preview: `docs/mockups/inv_v201_coverage.jpg`. Menunggu persetujuan user; belum dibangun.
+
 **INVENTORY**
 - Stock Documents (In, Out, Return, Adjustment per kelas RM / SFG / FG)
 - Subcontract (Send, Receive, Stock at Vendor)

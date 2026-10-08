@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Pick List — pratinjau</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{navy:'#2c3e69',accent:'#2c7be5',muted:'#8a94a6'}}}};</script>
+<style>
+body{font-family:'Instrument Sans','Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#1e293b}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px}
+.lbl{font-size:10px;color:#8a94a6;text-transform:uppercase;font-weight:600;margin-bottom:2px}
+.inp{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 8px;font-size:12px;background:#eef4fd;position:relative}
+.inp.ro{background:#f8fafc;color:#64748b}
+.bd{font-size:9px;color:#2c7be5;background:#dbe8fb;border-radius:4px;padding:0 4px;font-weight:700;float:right}
+.mk{position:absolute;width:20px;height:20px;border-radius:50%;background:#e11d48;color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;z-index:20}
+.stat{position:relative;border-radius:8px;padding:8px 12px;min-width:92px;border:2px solid transparent}
+.stat b{font-size:18px;display:block}
+.stat.sel{border-color:#2c7be5;box-shadow:0 0 0 2px #cfe0fb}
+th{font-size:10px;text-transform:uppercase;color:#64748b;font-weight:700;text-align:left;padding:8px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.b{display:inline-block;border-radius:999px;padding:1px 9px;font-size:10px;font-weight:700}
+.g{background:#dcfce7;color:#15803d}.r{background:#fee2e2;color:#b91c1c}.y{background:#fef3c7;color:#a16207}.bl{background:#dbeafe;color:#1d4ed8}.n0{background:#e2e8f0;color:#475569}.v{background:#ede9fe;color:#6d28d9}
+.leg{background:#fff;border:1px dashed #e11d48;border-radius:10px;padding:10px 14px;font-size:12px}
+.leg li{margin:3px 0;display:flex;gap:8px;align-items:flex-start}
+.leg .c{flex:none;width:18px;height:18px;border-radius:50%;background:#e11d48;color:#fff;font-weight:700;font-size:10px;display:flex;align-items:center;justify-content:center}
+</style><style>
+.tree{font-size:11.5px;line-height:1.75}
+.tree .g{font-weight:700;color:#2c3e69;margin-top:6px;position:relative}
+.tree .i{padding-left:16px;color:#334155;position:relative}
+.tree .i2{padding-left:32px;color:#475569;position:relative}
+.ch{display:inline-block;border-radius:999px;padding:0 7px;font-size:9.5px;font-weight:700;margin-left:6px}
+.c-new{background:#dbeafe;color:#1d4ed8}.c-mv{background:#fef3c7;color:#a16207}.c-ok{background:#e2e8f0;color:#475569}.c-nb{background:#fee2e2;color:#b91c1c}
+.col{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;position:relative}
+.modh{font-size:13px;font-weight:800;color:#fff;border-radius:8px;padding:6px 10px;margin-bottom:6px}
+</style></head><body class="text-xs">
+<header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5"><div><div class="text-sm font-bold">Pick List PK2600012</div><div class="text-[10px] opacity-70">Warehouse · Pick List</div></div>
+<div class="ml-auto flex items-center gap-3"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">In progress</span><button class="px-3 py-1 rounded border border-white/40">Print</button><button class="px-3 py-1 rounded bg-accent text-white font-semibold">Confirm Pick</button><a class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full"><span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span></a></div></header><main class="p-4 max-w-7xl mx-auto space-y-3"><section class="card p-3"><div class="grid grid-cols-5 gap-3">
+<div><div class="lbl">Pick list</div><div class="inp ro">PK2600012</div></div><div><div class="lbl">Work order</div><div class="inp ro">WO2600302</div></div><div><div class="lbl">Booking</div><div class="inp ro">BK2600044 · CO2600031</div></div>
+<div><div class="lbl">Need date</div><div class="inp ro">09-Oct-2026</div></div><div><div class="lbl">Deliver to</div><div class="inp ro">Production Staging · SM74</div></div></div></section>
+<section class="card p-3 relative"><div class="flex items-center mb-2"><h2 class="font-semibold text-slate-700">Material: Art Paper 310 g 79x109 · need 3,000 sheets</h2><span class="mk" style="position:relative;margin-left:10px">1</span>
+<span class="ml-auto text-[11px] text-muted">24,000 boxes: need = ⌈24,000 ÷ 9 ups⌉ × 1.05 + 200 make ready = 3,000 sheets</span></div>
+<table class="w-full"><thead><tr><th>#</th><th>Pallet</th><th>Batch</th><th>Bin</th><th>Received</th><th class="n">Pick (sheets)</th><th style="position:relative">Quality<span class="mk" style="right:-8px;top:-6px">2</span></th><th style="position:relative">Grain<span class="mk" style="right:-8px;top:-6px">3</span></th><th>Cert.</th><th>Scan</th></tr></thead><tbody><tr><td>1</td><td class="font-semibold text-accent">PL-2609-00371</td><td>BT2600028 <span class="text-[10px] text-muted">AP-0926-07</span></td><td>WH-RAW-01-PPR-L03-05</td><td>12-Sep-2026</td><td class="n font-bold">1,250</td><td><span class="b g">Released</span></td><td>LONG</td><td>FSC</td><td><i class="fa-solid fa-circle-check text-emerald-600"></i> scanned</td></tr><tr><td>2</td><td class="font-semibold text-accent">PL-2609-00372</td><td>BT2600028 <span class="text-[10px] text-muted">AP-0926-07</span></td><td>WH-RAW-01-PPR-L03-05</td><td>12-Sep-2026</td><td class="n font-bold">1,750</td><td><span class="b g">Released</span></td><td>LONG</td><td>FSC</td><td><span class="text-muted">scan pallet, then bin</span></td></tr>
+<tr class="bg-slate-50 font-bold"><td colspan="5" class="text-right">Allocated</td><td class="n">3,000</td><td colspan="4"><span class="b g">covers the need</span> <span class="text-[11px] font-normal text-muted">order: oldest received first (FIFO zone); 2 pallets, 1 bin (PL-2609-00372 keeps 250 sheets)</span></td></tr></tbody></table></section>
+<section class="card p-3 relative"><div class="flex items-center mb-2"><h2 class="font-semibold text-slate-700">Material: BRITE INK CYAN 1kg · need 18 kg</h2><span class="mk" style="position:relative;margin-left:10px">4</span></div>
+<table class="w-full"><thead><tr><th>#</th><th>Pallet</th><th>Batch</th><th>Bin</th><th>Expiry</th><th class="n">Pick (kg)</th><th>Quality</th><th>Scan</th></tr></thead><tbody>
+<tr><td>1</td><td class="font-semibold text-accent">PL-2610-00061</td><td>BT2600032</td><td>WH-RAW-01-CHM-A01-2</td><td>12-Nov-2026</td><td class="n font-bold">18</td><td><span class="b y">Conditional</span></td><td><span class="text-muted">scan pallet, then bin</span></td></tr></tbody></table>
+<div class="mt-2 text-[11px] text-amber-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Conditional batch allowed: WO2600302 is not a class A job. FEFO picked the earliest expiry first.</div></section>
+<section class="card p-3 relative"><div class="font-bold mb-1">Allocation that could not be covered</div><div class="text-[12px]">None. If a line were short, the system would show <span class="b r">SHORT</span> with the shortfall and open <b>Supplier Shortage Request</b> or a substitute proposal.</div><span class="mk" style="right:8px;top:8px">5</span></section></main><div class="h-2"></div><div class="px-5 pb-5"><div class="leg"><div class="font-bold mb-1 text-rose-700">Catatan layar baru (nomor sesuai tanda merah)</div><ul><li><span class="c">1</span><span>Pick list lahir dari <b>booking</b> yang sudah Confirm: kebutuhan (rumus terlihat), lalu <b>alokasi pallet, batch, dan bin</b> oleh mesin.</span></li><li><span class="c">2</span><span>Alokasi hanya memakai batch yang <b>boleh</b>: status Released, atau Conditional bila kelas job mengizinkan (URGENT / kelas B-C).</span></li><li><span class="c">3</span><span>Syarat bahan dicocokkan: <b>arah serat</b> dan <b>sertifikasi</b> harus sesuai kebutuhan job.</span></li><li><span class="c">4</span><span>Urutan ambil mengikuti <b>aturan area</b> (FIFO untuk kertas, FEFO untuk tinta dan lem).</span></li><li><span class="c">5</span><span>Bila ada yang tidak tertutup: status SHORT, lalu permintaan kirim kekurangan atau usulan pengganti.</span></li></ul><div class="mt-2 text-slate-600">Tombol dan label mengikuti standar: Print, Confirm Pick, Back. Print Pick List mengikuti aturan kertas (A5 landscape 1-5 baris, A4 portrait lebih dari 5).</div></div></div></body></html>

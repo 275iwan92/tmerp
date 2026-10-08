@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Menu Inventory dan Warehouse — pratinjau v2.01</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{navy:'#2c3e69',accent:'#2c7be5',muted:'#8a94a6'}}}};</script>
+<style>
+body{font-family:'Instrument Sans','Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#1e293b}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px}
+.lbl{font-size:10px;color:#8a94a6;text-transform:uppercase;font-weight:600;margin-bottom:2px}
+.inp{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 8px;font-size:12px;background:#eef4fd;position:relative}
+.inp.ro{background:#f8fafc;color:#64748b}
+.bd{font-size:9px;color:#2c7be5;background:#dbe8fb;border-radius:4px;padding:0 4px;font-weight:700;float:right}
+.mk{position:absolute;width:20px;height:20px;border-radius:50%;background:#e11d48;color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;z-index:20}
+.stat{position:relative;border-radius:8px;padding:8px 12px;min-width:92px;border:2px solid transparent}
+.stat b{font-size:18px;display:block}
+.stat.sel{border-color:#2c7be5;box-shadow:0 0 0 2px #cfe0fb}
+th{font-size:10px;text-transform:uppercase;color:#64748b;font-weight:700;text-align:left;padding:8px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.b{display:inline-block;border-radius:999px;padding:1px 9px;font-size:10px;font-weight:700}
+.g{background:#dcfce7;color:#15803d}.r{background:#fee2e2;color:#b91c1c}.y{background:#fef3c7;color:#a16207}.bl{background:#dbeafe;color:#1d4ed8}.n0{background:#e2e8f0;color:#475569}.v{background:#ede9fe;color:#6d28d9}
+.leg{background:#fff;border:1px dashed #e11d48;border-radius:10px;padding:10px 14px;font-size:12px}
+.leg li{margin:3px 0;display:flex;gap:8px;align-items:flex-start}
+.leg .c{flex:none;width:18px;height:18px;border-radius:50%;background:#e11d48;color:#fff;font-weight:700;font-size:10px;display:flex;align-items:center;justify-content:center}
+</style><style>
+.tree{font-size:11.5px;line-height:1.75}
+.tree .g{font-weight:700;color:#2c3e69;margin-top:6px;position:relative}
+.tree .i{padding-left:16px;color:#334155;position:relative}
+.tree .i2{padding-left:32px;color:#475569;position:relative}
+.ch{display:inline-block;border-radius:999px;padding:0 7px;font-size:9.5px;font-weight:700;margin-left:6px}
+.c-new{background:#dbeafe;color:#1d4ed8}.c-mv{background:#fef3c7;color:#a16207}.c-ok{background:#e2e8f0;color:#475569}.c-nb{background:#fee2e2;color:#b91c1c}
+.col{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;position:relative}
+.modh{font-size:13px;font-weight:800;color:#fff;border-radius:8px;padding:6px 10px;margin-bottom:6px}
+</style></head><body class="text-xs">
+<div class="px-5 pt-4 pb-2 text-[13px] font-semibold text-slate-700"><i class="fa-solid fa-circle-info text-accent mr-1"></i>Menu: sekarang (database dummy ddtsys, aktif) dan usulan pemisahan 2.01</div><div class="mx-5 mb-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 px-3 py-2 text-[12px]"><b>Jawaban:</b> <b>belum</b> terbagi. Sekarang hanya ada <b>satu modul Inventory</b>; Warehouse hanyalah sub-grup di dalamnya, sehingga laporan stok keuangan, label, dan scan ikut tercampur. Gambar di bawah adalah <b>usulan</b> pemisahan; <b>belum dibangun</b> dan menunggu persetujuan Anda.</div><div class="mx-5 grid grid-cols-3 gap-3"><div class="col"><div class="modh bg-slate-600">MODUL: Inventory <span class="font-normal text-[10px]">(satu modul, Warehouse = sub-grup)</span></div><div class="tree"><div class="g">Raw Material</div><div class="i">Stock In</div><div class="i">Stock Out</div><div class="i">Return from Production</div><div class="i">Stock Adjustment &amp; Physical Count</div><div class="i">Adjustment Approval</div><div class="i">Report: Stock Balance, Stock Card, Slow Moving</div><div class="g">Semi Finished Goods</div><div class="i">Stock In</div><div class="i">Stock Out</div><div class="i">Return from Production</div><div class="i">Stock Adjustment &amp; Physical Count</div><div class="i">Adjustment Approval</div><div class="i">Report: Stock Balance, Stock Card, Slow Moving</div><div class="g">Finished Goods</div><div class="i">Stock In</div><div class="i">Stock Out</div><div class="i">Return from Production</div><div class="i">Stock Adjustment &amp; Physical Count</div><div class="i">Adjustment Approval</div><div class="i">Report: Stock Balance, Stock Card, Slow Moving</div>
+<div class="g">Warehouse<span class="ch c-nb">sub-grup</span></div>
+<div class="i">Warehouse Map</div><div class="i">Stock Transfer</div><div class="i">Stock Transfer Approval Center</div><div class="i">Stack Monitor</div>
+<div class="i">Setup: Buildings · Storage Areas · Bins</div>
+<div class="i">Report: Stock by Location</div><div class="i">Report: Stock Card · Stock Recapitulation · Stock Summary</div><div class="i">Report: Stock Opname · Stock Loss &amp; Gain · Stock in Inspection</div>
+<div class="g">Label &amp; QR Code</div><div class="i">Print Location / Pallet / Item Label (QR)</div><div class="i">Report: Label Print History</div>
+<div class="g">Scan Center</div><div class="i">Scan Transaction (Mobile Camera)<span class="ch c-nb">belum dibangun</span></div><div class="i">Track via QR/Barcode</div>
+<div class="g">Related Master Data</div><div class="i">Raw Material Master · Material Category · Product Master</div><div class="i">Warehouse &amp; Location</div></div></div><div class="col"><div class="modh bg-[#2c7be5]">MODUL: INVENTORY <span class="font-normal text-[10px]">apa · berapa · nilai · pemilik</span></div><div class="tree">
+<div class="g">Stock Documents<span class="mk" style="right:0;top:-2px">1</span></div><div class="i">Raw Material / Semi Finished Goods / Finished Goods: Stock In · Stock Out · Return · Adjustment &amp; Count · Approval<span class="ch c-ok">tetap</span></div>
+<div class="i">Stock Transfer · Transfer Approval<span class="ch c-mv">dari Warehouse</span></div>
+<div class="g">Subcontract<span class="ch c-new">F4</span></div><div class="i">Send Material · Stock at Vendor</div>
+<div class="g">Customer Material<span class="ch c-new">F4</span></div><div class="i">Receive · Stock by Owner</div>
+<div class="g">Batch &amp; Quality<span class="ch c-new">F1-F2</span></div><div class="i">Batch<span class="ch c-new">F1</span></div><div class="i">Sampling Plan · Conditional Stock · Usage Decision<span class="ch c-new">F2</span></div><div class="i">Supplier Shortage Request<span class="ch c-new">F2</span></div>
+<div class="g">Reservation<span class="ch c-ok">tautan</span></div><div class="i">Material Booking (Production &gt; Planning)</div>
+<div class="g">Valuation &amp; Period<span class="ch c-new">F5</span></div><div class="i">Valuation · GR/IR · Landed Cost · Reconciliation · Provision · Period Lock</div>
+<div class="g">Reports<span class="mk" style="right:0;top:-2px">2</span></div><div class="i">Stock Balance · Stock Card · Slow Moving per kelas<span class="ch c-ok">tetap</span></div>
+<div class="i">Stock Card (all) · Recapitulation · Summary<span class="ch c-mv">dari Warehouse &gt; Report</span></div><div class="i">Stock Opname · Loss &amp; Gain · Stock in Inspection<span class="ch c-mv">dari Warehouse &gt; Report</span></div>
+<div class="i">Expiry · In Transit · Aging / Dead Stock<span class="ch c-new">F2-F6</span></div>
+<div class="g">Related Master Data</div><div class="i">Raw Material Master · Material Category · Product Master<span class="ch c-ok">tetap</span></div></div></div><div class="col"><div class="modh bg-[#0f766e]">MODUL: WAREHOUSE <span class="font-normal text-[10px]">di mana · bagaimana fisik</span></div><div class="tree">
+<div class="g">Map &amp; Monitor</div><div class="i">Warehouse Map<span class="ch c-ok">tidak diubah</span></div><div class="i">Stack Monitor<span class="ch c-ok">tetap</span></div><div class="i">Stock by Location<span class="ch c-ok">tetap</span></div>
+<div class="g">Receiving &amp; Putaway<span class="ch c-new">F2</span></div><div class="i">Receiving · Putaway (alokasi bin)</div>
+<div class="g">Pick List<span class="ch c-new">F3</span></div><div class="i">Pick dari booking (alokasi pallet / batch / bin)</div>
+<div class="g">Transfer<span class="ch c-new">F4</span></div><div class="i">Transfer Tasks (scan kirim / terima, In Transit)</div>
+<div class="g">Count<span class="ch c-new">F4</span></div><div class="i">Count Tasks (bin dikunci saat dihitung)</div>
+<div class="g">Labels &amp; Scan<span class="mk" style="right:0;top:-2px">3</span></div><div class="i">Print Location / Pallet / Item Label (QR) · Label Print History<span class="ch c-mv">dari Inventory</span></div><div class="i">Scan Center: Track via QR/Barcode · Scan Transaction<span class="ch c-mv">dari Inventory</span></div>
+<div class="g">Tools (Die, Plate, Block)<span class="ch c-new">F6</span></div><div class="i">Tool Register · Usage</div>
+<div class="g">Task Board<span class="ch c-new">F6</span></div>
+<div class="g">Setup<span class="mk" style="right:0;top:-2px">4</span></div><div class="i">Buildings · Storage Areas (jenis + aturan area) · Bins<span class="ch c-ok">tetap</span></div><div class="i">Warehouse &amp; Location<span class="ch c-mv">dari Inventory &gt; Related Master Data</span></div></div></div></div><div class="h-3"></div><div class="px-5 pb-5"><div class="leg"><div class="font-bold mb-1 text-rose-700">Yang berubah (lingkaran merah)</div><ul><li><span class="c">1</span><span><b>Dua modul</b>: Inventory (dokumen, nilai, pemilik) dan Warehouse (fisik). Semua layar Stock In / Out / Return / Adjustment per kelas <b>tidak berubah</b> (sesuai keputusan D1: dokumen Transfer dan Opname dimiliki Inventory).</span></li><li><span class="c">2</span><span>Laporan stok bernilai (Stock Card all, Recapitulation, Summary, Opname, Loss &amp; Gain, In Inspection) <b>pindah</b> dari Warehouse &gt; Report ke Inventory &gt; Reports; isinya <b>tidak berubah</b>.</span></li><li><span class="c">3</span><span>Label &amp; QR dan Scan Center <b>pindah</b> ke Warehouse karena pekerjaan lapangan. Peta, Stack Monitor, dan Stock by Location tetap.</span></li><li><span class="c">4</span><span>Warehouse &amp; Location (master) pindah ke Warehouse &gt; Setup bersama Buildings, Storage Areas, Bins.</span></li></ul><div class="mt-2 flex gap-2 items-center text-[11px]">Warna chip: <span class="ch c-ok">tetap / tidak diubah</span><span class="ch c-mv">pindah</span><span class="ch c-new">baru + fase</span><span class="ch c-nb">catatan kondisi sekarang</span></div></div></div></body></html>

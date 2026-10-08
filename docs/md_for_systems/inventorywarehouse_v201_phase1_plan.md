@@ -123,10 +123,14 @@ Perilaku:
 | # | Perjalanan | Layar | Mockup JPEG |
 |---|---|---|---|
 | J1 | Admin stok membuka **Inventory > Batch & Quality > Batch**, mencari batch per item, membuka satu batch, mengubah tanggal kedaluwarsa atau sertifikasi, melihat saldo batch per bin dan palet | grid + form | **M1**: `inv_v201_batch_grid.jpg`, `inv_v201_batch_form.jpg` |
-| J2 | Admin stok membuka **Stock Card** dan **Stock Summary**: tampilan dan angkanya **tidak berubah sama sekali** (keputusan user: format yang ada adalah format yang biasa dipakai) | grid yang ada | **M2**: `inv_v201_stock_card.jpg` dan `inv_v201_stock_summary.jpg` (keduanya tidak diubah) |
+| J2 | Admin stok membuka **Stock Card** dan **Stock Summary**: tampilan dan angkanya **tidak berubah sama sekali** (keputusan user: format yang ada adalah format yang biasa dipakai) | grid yang ada | **M2**: tampilan **asli** `docs/mockups/inventory_report_app/1_stock_card.png`, `1c_print_stock_card.png`, `3_stock_summary.png` (tidak diubah; replika buatan agen yang salah format dan angkanya dibuang) |
 | J3 | Operator membuat **Stock In RM**: kolom **Batch** (pilih batch yang ada atau buat batch baru dengan lot supplier dan kedaluwarsa) menggantikan teks Lot | form yang ada | **M3**: `inv_v201_stock_in_batch.jpg` |
 | J4 | Admin gudang membuka **Storage Areas**, memilih **jenis area** (termasuk WIP dan area virtual) dan mengisi **aturan area** (Mixing, Pick order, hitung tiap N hari). **Warehouse Map tidak diubah** | form yang ada | **M4**: `wh_v201_storage_area.jpg` |
-| J5 | Admin stok melihat **Stock Summary**: nilai akhir sama sebelum dan sesudah peralihan Average per item, dan Opening + In − Out + Adjustment = Closing di setiap baris | grid yang ada | `inv_v201_stock_summary.jpg` |
+| J5 | Admin stok melihat **Stock Summary**: nilai akhir sama sebelum dan sesudah peralihan Average per item, dan Opening + In − Out + Adjustment = Closing di setiap baris | grid yang ada | `docs/mockups/inventory_report_app/3_stock_summary.png` (asli, tidak diubah) |
+| J6 | Operator gudang membuka **Receiving & Putaway**, melihat usulan bin per pallet (alokasi), memutuskan lewat scan; pallet URGENT dikirim langsung ke lini | layar baru (Fase 2) | `wh_v201_receiving_putaway.jpg` |
+| J7 | Operator gudang membuka **Pick List** dari booking, melihat alokasi pallet / batch / bin, scan konfirmasi | layar baru (Fase 3) | `wh_v201_pick_allocation.jpg` |
+| J8 | Kepala gudang memilih tugas Pick atau Putaway di **Warehouse Map**; peta menyorot bin alokasi (peta tidak diubah, lapisan opsional) | peta yang ada + lapisan | `wh_v201_map_allocation.jpg` |
+| J9 | Semua pengguna melihat **menu** Inventory dan Warehouse terpisah | menu | `menu_v201_split.jpg` |
 
 Mockup dibuat dengan skill `tmerp-ui-mockup` dan sudah dirender di `docs/mockups/`. **Tidak ada yang dibangun sebelum user menyetujui tiap gambar.** Gambar untuk layar yang sudah ada memakai kolom asli dari kode (`StockCardReport`, `StockSummaryReport`). Layar mengikuti objek DevLib (`x-dl::*`) dan komponen yang ada.
 
