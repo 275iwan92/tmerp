@@ -48,7 +48,8 @@ final class Warehouse
     /** @return array{width: float, height: float, outline: list<array>, floors: list<array>, bins: array<int, array>, unassigned: int, totals: array} */
     public static function map(WhWarehouse $w): array
     {
-        $zones = $w->zones()->where('activate', true)->get();
+        // Area virtual (subkon, In Transit, Loss) tidak punya tempat fisik: tidak tampil di peta (v2.01).
+        $zones = $w->zones()->where('activate', true)->where('is_virtual', false)->get();
         $bins = WhLoc::query()->where('warehouse_id', $w->id_warehouse)->where('activate', true)->orderBy('row_code')->orderBy('col_code')->orderBy('stack_code')->get();
         $sum = WarehouseStock::binSummaries($bins);
         [$width, $height] = $w->extent();

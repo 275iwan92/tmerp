@@ -11,7 +11,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class WhZone extends Model
 {
     public const TYPES = ['RECEIVING' => 'Receiving', 'QC_HOLD' => 'QC Hold', 'STORAGE' => 'Storage', 'STAGING' => 'Production Staging',
-        'SHIPPING' => 'Shipping', 'REJECT' => 'Reject / Waste', 'CONSIGN' => 'Customer Consignment', 'TOOLING' => 'Tooling (Die & Plate)'];
+        'SHIPPING' => 'Shipping', 'REJECT' => 'Reject / Waste', 'CONSIGN' => 'Customer Consignment', 'TOOLING' => 'Tooling (Die & Plate)',
+        // v2.01 (user 2026-10-08): WIP lantai produksi; SUBCON / TRANSIT / LOSS = area VIRTUAL (tanpa tempat fisik, tidak tampil di peta).
+        'WIP' => 'WIP (Production Floor)', 'SUBCON' => 'At Subcontractor (virtual)', 'TRANSIT' => 'In Transit (virtual)', 'LOSS' => 'Loss (virtual)'];
+
+    // Jenis area yang virtual: stok ada di buku tetapi tidak punya tempat di denah.
+    public const VIRTUAL_TYPES = ['SUBCON', 'TRANSIT', 'LOSS'];
+
+    // Aturan area (D24): satu item per bin, campur item, atau satu batch per bin; urutan ambil FIFO atau FEFO.
+    public const MIX_RULES = ['ANY' => 'Mixed items', 'ONE_ITEM' => 'One item per bin', 'ONE_BATCH' => 'One batch per bin'];
+
+    public const PICK_ORDERS = ['FIFO' => 'FIFO (oldest received first)', 'FEFO' => 'FEFO (earliest expiry first)'];
 
     public const MODES = ['RACK' => 'Rack', 'FLOOR' => 'Floor (lane x slot)', 'AREA' => 'Open area (one bin)'];
 
@@ -19,7 +29,7 @@ class WhZone extends Model
 
     // Warna area di peta per jenis (tone DevLib, bukan hex).
     public const TONES = ['RECEIVING' => 'violet', 'QC_HOLD' => 'amber', 'STORAGE' => 'accent', 'STAGING' => 'teal', 'SHIPPING' => 'green',
-        'REJECT' => 'danger', 'CONSIGN' => 'pink', 'TOOLING' => 'neutral'];
+        'REJECT' => 'danger', 'CONSIGN' => 'pink', 'TOOLING' => 'neutral', 'WIP' => 'violet', 'SUBCON' => 'neutral', 'TRANSIT' => 'neutral', 'LOSS' => 'danger'];
 
     protected $connection = 'tm2mst';
 
@@ -29,7 +39,13 @@ class WhZone extends Model
 
     protected $guarded = ['id_zone'];
 
-    protected $casts = ['activate' => 'boolean', 'floor_no' => 'integer', 'map_x' => 'float', 'map_y' => 'float', 'map_w' => 'float', 'map_h' => 'float', 'stack_height_m' => 'float', 'max_stack' => 'integer'];
+    protected $casts = ['activate' => 'boolean', 'floor_no' => 'integer', 'map_x' => 'float', 'map_y' => 'float', 'map_w' => 'float', 'map_h' => 'float', 'stack_height_m' => 'float', 'max_stack' => 'integer',
+        'is_virtual' => 'boolean', 'count_every_days' => 'integer'];
+
+    public function isVirtualType(): bool
+    {
+        return in_array($this->zone_type, self::VIRTUAL_TYPES, true);
+    }
 
     public function areaM2(): float
     {
