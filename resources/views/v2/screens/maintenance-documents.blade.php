@@ -61,7 +61,11 @@
         </x-slot:general>
         @if ($document)
             <x-slot:detail>
-                <x-dl::tabs :tabs="['content' => 'Content ('.raw($document->lines->count()).')', 'assets' => 'Assets ('.raw($used->count()).')']">
+                <x-dl::tabs :tabs="['read' => 'Read', 'content' => 'Content ('.raw($document->lines->count()).')', 'assets' => 'Assets ('.raw($used->count()).')']">
+                    <x-slot:read>
+                        <p class="dl-hint">@t('The text below is shown in your language. Edit the English base text in the Content tab; translations are kept in Setup, Translation Dictionary.')</p>
+                        <x-dl::table :columns="['seq' => '#', 'section' => 'Section', 'text' => 'Text']" :rows="array_map(fn ($r) => ['seq' => $r['seq'], 'section' => raw($r['section']), 'text' => raw($r['text'])], Maintenance::readRows($document))" />
+                    </x-slot:read>
                     <x-slot:content>
                         <x-dl::lines name="lines" title="Content" key-field="id_document_line" remove-field="remove" :addable="false" :duplicable="false" :min-rows="0"
                             :rows="$document->lines->map(fn ($l) => ['id_document_line' => $l->id_document_line, 'seq_no' => $l->seq_no, 'section' => $l->section, 'line_text' => $l->line_text])->all()"

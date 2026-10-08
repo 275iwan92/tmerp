@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-08 07:24",
+    "generated": "2026-10-08 07:31",
     "database": "ddtsys",
     "totals": {
         "objects": 150,
@@ -24,9 +24,9 @@
         "models": 335,
         "migrations": 562,
         "tests": 113,
-        "dictionary": 10984,
+        "dictionary": 11673,
         "languages": 4,
-        "commits": "1212",
+        "commits": "1213",
         "since": "2026-08-06"
     },
     "modules": [
@@ -166,13 +166,13 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 14,
+            "commits": 15,
             "days": 2,
             "last": "2026-10-08",
-            "screens": 23,
+            "screens": 35,
             "objects": 0,
             "engines": 0,
-            "tests": 7
+            "tests": 8
         }
     ],
     "untracked": 1117,
@@ -258,7 +258,7 @@
         {
             "date": "2026-10-08",
             "iwan": 0,
-            "jo": 13,
+            "jo": 14,
             "other": 2
         }
     ],
@@ -320,7 +320,7 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 14,
+            "jo": 15,
             "other": 37
         }
     ],
@@ -1750,10 +1750,10 @@
             "name": "PM Calendar",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -2201,10 +2201,10 @@
             "name": "Preventive Maintenance Order",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -2223,10 +2223,10 @@
             "name": "PM Compliance",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -2520,10 +2520,10 @@
             "name": "Daily Check",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -2729,10 +2729,10 @@
             "name": "Meter Readings",
             "module": "Maintenance",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-08",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",

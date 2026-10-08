@@ -17,6 +17,7 @@ use App\Models\Mnt\MntPlan;
 use App\Models\Mnt\MntPlanPart;
 use App\Models\Mnt\MntPlanTask;
 use App\Services\Maintenance\AssetProfileService;
+use App\Services\Maintenance\DocumentTranslator;
 use Devlib\Locale;
 
 // Data layar v2 Maintenance Fase 1 (profil aset, kelengkapan, dokumen). Aturan tulis = AssetProfileService.
@@ -91,7 +92,7 @@ final class Maintenance
     public static function documentRows(MntAsset $asset): array
     {
         return $asset->documents->map(fn ($d) => ['id_document' => $d->id_document, 'doc_no' => $d->doc_no, 'kind' => MntDocument::KINDS[$d->kind] ?? $d->kind,
-            'title' => $d->title, 'revision' => $d->revision, 'status' => self::STATUS_LABELS[$d->status] ?? $d->status])->values()->all();
+            'title' => DocumentTranslator::t($d->title), 'revision' => $d->revision, 'status' => self::STATUS_LABELS[$d->status] ?? $d->status])->values()->all();
     }
 
     /** [id_document => "WI-MNT-OFF-01 · Daily check of ..."] dokumen yang belum terhubung ke aset ini. */
@@ -112,9 +113,9 @@ final class Maintenance
     public static function documentListRows(): array
     {
         return MntDocument::query()->withCount('lines')->orderBy('doc_no')->get()->map(fn ($d) => ['id' => $d->id_document, 'code' => $d->doc_no,
-            'title' => $d->title, 'kind' => MntDocument::KINDS[$d->kind] ?? $d->kind, 'set' => $d->doc_set, 'revision' => $d->revision,
+            'title' => DocumentTranslator::t($d->title), 'kind' => MntDocument::KINDS[$d->kind] ?? $d->kind, 'set' => $d->doc_set, 'revision' => $d->revision,
             'status' => self::STATUS_LABELS[$d->status] ?? $d->status, 'lines' => $d->lines_count, 'approved_at' => $d->approved_at?->toDateString(),
-            'items' => $d->lines()->orderBy('seq_no')->get()->map(fn ($l) => ['seq' => $l->seq_no, 'section' => $l->section, 'text' => $l->line_text])->all()])->all();
+            'items' => $d->lines()->orderBy('seq_no')->get()->map(fn ($l) => ['seq' => $l->seq_no, 'section' => DocumentTranslator::t($l->section), 'text' => DocumentTranslator::t($l->line_text)])->all()])->all();
     }
 
     // ------------------------------------------------------------ Fase 2: Preventive Plan, Maintenance Order, Daily Check
@@ -255,5 +256,11 @@ final class Maintenance
         return $sheets->map(fn ($c) => ['id' => $c->id_daily_check, 'code' => $c->doc_no, 'asset' => $assets[$c->asset_id] ?? '#'.$c->asset_id, 'date' => $c->check_date->toDateString(),
             'shift' => MntDailyCheck::SHIFTS[$c->shift_code] ?? $c->shift_code, 'by' => $c->checked_by, 'lines' => $c->lines_count, 'notok' => $c->notok_count,
             'status' => $c->isSubmitted() ? 'Submitted' : 'Open'])->all();
+    }
+
+    /** Isi dokumen dalam bahasa user (tab Read): bagian + teks lewat kamus, English bila belum ada terjemahan. */
+    public static function readRows(MntDocument $doc): array
+    {
+        return $doc->lines->map(fn ($l) => ['seq' => $l->seq_no, 'section' => DocumentTranslator::t($l->section), 'text' => DocumentTranslator::t($l->line_text)])->values()->all();
     }
 }

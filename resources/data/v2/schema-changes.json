@@ -1,5 +1,17 @@
 [
     {
+        "at": "2026-10-07 15:11:28",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "emp_employee",
+                "column": "staff_type",
+                "detail": "varchar(10)"
+            }
+        ]
+    },
+    {
         "at": "2026-10-04 01:05:58",
         "items": [
             {

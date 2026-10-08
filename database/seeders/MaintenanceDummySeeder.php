@@ -4,9 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Mnt\MntAsset;
 use App\Models\Mnt\MntDocument;
+use App\Models\Mnt\MntDocumentLine;
 use App\Models\Mnt\MntPlan;
 use App\Models\Mnt\MntWatchPoint;
 use App\Services\Maintenance\AssetProfileService;
+use App\Services\Maintenance\DocumentTranslator;
 use App\Services\Maintenance\MeterService;
 use App\Services\Maintenance\PlanService;
 use Carbon\CarbonImmutable;
@@ -33,6 +35,14 @@ class MaintenanceDummySeeder extends Seeder
         $this->sopAndWorkInstructions();
         $this->exampleWatchPoints();
         $this->examplePlans();
+        $this->translateDocuments();
+    }
+
+    // Teks dokumen yang namanya berubah (Machine -> Asset Maintenance Profile) diperbarui, lalu terjemahan Indonesia dimasukkan ke kamus.
+    private function translateDocuments(): void
+    {
+        MntDocumentLine::where('line_text', 'Machine documents (manual, vendor contact) in the Machine Maintenance Profile.')->update(['line_text' => 'Machine documents (manual, vendor contact) in the Asset Maintenance Profile.']);
+        $this->command?->info(DocumentTranslator::import().' Indonesian translations written to the dictionary.');
     }
 
     // Plan contoh (struktur saja, ditandai Example): bulanan mesin offset dari WI bulanan, inspeksi tahunan kompresor, AC tiga bulanan,
