@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\V2\Data;
 
 use App\Models\Prd\PrdPlanRun;
+use App\Models\Sdi\IqpInquiry;
 use App\Services\Scheduling\Plan\PlanLoader;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
@@ -474,5 +475,38 @@ final class Ppic
         unset($o);
 
         return ['wo' => $wo, 'ops' => $ops, 'materials' => $mats, 'first' => $ops[0] ?? null];
+    }
+
+    // ------------------------------------------------------------------ Create Work Order
+
+    /**
+     * Delivery plan lines of Confirmed Customer Orders that have no Work Order yet, with how complete their Product Development data is:
+     * "full" = an inquiry with parts (BOP, routing, BOM come across), "simple" = a Work Order without operations is created.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function pendingDeliveries(int $limit = 200): array
+    {
+        // Work Orders live in another database: ids with a Work Order are fetched apart, never joined (no cross-connection subquery).
+        $hasWo = DB::connection('tm2prd')->table('prd_wo')->whereNotNull('source_delivery_id')->distinct()->pluck('source_delivery_id')->all();
+        $rows = Cpdel::query()->with(['item.inquiry.parts'])->where('status', 'PLANNED')->whereNull('posted_at')->whereNotIn('id_delivery', $hasWo)
+            ->orderBy('ship_date')->limit($limit)->get();
+        $customers = DB::connection('tm2mst')->table('cust_customer')->whereIn('id_customer', $rows->pluck('order.customer_id')->filter()->unique())->pluck('customer_name', 'id_customer');
+        $products = $rows->pluck('item.product_id')->filter()->unique()->all();
+        // CO INSTANT points to a Master Product: the latest live inquiry of that product is the source, as WoGenerationService does.
+        $byProduct = $products
+            ? IqpInquiry::with('parts')->whereIn('product_id', $products)->where('stat_cancel', false)->orderBy('id_inquiry')->get()->keyBy('product_id')
+            : collect();
+
+        return $rows->map(function ($d) use ($customers, $byProduct) {
+            $inq = $d->item?->inquiry ?? ($d->item?->product_id ? $byProduct->get($d->item->product_id) : null);
+            $parts = $inq?->parts?->count() ?? 0;
+
+            return [
+                'id' => $d->id_delivery, 'co' => $d->order?->co_no, 'customer' => $customers[$d->order?->customer_id] ?? '—',
+                'product' => $d->item?->description, 'qty' => (float) $d->ship_qty, 'ship' => $d->ship_date?->toDateString(),
+                'parts' => $parts, 'complete' => $parts > 0,
+            ];
+        })->all();
     }
 }

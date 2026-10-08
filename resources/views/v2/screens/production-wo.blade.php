@@ -17,6 +17,25 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $d)
+    @php $pending = Ppic::pendingDeliveries(); @endphp
+    <x-dl::card title="Create Work Order" description="Delivery plan lines of Confirmed Customer Orders that have no Work Order yet. A Work Order is built from Product Development (BOP, routing, BOM); the engines then prepare a Draft plan for you to Confirm on Production Scheduling.">
+        <x-dl::table :source="$src" empty="Every Confirmed delivery plan line already has a Work Order."
+            :columns="['co' => 'Customer Order', 'customer' => 'Customer', 'product' => 'Product', 'qty' => 'Quantity', 'ship' => 'Ship Date', 'pd' => 'Product Development']"
+            :rows="array_map(fn ($p) => ['co' => raw($p['co']), 'customer' => raw($p['customer']), 'product' => raw($p['product']), 'qty' => raw(Locale::number($p['qty'], 0)), 'ship' => raw(Locale::d($p['ship'])),
+                'pd' => $p['complete'] ? t('Complete').' · '.$p['parts'].' '.t('parts') : t('Simple Work Order (no operations)')], $pending)" />
+        @if ($pending)
+            <x-dl::action-form action="{{ route('v2.ppic.wo.create') }}">
+                <x-dl::form.row :cols="4">
+                    <x-dl::field.select name="delivery" label="Delivery plan line" :options="collect($pending)->mapWithKeys(fn ($p) => [$p['id'] => $p['co'].' · '.$p['product'].' · '.Locale::number($p['qty'], 0)])->all()" placeholder="Choose line..." :source="$src" />
+                    <x-dl::button icon="fa-plus" label="Create Work Order" type="submit" />
+                </x-dl::form.row>
+            </x-dl::action-form>
+            <x-dl::action-form action="{{ route('v2.ppic.wo.create') }}">
+                <input type="hidden" name="all" value="1">
+                <x-dl::action-bar><x-dl::button variant="secondary" icon="fa-wand-magic-sparkles" label="Create all" type="submit" /></x-dl::action-bar>
+            </x-dl::action-form>
+        @endif
+    </x-dl::card>
     @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Prod\WorkOrderGrid]])
 @else
     @php

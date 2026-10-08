@@ -12,6 +12,7 @@ use App\Services\Scheduling\Plan\GateService;
 use App\Services\Scheduling\Plan\PlanChangeService;
 use App\Services\Scheduling\Plan\PlanConfirmService;
 use App\Services\Scheduling\Plan\WoPlanningEnricher;
+use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\Ppic;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -139,6 +140,40 @@ final class PpicController extends Controller
         Ppic::forget();
 
         return response()->json(['rows' => Ppic::sheetRows(Ppic::operations()), 'saved' => $n]);
+    }
+
+    /**
+     * Create Work Order from delivery plan lines: ProDev data -> Work Order, then enrich (machines, targets, setup), gates, and one Draft plan.
+     * "all" = every pending line; otherwise the single line in `delivery`.
+     */
+    public function createWo(Request $r, WoPlanningEnricher $enricher, GateService $gates, AutoPlanRunner $runner): RedirectResponse
+    {
+        $d = $r->validate(['delivery' => ['nullable', 'integer'], 'all' => ['nullable', 'boolean']]);
+        $ids = ! empty($d['all']) ? array_column(Ppic::pendingDeliveries(500), 'id') : array_filter([(int) ($d['delivery'] ?? 0)]);
+        $made = 0;
+        $errors = [];
+        foreach ($ids as $id) {
+            // Same door as Post to Production on Customer Plan Delivery: creates the Work Order(s) and marks the line Posted.
+            if ($error = Cpdel::post((int) $id)) {
+                $errors[] = $error;
+
+                continue;
+            }
+            foreach (PrdWo::where('source_delivery_id', $id)->get() as $wo) {
+                $enricher->enrich($wo);
+                $gates->apply($wo);
+                $made++;
+            }
+        }
+        $back = redirect(route('v2.screen', 'production-wo'));
+        if ($made === 0) {
+            return $back->withErrors(['create' => $errors ? implode(' ', $errors) : t('No Work Order was created.')]);
+        }
+        $run = $runner->run('EVENT', $this->login());
+        Ppic::forget();
+
+        return $back->with('v2_flash', tf(':n Work Order(s) created. Draft plan :id is ready on Production Scheduling for you to Confirm.', ['n' => $made, 'id' => $run->run_id]))
+            ->withErrors($errors ? ['create' => implode(' ', $errors)] : []);
     }
 
     /** Work Order page: read ProDev data again and refresh gates. */

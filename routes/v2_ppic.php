@@ -14,6 +14,7 @@ Route::prefix('v2/ppic')->name('v2.ppic.')->middleware('module:PROD')->group(fun
     Route::post('/move', [PpicController::class, 'moveOp'])->name('move');
     Route::post('/kanban-move', [PpicController::class, 'kanbanMove'])->name('kanban-move');
     Route::post('/sheet-save', [PpicController::class, 'sheetSave'])->name('sheet-save');
+    Route::post('/wo/create', [PpicController::class, 'createWo'])->name('wo.create');
     Route::post('/wo/{wo}/refresh', [PpicController::class, 'refreshWo'])->name('wo.refresh');
     Route::post('/wo/{wo}/output', [PpicController::class, 'output'])->name('wo.output');
 });
