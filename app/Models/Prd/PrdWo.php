@@ -24,6 +24,7 @@ class PrdWo extends Model
         'qty', 'due_date', 'material_needed_by',
         'wo_status', 'schedule_layer', 'is_hot_job', 'hot_job_source', 'hot_job_customer_id', 'priority',
         'confirmed_at', 'cancel_reason', 'created_by', 'updated_by',
+        'ups_per_sheet', 'sheet_length_mm', 'sheet_width_mm', 'board_gsm', 'colour_count', 'dieline_ref', 'customer_tier', 'layout_json',
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class PrdWo extends Model
         'confirmed_at' => 'datetime',
         'is_hot_job' => 'boolean',
         'qty' => 'decimal:4',
+        'layout_json' => 'array',
     ];
 
     // Tier2 §1 — state machine WO. Guard wajib di service layer, bukan cuma UI.

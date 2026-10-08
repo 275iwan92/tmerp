@@ -63,6 +63,14 @@ final class WorkingCalendar
         return (int) min(1440, round($m['shifts'] * $m['hours'] * 60));
     }
 
+    /** Minutes of one shift of this machine (hours per shift x 60). */
+    public function shiftMinutes(int $machineId): int
+    {
+        $m = $this->machines[$machineId] ?? ['shifts' => $this->defaultShifts, 'hours' => $this->defaultHours];
+
+        return (int) round($m['hours'] * 60);
+    }
+
     public function isWorkingDay(CarbonImmutable $day): bool
     {
         if ($this->sundayOff && $day->dayOfWeek === CarbonImmutable::SUNDAY) {

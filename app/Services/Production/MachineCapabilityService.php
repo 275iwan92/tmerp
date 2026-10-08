@@ -108,6 +108,26 @@ class MachineCapabilityService
         ];
     }
 
+    // Reasons are shown on screen (translated) but PPIC stores them in the database in English: english() switches the translation off.
+    private bool $english = false;
+
+    public function english(bool $on = true): static
+    {
+        $this->english = $on;
+
+        return $this;
+    }
+
+    private function tr(string $en, array $values = []): string
+    {
+        $text = $this->english ? $en : tf($en);
+        foreach ($values as $k => $v) {
+            $text = str_replace(':'.$k, (string) $v, $text);
+        }
+
+        return $text;
+    }
+
     // Alasan sebuah pasangan tidak layak dipakai untuk pekerjaan ini.
     private function blockingReasons(ProdProcessMachine $cap, array $constraints): array
     {
@@ -115,13 +135,13 @@ class MachineCapabilityService
         $reasons = [];
 
         if (! $m->activate) {
-            $reasons[] = t('Machine is inactive in the master');
+            $reasons[] = $this->tr('Machine is inactive in the master');
         } elseif (in_array($m->machine_status, ProdMachine::STATUSES_BLOCKING, true)) {
-            $reasons[] = tf('Machine status: :status', ['status' => $m->statusLabel()]);
+            $reasons[] = $this->tr('Machine status: :status', ['status' => $this->english ? $m->machine_status : $m->statusLabel()]);
         }
 
         if (! $m->is_process_machine) {
-            $reasons[] = t('Not a process machine (supporting equipment)');
+            $reasons[] = $this->tr('Not a process machine (supporting equipment)');
         }
 
         // Envelope pasangan mengalahkan envelope mesin bila diisi.
@@ -138,11 +158,11 @@ class MachineCapabilityService
             $fits = fn ($l, $w) => (! $maxLen || $l <= $maxLen) && (! $maxWid || $w <= $maxWid);
 
             if ($maxLen && $maxWid && ! $fits($len, $wid) && ! $fits($wid, $len)) {
-                $reasons[] = tf('Sheet :sheet mm exceeds the machine limit :max mm', ['sheet' => sprintf('%dx%d', $len, $wid), 'max' => sprintf('%dx%d', $maxLen, $maxWid)]);
+                $reasons[] = $this->tr('Sheet :sheet mm exceeds the machine limit :max mm', ['sheet' => sprintf('%dx%d', $len, $wid), 'max' => sprintf('%dx%d', $maxLen, $maxWid)]);
             }
 
             if ($minLen && $minWid && (min($len, $wid) < min($minLen, $minWid))) {
-                $reasons[] = tf('Sheet is smaller than the machine minimum :min mm', ['min' => sprintf('%dx%d', $minLen, $minWid)]);
+                $reasons[] = $this->tr('Sheet is smaller than the machine minimum :min mm', ['min' => sprintf('%dx%d', $minLen, $minWid)]);
             }
         }
 
@@ -151,10 +171,10 @@ class MachineCapabilityService
         $gsmMax = $cap->gsm_max ?: $m->gsm_max;
 
         if ($gsm && $gsmMin && $gsm < $gsmMin) {
-            $reasons[] = tf('Grammage :gsm is below the minimum :min gsm', ['gsm' => $gsm, 'min' => $gsmMin]);
+            $reasons[] = $this->tr('Grammage :gsm is below the minimum :min gsm', ['gsm' => $gsm, 'min' => $gsmMin]);
         }
         if ($gsm && $gsmMax && $gsm > $gsmMax) {
-            $reasons[] = tf('Grammage :gsm is above the maximum :max gsm', ['gsm' => $gsm, 'max' => $gsmMax]);
+            $reasons[] = $this->tr('Grammage :gsm is above the maximum :max gsm', ['gsm' => $gsm, 'max' => $gsmMax]);
         }
 
         return $reasons;

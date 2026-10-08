@@ -29,6 +29,9 @@ class PrdWoOperation extends Model
         'task_status', 'qc_gate_required', 'rejection_reason', 'is_hot_job',
         'batched_with_operation_id', 'rate_band_value', 'critical_ratio',
         'created_by', 'updated_by',
+        'process_id', 'qty_uom', 'qty_out', 'setup_base_min', 'setup_change_min', 'setup_tool_min', 'run_minutes', 'plan_status',
+        'draft_machine_id', 'draft_start', 'draft_finish', 'draft_run_id', 'is_locked', 'lock_reason', 'planned_by', 'priority_note',
+        'gate_material', 'gate_tooling', 'gate_artwork', 'gate_note', 'material_ready_at', 'actual_setup_min',
     ];
 
     protected $casts = [
@@ -36,6 +39,11 @@ class PrdWoOperation extends Model
         'target_finish' => 'datetime',
         'actual_start' => 'datetime',
         'actual_finish' => 'datetime',
+        'draft_start' => 'datetime',
+        'draft_finish' => 'datetime',
+        'material_ready_at' => 'datetime',
+        'is_locked' => 'boolean',
+        'qty_out' => 'decimal:2',
         'qc_gate_required' => 'boolean',
         'is_hot_job' => 'boolean',
         'qty' => 'decimal:4',

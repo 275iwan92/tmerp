@@ -12,6 +12,7 @@ use Carbon\CarbonImmutable;
  * candidates: machine_id => ['rank' => int, 'rate' => ?float units per hour (of the operation unit), 'setup_base' => ?int minutes]
  * facts:      setup facts, see SetupTimeEngine
  * fixed:      already confirmed and locked placement ['machine' => int, 'start' => CarbonImmutable, 'finish' => CarbonImmutable]
+ * kind:       MACHINE (finite capacity) | MANUAL (crew job, no machine capacity: QC, packing) | SUBCON (outsourced, lead days)
  * gate:       READY | WAIT | BLOCK (material / tooling / artwork combined); WAIT uses minStart as the arrival time
  */
 final class PlanOp
@@ -35,5 +36,7 @@ final class PlanOp
         public readonly string $gate = 'READY',
         public readonly ?string $gateNote = null,
         public readonly ?array $fixed = null,
+        public readonly string $kind = 'MACHINE',
+        public readonly int $leadDays = 0,
     ) {}
 }

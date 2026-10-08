@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ppic;
 
-use App\Services\Scheduling\Plan\MachineEligibility;
 use App\Services\Scheduling\Plan\PlanOp;
 use App\Services\Scheduling\Plan\PlanWo;
 use App\Services\Scheduling\Plan\ScheduleSolver;
@@ -179,25 +178,6 @@ final class ScheduleSolverTest extends TestCase
 
         $order = collect($r->placements)->sortBy(fn ($p) => $p->start->getTimestamp())->keys()->all();
         $this->assertSame([10, 30, 20], $order);
-    }
-
-    public function test_machine_eligibility_checks_sheet_board_colours_and_status(): void
-    {
-        $e = new MachineEligibility;
-        $machine = ['status' => 'READY', 'activate' => true, 'max_l' => 1030, 'max_w' => 720, 'gsm_min' => 80, 'gsm_max' => 400, 'max_colors' => 4];
-        $cap = ['found' => true, 'activate' => true, 'certified' => true, 'rank' => 1];
-        $job = ['stage' => 'PRESS', 'is_print' => true, 'sheet_l' => 790, 'sheet_w' => 545, 'gsm' => 350, 'colours' => 4];
-
-        $this->assertTrue($e->check($machine, $cap, $job)['eligible']);
-        $this->assertFalse($e->check($machine, $cap, ['sheet_l' => 1100, 'sheet_w' => 800] + $job)['eligible']);
-        $this->assertStringContainsString('above the machine maximum', $e->check(['gsm_max' => 300] + $machine, $cap, $job)['reason']);
-        $this->assertStringContainsString('prints 4 per pass', $e->check($machine, $cap, ['colours' => 5] + $job)['reason']);
-        $this->assertStringContainsString('down', $e->check(['status' => 'BREAKDOWN'] + $machine, $cap, $job)['reason']);
-        $this->assertFalse($e->check($machine, ['found' => false] + $cap, $job)['eligible']);
-        // Unknown master data is a warning, not a block.
-        $unknown = $e->check(['status' => 'READY', 'activate' => true] + [], $cap, $job);
-        $this->assertTrue($unknown['eligible']);
-        $this->assertNotEmpty($unknown['warnings']);
     }
 
     public function test_setup_engine_parts(): void

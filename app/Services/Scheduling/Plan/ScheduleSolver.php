@@ -21,6 +21,8 @@ final class ScheduleSolver
 {
     private const FALLBACK_RUN_MINUTES = 60;
 
+    private const MANUAL_MINUTES = 30;
+
     /** @var array<int, list<array{from: int, to: int, facts: array, opId: int}>> machine => blocks sorted by start (work minutes) */
     private array $blocks = [];
 
@@ -231,6 +233,17 @@ final class ScheduleSolver
 
                 continue;
             }
+            if ($op->kind !== 'MACHINE') {
+                $earliest = $predFinish->greaterThan($now) ? $predFinish : $now;
+                if ($op->minStart && $op->minStart->greaterThan($earliest)) {
+                    $earliest = $op->minStart;
+                }
+                $p = $this->placeOutsideMachines($op, $wo, $cal, $earliest);
+                $result->place($p);
+                $predFinish = $p->finish->addMinutes($op->waitAfterMinutes);
+
+                continue;
+            }
             if (! $op->candidates) {
                 $blockedBy = 'No eligible machine for '.$op->processName.'.';
                 $result->exception($wo->id, $op->id, 'NO_MACHINE', 'No eligible machine for '.$op->processName.'.');
@@ -275,6 +288,22 @@ final class ScheduleSolver
             $hours = round($wo->due->diffInMinutes($last->finish) / 60, 1);
             $result->exception($wo->id, $lastOp->id, 'LATE_RISK', sprintf('Forecast finish %s is %s h after the due date.', $last->finish->format('D j M H:i'), $hours), ['hours_late' => $hours]);
         }
+    }
+
+    /** Crew jobs and subcontract steps take time but no machine capacity (machine id 0). */
+    private function placeOutsideMachines(PlanOp $op, PlanWo $wo, WorkingCalendar $cal, CarbonImmutable $earliest): Placement
+    {
+        $zero = ['base' => 0, 'change' => 0, 'tool' => 0, 'total' => 0, 'extra_waste' => 0, 'parts' => []];
+        if ($op->kind === 'SUBCON') {
+            $days = max(1, $op->leadDays);
+
+            return new Placement($op->id, $wo->id, 0, $earliest, $earliest->addDays($days), 0, $days * 1440, $zero, [sprintf('Subcontract: %d days lead time.', $days)]);
+        }
+        $minutes = self::MANUAL_MINUTES;
+        $start = $cal->timeAt($cal->workMinute($earliest, 0), 0);
+        $finish = $cal->timeAt($cal->workMinute($earliest, 0) + $minutes, 0, true);
+
+        return new Placement($op->id, $wo->id, 0, $start, $finish, 0, $minutes, $zero, ['Crew job: '.$minutes.' minutes assumed.']);
     }
 
     /**
