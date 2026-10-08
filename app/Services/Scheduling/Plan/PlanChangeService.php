@@ -68,7 +68,7 @@ final class PlanChangeService
 
         $rate = $cand->target_qty_per_hour !== null ? (float) $cand->target_qty_per_hour : null;
         $run = $rate ? (int) ceil((float) $op->qty / $rate * 60) : 60;
-        $setupMin = (int) (($op->setup_base_min ?? config('ppic.setup.base_minutes', 15)) + ($op->setup_change_min ?? 0) + ($op->setup_tool_min ?? 0));
+        $setupMin = (int) (($op->setup_base_min ?? PpicSettings::number('setup.base_minutes')) + ($op->setup_change_min ?? 0) + ($op->setup_tool_min ?? 0));
         $w = $cal->workMinute($start, $machineId);
         $newStart = $cal->timeAt($w, $machineId);
         $newFinish = $cal->timeAt($w + $setupMin + $run, $machineId, true);

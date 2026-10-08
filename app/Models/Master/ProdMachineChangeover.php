@@ -33,6 +33,9 @@ class ProdMachineChangeover extends Model
         'extra_waste_qty',
         'note',
         'activate',
+        'value_status',
+        'sample_count',
+        'frozen',
         'created_by',
         'updated_by',
     ];

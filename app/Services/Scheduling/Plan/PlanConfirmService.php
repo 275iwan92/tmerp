@@ -30,7 +30,7 @@ final class PlanConfirmService
 
         $ops = PrdWoOperation::query()->where('plan_status', 'DRAFT')->whereNotNull('draft_start')->get();
         $cal = $this->loader->calendar($now, $ops->pluck('draft_machine_id')->unique()->all());
-        $shifts = max(1, (int) config('ppic.lock_shifts', 1));
+        $shifts = max(1, (int) PpicSettings::number('lock_shifts'));
 
         return DB::connection('tm2prd')->transaction(function () use ($ops, $cal, $shifts, $now, $run, $login) {
             $locked = 0;

@@ -23,6 +23,9 @@ final class PlanLoader
     /** Operations with this task status are being worked on: they are fixed in the plan. */
     private const WORKING = ['RUNNING'];
 
+    /** @var array<string, int>|null */
+    private ?array $waitRules = null;
+
     /**
      * @param  list<int>|null  $onlyWoIds  limit to some Work Orders (impact preview)
      * @return list<PlanWo>
@@ -64,15 +67,29 @@ final class PlanLoader
         return $out;
     }
 
+    /** Minutes to wait after a process (drying, curing), by process-name keyword: the Wait Rules master wins over the start values in config. @return array<string, int> */
+    private function waitRules(): array
+    {
+        if ($this->waitRules === null) {
+            $this->waitRules = (array) config('ppic.wait_after', []);
+            $rows = DB::connection('tm2mst')->table('prod_wait_rule')->where('activate', 1)->get(['after_process_name', 'wait_minutes']);
+            foreach ($rows as $r) {
+                $this->waitRules[strtoupper(trim((string) $r->after_process_name))] = (int) $r->wait_minutes;
+            }
+        }
+
+        return $this->waitRules;
+    }
+
     public function calendar(CarbonImmutable $now, array $machineIds): WorkingCalendar
     {
         $m = DB::connection('tm2mst')->table('prod_machine')->whereIn('machine_id', array_filter($machineIds))
             ->get(['machine_id', 'shifts_per_day', 'hours_per_shift'])
             ->mapWithKeys(fn ($r) => [(int) $r->machine_id => ['shifts' => $r->shifts_per_day ?: null, 'hours' => $r->hours_per_shift ?: null]])->all();
-        $holidays = SysHoliday::query()->where('activate', true)->whereBetween('holiday_date', [$now->startOfDay()->toDateString(), $now->addDays((int) config('ppic.horizon_days', 60))->toDateString()])
+        $holidays = SysHoliday::query()->where('activate', true)->whereBetween('holiday_date', [$now->startOfDay()->toDateString(), $now->addDays((int) PpicSettings::number('horizon_days'))->toDateString()])
             ->get()->map(fn ($h) => $h->holiday_date->toDateString())->all();
 
-        return new WorkingCalendar($now, $m, $holidays, (string) config('ppic.day_start', '07:00'), (int) config('ppic.default_shifts', 2), (float) config('ppic.default_hours_per_shift', 8));
+        return new WorkingCalendar($now, $m, $holidays, (string) config('ppic.day_start', '07:00'), (int) PpicSettings::number('default_shifts'), PpicSettings::number('default_hours_per_shift'));
     }
 
     /** @return list<int> every machine id the Work Orders can use */
@@ -99,7 +116,7 @@ final class PlanLoader
         }
         $name = strtoupper((string) $op->process_name);
         $wait = 0;
-        foreach ((array) config('ppic.wait_after', []) as $key => $min) {
+        foreach ($this->waitRules() as $key => $min) {
             if (str_starts_with($name, (string) $key)) {
                 $wait = (int) $min;
             }

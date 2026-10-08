@@ -8,6 +8,7 @@ use App\Models\Master\ProdPart;
 use App\Models\Prd\PrdPlanRun;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\Scheduling\Plan\PlanLoader;
+use App\Services\Scheduling\Plan\PpicSettings;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
@@ -183,7 +184,7 @@ final class Ppic
         $now = self::now();
         $nowH = self::hours($now);
         $loads = (self::latestRun()?->summary['loads'] ?? []);
-        $threshold = (float) config('ppic.bottleneck_load_pct', 90);
+        $threshold = PpicSettings::number('bottleneck_load_pct');
 
         $placed = array_values(array_filter($ops, fn ($r) => $r['start'] && $r['finish'] && self::hours($r['finish']) > 0));
         $rowKeys = [];
@@ -248,8 +249,8 @@ final class Ppic
 
     private static function lockUntilHours(float $nowH): float
     {
-        $shifts = max(1, (int) config('ppic.lock_shifts', 1));
-        $hours = (float) config('ppic.default_hours_per_shift', 8);
+        $shifts = max(1, (int) PpicSettings::number('lock_shifts'));
+        $hours = PpicSettings::number('default_hours_per_shift');
 
         return round($nowH + $shifts * $hours, 2);
     }
@@ -349,7 +350,7 @@ final class Ppic
             $out[] = ['kind' => $labels[$e['kind']] ?? $e['kind'], 'wo' => $nos[$e['wo']] ?? '#'.$e['wo'], 'text' => (string) $e['message'], 'options' => $options[$e['kind']] ?? ''];
         }
         foreach ($run?->summary['loads'] ?? [] as $mid => $l) {
-            if (($l['pct'] ?? 0) >= (float) config('ppic.bottleneck_load_pct', 90)) {
+            if (($l['pct'] ?? 0) >= PpicSettings::number('bottleneck_load_pct')) {
                 $out[] = ['kind' => 'Overload', 'wo' => '#'.$mid, 'text' => sprintf('Machine #%d load %s percent.', $mid, $l['pct']), 'options' => 'Move jobs to another eligible machine, overtime or subcontract'];
             }
         }

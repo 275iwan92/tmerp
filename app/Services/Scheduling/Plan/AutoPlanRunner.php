@@ -54,10 +54,8 @@ final class AutoPlanRunner
 
     public function solver(): ScheduleSolver
     {
-        $w = (array) config('ppic.weights');
-
-        return new ScheduleSolver(new SetupTimeEngine, (array) config('ppic.setup'), ['urgency' => (float) $w['urgency'], 'setup' => (float) $w['setup'], 'tier' => (float) $w['tier']],
-            (float) config('ppic.similar_window_hours', 8), (float) config('ppic.horizon_hours', 72));
+        return new ScheduleSolver(new SetupTimeEngine, PpicSettings::setupRules(), PpicSettings::weights(),
+            PpicSettings::number('similar_window_hours'), PpicSettings::number('horizon_hours'));
     }
 
     /** Enrich Work Orders that have no process ids yet and refresh the gates of all active ones. */

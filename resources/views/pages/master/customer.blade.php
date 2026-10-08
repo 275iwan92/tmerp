@@ -125,6 +125,8 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 
     public string $credit_rating = 'B';
 
+    public int $customer_tier = 2;
+
     // ---- field form: Sites & Contacts (PIC + alamat utama) ----
     public string $mr_ms = '';
 
@@ -565,6 +567,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         $this->credit_limit = (string) $customer->credit_limit;
         $this->credit_check_enabled = (bool) $customer->credit_check_enabled;
         $this->credit_rating = $customer->credit_rating ?? 'B';
+        $this->customer_tier = (int) ($customer->customer_tier ?: 2);
 
         $this->mr_ms = (string) $customer->mr_ms;
         $this->contact_name = (string) $customer->contact_name;
@@ -594,7 +597,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
     {
         $fields = match ($tab) {
             'overview' => ['customer_code', 'customer_name', 'customer_type', 'tax_code', 'category'],
-            'sales' => ['sales_division_id', 'payment_term', 'currency_code', 'credit_limit', 'tax_profile', 'credit_rating'],
+            'sales' => ['sales_division_id', 'payment_term', 'currency_code', 'credit_limit', 'tax_profile', 'credit_rating', 'customer_tier'],
             'sites' => ['default_address', 'default_area_id', 'default_area_level', 'postal_code', 'mr_ms', 'contact_name', 'phone', 'email', 'website'],
             'governance' => ['kyc_status'],
             default => [],
@@ -619,6 +622,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         $this->currency_code = 'IDR';
         $this->tax_profile = 'PPN_11';
         $this->credit_rating = 'B';
+        $this->customer_tier = 2;
         $this->credit_check_enabled = true;
         $this->kyc_status = 'PENDING';
         $this->tax_validated = false;
@@ -692,6 +696,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 'credit_limit' => ['nullable', 'numeric', 'min:0'],
                 'credit_check_enabled' => ['boolean'],
                 'credit_rating' => ['required', 'in:A,B,C'],
+                'customer_tier' => ['required', 'integer', 'in:1,2,3'],
 
                 'default_address' => ['nullable', 'string'],
                 'default_area_id' => ['nullable', 'integer'],
@@ -1056,6 +1061,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                             <x-form.checkbox wire:model="credit_check_enabled" label="Aktifkan pengecekan kredit" />
                         </div>
                         <x-form.select label="Credit Rating" wire:model="credit_rating" :placeholder="false" :options="CustCustomer::CREDIT_RATINGS" />
+                        <x-form.select label="Customer Tier (production priority)" wire:model="customer_tier" :placeholder="false" :options="CustCustomer::CUSTOMER_TIERS" />
                         <x-form.input label="Saldo Piutang Berjalan" readonly value="Rp {{ number_format((float) ($this->selectedCustomer?->current_balance ?? 0), 0, ',', '.') }}" />
                     </div>
 

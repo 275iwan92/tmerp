@@ -24,6 +24,9 @@ class CustCustomer extends Model
 
     protected $primaryKey = 'id_customer';
 
+    // Production scheduling priority weight (kept by Sales): 1 = key customer, 3 = occasional.
+    public const CUSTOMER_TIERS = [1 => '1 - Key customer', 2 => '2 - Regular', 3 => '3 - Occasional'];
+
     public const CREDIT_RATINGS = [
         'A' => 'A — Low Risk',
         'B' => 'B — Medium Risk',
@@ -89,6 +92,7 @@ class CustCustomer extends Model
         'tax_profile',
         'credit_check_enabled',
         'credit_rating',
+        'customer_tier',
         'tax_validated',
         'kyc_status',
     ];
