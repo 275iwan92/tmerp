@@ -163,6 +163,8 @@ Semua angka adalah **rantai**: `EB = BB + In − Out + Adj`, **BB baris berikutn
 
 ![Rumus bersambung dan contoh koreksi](../mockups/inv_v201_chain_correction.jpg)
 
+![Tombol Cancel, dialog keterangan, dan hasil](../mockups/inv_v201_cancel_reversal.jpg)
+
 ## 9. Skema (ringkas, belum final)
 
 | Entitas | DB | Isi inti |
@@ -205,7 +207,8 @@ Hak harga: Sales tidak melihat harga; nilai stok hanya yang berhak membuka lapor
 | `menu_v201_split.jpg` | Menu sekarang dan usulan dua modul | **Menunggu persetujuan** |
 | `inv_v201_coverage.jpg` | Peta cakupan aspek dan status preview | Informasi |
 | `inv_v201_stock_card_chain.jpg` | Stock Card asli vs usulan saldo bersambung (BB berikutnya = EB sebelumnya) | **Menunggu persetujuan** (aturan user D25) |
-| `inv_v201_chain_correction.jpg` | Rumus bersambung dan koreksi salah input (Pembalik) | Menunggu persetujuan (D26) |
+| `inv_v201_chain_correction.jpg` | Rumus bersambung dan koreksi salah input (Pembalik) | Konsep **disetujui** (D26, dengan keterangan "Kesalahan transaksi no. XXX") |
+| `inv_v201_cancel_reversal.jpg` | Tombol Cancel pada dokumen Confirmed, dialog keterangan wajib, hasil, dan Stock Card sesudahnya | **Menunggu persetujuan** |
 | `inv_v201_batch_grid.jpg`, `inv_v201_batch_form.jpg` | Master batch (layar baru) | Menunggu persetujuan |
 | `inv_v201_stock_in_batch.jpg` | Field Batch di Stock In | Menunggu persetujuan |
 | `wh_v201_storage_area.jpg` | Jenis area baru dan aturan area (tiga isian) | **Aturan area disetujui** (D24); jenis area menunggu |
