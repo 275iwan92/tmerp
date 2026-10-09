@@ -178,7 +178,7 @@ class StockCardAllReport extends AllStockReport
             ['key' => 'card', 'label' => 'Item', 'visible' => false] + $fixed,
             ['key' => 'doc_no', 'label' => 'Doc No.', 'visible' => false] + $fixed,
             ['key' => 'move', 'label' => 'Movement', 'type' => 'badge', 'visible' => false, 'tones' => ['In' => 'success', 'Out' => 'danger', 'Adjustment' => 'warn', 'Opening' => 'neutral',
-                'Transfer in' => 'info', 'Transfer out' => 'info', self::TOTAL => 'neutral']] + $fixed,
+                'Value adjustment' => 'info', 'Transfer in' => 'info', 'Transfer out' => 'info', self::TOTAL => 'neutral']] + $fixed,
             ['key' => 'lot', 'label' => 'Lot No.', 'visible' => false] + $fixed,
             ['key' => 'ref_no', 'label' => 'Reference', 'visible' => false] + $fixed,
             ['key' => 'unit', 'label' => 'Unit', 'visible' => false] + $fixed,

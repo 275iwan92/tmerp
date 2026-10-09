@@ -34,7 +34,8 @@ final class ItemAverageCost
         return strtoupper(trim((string) SysConstant::text('INV_AVG_SCOPE', 'BIN'))) === 'ITEM';
     }
 
-    // Avg per kartu sebelum StockCardChain menulis ulang, supaya perubahan harga baris keluar bisa dilaporkan.
+    // Avg per kartu sebelum StockCardChain menulis ulang, supaya perubahan harga baris keluar bisa dilaporkan. Baris tanpa Avg (baris yang baru
+    // disisipkan) tidak dilaporkan: harganya baru dihitung, bukan berubah.
     /** @return array<int, ?float> */
     public static function snapshot(string $class, int $itemId, ?int $partId, ?Model $from = null): array
     {
@@ -50,7 +51,7 @@ final class ItemAverageCost
      * Hitung ulang nilai satu item. $before = hasil snapshot() (kosong = tidak melapor baris keluar yang berubah harga).
      *
      * @param  array<int, ?float>|null  $before
-     * @return array{avg: ?float, qty: float, value: float, rows: int, revalued_rows: int, revalued_value: float}
+     * @return array{avg: ?float, qty: float, value: float, rows: int, revalued_rows: int, revalued_value: float, revalued_docs: array<int, float>}
      */
     public static function recalculate(string $class, int $itemId, ?int $partId, ?array $before = null, bool $write = true, ?Model $from = null): array
     {
@@ -67,7 +68,7 @@ final class ItemAverageCost
             [$qty, $value, $avg, $binValue] = $state;
             $query->whereRaw(self::stampSql($class).' >= ?', [self::stamp($class, $from)]);
         }
-        $res = ['avg' => $avg, 'qty' => $qty, 'value' => $value, 'rows' => 0, 'revalued_rows' => 0, 'revalued_value' => 0.0];
+        $res = ['avg' => $avg, 'qty' => $qty, 'value' => $value, 'rows' => 0, 'revalued_rows' => 0, 'revalued_value' => 0.0, 'revalued_docs' => []];
 
         foreach ($query->lockForUpdate()->get() as $row) {
             $loc = (int) $row->location_id;
@@ -90,6 +91,13 @@ final class ItemAverageCost
             } elseif ($row->doc_type === 'TF') {
                 $valueIn = $in > 0 ? round($in * (float) $avg, 4) : $valueIn;
                 $binValue[$loc] = round($binValue[$loc] + round(($in - $out) * (float) $avg, 4), 4);
+            } elseif ($row->doc_type === StockCardChain::VALUE_ADJUSTMENT) {
+                // Baris khusus nilai: nilai item naik / turun, qty tetap. Qty item 0 = tidak ada stok yang bisa memikul nilai, dilewati.
+                if ($qty > self::EPS && $valueIn !== null) {
+                    $value = round($value + $valueIn, 4);
+                    $binValue[$loc] = round($binValue[$loc] + $valueIn, 4);
+                    $avg = round($value / $qty, 5);
+                }
             } else {
                 if ($in > 0) {
                     $price = (float) ($valueIn ?? 0);
@@ -108,9 +116,10 @@ final class ItemAverageCost
                     }
                     $value = round($value + $moved, 4);
                     $binValue[$loc] = round($binValue[$loc] + $moved, 4);
-                    if ($out > 0 && $before !== null && array_key_exists((int) $row->getKey(), $before) && ! self::same($before[(int) $row->getKey()], $avg)) {
+                    if ($out > 0 && $before !== null && ($before[(int) $row->getKey()] ?? null) !== null && ! self::same($before[(int) $row->getKey()], $avg)) {
                         $res['revalued_rows']++;
                         $res['revalued_value'] += $out * ((float) $avg - (float) $before[(int) $row->getKey()]);
+                        $res['revalued_docs'][(int) $row->getKey()] = $out * ((float) $avg - (float) $before[(int) $row->getKey()]);
                     }
                 }
             }

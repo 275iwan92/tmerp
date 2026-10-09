@@ -25,6 +25,9 @@ final class StockCardChain
     // kelas => [model kartu, kolom item]
     public const CARDS = ['RM' => [RmStockcard::class, 'material_id'], 'SFG' => [SfgStockcard::class, 'parts_id'], 'FG' => [FgStockcard::class, 'product_id']];
 
+    // doc_type baris kartu khusus nilai (qty 0, value_in = tambahan / pengurangan nilai), ditulis LandedCostCards.
+    public const VALUE_ADJUSTMENT = 'VA';
+
     private const QTY_EPS = 0.00005;
 
     private const PRICE_EPS = 0.000005;
@@ -45,7 +48,7 @@ final class StockCardChain
      * Hitung ulang rantai posisi $from mulai dari baris itu (ikut dihitung) sampai baris terakhir.
      * $fresh = baris $from baru saja disisipkan (angka saldonya belum ada).
      *
-     * @return array{rows: int, negative: ?array{doc_id: int, doc_date: string, qty: float}, revalued_rows: int, revalued_value: float}
+     * @return array{rows: int, negative: ?array{doc_id: int, doc_date: string, qty: float}, revalued_rows: int, revalued_value: float, revalued_docs: array<int, float>}
      */
     public static function recalculate(string $class, Model $from, bool $fresh = false): array
     {
@@ -59,7 +62,7 @@ final class StockCardChain
         $out = self::recalculatePosition($class, $from, $fresh);
         $item = ItemAverageCost::recalculate($class, $itemId, $partId, $before, true, $from);
 
-        return ['revalued_rows' => $item['revalued_rows'], 'revalued_value' => $item['revalued_value']] + $out;
+        return ['revalued_rows' => $item['revalued_rows'], 'revalued_value' => $item['revalued_value'], 'revalued_docs' => $item['revalued_docs']] + $out;
     }
 
     /** Rantai satu posisi (qty dan nilai per bin). */
@@ -75,7 +78,7 @@ final class StockCardChain
         $rows = $position()->where(fn ($q) => $q->where('doc_date', '>', $at)->orWhere(fn ($q2) => $q2->where('doc_date', $at)->where('doc_id', '>=', $id)))
             ->orderBy('doc_date')->orderBy('doc_id')->lockForUpdate()->get();
 
-        $out = ['rows' => 0, 'negative' => null, 'revalued_rows' => 0, 'revalued_value' => 0.0];
+        $out = ['rows' => 0, 'negative' => null, 'revalued_rows' => 0, 'revalued_value' => 0.0, 'revalued_docs' => []];
         $balance = (float) ($prev?->qty_eb ?? 0);
         $avg = self::price($prev?->avg_unitprice);
         $oldPrevAvg = $avg;
@@ -91,7 +94,10 @@ final class StockCardChain
             $oldAvg = self::price($row->avg_unitprice);
 
             $newAvg = $avg;
-            if ($in > 0) {
+            if ($row->doc_type === self::VALUE_ADJUSTMENT && $row->value_in !== null) {
+                // Baris khusus nilai (landed cost): qty tidak berubah, nilai posisi naik / turun sebesar value_in.
+                $newAvg = $balance > self::QTY_EPS ? ($balance * (float) $avg + (float) $row->value_in) / $balance : $avg;
+            } elseif ($in > 0) {
                 $price = match (true) {
                     $row->value_in !== null => (float) $row->value_in / $in,
                     $oldAvg === null => null,
@@ -112,6 +118,7 @@ final class StockCardChain
                 } else {
                     $out['revalued_rows']++;
                     $out['revalued_value'] += $outQty * ((float) $newAvg - (float) $oldAvg);
+                    $out['revalued_docs'][(int) $row->getKey()] = $outQty * ((float) $newAvg - (float) $oldAvg);
                 }
             }
 
@@ -141,6 +148,7 @@ final class StockCardChain
             $out['negative'] ??= $more['negative'];
             $out['revalued_rows'] += $more['revalued_rows'];
             $out['revalued_value'] += $more['revalued_value'];
+            $out['revalued_docs'] += $more['revalued_docs'];
         }
 
         return $out;

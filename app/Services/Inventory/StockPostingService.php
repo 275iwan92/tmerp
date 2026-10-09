@@ -14,6 +14,8 @@ use App\Models\Master\MatRaw;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Services\Acc\JournalPostingService;
+use App\Services\Inventory\Valuation\RepostService;
+use App\Services\Inventory\Valuation\ValuationRefused;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
 
@@ -79,7 +81,7 @@ class StockPostingService
         // koneksi tm2acc yang beda, jangan disatukan ke transaksi tm2inv di atas.
         $usageJournalRows = [];
         // Baris keluar bertanggal sesudah dokumen ini yang harga rata-ratanya berubah karena hitung ulang.
-        $revalued = ['rows' => 0, 'value' => 0.0];
+        $revalued = ['rows' => 0, 'value' => 0.0, 'docs' => []];
 
         try {
             $result = DB::connection('tm2inv')->transaction(function () use ($map, $category, $docId, $actingUser, &$usageJournalRows, &$revalued) {
@@ -178,6 +180,9 @@ class StockPostingService
                     }
                     $revalued['rows'] += $chain['revalued_rows'];
                     $revalued['value'] += $chain['revalued_value'];
+                    if ($valued && $category === 'RM' && $chain['revalued_docs']) {
+                        $revalued['docs'][(int) $itemId] = ($revalued['docs'][(int) $itemId] ?? []) + $chain['revalued_docs'];
+                    }
 
                     // Auto-jurnal pemakaian (2026-08-22, diperluas ke SFG 2026-08-22):
                     // cuma Stock Out sungguhan (docType OUT, bukan BB/RETURN/AD/OP) yang
@@ -223,9 +228,9 @@ class StockPostingService
         }
 
         if ($result['posted'] && $revalued['rows'] > 0 && abs($revalued['value']) >= 0.005) {
-            // Jurnal pemakaian baris-baris itu sudah diposting dengan harga lama dan TIDAK diubah di sini (keputusan
-            // accounting belum ada: jurnal koreksi otomatis atau tidak) -- selisihnya dilaporkan, tidak disembunyikan.
-            $result['revaluation'] = $revalued;
+            // Jurnal pemakaian baris-baris itu sudah diposting dengan harga lama dan TIDAK diubah: bahan baku dikoreksi dengan
+            // jurnal BARU (RepostService::revalueFromChain, tercatat di laporan Repost); selisihnya tetap dilaporkan.
+            $result['revaluation'] = ['rows' => $revalued['rows'], 'value' => $revalued['value']];
             $result['stock_warning'] = self::msg('The average price of :n later stock-out row(s) changed; their value changed by :value. Journals already posted for them were not changed.',
                 ['n' => $revalued['rows'], 'value' => Locale::decimal($revalued['value'], 2)]);
         }
@@ -233,8 +238,31 @@ class StockPostingService
         if ($result['posted'] && ! empty($usageJournalRows)) {
             $result['journal_warning'] = $this->postUsageJournal($category, $docId, $usageJournalRows, $actingUser);
         }
+        if ($result['posted'] && $revalued['docs']) {
+            $warning = $this->postRevaluation($docId, $revalued['docs'], $actingUser);
+            if ($warning) {
+                $result['journal_warning'] = trim(($result['journal_warning'] ?? '').' '.$warning);
+            }
+        }
 
         return $result;
+    }
+
+    // Average berubah karena dokumen bertanggal mundur dan pengeluaran yang sudah diposting ikut berubah nilainya: satu jurnal koreksi per bahan.
+    // Gagal dijurnal (akun kosong, periode buku besar tertutup) tidak membatalkan posting stok, hanya diperingatkan.
+    private function postRevaluation(int $docId, array $docsByItem, string $actingUser): ?string
+    {
+        $docNo = (string) RmStock::query()->whereKey($docId)->value('doc_no');
+        $failed = [];
+        foreach ($docsByItem as $itemId => $docs) {
+            try {
+                app(RepostService::class)->revalueFromChain((int) $itemId, $docs, $docNo, $actingUser);
+            } catch (ValuationRefused|\DomainException $e) {
+                $failed[] = $e->getMessage();
+            }
+        }
+
+        return $failed ? implode(' ', $failed) : null;
     }
 
     // Dr HPP (cogs_account_id) / Cr Persediaan (stock_asset_account_id) per

@@ -17,5 +17,5 @@ class InvLandedCostLine extends Model
 
     protected $guarded = [];
 
-    protected $casts = ['qty_received' => 'float', 'base_value' => 'float', 'qty_on_hand' => 'float', 'allocated' => 'float', 'to_stock' => 'float', 'to_variance' => 'float'];
+    protected $casts = ['qty_received' => 'float', 'base_value' => 'float', 'qty_on_hand' => 'float', 'allocated' => 'float', 'to_stock' => 'float', 'to_variance' => 'float', 'card_value' => 'float'];
 }

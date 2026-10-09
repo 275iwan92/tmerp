@@ -17,6 +17,7 @@ use App\Services\Inventory\StockTransferService;
 use App\Services\Inventory\WarehouseStock;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\PurgesLandedCards;
 use Tests\TestCase;
 
 // Urutan posting kartu stok (aturan user 2026-10-02). Kartu stok berurut (doc_date, doc_id) dan saldo = baris TERAKHIR
@@ -30,6 +31,8 @@ use Tests\TestCase;
 // jurnal pemakaian yang tertulis ke tm2acc.
 class StockPostingOrderTest extends TestCase
 {
+    use PurgesLandedCards;
+
     private const BY = 'test_stock_posting_order';
 
     private WhWarehouse $warehouse;
@@ -75,6 +78,7 @@ class StockPostingOrderTest extends TestCase
 
     private function clean(): void
     {
+        $this->purgeTestJournals(self::BY);
         RmStockcard::query()->where('create_by', self::BY)->delete();
         RmStockD::query()->where('create_by', self::BY)->delete();
         RmStock::query()->where('create_by', self::BY)->delete();

@@ -7,12 +7,15 @@ use App\Models\Inventory\InvRepostLog;
 use App\Models\Pur\PvLine;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\PurgesLandedCards;
 use Tests\TestCase;
 
 // Layar Inventory > Valuation & Period: semua layar terbuka, dan alur Landed Cost lewat route (buat -> tambah penerimaan -> Confirm -> Cancel).
 // Menulis ke database: dokumen uji dan jurnalnya dibersihkan di tearDown(). Jalankan terhadap database dummy: powershell -NoProfile -File tools/test-ddt.ps1 tests/Feature/LandedCostScreenTest.php
 class LandedCostScreenTest extends TestCase
 {
+    use PurgesLandedCards;
+
     private const MARK = 'zz-test-landed-screen';
 
     protected function setUp(): void
@@ -29,6 +32,7 @@ class LandedCostScreenTest extends TestCase
         DB::connection('tm2acc')->table('fin_voucher')->whereIn('voucher_id', $vouchers)->update(['reversal_of_id' => null, 'reversed_by_id' => null]);
         DB::connection('tm2acc')->table('fin_voucher_line')->whereIn('voucher_id', $vouchers)->delete();
         DB::connection('tm2acc')->table('fin_voucher')->whereIn('voucher_id', $vouchers)->delete();
+        $this->purgeLandedCards($docs->pluck('id_landed_cost')->all());
         InvRepostLog::query()->whereIn('source_no', $docs->pluck('doc_no')->filter()->all())->delete();
         InvLandedCost::query()->whereIn('id_landed_cost', $docs->pluck('id_landed_cost'))->delete();
         $this->assertSame(0, InvLandedCost::query()->where('description', self::MARK)->count());

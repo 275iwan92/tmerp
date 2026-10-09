@@ -21,11 +21,11 @@ use Illuminate\Support\Facades\DB;
 //   yang dipakai (Odoo AVCO / SAP MAP berperilaku sama: biaya terlambat hanya menyentuh sisa stok).
 // Jurnal (kode jurnal PUR, sumber LANDED): Dr Persediaan per akun item + Dr Selisih Landed Cost / Cr Hutang Biaya Landed Cost (total biaya).
 // Koreksi nilai atau pembatalan dokumen yang sudah Confirmed TIDAK menimpa jurnal: lewat RepostService (jurnal koreksi / pembalik bertumpuk).
-// CATATAN: nilai kartu stok (rantai Average) belum punya baris "khusus nilai", jadi bagian yang masuk persediaan baru ada di buku besar;
-// kolom card_synced = 0 dan Daily Reconciliation menampilkannya sebagai "Landed cost not in cards" sampai rantai Average mendukungnya.
+// Kartu stok: Confirm / Revise / Cancel menulis baris kartu khusus nilai lewat LandedCostCards (Average item ikut naik / turun); card_synced = 1
+// bila semua bagian stok sudah ada di kartu, dan Daily Reconciliation tidak lagi menampilkannya sebagai "Landed cost not in cards".
 final class LandedCostService
 {
-    public function __construct(private JournalPostingService $journals, private RepostService $reposts) {}
+    public function __construct(private JournalPostingService $journals, private RepostService $reposts, private LandedCostCards $cards) {}
 
     /** @param array{doc_date?: string, supplier_id?: ?int, cost_type?: string, description?: ?string, amount?: float|string, alloc_basis?: string, notes?: ?string} $in */
     public function create(array $in, string $login): InvLandedCost
@@ -143,6 +143,7 @@ final class LandedCostService
             $this->saveAllocation($doc, $plan);
             $doc->fill(['stat_confirm' => true, 'voucher_id' => $voucher->voucher_id, 'confirmed_at' => now(), 'confirmed_by' => $login, 'card_synced' => false,
                 'amount_to_stock' => $plan['to_stock'], 'amount_to_variance' => $plan['to_variance'], 'updated_by' => $login])->save();
+            $this->cards->sync($doc, $login);
         });
 
         return $voucher;
@@ -166,6 +167,7 @@ final class LandedCostService
             $voucher = $this->reposts->correct($original, $this->journalLines($doc, $plan['lines'], $newAmount), $reason, $login, ['type' => 'LANDED', 'id' => (int) $doc->id_landed_cost, 'no' => $doc->doc_no]);
             $this->saveAllocation($doc, $plan);
             $doc->fill(['amount' => $newAmount, 'amount_to_stock' => $plan['to_stock'], 'amount_to_variance' => $plan['to_variance'], 'updated_by' => $login])->save();
+            $this->cards->sync($doc, $login);
         });
 
         return $voucher;
@@ -181,8 +183,12 @@ final class LandedCostService
             throw new ValuationRefused(t('The variance of this landed cost was already closed to cost of goods sold; it cannot be cancelled.'));
         }
         $original = FinVoucher::withoutGlobalScopes()->findOrFail($doc->voucher_id);
-        $reversal = $this->reposts->reverse($original, 'Cancel '.$doc->doc_no.': '.trim($reason), $login, ['type' => 'LANDED', 'id' => (int) $doc->id_landed_cost, 'no' => $doc->doc_no]);
-        $doc->fill(['stat_cancel' => true, 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'updated_by' => $login])->save();
+        $reversal = null;
+        DB::connection('tm2inv')->transaction(function () use ($doc, $original, $reason, $login, &$reversal) {
+            $reversal = $this->reposts->reverse($original, 'Cancel '.$doc->doc_no.': '.trim($reason), $login, ['type' => 'LANDED', 'id' => (int) $doc->id_landed_cost, 'no' => $doc->doc_no]);
+            $doc->fill(['stat_cancel' => true, 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'updated_by' => $login])->save();
+            $this->cards->sync($doc, $login);
+        });
 
         return $reversal;
     }

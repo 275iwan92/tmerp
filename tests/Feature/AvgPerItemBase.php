@@ -16,12 +16,15 @@ use App\Services\Inventory\StockPostingService;
 use App\Services\Inventory\StockTransferService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\PurgesLandedCards;
 use Tests\TestCase;
 
 // Dasar uji Average per item: gudang uji sendiri + satu bahan tanpa kartu stok. Average per item (INV_AVG_SCOPE = ITEM, D13 / D15): satu Avg per item lintas bin; BIN = perilaku lama. Menulis ke database sungguhan
 // (gudang uji sendiri + satu bahan tanpa kartu stok), bersih di tearDown(); nilai konstanta dikembalikan.
 abstract class AvgPerItemBase extends TestCase
 {
+    use PurgesLandedCards;
+
     protected const BY = 'test_avg_per_item';
 
     protected WhWarehouse $warehouse;
@@ -70,6 +73,7 @@ abstract class AvgPerItemBase extends TestCase
 
     protected function clean(): void
     {
+        $this->purgeTestJournals(self::BY);
         RmStockcard::query()->where('create_by', self::BY)->delete();
         InvTransfer::query()->where('created_by', self::BY)->delete();
         RmStockD::query()->where('create_by', self::BY)->delete();

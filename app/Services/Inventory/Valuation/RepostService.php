@@ -6,6 +6,9 @@ namespace App\Services\Inventory\Valuation;
 
 use App\Models\Acc\FinVoucher;
 use App\Models\Inventory\InvRepostLog;
+use App\Models\Inventory\RmStock;
+use App\Models\Inventory\RmStockcard;
+use App\Models\Inventory\RmStockD;
 use App\Services\Acc\JournalPostingService;
 
 // Jurnal koreksi BERTUMPUK (D18, V-07): nilai atau dokumen lampau berubah -> jurnal lama TIDAK diubah dan TIDAK ditimpa; jurnal BARU memuat
@@ -85,6 +88,29 @@ final class RepostService
             'amount_delta' => $delta, 'reason' => t('Average changed by a back-dated transaction'), 'posted_on' => $date, 'created_by' => $login]);
 
         return $voucher;
+    }
+
+    /**
+     * Penilaian ulang dari hasil StockCardChain::recalculate(): $docs = [id baris kartu keluar => selisih nilai]. Hanya baris pemakaian bahan baku
+     * (Stock Out ber-jurnal HPP, kartu rm_stock_d) yang dijurnal; pembalik penerimaan (PV_CANCEL / REVERSAL) tidak pernah dijurnal HPP, jadi dilewati.
+     * Dipanggil satu kali per proses hitung ulang oleh penulis kartu (StockPostingService, LandedCostCards) -- tidak ada pemanggilan ulang yang sama.
+     */
+    public function revalueFromChain(int $materialId, array $docs, string $refNo, string $login, ?string $date = null): ?FinVoucher
+    {
+        if (! $docs) {
+            return null;
+        }
+        $cards = RmStockcard::query()->whereIn('doc_id', array_keys($docs))->where('reference_name', 'tm2inv.rm_stock_d')->pluck('reference_detail_id', 'doc_id');
+        $headers = RmStockD::query()->whereIn('doc_detail_id', $cards->values())->pluck('doc_id', 'doc_detail_id');
+        $skip = RmStock::query()->whereIn('doc_id', $headers->values())->whereIn('ref_doc_type', ['PV_CANCEL', 'REVERSAL'])->pluck('doc_id')->all();
+        $delta = 0.0;
+        foreach ($cards as $cardId => $detailId) {
+            if (! in_array($headers[$detailId] ?? null, $skip, true) && isset($headers[$detailId])) {
+                $delta += $docs[$cardId];
+            }
+        }
+
+        return $this->revalueIssued($materialId, $delta, $refNo, $login, $date);
     }
 
     /** @return array<int, float> account_id => debit - kredit */

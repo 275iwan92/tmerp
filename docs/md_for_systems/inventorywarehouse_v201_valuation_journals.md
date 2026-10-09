@@ -23,7 +23,7 @@ Semua jurnal lewat `JournalPostingService::post()` (periode buku besar harus OPE
 | 9 | **Provisi stok usang turun** | GEN / `OBS_PROVISION` | Penyisihan 113900 | Beban Penyisihan 620000 | pembalikan sebagian |
 | 10 | Pembalik umum (`JournalPostingService::reverse`) | jurnal asal / `REVERSAL` | kebalikan | kebalikan | dicatat di Repost bila lewat `RepostService::reverse()` |
 
-Jurnal 1-2 tidak diubah oleh pekerjaan ini. Jurnal 7 tersedia sebagai kelas, tetapi **belum dipanggil** dari `StockPostingService` (lihat "Belum terhubung").
+Jurnal 1-2 tidak diubah oleh pekerjaan ini. Jurnal 7 dipanggil otomatis oleh `StockPostingService` dan `LandedCostCards` (lihat "Landed cost di kartu stok" dan "Penilaian ulang pemakaian").
 
 ## Landed cost: cara membagi (D17)
 
@@ -57,11 +57,31 @@ Jurnal hanya saat Post provision; yang dijurnal = provisi yang dituju - total po
 Close berurutan (periode sebelumnya harus CLOSED). Open hanya periode CLOSED paling akhir dan hanya bila periode buku besar bulan itu belum CLOSED. Add Next Period membuat bulan sesudah periode terakhir.
 CLOSED membuat `StockPostingService` menolak dokumen stok bertanggal di dalam atau sebelumnya (perilaku yang sudah ada).
 
+## Landed cost di kartu stok (2026-10-10)
+
+`LandedCostCards::sync()` dipanggil `LandedCostService` di akhir Confirm, Revise, dan Cancel (dalam transaksi tm2inv). Per baris landed cost satu baris kartu RM **khusus nilai**:
+`doc_type = 'VA'` (`StockCardChain::VALUE_ADJUSTMENT`), qty 0, `value_in` = nilai. Migration `2026_10_10_000100_landed_cost_stock_cards.php` menambah `inv_landed_cost_line.card_value / card_rev / card_location_id`
+dan menyesuaikan view (`v_inv_movement` membawa nomor landed cost sebagai doc_no baris VA; `v_rm_onhand.last_item_movement` tidak menghitung VA supaya penuaan stok tidak ter-reset).
+
+- **Nilai yang ditulis = selisih**: target (`to_stock` bila Confirmed, 0 bila Cancelled) dikurangi `card_value`. Dipanggil ulang = tidak ada baris baru (idempoten). Kunci unik kartu: `tm2inv.inv_landed_cost_line#<card_rev>` + id baris landed cost.
+  Revise = baris selisih (naik / turun); Cancel = baris pembalik (`-card_value`). `card_synced = 1` bila semua baris sama dengan targetnya; kolom "Landed cost not in cards" di rekonsiliasi hanya menghitung dokumen `card_synced = 0`.
+- **Bin**: bin dengan saldo terbesar saat baris pertama ditulis, lalu bin yang sama untuk baris sesudahnya.
+- **Tanggal kartu** = saat Confirm / Revise / Cancel (atau tanggal dokumen bila lebih baru), bukan tanggal dokumen yang mundur: bagian yang sudah keluar sudah masuk Selisih Landed Cost, jadi pengeluaran lama tidak dihargai ulang (tanpa hitungan ganda).
+- **Rantai**: mode BIN dan ITEM menerima VA. BIN: harga rata-rata bin naik (`(saldo x Avg + value_in) / saldo`). ITEM: nilai item dan nilai bin naik sebesar `value_in`, Avg item = nilai / qty. Saldo qty tidak berubah (BB = EB bersambung).
+  Bila qty (bin / item) 0, nilai tidak bisa dipikul dan baris dilewati; rekonsiliasi menampilkan selisihnya.
+- **Layar kartu stok**: baris VA berlabel `Value adjustment` (bukan Opening), nilainya masuk kolom nilai penyesuaian laporan Stock Summary.
+
+## Penilaian ulang pemakaian (jurnal 7) terhubung
+
+`StockCardChain::recalculate()` kini juga mengembalikan `revalued_docs` (id baris kartu keluar => selisih nilai). `RepostService::revalueFromChain()` menjumlahkan hanya baris pemakaian bahan baku yang dijurnal HPP
+(kartu `rm_stock_d`, selain pembalik penerimaan `PV_CANCEL` / `REVERSAL`), lalu memanggil `revalueIssued()` -- satu jurnal USG/REVALUE per item, tercatat di `inv_repost_log`.
+Dipanggil dari `StockPostingService::postDocument()` (setelah commit; gagal dijurnal karena akun kosong atau periode buku besar tertutup = peringatan di `journal_warning`, posting stok tetap sah) dan dari `LandedCostCards::sync()` bila ada baris keluar bertanggal sesudah baris nilai.
+Tidak ganda: satu dokumen hanya diposting sekali, `LandedCostCards` hanya menulis selisih, dan hanya baris yang harganya benar-benar berubah yang dilaporkan.
+Perbaikan ikutan: baris keluar yang baru disisipkan (Avg masih kosong) tidak lagi dilaporkan sebagai "berubah harga" pada mode ITEM.
+
 ## Belum terhubung / keputusan terbuka
 
-1. **Nilai landed cost belum ditulis ke kartu stok.** Rantai Average (`StockCardChain` / `ItemAverageCost`, milik pekerjaan Average per item) belum punya baris "khusus nilai" (qty 0, nilai naik). Sampai itu ada,
-   landed cost hanya di buku besar; `inv_landed_cost.card_synced = 0` dan rekonsiliasi menampilkannya di kolom terpisah. Bila rantai sudah mendukung, set `card_synced = 1` setelah menulis barisnya.
-2. **Penilaian ulang (jurnal 7) belum dipanggil otomatis.** `ItemAverageCost::recalculate()` sudah menghitung `revalued_value`; `StockPostingService` hanya memberi peringatan. Menghubungkan keduanya
-   (`RepostService::revalueIssued($materialId, $revaluedValue, $docNo, $login)`) menyentuh berkas pekerjaan Average, jadi diserahkan.
+1. Hitung ulang rantai lewat jalur lain (transfer mode BIN, `StockReversalService`, batch) belum memanggil `revalueFromChain`; hanya `postDocument` dan landed cost.
+2. Dokumen landed cost Confirmed yang dibuat sebelum 2026-10-10 (bila ada di tm2) tetap `card_synced = 0`; nilainya perlu ditulis ke kartu dengan memanggil `LandedCostCards::sync()` sekali per dokumen saat rilis.
 3. Akun baru dibuat migration di `fin_account` bila kodenya belum ada: 211950, 518000, 620000, 113900 (periksa bagan akun sebelum rilis ke tm2acc).
 4. Persen provisi memakai tiga kelas dari konstanta aging; tabel lima tingkat di scope (0 / 25 / 50 / 100 persen) tidak dipakai.

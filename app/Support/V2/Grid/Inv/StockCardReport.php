@@ -4,6 +4,7 @@ namespace App\Support\V2\Grid\Inv;
 
 use App\Models\Inventory\InvMovement;
 use App\Services\Inventory\ItemBalanceChain;
+use App\Services\Inventory\StockCardChain;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -59,7 +60,7 @@ abstract class StockCardReport extends StockReportGrid
         return [
             ['key' => 'doc_date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'doc_no', 'label' => 'Doc No.'],
-            ['key' => 'move', 'label' => 'Movement', 'type' => 'badge', 'tones' => ['In' => 'success', 'Out' => 'danger', 'Adjustment' => 'warn', 'Opening' => 'neutral', 'Transfer in' => 'info', 'Transfer out' => 'info']],
+            ['key' => 'move', 'label' => 'Movement', 'type' => 'badge', 'tones' => ['In' => 'success', 'Out' => 'danger', 'Adjustment' => 'warn', 'Opening' => 'neutral', 'Value adjustment' => 'info', 'Transfer in' => 'info', 'Transfer out' => 'info']],
             ['key' => 'doc_cat', 'label' => 'Category', 'visible' => false],
             ['key' => 'item', 'label' => 'Item', 'type' => 'identity', 'code' => 'item_code', 'avatar' => false],
             ['key' => 'warehouse', 'label' => 'Warehouse'],
@@ -88,6 +89,7 @@ abstract class StockCardReport extends StockReportGrid
             'move' => match (true) {
                 // Stock Transfer (doc_type TF): pindah bin / gudang, bukan penerimaan atau pemakaian.
                 $m->doc_type === 'TF' => $in > 0 ? 'Transfer in' : 'Transfer out',
+                $m->doc_type === StockCardChain::VALUE_ADJUSTMENT => 'Value adjustment',
                 $adj != 0.0 => 'Adjustment',
                 $in > 0 => 'In',
                 $out > 0 => 'Out',

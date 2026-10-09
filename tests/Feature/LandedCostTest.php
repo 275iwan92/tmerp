@@ -10,12 +10,15 @@ use App\Services\Inventory\Valuation\LandedCostService;
 use App\Services\Inventory\Valuation\ValuationAccounts;
 use App\Services\Inventory\Valuation\ValuationRefused;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\PurgesLandedCards;
 use Tests\TestCase;
 
 // Landed cost (D17): pembagian menurut nilai / qty, bagian stok vs bagian yang sudah keluar, jurnal, koreksi bertumpuk, pembatalan, penutupan selisih ke HPP.
 // Jalankan terhadap database dummy: powershell -NoProfile -File tools/test-ddt.ps1 tests/Feature/LandedCostTest.php
 class LandedCostTest extends TestCase
 {
+    use PurgesLandedCards;
+
     private const USER = 'landedtest';
 
     /** @var list<int> */
@@ -57,6 +60,7 @@ class LandedCostTest extends TestCase
         DB::connection('tm2acc')->table('fin_voucher_line')->whereIn('voucher_id', $voucherIds)->delete();
         DB::connection('tm2acc')->table('fin_voucher')->whereIn('voucher_id', $voucherIds)->delete();
         InvRepostLog::query()->where('created_by', self::USER)->delete();
+        $this->purgeLandedCards($this->docIds);
         InvLandedCost::query()->whereIn('id_landed_cost', $this->docIds)->delete();
         parent::tearDown();
     }
@@ -109,7 +113,7 @@ class LandedCostTest extends TestCase
         $this->assertMatchesRegularExpression('/^LC\d{2}-\d{5}$/', $doc->doc_no);
         $this->assertSame(700.0, $doc->amount_to_stock);
         $this->assertSame(300.0, $doc->amount_to_variance);
-        $this->assertFalse($doc->card_synced);
+        $this->assertTrue($doc->card_synced, 'the landed cost value is written to the stock cards');
 
         $lines = $voucher->lines()->get();
         $this->assertSame(1000.0, round((float) $lines->sum('debit'), 2));

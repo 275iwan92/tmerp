@@ -57,6 +57,7 @@ final class StockLedger
     {
         return match (true) {
             $docType === 'TF' => $in > 0 ? 'Transfer in' : 'Transfer out',
+            $docType === StockCardChain::VALUE_ADJUSTMENT => 'Value adjustment',
             $adj != 0.0 => 'Adjustment',
             $in > 0 => 'In',
             $out > 0 => 'Out',
@@ -134,7 +135,7 @@ final class StockLedger
                 $p['adj'] += $adj;
                 $p['moves']++;
                 match ($kind) {
-                    'Adjustment' => $p['adj_value'] += $value,
+                    'Adjustment', 'Value adjustment' => $p['adj_value'] += $value,
                     'Out' => $p['out_value'] -= $value,
                     default => $p['in_value'] += $value,
                 };
