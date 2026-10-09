@@ -1,0 +1,412 @@
+[
+ {
+  "id": "01-co",
+  "title": "CO berstatus Confirmed",
+  "actions": [
+   {
+    "do": "goto",
+    "url": "/v2"
+   },
+   {
+    "do": "caption",
+    "text": "1. Customer Order Confirmed menghasilkan baris rencana kirim (CPDEL). Langkah klik CO tidak direkam: jalur menu CO belum dibaca."
+   },
+   {
+    "do": "pause",
+    "wait": 2500
+   }
+  ]
+ },
+ {
+  "id": "02-wo",
+  "title": "Work Order dari ProDev",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "2. Production > Planning > Work Order, lalu Create Work Order"
+   },
+   {
+    "do": "goto",
+    "url": "/v2/item/PROD_WO_LIST"
+   },
+   {
+    "do": "click",
+    "sel": "text=Create Work Order >> nth=0",
+    "label": "B0: kartu Create Work Order tampil dari menu",
+    "expect": "Delivery plan line"
+   },
+   {
+    "do": "click",
+    "sel": ".dl-dd:has(input[name=\"delivery\"]) [data-dl-dd-toggle]",
+    "label": "Delivery plan line"
+   },
+   {
+    "do": "click",
+    "sel": ".dl-dd:has(input[name=\"delivery\"]) .dl-dd__item >> nth=0",
+    "label": "Pilih baris pertama"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Create Work Order')",
+    "label": "+ Create Work Order"
+   }
+  ]
+ },
+ {
+  "id": "03-hitung",
+  "title": "Engine menghitung",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "3. Otomatis: engine melengkapi mesin, target, setup, gerbang, lalu membuat Draft"
+   },
+   {
+    "do": "pause",
+    "wait": 3000
+   }
+  ]
+ },
+ {
+  "id": "04-draft",
+  "title": "Draft jadwal (Gantt)",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "4. Production > Planning > Production Scheduling: tab Schedule, tampilan Gantt"
+   },
+   {
+    "do": "goto",
+    "url": "/v2/item/PROD_MPS"
+   },
+   {
+    "do": "click",
+    "sel": "a.dl-btn:text-is('Schedule')",
+    "label": "Tab Schedule"
+   },
+   {
+    "do": "click",
+    "sel": "a.dl-btn:text-is('Gantt')",
+    "label": "Tampilan Gantt"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Re-plan')",
+    "label": "Re-plan (menghasilkan Draft)"
+   }
+  ]
+ },
+ {
+  "id": "05-confirm",
+  "title": "Confirm plan",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "5. Confirm plan: Draft jadi jadwal nyata"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Confirm plan')",
+    "label": "Confirm plan"
+   }
+  ]
+ },
+ {
+  "id": "06-operator",
+  "title": "Operator Queue",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "6. Production > Output > Operator Queue: setup, jalan, tambah qty, jeda"
+   },
+   {
+    "do": "goto",
+    "url": "/v2/item/PROD_OPERATOR"
+   },
+   {
+    "do": "click",
+    "sel": "a[href*='production-operator?machine='] >> nth=0",
+    "label": "Pilih mesin"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Play: start setup')",
+    "label": "Play: start setup"
+   },
+   {
+    "do": "pause",
+    "wait": 2500
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Start run')",
+    "label": "Start run"
+   },
+   {
+    "do": "type",
+    "sel": "form[action$='/quantity'] input[name='qty']",
+    "text": "500",
+    "label": "Good quantity"
+   },
+   {
+    "do": "click",
+    "sel": "form[action$='/quantity'] button[type=submit]",
+    "label": "+ Add"
+   },
+   {
+    "do": "click",
+    "sel": ".dl-dd:has(input[name=\"reason\"]) [data-dl-dd-toggle]",
+    "label": "Reason"
+   },
+   {
+    "do": "click",
+    "sel": ".dl-dd:has(input[name=\"reason\"]) .dl-dd__item:has-text('Break')",
+    "label": "Break"
+   },
+   {
+    "do": "click",
+    "sel": "form[action$='/pause'] button[type=submit]",
+    "label": "Pause"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Resume')",
+    "label": "Resume"
+   }
+  ]
+ },
+ {
+  "id": "07-problem",
+  "title": "Problem lalu Re-plan",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "7. Mesin bermasalah: Problem membuka Maintenance Request terisi, lalu Re-plan (menulis ke ddt*)"
+   },
+   {
+    "do": "click",
+    "sel": "a:has-text('Problem')",
+    "label": "Problem (asset, gejala terisi)",
+    "expect": "Send Request"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Send Request')",
+    "label": "Send Request"
+   },
+   {
+    "do": "goto",
+    "url": "/v2/item/PROD_MPS"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Re-plan')",
+    "label": "Re-plan"
+   }
+  ]
+ },
+ {
+  "id": "08-wo-detail",
+  "title": "Detail Work Order",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "8-9. Layar Work Order PPIC: dieline, BOP, mesin yang bisa mengantre, BOM"
+   },
+   {
+    "do": "goto",
+    "url": "/v2/s/production-wo?id=452"
+   },
+   {
+    "do": "click",
+    "sel": "text=BOP and routing",
+    "label": "Tabel BOP"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Refresh from ProDev')",
+    "label": "Refresh from ProDev (opsional)"
+   }
+  ]
+ },
+ {
+  "id": "10-gantt",
+  "title": "Jadwal banyak mesin",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "10. Gantt banyak mesin (data dummy ddt*)"
+   },
+   {
+    "do": "goto",
+    "url": "/v2/item/PROD_MPS"
+   },
+   {
+    "do": "click",
+    "sel": "a.dl-btn:text-is('Gantt')",
+    "label": "Tampilan Gantt"
+   },
+   {
+    "do": "pause",
+    "wait": 4000
+   }
+  ]
+ },
+ {
+  "id": "11-prioritas",
+  "title": "Prioritas",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "11. Priority + Reason + Give priority (Move up: lapis 1, tidak membuka kunci)"
+   },
+   {
+    "do": "click",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[1]//div[@data-dl-select][.//input[@name='wo_id']]//button[@data-dl-dd-toggle]",
+    "label": "Work Order"
+   },
+   {
+    "do": "click",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[1]//div[@data-dl-select][.//input[@name='wo_id']]//div[contains(@class,'dl-dd__item')][1]",
+    "label": "Pilih Work Order"
+   },
+   {
+    "do": "click",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[1]//div[@data-dl-select][.//input[@name='kind']]//button[@data-dl-dd-toggle]",
+    "label": "Priority"
+   },
+   {
+    "do": "click",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[1]//div[@data-dl-select][.//input[@name='kind']]//div[contains(@class,'dl-dd__item')][contains(.,'Move up')]",
+    "label": "Move up"
+   },
+   {
+    "do": "type",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[1]//input[@name='reason']",
+    "text": "Customer minta lebih cepat",
+    "label": "Reason (wajib)"
+   },
+   {
+    "do": "click",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[1]//button[@type='submit']",
+    "label": "Give priority"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Undo')",
+    "label": "Undo (membuang Draft)"
+   }
+  ]
+ },
+ {
+  "id": "12-pindah-operasi",
+  "title": "Geser satu operasi: alasan wajib, Placements, Release",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "12. Geser bar di Gantt: alasan wajib. Hasil di Placements by an officer, lalu Release"
+   },
+   {
+    "do": "drag",
+    "from": "[data-g2-task='1303']",
+    "to": "[data-g2-row='m49']",
+    "label": "Geser bar PLONG ke DIE-01 (id operasi 1303 pada data dummy; sesuaikan bila Draft berubah)"
+   },
+   {
+    "do": "click",
+    "sel": "[data-g2-imp-ok]",
+    "label": "(Bukti) konfirmasi tanpa alasan: UI menolak dengan pemberitahuan",
+    "expect": "Enter the reason for the move first."
+   },
+   {
+    "do": "type",
+    "sel": "input[data-g2-imp-reason]",
+    "text": "pisau cetak B terpasang di DIE-01",
+    "label": "Isian alasan di kotak dampak"
+   },
+   {
+    "do": "click",
+    "sel": "[data-g2-imp-ok]",
+    "label": "Move into Draft"
+   },
+   {
+    "do": "click",
+    "sel": "text=Placements by an officer",
+    "label": "Daftar Placements by an officer",
+    "expect": "Placements by an officer"
+   },
+   {
+    "do": "click",
+    "sel": ".dl-dd:has(input[name='op']) [data-dl-dd-toggle]",
+    "label": "Release placement"
+   },
+   {
+    "do": "click",
+    "sel": ".dl-dd:has(input[name='op']) .dl-dd__item >> nth=0",
+    "label": "Pilih operasi"
+   },
+   {
+    "do": "click",
+    "sel": "form[action$='/ppic/unpin'] button[type=submit]",
+    "label": "Release"
+   }
+  ]
+ },
+ {
+  "id": "13-urgent",
+  "title": "Urgent order: simulate first, Apply",
+  "actions": [
+   {
+    "do": "caption",
+    "text": "13. Urgent order: simulate first. Bandingkan No priority, Move up, Hot job, lalu Apply dengan Reason"
+   },
+   {
+    "do": "click",
+    "sel": "text=Urgent order: simulate first",
+    "label": "Panel Urgent order",
+    "expect": "Urgent order"
+   },
+   {
+    "do": "click",
+    "sel": ".dl-dd:has(input[name=\"sim\"]) [data-dl-dd-toggle]",
+    "label": "Work Order"
+   },
+   {
+    "do": "click",
+    "sel": ".dl-dd:has(input[name=\"sim\"]) .dl-dd__item:has-text('WO2600269')",
+    "label": "WO2600269"
+   },
+   {
+    "do": "click",
+    "sel": "button:has-text('Simulate')",
+    "label": "Simulate"
+   },
+   {
+    "do": "click",
+    "sel": "text=Forecast finish",
+    "label": "Tabel tiga pilihan",
+    "expect": "Forecast finish"
+   },
+   {
+    "do": "click",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[2]//div[@data-dl-select][.//input[@name='kind']]//button[@data-dl-dd-toggle]",
+    "label": "Pilihan Apply"
+   },
+   {
+    "do": "click",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[2]//div[@data-dl-select][.//input[@name='kind']]//div[contains(@class,'dl-dd__item')][contains(.,'Move up')]",
+    "label": "Move up"
+   },
+   {
+    "do": "type",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[2]//input[@name='reason']",
+    "text": "pelanggan prioritas",
+    "label": "Reason (wajib)"
+   },
+   {
+    "do": "click",
+    "sel": "xpath=(//form[contains(@action,'/ppic/prioritize')])[2]//button[@type='submit']",
+    "label": "Apply (menulis decision log di ddt*)"
+   }
+  ]
+ }
+]
