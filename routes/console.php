@@ -43,3 +43,12 @@ foreach (range(0, max(0, (int) config('ppic.default_shifts', 2) - 1)) as $shift)
     Schedule::command('ppic:auto-plan --trigger=SHIFT')->dailyAt($start->format('H:i'))->withoutOverlapping()->when($ppicReady);
 }
 Schedule::command('ppic:learn')->dailyAt('03:30')->withoutOverlapping()->when($ppicReady);
+
+// Inventory & Warehouse v2.01 (user 2026-10-10 menyetujui jadwal): rekonsiliasi nilai harian, eskalasi keputusan QC per jam, booking Hold/basi,
+// tugas hitung stok jatuh tempo, deteksi kurang kirim. Lingkungan yang belum punya tabelnya (tm2* sebelum rilis) dilewati.
+$invWhReady = fn (string $conn, string $table) => fn () => Schema::connection($conn)->hasTable($table);
+Schedule::command('inv:reconcile')->dailyAt('04:00')->withoutOverlapping()->when($invWhReady('tm2inv', 'inv_reconcile_log'));
+Schedule::command('inv:qc-escalate')->hourly()->withoutOverlapping()->when($invWhReady('tm2inv', 'inv_qc_decision'));
+Schedule::command('inventory:booking-maintain')->dailyAt('01:45')->withoutOverlapping()->when(fn () => Schema::connection('tm2inv')->hasColumn('rm_booking', 'hold_until'));
+Schedule::command('inv:count-due')->dailyAt('05:00')->withoutOverlapping()->when($invWhReady('tm2inv', 'wh_task'));
+Schedule::command('inv:detect-shortage')->dailyAt('05:15')->withoutOverlapping()->when($invWhReady('tm2inv', 'inv_shortage_request'));
