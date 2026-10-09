@@ -534,7 +534,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
                                         @endif
                                     </tr>
                                     @if (($line['batch_id'] ?? '') === 'new' && ! $readOnly)
-                                        <tr wire:key="line-new-{{ $i }}" class="border-b border-[#eef1f5] bg-accent-soft">
+                                        <tr wire:key="line-new-{{ $i }}" class="border-b border-line-soft bg-accent-soft">
                                             <td class="px-2 py-1.5 text-[11px] text-muted">{{ t('New batch') }}</td>
                                             <td colspan="6" class="px-2 py-1.5">
                                                 <div class="flex gap-2.5 flex-wrap">

@@ -1,0 +1,259 @@
+[
+  {
+    "key": "sales-procost-instant",
+    "type": "INPUT",
+    "module": "COSTING",
+    "title": "Pro-Cost Instant",
+    "purpose": {
+      "en": "Standalone cost calculator for a product that has no Inquiry Product yet. Each row is a costing in Instant mode; open it to calculate the cost.",
+      "id": "Kalkulator biaya mandiri untuk produk yang belum punya Inquiry Product. Tiap baris adalah costing mode Instant; buka untuk menghitung biayanya."
+    },
+    "keywords": "pro-cost instant, procost instant, costing instant, kalkulator hpp, hitung biaya, instant costing, reverse, hpp mandiri",
+    "steps": [
+      {
+        "en": "Click a box at the top (Draft, Calculated, Reversed) to show only those documents. Click it again to show all.",
+        "id": "Klik kotak di atas (Draft, Calculated, Reversed) untuk menampilkan dokumen itu saja. Klik lagi untuk menampilkan semua."
+      },
+      {
+        "en": "Type in the search box to find a document by number, product or customer.",
+        "id": "Ketik di kotak cari untuk mencari dokumen menurut nomor, produk, atau customer."
+      },
+      {
+        "en": "Click + New Record to create an empty draft; the Instant costing form opens right away.",
+        "id": "Klik + New Record untuk membuat draft kosong; form costing Instant langsung terbuka."
+      },
+      {
+        "en": "Open a row to continue its calculation in the Instant costing form.",
+        "id": "Buka sebuah baris untuk melanjutkan perhitungannya di form costing Instant."
+      },
+      {
+        "en": "When the numbers are sure, use Reverse inside the form to create the Inquiry and Pro-Dev automatically and move to Integrated mode.",
+        "id": "Bila angkanya sudah pasti, pakai Reverse di dalam form untuk membuat Inquiry dan Pro-Dev otomatis dan pindah ke mode Integrated."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Document / Customer",
+        "en": "The costing document number (Draft #n until a number is given) with the customer below it. Filled by the system.",
+        "id": "Nomor dokumen costing (Draft #n sebelum diberi nomor) dengan customer di bawahnya. Diisi sistem."
+      },
+      {
+        "label": "Product",
+        "en": "The product name typed on the draft. Shows a dash when empty.",
+        "id": "Nama produk yang diketik pada draft. Tampil strip bila kosong."
+      },
+      {
+        "label": "Status",
+        "en": "Draft, Calculated, Pending Approval, Published or Failed. Set by the costing process.",
+        "id": "Draft, Calculated, Pending Approval, Published, atau Failed. Diatur oleh proses costing."
+      },
+      {
+        "label": "Reverse",
+        "en": "Shows Reversed when the costing was turned into an Integrated one with Reverse.",
+        "id": "Menampilkan Reversed bila costing sudah dijadikan Integrated dengan Reverse."
+      }
+    ]
+  },
+  {
+    "key": "security-modules",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Modules",
+    "purpose": {
+      "en": "The list of modules that can be granted to a group. Each module is a permission unit and must match the module code used in the main menu.",
+      "id": "Daftar modul yang dapat diberikan ke sebuah grup. Tiap modul adalah satuan hak akses dan harus sama dengan kode modul di menu utama."
+    },
+    "keywords": "modules, module, modul, hak akses, security, permission, min level, kode modul, grup akses",
+    "steps": [
+      {
+        "en": "Type in the search box to find a module by code or name.",
+        "id": "Ketik di kotak cari untuk mencari modul menurut kode atau nama."
+      },
+      {
+        "en": "To add a module, click Row, then fill Code, Module and Min level.",
+        "id": "Untuk menambah modul, klik Row, lalu isi Code, Module, dan Min level."
+      },
+      {
+        "en": "Type the Code in capital letters; it must be the same as the module code of the main menu. A saved code cannot be changed.",
+        "id": "Ketik Code dengan huruf kapital; harus sama dengan kode modul di menu utama. Kode yang sudah tersimpan tidak bisa diubah."
+      },
+      {
+        "en": "Set Min level from 1 (Staff) to 5 (Board): the lowest management level that may open the module.",
+        "id": "Isi Min level dari 1 (Staff) sampai 5 (Direksi): tingkat manajemen terendah yang boleh membuka modul."
+      },
+      {
+        "en": "Click Save. The rights of each group per module are set in Groups on Modules, not here.",
+        "id": "Klik Save. Hak tiap grup per modul diatur di Groups on Modules, bukan di sini."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Code",
+        "en": "The module code, capital letters, digits and underscore. Must match the main menu. Locked after saving.",
+        "id": "Kode modul, huruf kapital, angka, dan garis bawah. Harus sama dengan menu utama. Terkunci setelah disimpan."
+      },
+      {
+        "label": "Module",
+        "en": "The module name shown to users.",
+        "id": "Nama modul yang tampil ke pengguna."
+      },
+      {
+        "label": "Under",
+        "en": "The parent module, picked from the list. Leave empty for a top module.",
+        "id": "Modul induk, dipilih dari daftar. Kosongkan untuk modul tingkat atas."
+      },
+      {
+        "label": "Icon",
+        "en": "The icon name of the module.",
+        "id": "Nama ikon modul."
+      },
+      {
+        "label": "Min level",
+        "en": "Lowest management level (1 to 5) that may open the module at all.",
+        "id": "Tingkat manajemen terendah (1 sampai 5) yang boleh membuka modul."
+      },
+      {
+        "label": "Has reports",
+        "en": "Tick when the module has reports that can be granted separately.",
+        "id": "Centang bila modul punya laporan yang bisa diberi hak terpisah."
+      },
+      {
+        "label": "Order",
+        "en": "The sort order of the module in lists.",
+        "id": "Urutan modul di daftar."
+      },
+      {
+        "label": "Active",
+        "en": "Untick to stop using the module without deleting it.",
+        "id": "Hapus centang untuk berhenti memakai modul tanpa menghapusnya."
+      }
+    ]
+  },
+  {
+    "key": "languages",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Languages",
+    "purpose": {
+      "en": "Switch display languages on or off. An active language appears as a flag on every screen and as a column in the Translation Dictionary.",
+      "id": "Menyalakan atau mematikan bahasa tampilan. Bahasa aktif tampil sebagai bendera di setiap layar dan sebagai kolom di Translation Dictionary."
+    },
+    "keywords": "languages, language, bahasa, bendera, flag, translation, terjemahan, locale, english, indonesia, pemisah angka",
+    "steps": [
+      {
+        "en": "Tick Active on a language to switch it on, or untick it to switch it off, then click Save.",
+        "id": "Centang Active pada sebuah bahasa untuk menyalakannya, atau hapus centang untuk mematikannya, lalu klik Save."
+      },
+      {
+        "en": "Texts without a translation are shown in English.",
+        "id": "Teks yang belum diterjemahkan ditampilkan dalam bahasa Inggris."
+      },
+      {
+        "en": "English is the base language of the database and cannot be switched off.",
+        "id": "English adalah bahasa dasar database dan tidak bisa dimatikan."
+      },
+      {
+        "en": "Only a developer can change the other columns or add a language. Enter the translations in the Translation Dictionary.",
+        "id": "Hanya developer yang dapat mengubah kolom lain atau menambah bahasa. Isi terjemahan di Translation Dictionary."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Code",
+        "en": "The short language code, 2 to 5 lowercase letters. Locked after saving. Developer only.",
+        "id": "Kode bahasa singkat, 2 sampai 5 huruf kecil. Terkunci setelah disimpan. Hanya developer."
+      },
+      {
+        "label": "Language",
+        "en": "The language name in English. Developer only.",
+        "id": "Nama bahasa dalam bahasa Inggris. Hanya developer."
+      },
+      {
+        "label": "Native name",
+        "en": "The language name written in that language. Developer only.",
+        "id": "Nama bahasa dalam bahasa itu sendiri. Hanya developer."
+      },
+      {
+        "label": "Intl locale",
+        "en": "The locale code used to format dates and numbers. Developer only.",
+        "id": "Kode locale untuk format tanggal dan angka. Hanya developer."
+      },
+      {
+        "label": "Decimal",
+        "en": "The decimal separator. Must differ from Thousands. Developer only.",
+        "id": "Pemisah desimal. Harus berbeda dari Thousands. Hanya developer."
+      },
+      {
+        "label": "Thousands",
+        "en": "The thousands separator. Must differ from Decimal. Developer only.",
+        "id": "Pemisah ribuan. Harus berbeda dari Decimal. Hanya developer."
+      },
+      {
+        "label": "Order",
+        "en": "The sort order of the flags and dictionary columns.",
+        "id": "Urutan bendera dan kolom kamus."
+      },
+      {
+        "label": "Active",
+        "en": "Shows the language as a flag and as a dictionary column when ticked.",
+        "id": "Bila dicentang, bahasa tampil sebagai bendera dan kolom kamus."
+      }
+    ]
+  },
+  {
+    "key": "message-groups",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Message Groups",
+    "purpose": {
+      "en": "The groups of the Translation Dictionary tree. New texts are placed in a group by the object that shows them; here you keep the list of groups.",
+      "id": "Kelompok pada pohon Translation Dictionary. Teks baru ditempatkan ke kelompok oleh objek yang menampilkannya; di sini daftar kelompok dikelola."
+    },
+    "keywords": "message groups, kelompok pesan, translation dictionary, kamus, terjemahan, group, grup pesan, kamus terjemahan",
+    "steps": [
+      {
+        "en": "To add a group, click Row, then fill Code and Group, and click Save.",
+        "id": "Untuk menambah kelompok, klik Row, lalu isi Code dan Group, dan klik Save."
+      },
+      {
+        "en": "Type the Code in lowercase letters; spaces and symbols become an underscore. A saved code cannot be changed.",
+        "id": "Ketik Code dengan huruf kecil; spasi dan simbol menjadi garis bawah. Kode yang sudah tersimpan tidak bisa diubah."
+      },
+      {
+        "en": "To move a text to another group, use the Group column in the Translation Dictionary.",
+        "id": "Untuk memindahkan teks ke kelompok lain, pakai kolom Group di Translation Dictionary."
+      },
+      {
+        "en": "A group that still holds texts, and General, cannot be switched off. Move its texts first.",
+        "id": "Kelompok yang masih berisi teks, dan General, tidak bisa dimatikan. Pindahkan dulu teksnya."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Code",
+        "en": "The group code, lowercase letters, digits and underscore. Unique. Locked after saving.",
+        "id": "Kode kelompok, huruf kecil, angka, dan garis bawah. Unik. Terkunci setelah disimpan."
+      },
+      {
+        "label": "Group",
+        "en": "The group name shown in the tree of the Translation Dictionary.",
+        "id": "Nama kelompok yang tampil di pohon Translation Dictionary."
+      },
+      {
+        "label": "Icon (Font Awesome)",
+        "en": "The Font Awesome icon class shown beside the group. Optional.",
+        "id": "Kelas ikon Font Awesome di samping kelompok. Opsional."
+      },
+      {
+        "label": "Order",
+        "en": "The sort order of the group in the tree.",
+        "id": "Urutan kelompok di pohon."
+      },
+      {
+        "label": "Active",
+        "en": "Untick to hide an unused group; not possible while it holds texts.",
+        "id": "Hapus centang untuk menyembunyikan kelompok yang tidak dipakai; tidak bisa selama masih berisi teks."
+      }
+    ]
+  }
+]

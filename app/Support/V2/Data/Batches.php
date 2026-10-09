@@ -8,9 +8,14 @@ use App\Models\Inventory\InvBatch;
 use App\Models\Inventory\InvPallet;
 use App\Models\Inventory\InvQcDecision;
 use App\Models\Inventory\InvQcFirstArticle;
+use App\Models\Master\MatRaw;
+use App\Models\Master\ProdPart;
+use App\Models\Master\ProdProduct;
 use App\Models\Master\SupSupplier;
 use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
+use App\Models\Sys\SysConstant;
+use App\Services\Inventory\BatchService;
 use App\Services\Inventory\QcDecisionService;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +26,8 @@ use Illuminate\Support\Facades\DB;
 final class Batches
 {
     // kelas stok => tabel kartu stok
+    public const CLASS_LABELS = ['RM' => 'Raw Material', 'SFG' => 'Semi Finished Goods', 'FG' => 'Finished Goods'];
+
     public const CARDS = ['RM' => 'rm_stockcard', 'SFG' => 'sfg_stockcard', 'FG' => 'fg_stockcard'];
 
     public static function find(int $id): ?InvBatch
@@ -32,6 +39,47 @@ final class Batches
     public static function supplierOptions(): array
     {
         return SupSupplier::query()->where('activate', true)->orderBy('supplier_name')->pluck('supplier_name', 'id_supplier')->map(fn ($n) => trim((string) $n))->all();
+    }
+
+    /**
+     * Cari item master semua kelas (RM bahan, SFG part, FG product) menurut kode / nama untuk lookup Item Code form batch.
+     * Baris membawa 'class' sehingga memilih item mengisi pilihan Class sekaligus.
+     *
+     * @return list<array<string, string>>
+     */
+    public static function itemSearch(string $q, int $limit = 30): array
+    {
+        $like = fn ($w, string $code, string $name) => $w->where($code, 'like', "%{$q}%")->orWhere($name, 'like', "%{$q}%");
+        $sources = ['RM' => [MatRaw::class, 'material_code', 'material_name'], 'SFG' => [ProdPart::class, 'part_code', 'part_name'], 'FG' => [ProdProduct::class, 'product_code', 'product_name']];
+        $rows = [];
+        foreach ($sources as $class => [$model, $code, $name]) {
+            foreach ($model::withoutGlobalScopes()->where('activate', true)->where(fn ($w) => $like($w, $code, $name))->orderBy($name)->limit($limit)->get([$code, $name]) as $m) {
+                $rows[] = ['item_code' => (string) $m->{$code}, 'item_name' => trim((string) $m->{$name}), 'class' => $class, 'class_label' => t(self::CLASS_LABELS[$class]),
+                    'label' => $m->{$code}.' · '.trim((string) $m->{$name})];
+            }
+        }
+
+        return array_slice($rows, 0, $limit);
+    }
+
+    /** Baris lookup untuk kode yang sudah tersimpan: kelas ikut kelas batch bila diketahui. */
+    public static function itemFind(string $code, ?string $class = null): ?array
+    {
+        foreach (array_keys(self::CLASS_LABELS) as $c) {
+            if (($class === null || $class === $c) && ($i = BatchService::itemByCode($c, $code))) {
+                return ['item_code' => $i['code'], 'item_name' => $i['name'], 'class' => $c, 'class_label' => t(self::CLASS_LABELS[$c]), 'label' => $i['code'].' · '.$i['name']];
+            }
+        }
+
+        return null;
+    }
+
+    /** Warna tanggal kedaluwarsa: danger = sudah lewat, warn = dalam WH_EXPIRY_SOON_DAYS, null = biasa. */
+    public static function expiryTone(InvBatch $batch): ?string
+    {
+        return match ($batch->expiryState((int) SysConstant::number('WH_EXPIRY_SOON_DAYS', 30))) {
+            'EXPIRED' => 'danger', 'SOON' => 'warn', default => null,
+        };
     }
 
     /** @return list<array<string, mixed>> */

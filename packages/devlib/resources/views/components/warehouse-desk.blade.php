@@ -15,6 +15,7 @@
             <x-dl::action-bar align="start">
                 <x-dl::field.select name="wh" label="Building" :options="$d['options']" :value="$d['wh']" :source="$src('tm2mst.wh_warehouse')" />
                 @if (! empty($d['pickOptions']))<x-dl::field.select name="pick" label="Pick allocation" :options="$d['pickOptions']" :value="$d['pick'] ?? null" placeholder="None" hint="Shows where an open pick list takes its material. None = the plain map." />@endif
+                <x-dl::field.checkbox name="putaway" label="Layer" text="Putaway" :value="! empty($d['putaway'])" hint="Shows the suggested bin (P) of every open putaway task." />
                 <x-dl::button variant="secondary" icon="fa-rotate" label="Show" type="submit" />
                 @foreach ($d['links'] as [$icon, $label, $url])
                     <x-dl::button variant="secondary" :icon="$icon" :label="$label" :href="$url" />

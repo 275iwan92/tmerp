@@ -101,9 +101,9 @@
             @endforeach
         </div>
         <aside class="dl-whmap__panel" data-wm-panel>
-            @if ($layer && ($layer['rows'] ?? false))
+            @if ($layer && (($layer['rows'] ?? false) || ($layer['notes'] ?? false)))
                 <b>{{ $layer['title'] ?? '' }}</b>
-                <x-dl::table :columns="['no' => ['#', 'raw' => true], 'bin' => ['Bin', 'raw' => true], 'qty' => ['Qty', 'num' => true, 'raw' => true]]" :rows="$layer['rows']" />
+                @if ($layer['rows'] ?? false)<x-dl::table :columns="['no' => ['#', 'raw' => true], 'bin' => ['Bin', 'raw' => true], 'qty' => ['Qty', 'num' => true, 'raw' => true]]" :rows="$layer['rows']" />@endif
                 @foreach ($layer['notes'] ?? [] as $note)<p class="dl-whmap__hint">{{ $note }}</p>@endforeach
             @else
                 <p class="dl-whmap__hint">{{ $empty }}</p>

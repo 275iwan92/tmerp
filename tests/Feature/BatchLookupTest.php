@@ -14,7 +14,10 @@ use App\Support\V2\Data\Batches;
 use App\Support\V2\Grid\Grids;
 use App\Support\V2\Grid\Inv\BatchListGrid;
 use App\Support\V2\Grid\Inv\BatchLookup;
+use Devlib\Lookup;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -221,6 +224,48 @@ class BatchLookupTest extends TestCase
         $this->post(route('v2.iq.decide', $batch->id_batch).'?from=inv-batch', ['decision' => 'REJECTED', 'decision_type' => 'USAGE_DECISION', 'reason' => 'Failed the moisture test'])
             ->assertRedirect(route('v2.screen', 'inv-batch').'?id='.$batch->id_batch);
         $this->assertSame('REJECTED', $batch->fresh()->qc_status);
+    }
+
+    public function test_the_item_lookup_finds_items_of_every_class_and_fills_the_class(): void
+    {
+        $rows = Batches::itemSearch($this->material->material_code);
+        $hit = collect($rows)->firstWhere('item_code', $this->material->material_code);
+        $this->assertNotNull($hit);
+        $this->assertSame('RM', $hit['class']);
+        $this->assertSame($this->material->material_code, Batches::itemFind($this->material->material_code)['item_code']);
+        $this->assertNull(Batches::itemFind('NOPE-CODE'));
+        $this->assertSame(['stock_class' => 'class'], Lookup::get('stock_item')['fill']);
+    }
+
+    public function test_expiry_is_red_when_expired_and_amber_when_soon_in_the_list_and_the_form(): void
+    {
+        $item = (int) $this->material->material_id;
+        $old = BatchService::create('RM', $item, 'ZZ-EXP', ['notes' => self::MARK, 'expiry_date' => now()->subDays(3)->toDateString()], self::BY);
+        $soon = BatchService::create('RM', $item, 'ZZ-SOON', ['notes' => self::MARK, 'expiry_date' => now()->addDays(2)->toDateString()], self::BY);
+        $far = BatchService::create('RM', $item, 'ZZ-FAR', ['notes' => self::MARK, 'expiry_date' => now()->addYear()->toDateString()], self::BY);
+
+        $this->assertSame('danger', Batches::expiryTone($old));
+        $this->assertSame('warn', Batches::expiryTone($soon));
+        $this->assertNull(Batches::expiryTone($far));
+        $rows = collect($this->grid()->rows());
+        $this->assertSame('danger', $rows->firstWhere('id', $old->id_batch)['expiry_tone']);
+        $this->assertSame('expiry_tone', collect((new BatchListGrid)->columns())->firstWhere('key', 'expiry_date')['toneKey']);
+        $this->get(route('v2.screen', 'inv-batch').'?id='.$old->id_batch)->assertOk()->assertSee('dl-field--tone-danger', false);
+        $this->get(route('v2.screen', 'inv-batch').'?id='.$far->id_batch)->assertOk()->assertDontSee('dl-field--tone-', false);
+    }
+
+    public function test_a_certificate_of_analysis_can_be_uploaded_with_the_batch(): void
+    {
+        Storage::fake('public');
+        $file = UploadedFile::fake()->create('COA-ZZ.pdf', 20, 'application/pdf');
+        $this->post(route('v2.iq.batch-save'), ['stock_class' => 'RM', 'item_code' => $this->material->material_code, 'supplier_lot' => 'ZZ-COA', 'notes' => self::MARK, 'coa' => $file])->assertRedirect();
+        $batch = InvBatch::query()->where('notes', self::MARK)->firstOrFail();
+        $this->assertSame('batch/'.$batch->batch_no.'/COA-ZZ.pdf', $batch->coa_path);
+        Storage::disk('public')->assertExists($batch->coa_path);
+        $this->get(route('v2.screen', 'inv-batch').'?id='.$batch->id_batch)->assertOk()->assertSee('COA-ZZ.pdf');
+
+        $bad = UploadedFile::fake()->create('virus.exe', 5);
+        $this->post(route('v2.iq.batch-save', $batch->id_batch), ['notes' => self::MARK, 'coa' => $bad])->assertSessionHasErrors('coa');
     }
 
     public function test_the_screen_is_in_the_inventory_menu_under_batch_and_quality(): void

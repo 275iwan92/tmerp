@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-10 00:14",
+    "generated": "2026-10-10 06:58",
     "database": "ddtsys",
     "totals": {
         "objects": 152,
@@ -22,11 +22,11 @@
         "tables": 408,
         "databases": 10,
         "models": 361,
-        "migrations": 585,
-        "tests": 153,
+        "migrations": 586,
+        "tests": 154,
         "dictionary": 12236,
         "languages": 4,
-        "commits": "1256",
+        "commits": "1259",
         "since": "2026-08-06"
     },
     "modules": [
@@ -178,13 +178,13 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 57,
+            "commits": 60,
             "days": 4,
             "last": "2026-10-10",
-            "screens": 103,
-            "objects": 6,
-            "engines": 37,
-            "tests": 37
+            "screens": 119,
+            "objects": 8,
+            "engines": 40,
+            "tests": 55
         }
     ],
     "untracked": 1118,
@@ -270,7 +270,7 @@
         {
             "date": "2026-10-10",
             "iwan": 0,
-            "jo": 1,
+            "jo": 4,
             "other": 0
         }
     ],
@@ -332,7 +332,7 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 57,
+            "jo": 60,
             "other": 38
         }
     ],
@@ -1212,10 +1212,10 @@
             "name": "Batch",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1300,10 +1300,10 @@
             "name": "Valuation & Period",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -1311,10 +1311,10 @@
             "name": "GR/IR Aging",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -1322,10 +1322,10 @@
             "name": "Task Board",
             "module": "Warehouse",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -1918,7 +1918,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-09",
+            "changed_at": "2026-10-10",
             "changed_by": "jo"
         },
         {
@@ -2026,10 +2026,10 @@
             "name": "Landed Cost",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -2037,10 +2037,10 @@
             "name": "Daily Reconciliation",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -2587,10 +2587,10 @@
             "name": "Obsolete Stock",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -2598,10 +2598,10 @@
             "name": "Repost",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -2928,10 +2928,10 @@
             "name": "Stock Aging",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -3324,10 +3324,10 @@
             "name": "Valuation Check",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -3535,8 +3535,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3546,7 +3546,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-08-22",
             "built_by": null,
-            "changed_at": "2026-10-09",
+            "changed_at": "2026-10-10",
             "changed_by": "jo"
         },
         {
@@ -3557,7 +3557,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-09",
+            "changed_at": "2026-10-10",
             "changed_by": "jo"
         },
         {
@@ -3645,7 +3645,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
+            "changed_at": "2026-10-10",
             "changed_by": "jo"
         },
         {
@@ -3700,7 +3700,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
+            "changed_at": "2026-10-10",
             "changed_by": "jo"
         },
         {
@@ -3709,10 +3709,10 @@
             "name": "Shortage Auto Detector (from production output)",
             "module": "Procurement",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3788,8 +3788,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -5009,8 +5009,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -5669,8 +5669,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",

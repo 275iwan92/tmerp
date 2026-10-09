@@ -7,6 +7,7 @@
     use App\Support\V2\Data\Batches;
     use App\Support\V2\Src;
     use Devlib\Locale;
+    use Illuminate\Support\Facades\Storage;
 
     $home = route('v2.screen', 'inv-batch');
     $batch = request('id') ? Batches::find((int) request('id')) : null;
@@ -30,10 +31,13 @@
             'qty' => Locale::decimal($r['qty'], 2), 'unit' => $r['unit']], $stock);
         $decisions = $new ? [] : Batches::decisions($b);
         $firstArticles = $new ? [] : Batches::firstArticles($b);
+        $expiryTone = $new ? null : Batches::expiryTone($b);
+        $expiryClass = $expiryTone ? 'dl-field--tone-'.$expiryTone : null;
     @endphp
     <x-dl::form id="inv-batch-form" :title="$new ? t('New Batch') : 'Batch · '.raw($b->batch_no)" subtitle="Inventory · Batch & Quality"
         panel="top" kind="master" :status="$new ? 'new' : 'active'" :stage="$new ? null : $status" :hide="['deactivate', 'activate', 'new']"
         :action="route('v2.iq.batch-save', $new ? [] : ['id' => $b->id_batch])" action-field="action" :back="$home" :new-url="$home.'?new=1'"
+        enctype="multipart/form-data"
         :tabs="['general' => 'Batch', 'stock' => 'Stock of this batch', 'quality' => 'Quality decisions']"
         :log="$new ? [] : Batches::history($b)"
         :created-by="$b->created_by" :created-at="$b->created_at?->toDateTimeString()" :updated-by="$b->updated_by" :updated-at="$b->updated_at?->toDateTimeString()">
@@ -42,7 +46,7 @@
                 <x-dl::field.display label="Batch No." :value="$new ? t('(automatic)') : raw($b->batch_no)" :source="Src::of('tm2inv.inv_batch.batch_no')" />
                 @if ($new)
                     <x-dl::field.select name="stock_class" label="Class" required :options="$classes" :value="old('stock_class', 'RM')" :source="Src::of('tm2inv.inv_batch.stock_class')" />
-                    <x-dl::field.text name="item_code" label="Item Code" required :case-toggle="false" :value="old('item_code')" :source="Src::of('tm2mst.mat_raw')" />
+                    <x-dl::field.lookup lookup="stock_item" name="item_code" label="Item Code" required :value="old('item_code')" hint="Search by code or name; the Class follows the item." :source="Src::of('tm2mst.mat_raw', 'tm2mst.prod_part', 'tm2mst.prod_product')" />
                 @else
                     <x-dl::field.display label="Item" :value="raw($b->item_name.' · '.$b->item_code)" :source="Src::of('tm2inv.inv_batch.item_name', 'item_code')" />
                 @endif
@@ -51,7 +55,7 @@
             </x-dl::form.row>
             <x-dl::form.row :cols="4">
                 <x-dl::field.date name="production_date" label="Production Date" :value="old('production_date', $b->production_date?->toDateString())" :source="Src::of('tm2inv.inv_batch.production_date')" />
-                <x-dl::field.date name="expiry_date" label="Expiry Date" :value="old('expiry_date', $b->expiry_date?->toDateString())" :source="Src::of('tm2inv.inv_batch.expiry_date')" />
+                <x-dl::field.date name="expiry_date" label="Expiry Date" :class="$expiryClass" :hint="$expiryTone === 'danger' ? 'This batch has expired.' : ($expiryTone === 'warn' ? 'This batch expires soon.' : null)" :value="old('expiry_date', $b->expiry_date?->toDateString())" :source="Src::of('tm2inv.inv_batch.expiry_date')" />
                 <x-dl::field.date name="retest_date" label="Retest Date" :value="old('retest_date', $b->retest_date?->toDateString())" :source="Src::of('tm2inv.inv_batch.retest_date')" />
                 <x-dl::field.display label="Status" :value="t($status)" hint="Set by the quality decision, not typed." :source="Src::of('tm2inv.inv_batch.qc_status')" />
             </x-dl::form.row>
@@ -59,7 +63,12 @@
                 <x-dl::field.select name="certification" label="Certification" :options="InvBatch::CERTIFICATIONS" :value="old('certification', $b->certification)" :source="Src::of('tm2inv.inv_batch.certification')" />
                 <x-dl::field.checkbox name="food_grade" label="Food Grade" text="Food grade" :value="(bool) old('food_grade', $b->food_grade)" :source="Src::of('tm2inv.inv_batch.food_grade')" />
                 <x-dl::field.select name="grain_direction" label="Grain Direction" :options="InvBatch::GRAINS" :value="old('grain_direction', $b->grain_direction)" hint="Only for paper." :source="Src::of('tm2inv.inv_batch.grain_direction')" />
-                <x-dl::field.display label="Certificate of Analysis" :value="$b->coa_path ? raw(basename($b->coa_path)) : '—'" :source="Src::of('tm2inv.inv_batch.coa_path')" />
+            </x-dl::form.row>
+            <x-dl::form.row :cols="2">
+                <x-dl::field.upload name="coa" label="Certificate of Analysis" accept=".pdf,.jpg,.jpeg,.png" hint="PDF or image, up to 5 MB. A new file replaces the current one." :source="Src::of('tm2inv.inv_batch.coa_path')" />
+                @if ($b->coa_path)
+                    <div><x-dl::button size="sm" variant="secondary" icon="fa-paperclip" :label="raw(basename($b->coa_path))" :href="Storage::disk('public')->url($b->coa_path)" target="_blank" /></div>
+                @endif
             </x-dl::form.row>
             <x-dl::field.text name="notes" label="Notes" multiline :value="old('notes', $b->notes)" :source="Src::of('tm2inv.inv_batch.notes')" />
         </x-slot:general>

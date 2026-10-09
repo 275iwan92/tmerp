@@ -9,6 +9,7 @@ use App\Models\Inventory\InvPallet;
 use App\Models\Master\SupSupplier;
 use App\Models\Sys\SysConstant;
 use App\Services\Inventory\BatchService;
+use App\Support\V2\Data\Batches;
 use App\Support\V2\Grid\DbLookup;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -140,7 +141,7 @@ class BatchLookup extends DbLookup
         return ['qc_status' => InvBatch::STATUSES[$m->qc_status]['label'] ?? $m->qc_status, 'on_hand' => $onHand, 'pallet_count' => $this->pallets[$m->id_batch] ?? 0,
             'qc' => $m->qc_status, 'expiring' => $expiring, 'supplier_name' => $this->suppliers[$m->supplier_id] ?? '—', 'food_label' => $m->food_grade ? 'Yes' : 'No',
             'cert_label' => $m->certification && $m->certification !== 'NONE' ? $m->certification : '—', 'production_date' => $m->production_date?->toDateString(), 'expiry_date' => $m->expiry_date?->toDateString(),
-            'retest_date' => $m->retest_date?->toDateString()] + $row;
+            'retest_date' => $m->retest_date?->toDateString(), 'expiry_tone' => Batches::expiryTone($m)] + $row;
     }
 
     public function stats(): array

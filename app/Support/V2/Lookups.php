@@ -35,6 +35,12 @@ final class Lookups
                 ->orderBy('material_name')->limit(50)->get(),
             'find' => fn ($v) => self::materials()->where('material_id', (int) $v)->first()]);
 
+        // Item stok semua kelas (form Batch): memilih item juga mengisi Class (RM / SFG / FG) lewat fill.
+        Lookup::define('stock_item', ['key' => 'item_code', 'label' => 'label', 'source' => 'tm2mst.mat_raw + tm2mst.prod_part + tm2mst.prod_product (activate = 1)',
+            'columns' => ['item_name' => 'Item', 'item_code' => 'Code', 'class_label' => 'Class'], 'fill' => ['stock_class' => 'class'],
+            'search' => fn (string $q) => Data\Batches::itemSearch($q),
+            'find' => fn ($v) => Data\Batches::itemFind((string) $v)]);
+
         // Pegawai aktif (teknisi Maintenance, pelapor): dicari ke server.
         Lookup::define('employee', ['key' => 'employee_id', 'label' => 'label', 'source' => 'tm2mst.emp_employee (activate = 1)',
             'columns' => ['full_name' => 'Name', 'employee_code' => 'Employee No', 'position_name' => 'Position'],

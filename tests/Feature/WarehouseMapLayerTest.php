@@ -52,6 +52,31 @@ class WarehouseMapLayerTest extends TestCase
         $this->assertNull($map->layerPoint(99, 1));
     }
 
+    public function test_a_putaway_mark_is_a_dashed_p_circle_and_notes_alone_fill_the_panel(): void
+    {
+        $html = $this->html(['marks' => [['bin' => 12, 'text' => 'P', 'tone' => 'put']], 'title' => 'Putaway', 'notes' => ['WT2600001 → L02']]);
+        $this->assertSame(1, substr_count($html, 'dl-whmap__lmark dl-whmap__lmark--put'));
+        $this->assertStringContainsString('>P</text>', $html);
+        $this->assertStringNotContainsString('dl-whmap__lroute', $html);
+        $this->assertStringContainsString('WT2600001 → L02', $html);
+    }
+
+    public function test_the_layer_helper_returns_nothing_when_neither_layer_is_asked_for(): void
+    {
+        $this->assertSame([], Warehouse::layer(null, false));
+        $this->assertSame([], Warehouse::layer(999999999, false));
+    }
+
+    public function test_the_putaway_layer_only_has_put_marks_one_per_bin(): void
+    {
+        $layer = Warehouse::putawayLayer();
+        foreach ($layer['marks'] ?? [] as $m) {
+            $this->assertSame('put', $m['tone']);
+            $this->assertSame('P', $m['text']);
+        }
+        $this->assertCount(count($layer['marks'] ?? []), array_unique(array_column($layer['marks'] ?? [], 'bin')));
+    }
+
     public function test_an_unknown_pick_list_gives_no_layer(): void
     {
         $this->assertSame([], Warehouse::pickLayer(999999999));

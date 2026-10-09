@@ -69,7 +69,7 @@ class BatchListGrid extends DocListGrid
             ['key' => 'item_name', 'label' => 'Item', 'type' => 'identity', 'code' => 'item_code', 'avatar' => false],
             ['key' => 'supplier_name', 'label' => 'Supplier'],
             ['key' => 'production_date', 'label' => 'Production', 'type' => 'date'],
-            ['key' => 'expiry_date', 'label' => 'Expiry', 'type' => 'date'],
+            ['key' => 'expiry_date', 'label' => 'Expiry', 'type' => 'date', 'toneKey' => 'expiry_tone'],
             ['key' => 'qc_status', 'label' => 'Status', 'type' => 'badge', 'tones' => array_column(InvBatch::STATUSES, 'tone', 'label')],
             ['key' => 'cert_label', 'label' => 'Certification'],
             ['key' => 'food_label', 'label' => 'Food Grade'],

@@ -51,6 +51,8 @@ Route::prefix('inv-quality')->name('iq.')->group(function () {
     Route::post('/batch/save/{id?}', function (Request $r, ?int $id = null) {
         $batch = $id ? InvBatch::query()->findOrFail($id) : null;
         $lookup = new BatchLookup;
+        // Certificate of Analysis (PDF / gambar, maks. 5 MB): disimpan di disk public dan jalurnya di inv_batch.coa_path setelah batch tersimpan.
+        $r->validate(['coa' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120']]);
         $row = ['id' => $id, 'stock_class' => $batch?->stock_class ?? $r->input('stock_class'), 'item_code' => $batch?->item_code ?? $r->input('item_code'), 'food_grade' => $r->boolean('food_grade'),
             'activate' => $batch ? (bool) $batch->activate : true] + $r->only(['supplier_id', 'supplier_lot', 'production_date', 'expiry_date', 'retest_date', 'certification', 'grain_direction', 'notes']);
         try {
@@ -59,6 +61,10 @@ Route::prefix('inv-quality')->name('iq.')->group(function () {
             return redirect(route('v2.screen', 'inv-batch').($id ? '?id='.$id : '?new=1'))->withErrors(['batch' => $e->errors()['row'][0] ?? $e->getMessage()])->withInput();
         }
         $saved = (int) $lookup->lastSavedId();
+        if ($file = $r->file('coa')) {
+            $target = InvBatch::query()->findOrFail($saved);
+            $target->forceFill(['coa_path' => $file->storeAs('batch/'.$target->batch_no, $file->getClientOriginalName(), 'public')])->save();
+        }
 
         return redirect(route('v2.screen', 'inv-batch').'?id='.$saved)->with('v2_flash', t('Saved.'));
     })->whereNumber('id')->middleware('module:INV')->name('batch-save');

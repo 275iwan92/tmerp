@@ -2,11 +2,14 @@
 
 namespace App\Support\V2\Data;
 
+use App\Models\Inventory\WhTask;
 use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
 use App\Models\Master\WhZone;
 use App\Services\Inventory\PalletService;
+use App\Services\Inventory\PutawayPlanner;
 use App\Services\Inventory\WarehouseStock;
+use App\Services\Inventory\WarehouseTaskService;
 use Devlib\Locale;
 use Illuminate\Support\Collection;
 
@@ -257,6 +260,45 @@ final class Warehouse
             'notes' => array_values(array_filter([$pick['wo'] ? t('Work Order').' '.$pick['wo'] : null, $pick['deliver_to'] ? t('Route').': '.implode(' → ', array_merge(array_column($pick['bins'], 'code'), [$pick['deliver_to']['code']])) : null]))];
     }
 
+    // Lapisan putaway untuk x-dl::wh-map: lingkaran putus-putus 'P' pada bin usulan tiap tugas putaway terbuka (urutan sama dengan layar Receiving & Putaway;
+    // bin yang sudah diusulkan ke palet sebelumnya dicadangkan, jadi tidak menumpuk). Tugas tanpa bin cocok (Quarantine, Rejected) tidak digambar.
+    /** @return array<string, mixed> */
+    public static function putawayLayer(int $limit = 50): array
+    {
+        $service = new WarehouseTaskService;
+        $planner = new PutawayPlanner;
+        $marks = [];
+        $notes = [];
+        foreach (WhTask::query()->with(['pallet', 'batch'])->where('task_type', 'PUTAWAY')->where('status', 'OPEN')->orderBy('id_task')->limit($limit)->get() as $task) {
+            $pallet = $task->pallet;
+            $bin = $pallet ? ($service->suggestions($task, $pallet, $task->batch, $planner, 1)[0]['bin'] ?? null) : null;
+            if (! $bin) {
+                continue;
+            }
+            $planner->reserve($bin, $pallet);
+            $marks[$bin->location_id] ??= ['bin' => (int) $bin->location_id, 'text' => 'P', 'tone' => 'put'];
+            $notes[] = $task->task_no.' → '.$bin->location_code;
+        }
+
+        return $marks ? ['marks' => array_values($marks), 'notes' => $notes, 'title' => t('Putaway')] : [];
+    }
+
+    // Gabungan lapisan peta: alokasi pick list dan / atau putaway. Panel kanan memakai daftar pick bila ada, selain itu judul + catatan putaway.
+    /** @return array<string, mixed> */
+    public static function layer(?int $pickListId, bool $putaway): array
+    {
+        $pick = $pickListId ? self::pickLayer($pickListId) : [];
+        $put = $putaway ? self::putawayLayer() : [];
+        if (! $put) {
+            return $pick;
+        }
+        if (! $pick) {
+            return $put;
+        }
+
+        return ['marks' => array_merge($pick['marks'], $put['marks']), 'notes' => array_merge($pick['notes'] ?? [], [t('Putaway').': '.implode(', ', $put['notes'])])] + $pick;
+    }
+
     // Isi objek form khusus x-mp::inv.warehouse-desk (layar Warehouse Map): pemilih gedung + pintasan, peta (x-dl::wh-map),
     // kapasitas per lantai, ringkasan, dan pembuat bin. 'wh' null = belum ada gedung; 'map' null = gedung belum punya ukuran.
     public static function desk(string $home): array
@@ -277,7 +319,7 @@ final class Warehouse
                 ['fa-table-cells', 'Bins', $screen('wh-bins')], ['fa-layer-group', 'Stack Monitor', $screen('stack-monitor')]],
             'generate' => ['show' => $zones->isNotEmpty(), 'action' => route('v2.wh.bins.generate'),
                 'zones' => $zones->mapWithKeys(fn (WhZone $z) => [$z->id_zone => $z->zone_code.' · '.$z->zone_name.' · '.t('Floor').' '.$z->floor_no.' · '.$z->storage_mode])->all()],
-            'pickOptions' => PickLists::openOptions(), 'pick' => request()->integer('pick') ?: null,
+            'pickOptions' => PickLists::openOptions(), 'pick' => request()->integer('pick') ?: null, 'putaway' => request()->boolean('putaway'),
             'map' => $map ? [
                 'width' => $map['width'], 'height' => $map['height'], 'outline' => $map['outline'], 'floors' => $map['floors'], 'bins' => $map['bins'],
                 'floor' => request()->integer('floor') ?: null, 'selected' => request()->integer('bin') ?: null, 'saveUrl' => route('v2.wh.zone-move'),
@@ -288,7 +330,7 @@ final class Warehouse
                     ['label' => t('Block'), 'icon' => 'fa-ban', 'tone' => 'danger', 'when' => 'usable', 'post' => true, 'reason' => true, 'confirm' => t('Block this bin? It can no longer receive stock until it is unblocked.'), 'url' => $url('v2.wh.bin.block')],
                     ['label' => t('Unblock'), 'icon' => 'fa-circle-check', 'when' => 'blocked', 'post' => true, 'url' => $url('v2.wh.bin.unblock')],
                 ],
-                'layer' => request()->integer('pick') ? self::pickLayer(request()->integer('pick')) : [],
+                'layer' => self::layer(request()->integer('pick') ?: null, request()->boolean('putaway')),
                 'capacity' => $map['capacity'], 'missingHeight' => collect($map['capacity'])->contains(fn (array $f) => $f['height'] === null),
                 'summary' => str_replace([':area', ':floors', ':bins', ':used', ':cap', ':months'],
                     [Locale::number($map['totals']['area']), (string) $wh->floors(), Locale::number($map['totals']['bins']), Locale::number($map['totals']['used_kg']), Locale::number($map['totals']['capacity_kg']), (string) WarehouseStock::deadMonths()],

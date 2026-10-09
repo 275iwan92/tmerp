@@ -245,7 +245,8 @@
         }
         case 'badge': return `<td><span class="dl-badge dl-badge--pill dl-badge--${esc((c.toneKey ? r[c.toneKey] : (c.tones || {})[v]) || 'neutral')}">${esc(v)}</span></td>`;
         case 'money': case 'number': case 'integer': return `<td class="num">${esc(this.fmtCell(c, v))}</td>`;
-        case 'date': return `<td class="dl-grid__date">${esc(this.fmtCell(c, v))}</td>`;
+        // 'toneKey' pada kolom date: kolom baris yang membawa tone (danger | warn | ...) -> tanggal tampil sebagai lencana berwarna, kosong = biasa.
+        case 'date': { const tone = c.toneKey ? r[c.toneKey] : null; const txt = esc(this.fmtCell(c, v)); return `<td class="dl-grid__date">${tone ? `<span class="dl-badge dl-badge--pill dl-badge--${esc(tone)}">${txt}</span>` : txt}</td>`; }
         // Nilai dari transaksi (Grid Master, user 2026-09-30): hanya-baca, klik = buka transaksi baris ini (url {id}).
         case 'link': { const u = c.url ? c.url.replace('{id}', encodeURIComponent(r[this.cfg.rowKey])) : '#'; return `<td class="num"><a class="dl-grid__link" href="${esc(u)}" data-g-link="${esc(c.key)}" title="${esc(T('g_open_tx'))}">${esc(this.fmtCell(c, v))} <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>`; }
         case 'image': return `<td class="dl-grid__imgcell">${v ? `<button type="button" class="dl-grid__thumb" data-g-img="${esc(v)}" title="${esc(T('g_enlarge'))}"><img src="${esc(v)}" alt="" loading="lazy"></button>` : (c.fallback ? `<span class="dl-grid__noimg dl-grid__noimg--ini">${esc(String(this.val(r, c.fallback) || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase())}</span>` : '<span class="dl-grid__noimg"><i class="fa-regular fa-image"></i></span>')}</td>`;
