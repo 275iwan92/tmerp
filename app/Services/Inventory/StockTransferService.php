@@ -149,7 +149,8 @@ class StockTransferService
     public function value(InvTransfer $t): float
     {
         return round((float) $t->lines->sum(fn (InvTransferLine $l) => $l->qty
-            * (float) ($this->last($l->stock_class, (int) $l->item_id, $l->part_id, (int) $l->from_location_id)->first()?->avg_unitprice ?? 0)), 2);
+            * (float) ItemAverageCost::readerAvg($l->stock_class, (int) $l->item_id, $l->stock_class === 'FG' && $l->part_id ? (int) $l->part_id : null,
+                $this->last($l->stock_class, (int) $l->item_id, $l->part_id, (int) $l->from_location_id)->first()?->avg_unitprice)), 2);
     }
 
     // Tulis kartu stok semua baris, tandai Confirmed, pindahkan palet. Dipanggil di dalam transaksi, dokumen sudah dikunci.
@@ -385,8 +386,9 @@ class StockTransferService
         };
 
         $ebFrom = $balFrom - $qty;
-        (new $card)->forceFill($base($from, $fromId) + ['reference_name' => self::REF.':'.$outTag, 'qty' => -$qty, 'qty_bb' => $balFrom, 'qty_in' => 0, 'qty_out' => $qty,
-            'qty_eb' => $ebFrom, 'avg_unitprice' => $avg, 'value_eb' => $avg === null ? null : $ebFrom * $avg])->save();
+        $outRow = (new $card)->forceFill($base($from, $fromId) + ['reference_name' => self::REF.':'.$outTag, 'qty' => -$qty, 'qty_bb' => $balFrom, 'qty_in' => 0, 'qty_out' => $qty,
+            'qty_eb' => $ebFrom, 'avg_unitprice' => $avg, 'value_eb' => $avg === null ? null : $ebFrom * $avg]);
+        $outRow->save();
 
         $balTo = (float) ($to?->qty_eb ?? 0);
         $avgTo = $to?->avg_unitprice === null ? null : (float) $to->avg_unitprice;
@@ -399,7 +401,7 @@ class StockTransferService
 
         // INV_AVG_SCOPE = ITEM: transfer membawa Avg item dan tidak mengubahnya (ItemAverageCost menulis ulang nilai kedua baris).
         if (ItemAverageCost::enabled()) {
-            $avg = ItemAverageCost::recalculate($l->stock_class, $itemId, $l->stock_class === 'FG' && $l->part_id ? (int) $l->part_id : null)['avg'];
+            $avg = ItemAverageCost::recalculate($l->stock_class, $itemId, $l->stock_class === 'FG' && $l->part_id ? (int) $l->part_id : null, null, true, $outRow)['avg'];
         }
 
         return $avg;

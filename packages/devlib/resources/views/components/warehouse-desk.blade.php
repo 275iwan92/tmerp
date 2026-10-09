@@ -14,6 +14,7 @@
         <x-dl::action-form method="get" action="{{ $d['home'] }}">
             <x-dl::action-bar align="start">
                 <x-dl::field.select name="wh" label="Building" :options="$d['options']" :value="$d['wh']" :source="$src('tm2mst.wh_warehouse')" />
+                @if (! empty($d['pickOptions']))<x-dl::field.select name="pick" label="Pick allocation" :options="$d['pickOptions']" :value="$d['pick'] ?? null" placeholder="None" hint="Shows where an open pick list takes its material. None = the plain map." />@endif
                 <x-dl::button variant="secondary" icon="fa-rotate" label="Show" type="submit" />
                 @foreach ($d['links'] as [$icon, $label, $url])
                     <x-dl::button variant="secondary" :icon="$icon" :label="$label" :href="$url" />
@@ -30,7 +31,7 @@
             <x-dl::wh-map id="wh-map-{{ $d['wh'] }}" :title="Lang::raw($d['title'])" :width="$m['width']" :height="$m['height']" :outline="$m['outline']"
                 :floors="$m['floors']" :bins="$m['bins']" :floor="$m['floor']" :selected="$m['selected']" :save-url="$m['saveUrl']" :restack-url="$m['restackUrl']"
                 source="{{ $src('tm2mst.wh_warehouse', 'tm2mst.wh_zone', 'tm2mst.wh_loc', 'tm2inv.v_rm_onhand', 'tm2inv.v_sfg_onhand', 'tm2inv.v_fg_onhand', 'tm2inv.inv_pallet (stack_no, unit_kind)') }}"
-                :actions="$m['actions']" />
+                :actions="$m['actions']" :layer="$m['layer'] ?? []" />
             <x-dl::card title="Capacity per Floor" icon="fa-ruler-combined" description="Floor area and clear height give the room volume. Storage volume = area of the storage areas x their stacking height. In use = estimated volume and weight of the stock (paper: sheets x size x thickness).">
                 <x-slot:actions>
                     <x-dl::button size="sm" variant="secondary" icon="fa-building" label="Building Size & Height" :href="$d['buildingsUrl']" />

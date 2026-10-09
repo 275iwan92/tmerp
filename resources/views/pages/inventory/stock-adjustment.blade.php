@@ -169,7 +169,9 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
             ->orderByDesc('doc_date')->orderByDesc('doc_id')
             ->first();
 
-        return ['qty' => (float) ($row->qty_eb ?? 0), 'price' => (float) ($row->avg_unitprice ?? 0)];
+        $price = \App\Services\Inventory\ItemAverageCost::readerAvg($this->category, $itemId, null, $row?->avg_unitprice === null ? null : (float) $row->avg_unitprice);
+
+        return ['qty' => (float) ($row->qty_eb ?? 0), 'price' => (float) ($price ?? 0)];
     }
 
     public function addLine(int $itemId, string $code, string $name, ?string $uom): void
@@ -220,10 +222,11 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
 
         $rows = $this->cardModel()::whereIn('doc_id', $latestIds)->where('qty_eb', '!=', 0)->get();
 
+        $avgByItem = \App\Services\Inventory\ItemAverageCost::enabled() ? \App\Services\Inventory\ItemAverageCost::currentAvgMany($this->category, $rows->pluck($itemKey)->unique()->all()) : [];
         $this->lines = $rows->map(fn ($r) => [
             'item_id' => $r->{$itemKey}, 'code' => '', 'name' => $this->itemLabel($r->{$itemKey}),
             'lot_no' => (string) $r->lot_no, 'location_id' => $r->location_id, 'uom_code' => (string) $r->uom_code,
-            'qty_system' => (float) $r->qty_eb, 'unit_price' => (float) $r->avg_unitprice, 'qty_physical' => '', 'note_detail' => '',
+            'qty_system' => (float) $r->qty_eb, 'unit_price' => (float) ($avgByItem[$r->{$itemKey}.':'.($this->category === 'FG' ? (int) $r->parts_id : 0)] ?? $r->avg_unitprice), 'qty_physical' => '', 'note_detail' => '',
         ])->values()->all();
     }
 

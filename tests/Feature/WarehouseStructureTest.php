@@ -42,8 +42,8 @@ class WarehouseStructureTest extends TestCase
     private function clean(): void
     {
         $ids = WhWarehouse::query()->where('created_by', self::BY)->pluck('id_warehouse')->all();
-        WhLoc::query()->whereIn('warehouse_id', $ids ?: [0])->delete();
-        WhZone::query()->whereIn('warehouse_id', $ids ?: [0])->delete();
+        WhLoc::query()->whereIn('warehouse_id', $ids ?: [0])->orWhere('created_by', self::BY)->delete();
+        WhZone::query()->whereIn('warehouse_id', $ids ?: [0])->orWhere('created_by', self::BY)->delete();
         WhWarehouse::query()->whereIn('id_warehouse', $ids ?: [0])->delete();
     }
 

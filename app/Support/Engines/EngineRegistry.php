@@ -39,6 +39,7 @@ use App\Services\ProDev\UsageRateEngine;
 use App\Services\Production\RoutingTemplateService;
 use App\Services\Production\SpeedTarget\SpeedTargetEngine;
 use App\Services\Pur\PqMatcher;
+use App\Services\Pur\ShortageAutoDetector;
 use App\Services\Pur\ShortageDetector;
 use App\Services\Pur\ShortageRequestService;
 use App\Services\Pur\UrgentReceiptService;
@@ -965,7 +966,7 @@ final class EngineRegistry
                     'Suspected shortage = net issued - (good output + standard waste).',
                     'Actual waste above standard is usage variance, not a short delivery.',
                     'Only a suspicion above the tolerance becomes a request; the head of the warehouse must recount before it counts.',
-                    'Good output in material unit is typed by the officer: there is no unit conversion from product output yet.',
+                    'Good output in material unit is typed by the officer, or filled from production data by the Shortage Auto Detector (inv:detect-shortage).',
                 ],
                 'reads' => ['tm2inv.rm_stock_d', 'tm2prd.prd_wo', 'tm2pur.po_line (tolerance)'],
                 'writes' => ['Nothing: it only compares.'],
@@ -1006,13 +1007,45 @@ final class EngineRegistry
                     'Confirm lowers the received quantity, reopens the PO line as backorder, corrects GR/IR and reduces the stock; a subcontractor receipt uses its own shortage report and customer material changes quantity only.',
                     'Send tells the source; it has INV_SHORTAGE_WINDOW_DAYS days to send the shortfall.',
                     'Received closes the request; a refusal or a lapsed window closes the PO line at the received quantity (CLOSED_SHORT).',
-                    'Popup notices, an extra requisition and an automatic debit note are not built: only a mark and a note.',
+                    'Notices go to the head of the warehouse (new), PPIC (recounted) and Purchasing (confirmed); a Draft purchase request is made on Confirm and a Draft debit note on Refuse (ShortageFollowUp). The debit note has no journal yet.',
                 ],
                 'reads' => ['tm2inv.inv_shortage_request', 'tm2pur.pv_line, po_line'],
                 'writes' => ['tm2inv.inv_shortage_request', 'tm2pur.pv_line, po_line', 'GR/IR correction journal', 'Stock Out document ref PV_SHORT'],
                 'settings' => ['Settings > Constants: INV_SHORTAGE_WINDOW_DAYS'],
                 'used' => ['Shortage Request', 'Shortage by Supplier', 'Purchase Receive'],
-                'tests' => ['tests/Feature/ShortageRequestTest.php'],
+                'tests' => ['tests/Feature/ShortageRequestTest.php', 'tests/Feature/ShortageAutoDetectTest.php'],
+                'docs' => ['docs/md_for_systems/inventorywarehouse_v201_scope.md'],
+            ],
+            [
+                'key' => 'shortage-auto-detector', 'name' => 'Shortage Auto Detector (from production output)', 'group' => 'Procurement', 'mode' => 'suggest',
+                'purpose' => 'Fills the good output and the standard waste from production data and makes a Draft shortage request when material issued exceeds them by more than the PO tolerance.',
+                'class' => ShortageAutoDetector::class,
+                'methods' => ['scan', 'check', 'productionFacts'],
+                'notes' => [
+                    'scan' => 'Checks every work order and material that has material issued (or one work order); a dry run writes nothing.',
+                    'check' => 'Judges one work order and material and returns CREATED, WOULD_CREATE, COVERED, WITHIN_TOLERANCE or SKIPPED with the reason.',
+                    'productionFacts' => 'Good output and standard waste in the material unit, or the reason they cannot be known.',
+                ],
+                'inputs' => [
+                    ['woId', 'One work order, or all.'],
+                    ['dryRun', 'List only; create nothing.'],
+                    ['login', 'Who is recorded on the requests.'],
+                ],
+                'outputs' => [
+                    ['Rows', 'One row per work order and material with its state and the suspected quantity.'],
+                    ['Draft request', 'A shortage request marked AUTO, and a notice to the head of the warehouse.'],
+                ],
+                'steps' => [
+                    'Good output in material unit = material need of the work order x (good output of the last operation / work order quantity).',
+                    'The need already holds the standard waste of all steps, so the check does not accuse; cutting waste is added on top.',
+                    'Suspected shortage = net issued - (good output + standard waste); only a gap above the PO tolerance of the receipt line becomes a request.',
+                    'The receipt line comes from the batches issued to the work order; a pair is skipped when the work order is not finished, has no output or need, uses another unit, or the issue has no batch.',
+                ],
+                'reads' => ['tm2prd.prd_wo, prd_wo_material, prd_wo_operation, prd_wo_operation_output', 'tm2inv.v_inv_wo_reconcile, rm_stock_d', 'tm2pur.pv_line'],
+                'writes' => ['tm2inv.inv_shortage_request (Draft, AUTO)', 'tm2sys.sys_notifications'],
+                'settings' => ['Settings > Constants: RECEIVE_TOLERANCE_PCT'],
+                'used' => ['php artisan inv:detect-shortage'],
+                'tests' => ['tests/Feature/ShortageAutoDetectTest.php'],
                 'docs' => ['docs/md_for_systems/inventorywarehouse_v201_scope.md'],
             ],
             [

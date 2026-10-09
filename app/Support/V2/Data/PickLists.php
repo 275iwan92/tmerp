@@ -139,6 +139,12 @@ final class PickLists
             'deliver_to' => $to ? ['location_id' => (int) $to->location_id, 'code' => $to->location_code, 'zone' => $to->zone?->zone_code, 'map_x' => $to->map_x, 'map_y' => $to->map_y] : null];
     }
 
+    /** Pick list terbuka untuk pilihan lapisan alokasi di peta. @return array<int, string> */
+    public static function openOptions(): array
+    {
+        return WhPickList::query()->whereIn('status', WhPickList::OPEN)->orderByDesc('id_pick_list')->limit(100)->get()->mapWithKeys(fn (WhPickList $l) => [$l->id_pick_list => $l->pick_no.' · '.($l->wo_no ?: '—')])->all();
+    }
+
     /** Bin staging produksi yang bisa dipilih sebagai tujuan antar. @return array<int, string> */
     public static function stagingOptions(): array
     {

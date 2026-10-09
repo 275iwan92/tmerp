@@ -55,9 +55,9 @@ final class StockCardChain
         }
         $itemId = (int) $from->{self::CARDS[$class][1]};
         $partId = $class === 'FG' && $from->parts_id ? (int) $from->parts_id : null;
-        $before = ItemAverageCost::snapshot($class, $itemId, $partId);
+        $before = ItemAverageCost::snapshot($class, $itemId, $partId, $from);
         $out = self::recalculatePosition($class, $from, $fresh);
-        $item = ItemAverageCost::recalculate($class, $itemId, $partId, $before);
+        $item = ItemAverageCost::recalculate($class, $itemId, $partId, $before, true, $from);
 
         return ['revalued_rows' => $item['revalued_rows'], 'revalued_value' => $item['revalued_value']] + $out;
     }

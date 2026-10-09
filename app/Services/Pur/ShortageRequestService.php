@@ -21,7 +21,8 @@ use InvalidArgumentException;
 //   RECEIVED  kekurangan datang (lewat penerimaan barang biasa dari baris PO yang dibuka lagi);
 //   REFUSED   pemasok menolak atau lewat jendela: baris PO ditutup di qty terima (c_line_status CLOSED_SHORT) dan ditandai butuh debit note / potong tagihan.
 //   CLOSED    selesai. Toleransi PO sudah diperiksa saat dibuat (dugaan harus di atas toleransi).
-// Belum dibangun: pemberitahuan popup ke Pembelian / PPIC, permintaan pembelian (PR) tambahan, debit note otomatis (hanya tanda dan catatan).
+// Dokumen & pemberitahuan lanjutan ada di ShortageFollowUp: PR tambahan (Draft) saat confirm, draft debit note (dn_debit_note) saat refuse, popup ke Kepala Gudang /
+// PPIC / Pembelian. Deteksi otomatis dari data produksi: ShortageAutoDetector (perintah inv:detect-shortage). Belum ada: jurnal debit note.
 final class ShortageRequestService
 {
     /** Nilai baru po_line.c_line_status: baris ditutup di qty terima karena kekurangan tidak dikirim. */
@@ -59,13 +60,16 @@ final class ShortageRequestService
         }
         $source = self::SOURCE_OF_RECEIPT[$pv->i_receipt_type];
 
-        return InvShortageRequest::query()->create([
+        $req = InvShortageRequest::query()->create([
             'request_no' => self::nextNo(), 'source_type' => $source, 'supplier_id' => $pv->i_supplier_id, 'customer_id' => $pv->i_customer_id, 'po_id' => $line->c_po_id, 'po_line_id' => $line->po_line_id,
             'pv_id' => $pv->pv_id, 'pv_line_id' => $line->pv_line_id, 'co_id' => $pv->i_co_id, 'wo_id' => $woId, 'wo_no' => $facts['wo_no'], 'material_id' => $materialId,
             'material_code' => $facts['material_code'], 'material_name' => $facts['material_name'], 'uom_code' => $facts['uom'], 'qty_issued_net' => $facts['issued_net'], 'qty_output_good' => $output,
             'qty_waste_std' => $waste, 'qty_candidate' => $check['candidate'], 'tol_pct' => $tol, 'need_date' => ($in['need_date'] ?? '') !== '' ? $in['need_date'] : now()->toDateString(),
             'status' => 'DRAFT', 'notes' => isset($in['notes']) ? mb_substr(trim((string) $in['notes']), 0, 255) : null, 'created_by' => $login, 'updated_by' => $login,
         ]);
+        ShortageFollowUp::notifyCreated($req);
+
+        return $req;
     }
 
     // Kepala Gudang menghitung / menimbang ulang: qty hasil hitung dan kekurangan yang terbukti (paling banyak sebesar dugaan).
@@ -83,6 +87,7 @@ final class ShortageRequestService
         }
         $req->forceFill(['recount_qty' => $countedQty, 'recount_weight' => $weight, 'recount_note' => mb_substr(trim($note), 0, 255), 'recount_by' => $login, 'recount_at' => now(),
             'qty_short' => $confirmedShort, 'updated_by' => $login])->save();
+        ShortageFollowUp::notifyRecounted($req);
 
         return $req;
     }
@@ -109,8 +114,13 @@ final class ShortageRequestService
             throw new InvalidArgumentException(t('The head of the warehouse must record the recount first. Without proof the difference stays a usage variance.'));
         }
         $line = PvLine::query()->with('receipt')->findOrFail($req->pv_line_id);
+        $ratio = (float) $line->i_qty_stock > 0 && (float) $line->i_qty_purchase > 0 ? (float) $line->i_qty_purchase / (float) $line->i_qty_stock : 1.0;
         $warning = self::correctReceipt($req, $line, $login);
         $req->forceFill(['status' => 'CONFIRMED', 'confirmed_by' => $login, 'confirmed_at' => now(), 'stock_warning' => $warning !== null ? mb_substr($warning, 0, 255) : null, 'updated_by' => $login])->save();
+        if ($prWarning = ShortageFollowUp::additionalPr($req, $line, $ratio, $login)) {
+            $req->forceFill(['notes' => mb_substr(trim(($req->notes ? $req->notes.' | ' : '').$prWarning), 0, 255)])->save();
+        }
+        ShortageFollowUp::notifyConfirmed($req);
 
         return $req;
     }
@@ -146,6 +156,7 @@ final class ShortageRequestService
             }
         }
         $req->forceFill(['debit_note_required' => $req->source_type !== 'CUSTOMER'])->save();
+        ShortageFollowUp::debitNote($req, $login);
 
         return self::finish($req, 'REFUSED', $outcome, $note !== '' ? $note : t('Closed at the received quantity: ask the supplier for a debit note or deduct it from the invoice.'), $login);
     }

@@ -33,6 +33,14 @@
       {
         "en": "Then set INV_AVG_SCOPE to ITEM in Setup > Constants (Text Value BIN or ITEM). Setting it back to BIN restores the per-bin way for new postings.",
         "id": "Lalu ubah INV_AVG_SCOPE menjadi ITEM di Setup > Constants (Text Value BIN atau ITEM). Mengembalikannya ke BIN memulihkan cara per bin untuk posting baru."
+      },
+      {
+        "en": "Check the proof in Inventory > Reports > Valuation Check: per item, the value of all bins must equal the item value from the Average item. Difference must be 0.",
+        "id": "Cek buktinya di Inventory > Reports > Valuation Check: per item, nilai semua bin harus sama dengan nilai item dari Average item. Selisih harus 0."
+      },
+      {
+        "en": "Screens that show a price (warehouse map, transfer approval value, adjustment price) read the Average item when the scope is ITEM; the bin value stays the value of that bin.",
+        "id": "Layar yang menampilkan harga (peta gudang, nilai approval transfer, harga adjustment) membaca Average item bila scope ITEM; nilai bin tetap nilai bin itu."
       }
     ],
     "fields": [
@@ -40,6 +48,31 @@
         "label": "INV_AVG_SCOPE",
         "en": "Text Value in Setup > Constants: BIN (one Average per item per bin) or ITEM (one Average per item for all bins).",
         "id": "Text Value di Setup > Constants: BIN (satu Average per item per bin) atau ITEM (satu Average per item untuk semua bin)."
+      }
+    ]
+  },
+  {
+    "key": "inv-rpt-valuation-check",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Valuation Check",
+    "purpose": {
+      "en": "Proves that valuing stock per item changes no total: for every item it shows the quantity, the Average, and the value of all bins. The Difference must be zero. Use it before and after switching INV_AVG_SCOPE.",
+      "id": "Membuktikan bahwa penilaian stok per item tidak mengubah total: tiap item menampilkan qty, Average, dan nilai semua bin. Selisihnya harus nol. Pakai sebelum dan sesudah INV_AVG_SCOPE diganti."
+    },
+    "keywords": "valuation check, cek valuasi, average per item, selisih nilai, total nilai, inv_avg_scope, peralihan, cutover, rekonsiliasi nilai stok",
+    "steps": [
+      {
+        "en": "Open the report and click Show. Each row is one item with its quantity, Average and total bin value.",
+        "id": "Buka laporan lalu klik Show. Tiap baris satu item dengan qty, Average, dan total nilai bin."
+      },
+      {
+        "en": "Check the Difference column. A row that is not zero is shown in red and must be fixed before switching to per-item valuation.",
+        "id": "Periksa kolom Difference. Baris yang tidak nol tampil merah dan harus diperbaiki sebelum beralih ke penilaian per item."
+      },
+      {
+        "en": "Run the report before the switch, then again after it. The company total value must be the same in both.",
+        "id": "Jalankan laporan sebelum beralih, lalu lagi sesudahnya. Total nilai perusahaan harus sama di keduanya."
       }
     ]
   }

@@ -306,11 +306,11 @@ Ini terutama terjadi pada jalur URGENT (barang langsung ke mesin sebelum dihitun
 
 **Cara kerja**
 ```
-Kebutuhan bahan   = (Output baik + Waste STANDAR) dalam satuan bahan
-Qty tersedia      = Qty bahan yang dikeluarkan ke WO (dari batch itu)
-Kekurangan        = Kebutuhan bahan - Qty tersedia
+Bahan keluar bersih = Qty bahan yang dikeluarkan ke WO (dari batch itu), dikurangi retur
+Terpakai standar    = (Output baik + Waste STANDAR) dalam satuan bahan
+Kekurangan          = Bahan keluar bersih - (Output baik + Waste standar)      (rumus kalimat user; koreksi 2026-10-09, sebelumnya tertulis terbalik)
 
-Kekurangan > toleransi  ->  "Bahan kurang sejak awal"  ->  usulan Permintaan Kirim Kekurangan
+Kekurangan > toleransi PO  ->  "Bahan kurang sejak awal"  ->  usulan Permintaan Kirim Kekurangan
 ```
 - Perhitungan memakai **waste standar** (bukan waste aktual). Waste aktual yang melebihi standar adalah **varians pemakaian**, bukan kurang kirim, jadi tidak ditagihkan ke pemasok.
 - Sebelum dikonfirmasi, petugas melakukan **hitung ulang atau timbang ulang** sisa lot sebagai bukti. Tanpa bukti, selisih tetap varians pemakaian.

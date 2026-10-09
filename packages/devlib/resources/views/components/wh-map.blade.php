@@ -85,9 +85,29 @@
                             @if ($saveUrl)<rect class="dl-whmap__grip" data-wm-grip x="{{ $z['w'] * $S - 3 }}" y="{{ $z['h'] * $S - 3 }}" width="3" height="3"/>@endif
                         </g>
                     @endforeach
+                    @if ($layer)
+                        @php $route = array_values(array_filter(array_map(fn ($b) => $layerPoint($b, (int) $f['no']), array_merge($layer['route'] ?? [], isset($layer['end']) ? [$layer['end']] : [])))); @endphp
+                        <g class="dl-whmap__layer" data-wm-layer>
+                            @if (count($route) > 1)<polyline class="dl-whmap__lroute" points="{{ implode(' ', array_map(fn ($p) => round($p[0], 2).','.round($p[1], 2), $route)) }}"/>@endif
+                            @foreach ($layer['marks'] ?? [] as $m)
+                                @if ($p = $layerPoint($m['bin'], (int) $f['no']))
+                                    <circle class="dl-whmap__lmark dl-whmap__lmark--{{ $m['tone'] ?? 'pick' }}" cx="{{ round($p[0], 2) }}" cy="{{ round($p[1], 2) }}" r="3.4"/><text class="dl-whmap__lnum" x="{{ round($p[0], 2) }}" y="{{ round($p[1] + 1.3, 2) }}" text-anchor="middle">{{ $m['text'] }}</text>
+                                @endif
+                            @endforeach
+                            @if (isset($layer['end']) && ($p = $layerPoint($layer['end'], (int) $f['no'])))<text class="dl-whmap__lend" x="{{ round($p[0], 2) }}" y="{{ round($p[1] - 4, 2) }}" text-anchor="middle">&#10148;</text>@endif
+                        </g>
+                    @endif
                 </svg>
             @endforeach
         </div>
-        <aside class="dl-whmap__panel" data-wm-panel><p class="dl-whmap__hint">{{ $empty }}</p></aside>
+        <aside class="dl-whmap__panel" data-wm-panel>
+            @if ($layer && ($layer['rows'] ?? false))
+                <b>{{ $layer['title'] ?? '' }}</b>
+                <x-dl::table :columns="['no' => ['#', 'raw' => true], 'bin' => ['Bin', 'raw' => true], 'qty' => ['Qty', 'num' => true, 'raw' => true]]" :rows="$layer['rows']" />
+                @foreach ($layer['notes'] ?? [] as $note)<p class="dl-whmap__hint">{{ $note }}</p>@endforeach
+            @else
+                <p class="dl-whmap__hint">{{ $empty }}</p>
+            @endif
+        </aside>
     </div>
 </div>

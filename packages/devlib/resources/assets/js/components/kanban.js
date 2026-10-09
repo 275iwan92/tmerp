@@ -14,13 +14,14 @@
       this.board = $(this.el, '[data-k-board]');
       this.canAddCol = this.el.dataset.addColumn === '1';
       this.canAddCard = this.el.dataset.addCard === '1';
+      this.readonly = this.el.dataset.readonly === '1';
       this.q = '';
       this.prio = '';
       this.drag = null;
       this.seq = Date.now();
 
       // Drag & drop: posisi sisip = kartu pertama yang titik tengahnya di bawah kursor.
-      this.el.addEventListener('dragstart', e => { const c = e.target.closest('[data-k-card]'); if (!c) return; this.drag = c.dataset.kCard; c.classList.add('is-drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', this.drag); } catch (x) {} });
+      this.el.addEventListener('dragstart', e => { const c = e.target.closest('[data-k-card]'); if (!c || this.readonly) return; this.drag = c.dataset.kCard; c.classList.add('is-drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', this.drag); } catch (x) {} });
       this.el.addEventListener('dragend', () => { this.drag = null; $$(this.el, '.is-drag,.is-target').forEach(x => x.classList.remove('is-drag', 'is-target')); $$(this.el, '.dl-kcard__ph').forEach(x => x.remove()); });
       this.el.addEventListener('dragover', e => {
         const body = e.target.closest('[data-k-drop]'); if (!body || this.drag == null) return;
@@ -63,11 +64,11 @@
         }
         if (x.closest('[data-k-addcol]')) { const key = 'c' + (++this.seq); this.cols.push({key, label: T('k_new_col'), tone: 'neutral'}); this.render(); const t = $(this.el, `[data-k-col="${key}"] [data-k-rename]`); t.focus(); document.getSelection().selectAllChildren(t); this._emit('column', null, null, key); }
       });
-      this.el.addEventListener('dblclick', e => { const c = e.target.closest('[data-k-card]'); if (c && !e.target.closest('[data-k-move]')) this.openCard(this.cardById(c.dataset.kCard)); });
+      this.el.addEventListener('dblclick', e => { const c = e.target.closest('[data-k-card]'); if (c && !this.readonly && !e.target.closest('[data-k-move]')) this.openCard(this.cardById(c.dataset.kCard)); });
       this.el.addEventListener('keydown', e => {
         if (e.target.matches('[data-k-rename]') && e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
         if (e.target.matches('[data-k-new-title]') && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.target.closest('.dl-kcol__foot').querySelector('[data-k-new-save]').click(); }
-        if (e.target.matches('[data-k-card]') && e.key === 'Enter') this.openCard(this.cardById(e.target.dataset.kCard));
+        if (e.target.matches('[data-k-card]') && e.key === 'Enter' && !this.readonly) this.openCard(this.cardById(e.target.dataset.kCard));
       });
       this.el.addEventListener('focusout', e => { if (e.target.matches('[data-k-rename]')) { const c = this.colOf(e.target.closest('[data-k-col]').dataset.kCol), v = e.target.textContent.trim(); if (v && v !== c.label) { c.label = v; this._emit('column', null, null, c.key); } else e.target.textContent = c.label; } });
       $(this.el, '[data-k-search]').addEventListener('input', e => { this.q = e.target.value.trim().toLowerCase(); this.render(); });
@@ -106,7 +107,7 @@
 
     cardHtml(c) {
       const ck = c.checklist || [], done = ck.filter(i => i.done).length, d = this.due(c), late = d && d < new Date() && !this.colOf(c.col)?.done;
-      return `<div class="dl-kcard" draggable="true" data-k-card="${esc(c.id)}" tabindex="0" title="${esc(T('k_dbl_open'))}">
+      return `<div class="dl-kcard" draggable="${this.readonly ? 'false' : 'true'}" data-k-card="${esc(c.id)}" tabindex="0" ${this.readonly ? '' : `title="${esc(T('k_dbl_open'))}"`}>
         ${(c.tags || []).length ? `<div class="dl-kcard__tags">${c.tags.map(t => `<span class="dl-badge dl-badge--${esc(t.tone || 'accent')}">${esc(t.label || t)}</span>`).join('')}</div>` : ''}
         <div class="dl-kcard__title">${esc(c.title)}</div>
         ${c.desc ? `<div class="dl-kcard__desc">${esc(c.desc)}</div>` : ''}
@@ -117,7 +118,8 @@
           ${(c.comments || []).length ? `<span class="dl-kcard__ck"><i class="fa-regular fa-comment"></i> ${c.comments.length}</span>` : ''}
           <span class="dl-kcard__spacer"></span>
           ${(c.members || (c.assignee ? [c.assignee] : [])).map(m => `<span class="dl-kcard__av" title="${esc(m)}">${esc(this.ini(m))}</span>`).join('')}
-          <button type="button" class="dl-kcard__menu" data-k-move title="${esc(T('k_move_tip'))}"><i class="fa-solid fa-ellipsis"></i></button>
+          ${c.url ? `<a class="dl-kcard__menu" href="${esc(c.url)}" title="${esc(c.urlLabel || 'Open')}"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}
+          ${this.readonly ? '' : `<button type="button" class="dl-kcard__menu" data-k-move title="${esc(T('k_move_tip'))}"><i class="fa-solid fa-ellipsis"></i></button>`}
         </div></div>`;
     }
 
@@ -125,7 +127,7 @@
       this.board.innerHTML = this.cols.map(col => {
         const list = this.cards.filter(c => c.col === col.key), shown = list.filter(this.visible), over = col.limit && list.length > col.limit;
         return `<section class="dl-kcol dl-kcol--${esc(col.tone || 'accent')} ${over ? 'is-over' : ''}" data-k-col="${esc(col.key)}">
-          <header class="dl-kcol__head"><span class="dl-kcol__title" contenteditable="true" spellcheck="false" data-k-rename title="${esc(T('k_rename'))}">${esc(col.label)}</span>
+          <header class="dl-kcol__head"><span class="dl-kcol__title" contenteditable="${this.readonly ? 'false' : 'true'}" spellcheck="false" data-k-rename title="${esc(T('k_rename'))}">${esc(col.label)}</span>
             <span class="dl-kcol__count" title="${col.limit ? esc(Tf('k_wip_limit', {n: col.limit})) : ''}">${list.length}${col.limit ? ' / ' + col.limit : ''}</span></header>
           <div class="dl-kcol__body" data-k-drop>${shown.map(this.cardHtml).join('') || '<div class="dl-kcol__empty">' + esc(T('k_no_cards')) + '</div>'}</div>
           ${this.canAddCard ? `<footer class="dl-kcol__foot"><button type="button" class="dl-kcol__add" data-k-add><i class="fa-solid fa-plus"></i> ${esc(T('k_add_card'))}</button>

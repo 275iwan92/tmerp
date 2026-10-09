@@ -121,6 +121,7 @@ final class Screens
                     $it('warehouse-map', ['Warehouse Map', 'fa-solid fa-map-location-dot', 'v2 baru: docs/warehouselayout_tier1.md (tm2mst.wh_warehouse + wh_zone + wh_loc)', 'warehouse_layout_v2.jpg', true]),
                     $it('stock-transfer', ['Stock Transfer', 'fa-solid fa-right-left', 'v2 baru: tm2inv.inv_transfer + inv_transfer_line (pindah stok antar bin / gudang)', null]),
                     $it('wh-receiving-putaway', ['Receiving & Putaway', 'fa-solid fa-dolly', 'v2 baru: tm2inv.wh_task (tugas putaway) + inv_pallet + inv_batch; usulan bin dari aturan area (WarehouseTaskService, PutawayPlanner)', 'wh_v201_receiving_putaway.jpg']),
+                    $it('wh-task-board', ['Task Board', 'fa-solid fa-table-columns', 'v2 baru: papan baca-saja tm2inv.wh_task + wh_pick_list + inv_transfer (In Transit) + area hitung jatuh tempo (WarehouseTaskBoard)', 'menu_v201_split.jpg']),
                     $it('approval-tf', ['Stock Transfer Approval Center', 'fa-solid fa-stamp', 'v2 baru: flow engine modul TF (bawaan tidak aktif, Setup > Security > Approval Levels)', null]),
                 ]],
                 ['label' => 'Label & QR Code', 'items' => [
@@ -137,6 +138,11 @@ final class Screens
                     $it('qc-first-article', ['First Article', 'fa-solid fa-clipboard-check', 'v2 baru: tm2inv.inv_qc_first_article (QcDecisionService::firstArticle)', null]),
                     // Alur kurang kirim lintas peran (gudang, PPIC, pembelian): tanpa gerbang modul, hak tiap langkah dijaga QcAuthority.
                     [...$it('supplier-shortage', ['Shortage Request', 'fa-solid fa-boxes-packing', 'v2 baru: tm2inv.inv_shortage_request (ShortageRequestService, ShortageDetector)', null]), 'module_code' => 'GENERAL'],
+                ]],
+                ['label' => 'Valuation & Period', 'items' => [
+                    $it('inv-valuation', ['Valuation & Period', 'fa-solid fa-scale-balanced', 'v2 baru: tm2inv.inv_period (InvPeriodService) + nilai per kelas + jalan pintas laporan valuasi', null]),
+                    $it('landed-cost', ['Landed Cost', 'fa-solid fa-truck-ramp-box', 'v2 baru: tm2inv.inv_landed_cost + inv_landed_cost_line (LandedCostService, RepostService)', null]),
+                    $it('obsolete-stock', ['Obsolete Stock', 'fa-solid fa-hourglass-end', 'v2 baru: tm2inv.inv_obsolete_provision (ObsolescenceService)', null]),
                 ]],
             ]],
             ['code' => 'PROD', 'short' => 'PP', 'label' => 'Production', 'icon' => 'fa-solid fa-industry', 'groups' => [

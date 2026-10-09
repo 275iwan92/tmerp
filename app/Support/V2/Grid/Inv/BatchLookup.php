@@ -20,8 +20,15 @@ use Illuminate\Validation\Rule;
 // dan mutu yang sama untuk satu item. Nomor batch otomatis dan Status hanya dibaca: status berubah lewat hasil sampling /
 // keputusan QC (BatchService::setStatus), bukan diketik di sini. Batch baru dibuat lewat BatchService::create. Kolom On Hand
 // dan Pallets dihitung dari kartu stok dan palet batch itu. Kotak statistik di atas = saringan.
+// Sejak v2.01 (gambar inv_v201_batch_grid / batch_form) layar Batch = BatchListGrid (daftar) + form di resources/views/v2/screens/inv-batch.blade.php;
+// kelas ini tidak lagi menjadi layar (tidak terdaftar di Grids) tetapi tetap satu-satunya jalur simpan dan sumber baris / kotak statistik daftar.
 class BatchLookup extends DbLookup
 {
+    /** @var array<int, string> id supplier => nama (untuk kolom daftar) */
+    private array $suppliers = [];
+
+    private ?int $lastSavedId = null;
+
     private const CLASSES = ['RM' => 'Raw Material', 'SFG' => 'Semi Finished Goods', 'FG' => 'Finished Goods'];
 
     // kelas => [tabel kartu stok]
@@ -35,7 +42,7 @@ class BatchLookup extends DbLookup
 
     public function slug(): string
     {
-        return 'inv-batch';
+        return 'inv-batch-edit';
     }
 
     public function title(): string
@@ -107,6 +114,7 @@ class BatchLookup extends DbLookup
     {
         $ids = $items->pluck('id_batch')->all();
         $this->onHand = $this->pallets = [];
+        $this->suppliers = SupSupplier::query()->whereKey($items->pluck('supplier_id')->filter()->unique()->all())->pluck('supplier_name', 'id_supplier')->map(fn ($n) => trim((string) $n))->all();
         if (! $ids) {
             return;
         }
@@ -130,7 +138,8 @@ class BatchLookup extends DbLookup
         $expiring = $onHand > 0 && $m->expiryState((int) SysConstant::number('WH_EXPIRY_SOON_DAYS', 30)) !== null;
 
         return ['qc_status' => InvBatch::STATUSES[$m->qc_status]['label'] ?? $m->qc_status, 'on_hand' => $onHand, 'pallet_count' => $this->pallets[$m->id_batch] ?? 0,
-            'qc' => $m->qc_status, 'expiring' => $expiring, 'production_date' => $m->production_date?->toDateString(), 'expiry_date' => $m->expiry_date?->toDateString(),
+            'qc' => $m->qc_status, 'expiring' => $expiring, 'supplier_name' => $this->suppliers[$m->supplier_id] ?? '—', 'food_label' => $m->food_grade ? 'Yes' : 'No',
+            'cert_label' => $m->certification && $m->certification !== 'NONE' ? $m->certification : '—', 'production_date' => $m->production_date?->toDateString(), 'expiry_date' => $m->expiry_date?->toDateString(),
             'retest_date' => $m->retest_date?->toDateString()] + $row;
     }
 
@@ -144,6 +153,17 @@ class BatchLookup extends DbLookup
             ['label' => 'Rejected', 'where' => ['qc' => 'REJECTED'], 'tone' => 'danger'],
             ['label' => 'Expires soon', 'where' => ['expiring' => true], 'tone' => 'warn'],
         ];
+    }
+
+    protected function saved(Model $row): void
+    {
+        $this->lastSavedId = (int) $row->getKey();
+    }
+
+    // id batch yang disimpan terakhir oleh save() (batch baru belum punya id di sisi layar).
+    public function lastSavedId(): ?int
+    {
+        return $this->lastSavedId;
     }
 
     protected function prepare(array $in): array

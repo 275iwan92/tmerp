@@ -8,16 +8,18 @@ use App\Models\Inventory\InvQcDecision;
 use App\Models\Inventory\InvQcIntensityRule;
 use App\Models\Inventory\InvQcRiskClass;
 use App\Models\Inventory\InvQcSamplingPlan;
+use App\Models\Inventory\InvShortageRequest;
 use App\Models\Master\MatCategory;
 use App\Models\Master\MatRaw;
 use App\Models\Sys\SysConstant;
+use Illuminate\Support\Carbon;
 
 // Rencana sampling QC (Q-01, Q-10): kelas risiko item -> intensitas menurut riwayat lulus-gagal supplier -> ukuran sampel menurut jumlah lot.
 //   Kelas risiko : item (inv_qc_risk_class ITEM) lebih khusus daripada kategori; kategori terdalam menang. Tanpa data = B (konservatif).
 //   Intensitas   : awal menurut kelas (inv_qc_intensity_rule). Supplier baru (kurang dari INV_QC_NEW_SUPPLIER_LOTS lot diputuskan) = TIGHTENED.
 //                  Ada reject dan belum lulus recover_pass lot berturut-turut sesudahnya = TIGHTENED. Lulus pass_to_reduced lot berturut-turut = REDUCED.
 //   Ukuran sampel: inv_qc_sampling_plan menurut intensitas dan rentang lot; SKIP = 0 (cukup sertifikat). Sampel tidak melebihi jumlah lot.
-// Riwayat supplier dibaca dari keputusan SAMPLING_DOCK (inv_qc_decision); kejadian kurang kirim belum ikut (Q-10, P2).
+// Riwayat supplier dibaca dari keputusan inv_qc_decision; reject jenis apa pun dan kurang kirim yang dikonfirmasi (inv_shortage_request) ikut menjadi kejadian buruk (Q-10).
 final class QcSamplingService
 {
     public const DEFAULT_CLASS = 'B';
@@ -84,22 +86,40 @@ final class QcSamplingService
         return $ids;
     }
 
-    /** @return array{lots: int, passes_in_row: int, has_reject: bool} dari keputusan sampling di dok supplier ini, terbaru dulu */
+    /**
+     * Riwayat supplier. lots / passes_in_row dari keputusan SAMPLING_DOCK (terbaru dulu). Kejadian buruk (has_reject) = keputusan REJECTED jenis apa pun
+     * (first article, usage decision, deviasi ikut) atau kurang kirim yang dikonfirmasi (Q-10); lot lulus yang dihitung pulih hanya yang SESUDAH kejadian buruk terakhir.
+     *
+     * @return array{lots: int, passes_in_row: int, has_reject: bool}
+     */
     public static function history(?int $supplierId): array
     {
         if (! $supplierId) {
             return ['lots' => 0, 'passes_in_row' => 0, 'has_reject' => false];
         }
-        $decisions = InvQcDecision::query()->where('supplier_id', $supplierId)->where('decision_type', 'SAMPLING_DOCK')->orderByDesc('id_decision')->pluck('decision');
+        $decisions = InvQcDecision::query()->where('supplier_id', $supplierId)->where('decision_type', 'SAMPLING_DOCK')->orderByDesc('id_decision')->get(['decision', 'decided_at']);
+        $badAt = self::lastBadEventAt($supplierId);
         $row = 0;
-        foreach ($decisions as $decision) {
-            if ($decision !== 'RELEASED') {
+        foreach ($decisions as $d) {
+            if ($d->decision !== 'RELEASED' || ($badAt && $d->decided_at && $d->decided_at->lte($badAt))) {
                 break;
             }
             $row++;
         }
+        $rejected = InvQcDecision::query()->where('supplier_id', $supplierId)->where('decision', 'REJECTED')->exists();
 
-        return ['lots' => $decisions->count(), 'passes_in_row' => $row, 'has_reject' => $decisions->contains('REJECTED')];
+        return ['lots' => $decisions->count(), 'passes_in_row' => $row, 'has_reject' => $rejected || $badAt !== null];
+    }
+
+    // Saat kejadian buruk terakhir di luar urutan sampling dok: reject first article / usage decision / deviasi, atau kurang kirim yang dikonfirmasi PPIC
+    // (ditutup sebagai varians pemakaian tidak dihitung). Reject di dok sudah memutus urutan lulus sendiri.
+    private static function lastBadEventAt(int $supplierId): ?Carbon
+    {
+        $reject = InvQcDecision::query()->where('supplier_id', $supplierId)->where('decision', 'REJECTED')->where('decision_type', '<>', 'SAMPLING_DOCK')->max('decided_at');
+        $shortage = InvShortageRequest::query()->where('supplier_id', $supplierId)->whereNotNull('confirmed_at')->where(fn ($q) => $q->whereNull('outcome')->orWhere('outcome', '<>', 'USAGE_VARIANCE'))
+            ->max('confirmed_at');
+
+        return collect([$reject, $shortage])->filter()->map(fn ($t) => Carbon::parse($t))->max();
     }
 
     /** @param array{lots: int, passes_in_row: int, has_reject: bool} $history @return array{0: string, 1: string} */

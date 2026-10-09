@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-09 18:15",
+    "generated": "2026-10-10 00:14",
     "database": "ddtsys",
     "totals": {
         "objects": 152,
         "modules": 11,
         "modules_done": 8,
-        "screens": 270,
-        "v2": 263,
+        "screens": 279,
+        "v2": 272,
         "v1": 5,
         "not_built": 2,
-        "waiting_qc": 267,
+        "waiting_qc": 276,
         "locked": 1,
-        "forms": 107,
+        "forms": 111,
         "grids": 98,
-        "reports": 65,
-        "grid_classes": 169,
-        "lookups": 46,
-        "report_grids": 44,
-        "engines": 57,
+        "reports": 70,
+        "grid_classes": 174,
+        "lookups": 45,
+        "report_grids": 49,
+        "engines": 58,
         "engine_groups": 13,
-        "tables": 401,
+        "tables": 408,
         "databases": 10,
-        "models": 354,
-        "migrations": 580,
-        "tests": 140,
-        "dictionary": 12147,
+        "models": 361,
+        "migrations": 585,
+        "tests": 153,
+        "dictionary": 12236,
         "languages": 4,
-        "commits": "1253",
+        "commits": "1256",
         "since": "2026-08-06"
     },
     "modules": [
@@ -68,25 +68,25 @@
         },
         {
             "label": "Inventory",
-            "total": 48,
-            "v2": 48,
+            "total": 56,
+            "v2": 56,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 48,
+            "waiting_qc": 56,
             "locked": 0,
-            "form": 21,
+            "form": 24,
             "grid": 7,
-            "report": 20
+            "report": 25
         },
         {
             "label": "Warehouse",
-            "total": 17,
-            "v2": 17,
+            "total": 18,
+            "v2": 18,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 17,
+            "waiting_qc": 18,
             "locked": 0,
-            "form": 8,
+            "form": 9,
             "grid": 6,
             "report": 3
         },
@@ -178,9 +178,9 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 54,
-            "days": 3,
-            "last": "2026-10-09",
+            "commits": 57,
+            "days": 4,
+            "last": "2026-10-10",
             "screens": 103,
             "objects": 6,
             "engines": 37,
@@ -189,12 +189,6 @@
     ],
     "untracked": 1118,
     "days": [
-        {
-            "date": "2026-09-26",
-            "iwan": 0,
-            "jo": 0,
-            "other": 35
-        },
         {
             "date": "2026-09-27",
             "iwan": 0,
@@ -270,8 +264,14 @@
         {
             "date": "2026-10-09",
             "iwan": 0,
-            "jo": 16,
+            "jo": 18,
             "other": 1
+        },
+        {
+            "date": "2026-10-10",
+            "iwan": 0,
+            "jo": 1,
+            "other": 0
         }
     ],
     "weeks": [
@@ -332,7 +332,7 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 54,
+            "jo": 57,
             "other": 38
         }
     ],
@@ -728,9 +728,9 @@
             "name": "Work Order",
             "module": "Production",
             "qc": "READY_FOR_QC",
-            "built_at": "2026-10-01",
-            "built_by": null,
-            "changed_at": "2026-10-08",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
             "changed_by": "jo"
         },
         {
@@ -1212,10 +1212,10 @@
             "name": "Batch",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1296,13 +1296,46 @@
         },
         {
             "type": "FORM",
+            "key": "menu:INV_VAL_PERIOD",
+            "name": "Valuation & Period",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_VAL_GRIR",
+            "name": "GR/IR Aging",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:WH_TASK_BOARD",
+            "name": "Task Board",
+            "module": "Warehouse",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
             "key": "menu:PROD_MPS",
             "name": "Production Scheduling",
             "module": "Production",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
+            "changed_at": "2026-10-09",
             "changed_by": "jo"
         },
         {
@@ -1988,6 +2021,28 @@
             "changed_by": "jo"
         },
         {
+            "type": "FORM",
+            "key": "menu:INV_VAL_LANDED",
+            "name": "Landed Cost",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_VAL_RECON",
+            "name": "Daily Reconciliation",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "GRID",
             "key": "menu:FIN_TO_INVOICE",
             "name": "To Invoice",
@@ -2527,6 +2582,28 @@
             "changed_by": "jo"
         },
         {
+            "type": "FORM",
+            "key": "menu:INV_VAL_OBS",
+            "name": "Obsolete Stock",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_VAL_REPOST",
+            "name": "Repost",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "GRID",
             "key": "menu:PROD_ROUTING_TPL",
             "name": "Master Routing Template",
@@ -2844,6 +2921,17 @@
             "built_by": "jo",
             "changed_at": "2026-10-09",
             "changed_by": "jo"
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_VAL_AGING",
+            "name": "Stock Aging",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -3231,6 +3319,17 @@
             "changed_by": "jo"
         },
         {
+            "type": "REPORT",
+            "key": "menu:INV_RPT_VALCHECK",
+            "name": "Valuation Check",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "GRID",
             "key": "menu:MD_PAYMENT_TERM",
             "name": "Payment Terms",
@@ -3606,6 +3705,17 @@
         },
         {
             "type": "ENGINE",
+            "key": "engine:shortage-auto-detector",
+            "name": "Shortage Auto Detector (from production output)",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
             "key": "engine:stock-reversal",
             "name": "Stock Reversal Service (cancel a posted stock document)",
             "module": "Inventory",
@@ -3865,7 +3975,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
+            "changed_at": "2026-10-09",
             "changed_by": "jo"
         },
         {
@@ -4800,7 +4910,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-08",
+            "changed_at": "2026-10-09",
             "changed_by": "jo"
         },
         {
@@ -6092,6 +6202,14 @@
                     "purpose": "Follows a short delivery from suspicion to settlement: recount, confirm, ask the supplier, subcontractor or customer to send the shortfall, and close or refuse.",
                     "mode": "flow",
                     "used": 3,
+                    "tests": 2
+                },
+                {
+                    "key": "shortage-auto-detector",
+                    "name": "Shortage Auto Detector (from production output)",
+                    "purpose": "Fills the good output and the standard waste from production data and makes a Draft shortage request when material issued exceeds them by more than the PO tolerance.",
+                    "mode": "suggest",
+                    "used": 1,
                     "tests": 1
                 },
                 {

@@ -26,6 +26,10 @@ namespace Devlib\Components;
 //                            'tags' => [['label' => teks, 'tone' => danger|warn|null], ...]], ...]], ...]
 // $actions = [['label', 'icon', 'url' => '...{id}...', 'tone' => primary|secondary|danger, 'when' => stock|usable|blocked|null], ...]
 //             tombol di panel bin; {id} / {code} diganti milik bin terpilih; 'post' => true = dikirim POST (dengan konfirmasi 'confirm').
+// $layer = lapisan opsional di atas peta (mis. alokasi pick list); [] = peta tanpa lapisan, tampil persis seperti biasa:
+//   ['marks' => [['bin' => id bin, 'text' => '1', 'tone' => pick|put], ...]  lingkaran bernomor di tengah sel bin (put = putus-putus),
+//    'route' => [id bin, ...]  garis putus-putus melewati bin berurutan (bin di lantai lain dilewati),
+//    'end' => id bin tujuan (mis. staging) bertanda panah, 'title' / 'rows' => [['no', 'bin', 'sub', 'qty'], ...] / 'notes' => [teks]  isi panel kanan sebelum ada bin dipilih].
 // $restackUrl = alamat POST untuk menukar urutan tumpukan: '{id}' = id satuan, '{dir}' = up | down (null = tanpa tombol tukar).
 // $saveUrl = alamat POST {zone, x, y, w, h} saat area digeser / diubah ukurannya di mode Edit Layout (null = peta hanya-baca).
 // Warna: kosong = putih, terisi = biru, penuh = kuning, lebih dari kapasitas = oranye, diblokir = arsir, DEAD STOCK = merah
@@ -55,6 +59,7 @@ class WhMap extends DevlibComponent
         public ?string $saveUrl = null,
         public ?string $restackUrl = null,
         public ?string $source = null,
+        public array $layer = [],
     ) {
         $this->floor ??= $this->floors[0]['no'] ?? 1;
         if (! $this->outline) {
@@ -133,6 +138,26 @@ class WhMap extends DevlibComponent
         }
 
         return $c;
+    }
+
+    // Titik tengah sel yang memuat bin $binId di lantai $floorNo (satuan gambar), atau null bila bin itu tidak digambar di lantai tersebut.
+    /** @return array{0: float, 1: float}|null */
+    public function layerPoint(int|string $binId, int $floorNo): ?array
+    {
+        foreach ($this->floors as $f) {
+            if ((int) $f['no'] !== $floorNo) {
+                continue;
+            }
+            foreach ($f['zones'] ?? [] as $z) {
+                foreach ($z['cells'] ?? [] as $c) {
+                    if (in_array((int) $binId, array_map('intval', $c['bins'] ?? []), true)) {
+                        return [($c['x'] + $c['w'] / 2) * self::SCALE, ($c['y'] + $c['h'] / 2) * self::SCALE];
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public function points(): string

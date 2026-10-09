@@ -9,11 +9,13 @@ use App\Services\Inventory\QcDecisionService;
 use App\Services\Inventory\QcTraceService;
 use App\Services\Pur\ShortageRequestService;
 use App\Services\Pur\UrgentReceiptService;
+use App\Support\V2\Grid\Inv\BatchLookup;
 use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 // Inventory > Batch & Quality (v2.01 jalur QC, URGENT, kurang kirim). Dimuat di dalam grup v2 routes/v2.php. Route tipis: aturan di
 // App\Services\Inventory\Qc* dan App\Services\Pur\{UrgentReceiptService, ShortageRequestService}; hak tiap langkah di QcAuthority.
@@ -26,8 +28,10 @@ Route::prefix('inv-quality')->name('iq.')->group(function () {
     Route::post('/batch/{id}/decide', function (Request $r, int $id) use ($fail, $input) {
         $batch = InvBatch::query()->findOrFail($id);
         $back = ['id' => $id];
+        // from=inv-batch: keputusan diambil dari tab Quality decisions di form Batch; selain itu dari Conditional Stock.
+        $screen = $r->input('from') === 'inv-batch' ? 'inv-batch' : 'conditional-stock';
         if (! QcAuthority::canDecide(Auth::user())) {
-            return $fail('conditional-stock', $back, 'decide', new RuntimeException(t('Only Quality Assurance or an operations manager can record the decision.')));
+            return $fail($screen, $back, 'decide', new RuntimeException(t('Only Quality Assurance or an operations manager can record the decision.')));
         }
         $d = $r->validate(['decision' => ['required', Rule::in(array_keys(QcDecisionService::DECISIONS))], 'decision_type' => ['required', Rule::in(array_keys(QcDecisionService::TYPES))],
             'reason' => ['nullable', 'string', 'max:255'], 'test_result' => ['nullable', 'string', 'max:255'], 'sample_size' => ['nullable', 'integer', 'min:0'], 'sample_defects' => ['nullable', 'integer', 'min:0']],
@@ -36,11 +40,28 @@ Route::prefix('inv-quality')->name('iq.')->group(function () {
             QcDecisionService::record($batch, $d['decision_type'], $d['decision'], Auth::user()->login, ['reason' => $d['reason'] ?? null, 'test_result' => $d['test_result'] ?? null,
                 'sample_size' => $d['sample_size'] ?? null, 'sample_defects' => $d['sample_defects'] ?? null, 'lot_qty' => $input($r, 'lot_qty')]);
         } catch (InvalidArgumentException|RuntimeException $e) {
-            return $fail('conditional-stock', $back, 'decide', $e);
+            return $fail($screen, $back, 'decide', $e);
         }
 
-        return redirect(route('v2.screen', 'conditional-stock').'?id='.$id)->with('v2_flash', tf('Batch :no is now :status.', ['no' => raw($batch->batch_no), 'status' => t(InvBatch::STATUSES[$batch->fresh()->qc_status]['label'])]));
+        return redirect(route('v2.screen', $screen).'?id='.$id)->with('v2_flash', tf('Batch :no is now :status.', ['no' => raw($batch->batch_no), 'status' => t(InvBatch::STATUSES[$batch->fresh()->qc_status]['label'])]));
     })->whereNumber('id')->middleware('module:INV')->name('decide');
+
+    // Simpan master batch dari form Batch (id kosong = batch baru). Aturan, nomor otomatis dan kunci kolom batch tersimpan ada di BatchLookup::save;
+    // status TIDAK ikut disimpan di sini (hanya QcDecisionService).
+    Route::post('/batch/save/{id?}', function (Request $r, ?int $id = null) {
+        $batch = $id ? InvBatch::query()->findOrFail($id) : null;
+        $lookup = new BatchLookup;
+        $row = ['id' => $id, 'stock_class' => $batch?->stock_class ?? $r->input('stock_class'), 'item_code' => $batch?->item_code ?? $r->input('item_code'), 'food_grade' => $r->boolean('food_grade'),
+            'activate' => $batch ? (bool) $batch->activate : true] + $r->only(['supplier_id', 'supplier_lot', 'production_date', 'expiry_date', 'retest_date', 'certification', 'grain_direction', 'notes']);
+        try {
+            $lookup->save([$row]);
+        } catch (ValidationException $e) {
+            return redirect(route('v2.screen', 'inv-batch').($id ? '?id='.$id : '?new=1'))->withErrors(['batch' => $e->errors()['row'][0] ?? $e->getMessage()])->withInput();
+        }
+        $saved = (int) $lookup->lastSavedId();
+
+        return redirect(route('v2.screen', 'inv-batch').'?id='.$saved)->with('v2_flash', t('Saved.'));
+    })->whereNumber('id')->middleware('module:INV')->name('batch-save');
 
     Route::post('/claim/{id}', function (Request $r, int $id) use ($fail) {
         $claim = InvSupplierClaim::query()->findOrFail($id);

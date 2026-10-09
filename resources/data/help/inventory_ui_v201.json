@@ -1,0 +1,75 @@
+[
+  {
+    "key": "inv-batch-form",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Batch (list and form)",
+    "purpose": {
+      "en": "The Batch screen is a list of batches; open one to see its form. The form shows the batch data, the stock of the batch per bin, its history and its quality decisions. Use it to add or correct a batch and to release or reject it.",
+      "id": "Layar Batch berupa daftar batch; buka satu untuk melihat formnya. Form menampilkan data batch, stok batch per bin, riwayat, dan keputusan mutunya. Pakai untuk menambah atau memperbaiki batch serta merilis atau menolaknya."
+    },
+    "keywords": "batch, lot, form batch, daftar batch, release, reject, rilis, tolak, quality decision, keputusan mutu, stok batch, riwayat batch, expiry, kedaluwarsa, supplier lot, certificate of analysis",
+    "steps": [
+      {"en": "In the list, click a box at the top (Quarantine, Conditional, Released, Rejected, Expires soon) to show only those batches. Click it again to show all.", "id": "Di daftar, klik kotak di atas (Quarantine, Conditional, Released, Rejected, Expires soon) untuk menampilkan batch itu saja. Klik lagi untuk semua."},
+      {"en": "Click Open on a row to see the batch form. Click + New Record to add a batch: choose the class, type the item code, fill the dates, then click Save.", "id": "Klik Open pada baris untuk melihat form batch. Klik + New Record untuk menambah batch: pilih class, ketik kode item, isi tanggal, lalu klik Save."},
+      {"en": "The batch number is made by the system and the Status cannot be typed. Status changes only through a quality decision.", "id": "Nomor batch dibuat sistem dan Status tidak bisa diketik. Status hanya berubah lewat keputusan mutu."},
+      {"en": "Open the tab Stock of this batch to see the balance per bin and the pallets. The tab History lists stock movements and status changes.", "id": "Buka tab Stock of this batch untuk melihat saldo per bin dan palet. Tab History memuat pergerakan stok dan perubahan status."},
+      {"en": "Open the tab Quality decisions to see earlier decisions and first articles. Under the form, choose the inspection, type a reason and click Release or Reject. A reason is required to reject.", "id": "Buka tab Quality decisions untuk melihat keputusan dan first article sebelumnya. Di bawah form, pilih inspeksi, ketik alasan, lalu klik Release atau Reject. Menolak wajib beralasan."}
+    ],
+    "fields": [
+      {"label": "Batch No.", "en": "Given by the system when the batch is saved.", "id": "Diberikan sistem saat batch disimpan."},
+      {"label": "Class", "en": "Raw material, semi finished goods or finished goods. Only chosen for a new batch.", "id": "Bahan baku, barang setengah jadi, atau barang jadi. Hanya dipilih untuk batch baru."},
+      {"label": "Item Code", "en": "The code of the item in its master. Only typed for a new batch; a saved batch keeps its item.", "id": "Kode item di master-nya. Hanya diketik untuk batch baru; batch tersimpan tetap pada itemnya."},
+      {"label": "Supplier", "en": "The supplier of the lot, chosen from the supplier master.", "id": "Supplier lot ini, dipilih dari master supplier."},
+      {"label": "Supplier Lot", "en": "The lot number printed by the supplier. The same item and lot is one batch.", "id": "Nomor lot dari supplier. Item dan lot yang sama adalah satu batch."},
+      {"label": "Production Date", "en": "The date the lot was produced.", "id": "Tanggal lot diproduksi."},
+      {"label": "Expiry Date", "en": "Required for an item that has a shelf life.", "id": "Wajib untuk item yang punya umur simpan."},
+      {"label": "Retest Date", "en": "The date the batch must be tested again, if any.", "id": "Tanggal batch harus diuji ulang, bila ada."},
+      {"label": "Status", "en": "Shown only. Set by the quality decision.", "id": "Hanya ditampilkan. Ditetapkan oleh keputusan mutu."},
+      {"label": "Certification", "en": "FSC, PEFC, Other or None.", "id": "FSC, PEFC, Other, atau None."},
+      {"label": "Food Grade", "en": "Tick when the batch is food grade.", "id": "Centang bila batch food grade."},
+      {"label": "Grain Direction", "en": "Long or short grain. Only for paper.", "id": "Serat panjang atau pendek. Hanya untuk kertas."}
+    ]
+  },
+  {
+    "key": "warehouse-map-pick-allocation",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Warehouse Map: pick allocation",
+    "purpose": {
+      "en": "An optional layer on the Warehouse Map. Choose an open pick list and the map shows the bins it takes material from, numbered in picking order, with a dashed route to the staging bin. Without a pick list the map looks as before.",
+      "id": "Lapisan opsional di Warehouse Map. Pilih pick list yang terbuka dan peta menunjukkan bin tempat bahan diambil, bernomor urutan ambil, dengan garis putus-putus ke bin staging. Tanpa pick list peta tampil seperti biasa."
+    },
+    "keywords": "warehouse map, peta gudang, pick allocation, alokasi pick, pick list, rute ambil, picking route, staging, bin alokasi, lapisan peta, layer",
+    "steps": [
+      {"en": "Open Warehouse > Map & Monitor > Warehouse Map and choose the building.", "id": "Buka Warehouse > Map & Monitor > Warehouse Map dan pilih gedung."},
+      {"en": "In Pick allocation, choose an open pick list and click Show. Choose None and click Show to remove the layer.", "id": "Di Pick allocation, pilih pick list terbuka lalu klik Show. Pilih None lalu klik Show untuk menghapus lapisan."},
+      {"en": "A green number on a bin is the picking order. The dashed line is the route and the arrow marks the staging bin.", "id": "Angka hijau di bin adalah urutan ambil. Garis putus-putus adalah rute dan panah menandai bin staging."},
+      {"en": "The side panel lists the bins and quantities. Click a bin on the map to see its pallets and batches instead.", "id": "Panel kanan memuat daftar bin dan qty. Klik bin di peta untuk melihat palet dan batch-nya."}
+    ],
+    "fields": [
+      {"label": "Pick allocation", "en": "An open pick list, or None for the plain map.", "id": "Pick list yang terbuka, atau None untuk peta biasa."}
+    ]
+  },
+  {
+    "key": "wh-task-board",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Task Board",
+    "purpose": {
+      "en": "A read-only board of the warehouse work, in three columns: Open, In progress and Done (last 7 days). It combines warehouse tasks, open pick lists, transfers in transit and areas that are due for counting.",
+      "id": "Papan baca-saja pekerjaan gudang dalam tiga kolom: Open, In progress, dan Done (7 hari terakhir). Memuat tugas gudang, pick list terbuka, transfer In Transit, dan area yang jatuh tempo dihitung."
+    },
+    "keywords": "task board, papan tugas, tugas gudang, warehouse task, kanban, pekerjaan gudang, open, in progress, done, putaway, pick, count, in transit",
+    "steps": [
+      {"en": "Open Warehouse > Task Board. Each card is one piece of work and its tag tells what kind it is.", "id": "Buka Warehouse > Task Board. Tiap kartu adalah satu pekerjaan dan tag-nya menunjukkan jenisnya."},
+      {"en": "Use the search box to find a card by number or item. A red High flag marks an URGENT task or a transfer with a difference.", "id": "Pakai kotak cari untuk menemukan kartu menurut nomor atau item. Tanda High merah menandai tugas URGENT atau transfer yang selisih."},
+      {"en": "Click the arrow on a card to open its own screen and do the work there. Cards cannot be moved on the board.", "id": "Klik panah pada kartu untuk membuka layar asalnya dan mengerjakannya di sana. Kartu tidak bisa dipindah di papan."}
+    ],
+    "fields": [
+      {"label": "Open", "en": "Work that is waiting to be done.", "id": "Pekerjaan yang menunggu dikerjakan."},
+      {"label": "In progress", "en": "A pick list being picked, or a transfer on its way.", "id": "Pick list yang sedang diambil, atau transfer yang sedang di jalan."},
+      {"label": "Done", "en": "Work finished in the last 7 days.", "id": "Pekerjaan yang selesai dalam 7 hari terakhir."}
+    ]
+  }
+]

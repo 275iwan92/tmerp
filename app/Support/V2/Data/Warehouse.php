@@ -240,6 +240,23 @@ final class Warehouse
         })->all();
     }
 
+    // Lapisan alokasi pick list untuk x-dl::wh-map (prop layer): nomor urutan ambil di bin, rute putus-putus ke staging, dan daftar bin + qty untuk panel kanan.
+    // Kosong bila pick list tidak ada; bin di gedung lain tidak tergambar di peta ini tetapi tetap tercantum di daftar.
+    /** @return array<string, mixed> */
+    public static function pickLayer(int $pickListId): array
+    {
+        $pick = PickLists::mapLayer($pickListId);
+        if (! $pick['pick']) {
+            return [];
+        }
+
+        return ['marks' => array_map(fn (array $b) => ['bin' => $b['location_id'], 'text' => (string) $b['order'], 'tone' => 'pick'], $pick['bins']),
+            'route' => array_column($pick['bins'], 'location_id'), 'end' => $pick['deliver_to']['location_id'] ?? null,
+            'title' => t('Allocation').' · '.t('Pick List').' '.$pick['pick'],
+            'rows' => array_map(fn (array $b) => ['no' => (string) $b['order'], 'bin' => (string) $b['code'], 'qty' => Locale::decimal($b['qty'], 2).' '.$b['unit']], $pick['bins']),
+            'notes' => array_values(array_filter([$pick['wo'] ? t('Work Order').' '.$pick['wo'] : null, $pick['deliver_to'] ? t('Route').': '.implode(' → ', array_merge(array_column($pick['bins'], 'code'), [$pick['deliver_to']['code']])) : null]))];
+    }
+
     // Isi objek form khusus x-mp::inv.warehouse-desk (layar Warehouse Map): pemilih gedung + pintasan, peta (x-dl::wh-map),
     // kapasitas per lantai, ringkasan, dan pembuat bin. 'wh' null = belum ada gedung; 'map' null = gedung belum punya ukuran.
     public static function desk(string $home): array
@@ -260,6 +277,7 @@ final class Warehouse
                 ['fa-table-cells', 'Bins', $screen('wh-bins')], ['fa-layer-group', 'Stack Monitor', $screen('stack-monitor')]],
             'generate' => ['show' => $zones->isNotEmpty(), 'action' => route('v2.wh.bins.generate'),
                 'zones' => $zones->mapWithKeys(fn (WhZone $z) => [$z->id_zone => $z->zone_code.' · '.$z->zone_name.' · '.t('Floor').' '.$z->floor_no.' · '.$z->storage_mode])->all()],
+            'pickOptions' => PickLists::openOptions(), 'pick' => request()->integer('pick') ?: null,
             'map' => $map ? [
                 'width' => $map['width'], 'height' => $map['height'], 'outline' => $map['outline'], 'floors' => $map['floors'], 'bins' => $map['bins'],
                 'floor' => request()->integer('floor') ?: null, 'selected' => request()->integer('bin') ?: null, 'saveUrl' => route('v2.wh.zone-move'),
@@ -270,6 +288,7 @@ final class Warehouse
                     ['label' => t('Block'), 'icon' => 'fa-ban', 'tone' => 'danger', 'when' => 'usable', 'post' => true, 'reason' => true, 'confirm' => t('Block this bin? It can no longer receive stock until it is unblocked.'), 'url' => $url('v2.wh.bin.block')],
                     ['label' => t('Unblock'), 'icon' => 'fa-circle-check', 'when' => 'blocked', 'post' => true, 'url' => $url('v2.wh.bin.unblock')],
                 ],
+                'layer' => request()->integer('pick') ? self::pickLayer(request()->integer('pick')) : [],
                 'capacity' => $map['capacity'], 'missingHeight' => collect($map['capacity'])->contains(fn (array $f) => $f['height'] === null),
                 'summary' => str_replace([':area', ':floors', ':bins', ':used', ':cap', ':months'],
                     [Locale::number($map['totals']['area']), (string) $wh->floors(), Locale::number($map['totals']['bins']), Locale::number($map['totals']['used_kg']), Locale::number($map['totals']['capacity_kg']), (string) WarehouseStock::deadMonths()],

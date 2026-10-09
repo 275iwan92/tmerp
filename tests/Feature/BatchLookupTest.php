@@ -3,17 +3,22 @@
 namespace Tests\Feature;
 
 use App\Models\Inventory\InvBatch;
+use App\Models\Inventory\InvQcDecision;
 use App\Models\Inventory\RmStockcard;
 use App\Models\Master\MatRaw;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysAppMenu;
 use App\Services\Inventory\BatchService;
+use App\Services\Inventory\QcDecisionService;
+use App\Support\V2\Data\Batches;
 use App\Support\V2\Grid\Grids;
+use App\Support\V2\Grid\Inv\BatchListGrid;
+use App\Support\V2\Grid\Inv\BatchLookup;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-// Layar Inventory > Batch & Quality > Batch (inv-batch, BatchLookup). Menulis ke database sungguhan: batch uji diberi catatan
+// Layar Inventory > Batch & Quality > Batch (inv-batch: daftar BatchListGrid + form; simpan lewat BatchLookup). Menulis ke database sungguhan: batch uji diberi catatan
 // penanda dan dibersihkan di tearDown(); kartu stok uji ditandai create_by.
 class BatchLookupTest extends TestCase
 {
@@ -41,13 +46,14 @@ class BatchLookupTest extends TestCase
 
     private function clean(): void
     {
+        InvQcDecision::query()->whereIn('batch_id', InvBatch::query()->where('notes', self::MARK)->pluck('id_batch'))->delete();
         RmStockcard::query()->where('create_by', self::BY)->delete();
         InvBatch::query()->where('notes', self::MARK)->delete();
     }
 
     private function grid()
     {
-        return Grids::find('inv-batch');
+        return new BatchLookup;
     }
 
     private function newRow(array $extra = []): array
@@ -161,6 +167,60 @@ class BatchLookupTest extends TestCase
 
         // Sheet menghitung kotak statistik dari baris: render layarnya memuat label dan angka kotak.
         $this->get(route('v2.screen', 'inv-batch'))->assertOk()->assertSee('Expires soon')->assertSee('Quarantine')->assertSee($released->batch_no);
+    }
+
+    public function test_the_list_is_a_transactional_grid_that_opens_the_batch_form(): void
+    {
+        $grid = Grids::find('inv-batch');
+        $this->assertInstanceOf(BatchListGrid::class, $grid);
+        $this->assertSame('transactional', $grid->family());
+        $this->assertStringContainsString('?id={id}', $grid->openUrl());
+        $this->assertStringContainsString('?new=1', $grid->newUrl());
+
+        $this->grid()->save([$this->newRow()]);
+        $batch = InvBatch::query()->where('notes', self::MARK)->firstOrFail();
+        $row = collect($grid->rows())->firstWhere('id', $batch->id_batch);
+        $this->assertSame($batch->batch_no, $row['batch_no']);
+        $this->assertSame('Yes', $row['food_label']);
+        $this->assertSame('FSC', $row['cert_label']);
+        $this->assertSame($this->material->material_code, $row['item_code']);
+    }
+
+    public function test_the_form_shows_the_stock_of_the_batch_and_its_quality_decisions(): void
+    {
+        $item = (int) $this->material->material_id;
+        $batch = BatchService::create('RM', $item, 'ZZ-F', ['qc_status' => 'QUARANTINE', 'notes' => self::MARK], self::BY);
+        DB::connection('tm2inv')->table('rm_stockcard')->insert(['doc_date' => now()->subDay(), 'material_id' => $item, 'doc_type' => 'IN', 'location_id' => 1, 'warehouse_id' => 1, 'qty' => 24, 'uom_code' => 'KG',
+            'reference_name' => 'test:form', 'reference_detail_id' => 950, 'qty_bb' => 0, 'qty_in' => 24, 'qty_out' => 0, 'qty_adj' => 0, 'qty_eb' => 0, 'batch_id' => $batch->id_batch, 'create_by' => self::BY, 'update_by' => self::BY]);
+        QcDecisionService::record($batch, 'USAGE_DECISION', 'RELEASED', self::BY);
+
+        $this->assertSame(24.0, Batches::onHand($batch));
+        $this->assertSame('Status', Batches::history($batch)[0]['action']);
+        $page = $this->get(route('v2.screen', 'inv-batch').'?id='.$batch->id_batch)->assertOk();
+        $page->assertSee($batch->batch_no)->assertSee('Stock of this batch')->assertSee('Quality decisions')->assertSee('Usage decision')->assertSee('Release');
+        $this->get(route('v2.screen', 'inv-batch').'?new=1')->assertOk()->assertSee('Item Code');
+        $this->get(route('v2.screen', 'inv-batch').'?id=999999999')->assertNotFound();
+    }
+
+    public function test_the_save_route_changes_a_batch_but_never_its_status_and_the_decide_route_returns_to_the_form(): void
+    {
+        $new = $this->post(route('v2.iq.batch-save'), ['stock_class' => 'RM', 'item_code' => $this->material->material_code, 'supplier_lot' => 'ZZ-S1', 'notes' => self::MARK, 'certification' => 'PEFC', 'food_grade' => 1,
+            'expiry_date' => '2027-01-01']);
+        $batch = InvBatch::query()->where('notes', self::MARK)->firstOrFail();
+        $new->assertRedirect(route('v2.screen', 'inv-batch').'?id='.$batch->id_batch);
+        $this->assertSame('PEFC', $batch->certification);
+
+        $this->post(route('v2.iq.batch-save', $batch->id_batch), ['supplier_lot' => 'ZZ-S2', 'notes' => self::MARK, 'certification' => 'FSC', 'qc_status' => 'REJECTED'])->assertRedirect();
+        $batch->refresh();
+        $this->assertSame('ZZ-S2', $batch->supplier_lot);
+        $this->assertFalse((bool) $batch->food_grade, 'An unchecked box saves as false.');
+        $this->assertSame('RELEASED', $batch->qc_status);
+
+        $this->post(route('v2.iq.batch-save'), ['stock_class' => 'RM', 'item_code' => 'NOPE-CODE', 'notes' => self::MARK])->assertSessionHasErrors('batch');
+
+        $this->post(route('v2.iq.decide', $batch->id_batch).'?from=inv-batch', ['decision' => 'REJECTED', 'decision_type' => 'USAGE_DECISION', 'reason' => 'Failed the moisture test'])
+            ->assertRedirect(route('v2.screen', 'inv-batch').'?id='.$batch->id_batch);
+        $this->assertSame('REJECTED', $batch->fresh()->qc_status);
     }
 
     public function test_the_screen_is_in_the_inventory_menu_under_batch_and_quality(): void

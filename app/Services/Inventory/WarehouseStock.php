@@ -85,6 +85,8 @@ final class WarehouseStock
             }
             $found = $q->get();
             $arrived = self::arrivals($class, $found->pluck($itemKey)->unique()->all());
+            // Average per item (INV_AVG_SCOPE = ITEM): harga rata-rata satu item sama di semua bin; view hanya memberi harga baris terakhir bin itu.
+            $itemAvg = ItemAverageCost::enabled() ? ItemAverageCost::currentAvgMany($class, $found->pluck($itemKey)->unique()->all()) : [];
             foreach ($found as $r) {
                 $itemId = (int) $r->getAttribute($itemKey);
                 $partId = $class === 'FG' ? ((int) $r->parts_id ?: null) : null;
@@ -92,7 +94,7 @@ final class WarehouseStock
                 $rows->push([
                     'key' => self::key($class, $itemId, $partId, (int) $r->location_id), 'class' => $class, 'item_id' => $itemId, 'part_id' => $partId,
                     'location_id' => (int) $r->location_id, 'location_code' => $r->location_code, 'qty' => (float) $r->qty_onhand, 'uom' => trim((string) $r->uom_code),
-                    'value' => $r->value_onhand === null ? null : (float) $r->value_onhand, 'avg' => $r->avg_unitprice === null ? null : (float) $r->avg_unitprice,
+                    'value' => $r->value_onhand === null ? null : (float) $r->value_onhand, 'avg' => $itemAvg[$itemId.':'.(int) $partId] ?? ($r->avg_unitprice === null ? null : (float) $r->avg_unitprice),
                     'last_movement' => $moved, 'idle_days' => $moved ? (int) now()->startOfDay()->diffInDays($moved, true) : null,
                     'dead' => $moved === null || $moved < $cutoff,
                     'arrived' => $arrived['bin'][$itemId.':'.$r->location_id] ?? $arrived['item'][$itemId] ?? null,

@@ -1,0 +1,204 @@
+[
+  {
+    "key": "guide-inventory-valuation-journals",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Inventory Journals: What Is Posted and When",
+    "purpose": {
+      "en": "Every journal that the inventory valuation screens post, with the accounts and the moment. Accounts named in Settings > Constants can be changed there. A posted journal is never edited; a correction is a new journal (see Repost).",
+      "id": "Semua jurnal yang diposting layar valuasi persediaan, lengkap dengan akun dan saatnya. Akun yang disebut di Settings > Constants bisa diganti di sana. Jurnal yang sudah posting tidak diubah; koreksi adalah jurnal baru (lihat Repost)."
+    },
+    "keywords": "jurnal persediaan, inventory journal, landed cost, gr/ir, selisih landed cost, provisi stok usang, penyisihan, koreksi, repost, pembalik, reversal, akun, debit, kredit",
+    "steps": [
+      {"en": "Goods receipt posted (Purchase Receive): Dr Inventory (item or category account) / Cr GR/IR Clearing 211900. The receipt value is quantity accepted x PO price.", "id": "Penerimaan barang diposting (Purchase Receive): Dr Persediaan (akun item atau kategori) / Cr GR/IR Clearing 211900. Nilai = qty diterima x harga PO."},
+      {"en": "Landed cost Confirm: Dr Inventory for the part still in stock, Dr Landed Cost Variance 518000 for the part already issued, Cr Landed Cost Payable 211950 for the whole amount.", "id": "Landed Cost Confirm: Dr Persediaan untuk bagian yang masih di gudang, Dr Selisih Landed Cost 518000 untuk bagian yang sudah keluar, Cr Hutang Biaya Landed Cost 211950 sebesar total."},
+      {"en": "Landed cost Revise: a new correction journal with only the difference per account (Dr or Cr the same accounts). The first journal stays unchanged.", "id": "Landed Cost Revise: jurnal koreksi baru yang hanya memuat selisih per akun (Dr atau Cr akun yang sama). Jurnal pertama tidak berubah."},
+      {"en": "Landed cost Cancel: a reversing journal swaps every Dr and Cr of the original journal on the cancel date.", "id": "Landed Cost Cancel: jurnal pembalik menukar semua Dr dan Cr jurnal asal pada tanggal pembatalan."},
+      {"en": "Close Landed Cost Variance (month end): Dr Cost of Goods Sold 511000 / Cr Landed Cost Variance 518000 for the variance of the Confirmed documents of that month.", "id": "Close Landed Cost Variance (akhir bulan): Dr HPP 511000 / Cr Selisih Landed Cost 518000 sebesar selisih dokumen Confirmed bulan itu."},
+      {"en": "Average changed by a back-dated transaction: Dr Cost of Goods Sold / Cr Inventory when the issue cost rose, the opposite when it fell. One journal per recalculation, logged in Repost.", "id": "Average berubah karena transaksi bertanggal mundur: Dr HPP / Cr Persediaan bila biaya keluar naik, kebalikannya bila turun. Satu jurnal per hitung ulang, tercatat di Repost."},
+      {"en": "Post provision (Obsolete Stock): Dr Obsolete Stock Expense 620000 / Cr Obsolete Stock Provision 113900 for the increase. When the provision falls, Dr 113900 / Cr 620000.", "id": "Post provision (Obsolete Stock): Dr Beban Penyisihan Usang 620000 / Cr Penyisihan Persediaan Usang 113900 untuk kenaikannya. Bila provisi turun: Dr 113900 / Cr 620000."},
+      {"en": "Only the journals above are made by these screens. GR/IR Aging, Daily Reconciliation, Repost and Stock Aging only read.", "id": "Hanya jurnal di atas yang dibuat layar-layar ini. GR/IR Aging, Daily Reconciliation, Repost, dan Stock Aging hanya membaca."}
+    ],
+    "fields": [
+      {"label": "INV_ACC_LANDED_PAYABLE", "en": "Account code credited by a landed cost. Settings > Constants.", "id": "Kode akun yang dikredit landed cost. Settings > Constants."},
+      {"label": "INV_ACC_LANDED_VARIANCE", "en": "Account code debited with the part of a landed cost that fell on stock already issued.", "id": "Kode akun yang didebit untuk bagian landed cost yang jatuh pada stok yang sudah keluar."},
+      {"label": "INV_ACC_LANDED_COGS", "en": "Account code that receives the variance at month end.", "id": "Kode akun yang menerima selisih di akhir bulan."},
+      {"label": "INV_ACC_OBS_EXPENSE", "en": "Account code debited by the obsolete stock provision.", "id": "Kode akun yang didebit provisi stok usang."},
+      {"label": "INV_ACC_OBS_PROVISION", "en": "Account code credited by the obsolete stock provision (contra inventory).", "id": "Kode akun yang dikredit provisi stok usang (kontra persediaan)."}
+    ]
+  },
+  {
+    "key": "inv-valuation",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Valuation & Period",
+    "purpose": {
+      "en": "The control screen of inventory value: stock value per class with the latest reconciliation, the inventory periods with Close and Open, the month-end closing of landed cost variance, and shortcuts to the valuation reports.",
+      "id": "Layar kendali nilai persediaan: nilai stok per kelas beserta rekonsiliasi terakhir, periode inventory dengan Close dan Open, penutupan selisih landed cost di akhir bulan, dan jalan pintas ke laporan valuasi."
+    },
+    "keywords": "valuation, period, periode, tutup periode, buka periode, close period, nilai persediaan, rekonsiliasi, landed cost variance, selisih landed cost, inv_period",
+    "steps": [
+      {"en": "Read Value by Class: the stock value now per class and the difference found by the latest Daily Reconciliation.", "id": "Baca Value by Class: nilai stok sekarang per kelas dan selisih dari Daily Reconciliation terakhir."},
+      {"en": "Use the buttons under it to open Landed Cost, Obsolete Stock, GR/IR Aging, Daily Reconciliation, Repost or Stock Aging.", "id": "Pakai tombol di bawahnya untuk membuka Landed Cost, Obsolete Stock, GR/IR Aging, Daily Reconciliation, Repost, atau Stock Aging."},
+      {"en": "In Inventory Period choose a period and click Close. A closed period refuses stock documents dated inside or before it. Earlier periods must be closed first.", "id": "Di Inventory Period pilih periode lalu klik Close. Periode tertutup menolak dokumen stok bertanggal di dalam atau sebelumnya. Periode sebelumnya harus ditutup lebih dulu."},
+      {"en": "Open puts the latest closed period back to open. It is refused when the general ledger period of that month is closed. Add Next Period creates the month after the last one.", "id": "Open membuka lagi periode tertutup yang terakhir. Ditolak bila periode buku besar bulan itu sudah tertutup. Add Next Period membuat bulan sesudah periode terakhir."},
+      {"en": "At month end, type the period as YYYYMM in Close Landed Cost Variance and click Close: the variance goes to cost of goods sold in one journal.", "id": "Di akhir bulan, ketik periode sebagai YYYYMM di Close Landed Cost Variance lalu klik Close: selisih dipindah ke HPP dalam satu jurnal."}
+    ],
+    "fields": [
+      {"label": "Period", "en": "Inventory period (YYYYMM) to close or open. Picked from the list.", "id": "Periode inventory (YYYYMM) yang ditutup atau dibuka. Dipilih dari daftar."},
+      {"label": "Period (YYYYMM)", "en": "Month whose landed cost variance is moved to cost of goods sold.", "id": "Bulan yang selisih landed cost-nya dipindah ke HPP."},
+      {"label": "Last Reconciliation", "en": "Date and difference of the latest Daily Reconciliation of the class. Filled by the command inv:reconcile.", "id": "Tanggal dan selisih Daily Reconciliation terakhir kelas itu. Diisi oleh perintah inv:reconcile."}
+    ]
+  },
+  {
+    "key": "landed-cost",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Landed Cost",
+    "purpose": {
+      "en": "Record freight, duty or insurance that arrives after the goods receipt and share it over the receipt lines. The part still in stock raises the inventory value; the part already issued goes to the landed cost variance account.",
+      "id": "Catat ongkos angkut, bea, atau asuransi yang datang setelah penerimaan barang dan bagikan ke baris penerimaan. Bagian yang masih di gudang menaikkan nilai persediaan; bagian yang sudah keluar masuk akun selisih landed cost."
+    },
+    "keywords": "landed cost, biaya angkut, ongkos kirim, freight, bea masuk, duty, asuransi, insurance, biaya impor, forwarder, selisih landed cost, alokasi biaya",
+    "steps": [
+      {"en": "Click + New Record. Enter the date, cost type, amount and how to share it (by value or by quantity). Pick who charged it if you want. Click Save.", "id": "Klik + New Record. Isi tanggal, jenis biaya, jumlah, dan cara membagi (menurut nilai atau qty). Pilih penagih bila perlu. Klik Save."},
+      {"en": "Choose a posted goods receipt and click Add. All its stock lines are added. Add more receipts when one bill covers several. Remove deletes a line.", "id": "Pilih penerimaan barang yang sudah posting lalu klik Add. Semua baris stoknya ditambahkan. Tambah penerimaan lain bila satu tagihan mencakup beberapa. Remove menghapus baris."},
+      {"en": "The table shows the planned share of each line and how much goes to inventory and how much to variance, from the stock on hand now.", "id": "Tabel menampilkan rencana bagian tiap baris dan berapa ke persediaan dan berapa ke selisih, menurut stok yang ada sekarang."},
+      {"en": "Click Confirm. The document number is made and the journal is posted. The date cannot be earlier than the receipt or inside a closed period.", "id": "Klik Confirm. Nomor dokumen dibuat dan jurnal diposting. Tanggal tidak boleh lebih awal dari penerimaan atau berada di periode tertutup."},
+      {"en": "If the bill changes, use Revise with the new amount and a reason: a correction journal with the difference is posted and the first journal stays.", "id": "Bila tagihan berubah, pakai Revise dengan jumlah baru dan alasan: jurnal koreksi berisi selisih diposting dan jurnal pertama tetap."},
+      {"en": "Cancel needs a reason of at least 10 characters and posts a reversing journal. It is refused after the variance was closed to cost of goods sold.", "id": "Cancel butuh alasan minimal 10 karakter dan memposting jurnal pembalik. Ditolak setelah selisih ditutup ke HPP."}
+    ],
+    "fields": [
+      {"label": "Date", "en": "Posting date of the journal. Typed.", "id": "Tanggal posting jurnal. Diketik."},
+      {"label": "Cost Type", "en": "Freight, Duty, Insurance or Other. Picked.", "id": "Freight, Duty, Insurance, atau Other. Dipilih."},
+      {"label": "Amount", "en": "Total cost to share, in IDR. Typed.", "id": "Total biaya yang dibagi, dalam IDR. Diketik."},
+      {"label": "Share By", "en": "By value shares in proportion to the receipt value of each line, by quantity in proportion to the quantity received.", "id": "By value membagi sebanding nilai penerimaan tiap baris, by quantity sebanding qty yang diterima."},
+      {"label": "Charged By", "en": "Optional supplier or forwarder who charged the cost. Picked from the supplier master.", "id": "Pemasok atau forwarder yang menagih biaya (opsional). Dipilih dari master supplier."},
+      {"label": "Goods Receipt", "en": "A posted PO receipt whose lines receive a share of the cost.", "id": "Penerimaan PO yang sudah posting; barisnya mendapat bagian biaya."},
+      {"label": "To Inventory", "en": "The part for quantity still on hand: raises the inventory value. Calculated at Confirm.", "id": "Bagian untuk qty yang masih ada: menaikkan nilai persediaan. Dihitung saat Confirm."},
+      {"label": "To Variance", "en": "The part for quantity already issued: goes to the Landed Cost Variance account. Calculated at Confirm.", "id": "Bagian untuk qty yang sudah keluar: masuk akun Selisih Landed Cost. Dihitung saat Confirm."}
+    ]
+  },
+  {
+    "key": "obsolete-stock",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Obsolete Stock",
+    "purpose": {
+      "en": "Shows the stock value per aging class (Active, Slow, Non-moving, Dead) with the proposed provision. The provision journal is posted only when you click Post provision.",
+      "id": "Menampilkan nilai stok per kelas umur (Active, Slow, Non-moving, Dead) beserta usulan provisinya. Jurnal provisi hanya diposting saat Anda mengklik Post provision."
+    },
+    "keywords": "obsolete, stok usang, provisi, penyisihan persediaan, slow moving, non moving, dead stock, nrv, aging stok, beban penyisihan",
+    "steps": [
+      {"en": "Read the table: for each class the percentage, the number of item x bin lines, the stock value and the provision. Active stock has no provision.", "id": "Baca tabel: tiap kelas memuat persen, jumlah baris item x bin, nilai stok, dan provisi. Stok Active tidak diberi provisi."},
+      {"en": "Click Stock Aging to see every item and bin with its idle days and class.", "id": "Klik Stock Aging untuk melihat tiap item dan bin beserta hari tanpa pergerakan dan kelasnya."},
+      {"en": "Click Post provision and confirm. Only the difference to the last posting is journaled: more provision is an expense, less provision is a reversal.", "id": "Klik Post provision lalu konfirmasi. Yang dijurnal hanya selisih terhadap posting terakhir: provisi naik jadi beban, provisi turun jadi pembalikan."},
+      {"en": "Provision History lists earlier postings. The lines each posting was based on are kept.", "id": "Provision History memuat posting sebelumnya. Baris yang menjadi dasar tiap posting disimpan."}
+    ],
+    "fields": [
+      {"label": "Aging", "en": "Class from the days without movement against INV_AGING_SLOW_DAYS, INV_AGING_NONMOVING_DAYS and INV_AGING_DEAD_DAYS. Never moved counts as Dead.", "id": "Kelas dari hari tanpa pergerakan terhadap INV_AGING_SLOW_DAYS, _NONMOVING_DAYS, dan _DEAD_DAYS. Tidak pernah bergerak dihitung Dead."},
+      {"label": "Provision %", "en": "Percentage of the stock value, from INV_OBSOLETE_PCT_SLOW, INV_OBSOLETE_PCT_NONMOVING and INV_OBSOLETE_PCT_DEAD in Settings > Constants.", "id": "Persen dari nilai stok, dari INV_OBSOLETE_PCT_SLOW, _NONMOVING, dan _DEAD di Settings > Constants."},
+      {"label": "Item x Bin", "en": "Number of item and bin combinations in the class.", "id": "Jumlah kombinasi item dan bin dalam kelas itu."},
+      {"label": "Provision", "en": "Stock value x percentage. The proposed balance of the provision.", "id": "Nilai stok x persen. Usulan saldo provisi."}
+    ]
+  },
+  {
+    "key": "inv-grir-aging",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "GR/IR Aging",
+    "purpose": {
+      "en": "Goods received but not yet invoiced, and invoices that came before the goods, aged in days. Use it to chase missing supplier invoices and to explain the GR/IR clearing account.",
+      "id": "Barang yang sudah diterima tetapi belum ditagih, dan tagihan yang datang sebelum barangnya, dengan umur dalam hari. Dipakai untuk menagih faktur supplier yang belum datang dan menjelaskan akun GR/IR clearing."
+    },
+    "keywords": "gr/ir, grir, goods receipt invoice receipt, barang belum ditagih, faktur belum diterima, umur hutang, aging, clearing, penerimaan belum difaktur",
+    "steps": [
+      {"en": "Set the To date of Period (the From date is not used) and click Show.", "id": "Atur tanggal To pada Period (tanggal From tidak dipakai) lalu klik Show."},
+      {"en": "Received not invoiced rows are receipts without enough supplier invoice. Invoiced not received rows are invoices bigger than what was received on the PO.", "id": "Baris Received not invoiced adalah penerimaan yang belum cukup ditagih. Baris Invoiced not received adalah tagihan yang lebih besar dari yang diterima pada PO."},
+      {"en": "An invoice (from Supplier Invoice Receipt with a PO) closes the oldest receipts of that PO first. The rest is aged from the receipt date.", "id": "Tagihan (dari Supplier Invoice Receipt dengan PO) menutup penerimaan tertua PO itu lebih dulu. Sisanya diumur dari tanggal terima."},
+      {"en": "Use the 0-30, 31-60, 61-90 and 90+ columns, or group by Supplier, Type or Age.", "id": "Pakai kolom 0-30, 31-60, 61-90, dan 90+, atau kelompokkan menurut Supplier, Type, atau Age."}
+    ],
+    "fields": [
+      {"label": "Type", "en": "Received not invoiced, or Invoiced not received.", "id": "Received not invoiced, atau Invoiced not received."},
+      {"label": "Supplier", "en": "Supplier of the receipt or invoice.", "id": "Supplier penerimaan atau tagihan."},
+      {"label": "PO No.", "en": "Purchase order the row belongs to.", "id": "Purchase order tempat baris ini berada."},
+      {"label": "Receipt No.", "en": "Goods receipt number. Empty for Invoiced not received.", "id": "Nomor penerimaan barang. Kosong untuk Invoiced not received."},
+      {"label": "Date", "en": "Receipt date, or the oldest invoice date for Invoiced not received.", "id": "Tanggal terima, atau tanggal tagihan tertua untuk Invoiced not received."},
+      {"label": "Age (days)", "en": "Days from that date to the To date.", "id": "Hari dari tanggal itu sampai tanggal To."},
+      {"label": "Amount", "en": "Open amount in IDR: receipt value minus what was invoiced, or the invoiced excess.", "id": "Nilai terbuka dalam IDR: nilai penerimaan dikurangi yang sudah ditagih, atau kelebihan tagihan."}
+    ]
+  },
+  {
+    "key": "inv-reconcile",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Daily Reconciliation",
+    "purpose": {
+      "en": "Compares the inventory accounts in the general ledger with the stock card value, per class and day. A difference above the tolerance is marked red and tells you a journal or a stock document is missing on one side.",
+      "id": "Membandingkan akun persediaan di buku besar dengan nilai kartu stok, per kelas dan per hari. Selisih di atas toleransi ditandai merah dan berarti ada jurnal atau dokumen stok yang hilang di salah satu sisi."
+    },
+    "keywords": "rekonsiliasi, reconciliation, buku besar, general ledger, kartu stok, selisih persediaan, subledger, gl, inv:reconcile, harian",
+    "steps": [
+      {"en": "The rows are written by the command inv:reconcile (run daily by the administrator). Set Period to the days you want and click Show.", "id": "Baris ditulis oleh perintah inv:reconcile (dijalankan harian oleh administrator). Atur Period ke hari yang diinginkan lalu klik Show."},
+      {"en": "Difference = General Ledger - (Stock Card + Landed Cost Not in Cards). Click the Difference tab to see only the red rows.", "id": "Difference = General Ledger - (Stock Card + Landed Cost Not in Cards). Klik tab Difference untuk hanya melihat baris merah."},
+      {"en": "Landed cost is journaled before the stock cards carry its value, so it is shown in its own column and not counted as a difference.", "id": "Landed cost dijurnal lebih dulu sebelum kartu stok memuat nilainya, jadi ditampilkan di kolom tersendiri dan tidak dihitung sebagai selisih."},
+      {"en": "Which accounts belong to each class is set in Settings > Constants (INV_RECON_ACCTS_RM, _SFG, _FG); the tolerance is INV_RECON_TOLERANCE.", "id": "Akun tiap kelas diatur di Settings > Constants (INV_RECON_ACCTS_RM, _SFG, _FG); toleransinya INV_RECON_TOLERANCE."}
+    ],
+    "fields": [
+      {"label": "Date", "en": "The day reconciled (balances at the end of that day).", "id": "Hari yang direkonsiliasi (saldo akhir hari itu)."},
+      {"label": "Class", "en": "Raw Material, Semi Finished Goods or Finished Goods.", "id": "Raw Material, Semi Finished Goods, atau Finished Goods."},
+      {"label": "General Ledger", "en": "Debit minus credit of the class accounts up to the date, posted journals only.", "id": "Debit dikurangi kredit akun kelas sampai tanggal itu, hanya jurnal yang sudah posting."},
+      {"label": "Stock Card", "en": "Stock value of the class from the stock cards at the end of the day.", "id": "Nilai stok kelas dari kartu stok pada akhir hari."},
+      {"label": "Landed Cost Not in Cards", "en": "Confirmed landed cost journaled but not yet in the stock cards.", "id": "Landed cost Confirmed yang sudah dijurnal tetapi belum ada di kartu stok."},
+      {"label": "Difference", "en": "The unexplained gap in IDR. Red when above the tolerance.", "id": "Selisih yang belum terjelaskan dalam IDR. Merah bila di atas toleransi."}
+    ]
+  },
+  {
+    "key": "inv-repost",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Repost",
+    "purpose": {
+      "en": "Lists journals that were corrected after posting. The original journal stays; the correction, reversal or revaluation is a new journal. Use it to see what changed, by how much and why.",
+      "id": "Daftar jurnal yang dikoreksi setelah posting. Jurnal asal tetap; koreksi, pembalikan, atau penilaian ulang adalah jurnal baru. Dipakai untuk melihat apa yang berubah, berapa, dan mengapa."
+    },
+    "keywords": "repost, koreksi jurnal, jurnal koreksi, pembalik, reversal, penilaian ulang, revaluation, transaksi mundur, backdate, selisih jurnal",
+    "steps": [
+      {"en": "Set Period and click Show. Each row is one correction.", "id": "Atur Period lalu klik Show. Tiap baris adalah satu koreksi."},
+      {"en": "Correction: an amount was revised (for example a landed cost). Reversal: a document was cancelled. Revaluation: the Average changed because of a back-dated transaction.", "id": "Correction: nilai direvisi (misalnya landed cost). Reversal: dokumen dibatalkan. Revaluation: Average berubah karena transaksi bertanggal mundur."},
+      {"en": "Read Original Journal then Correction Journal. Before and After are the amounts; Difference is what the new journal moved.", "id": "Baca Original Journal lalu Correction Journal. Before dan After adalah nilainya; Difference adalah yang dipindahkan jurnal baru."}
+    ],
+    "fields": [
+      {"label": "Type", "en": "Correction, Reversal or Revaluation.", "id": "Correction, Reversal, atau Revaluation."},
+      {"label": "Source", "en": "Document type and number that caused the correction.", "id": "Jenis dan nomor dokumen yang menyebabkan koreksi."},
+      {"label": "Original Journal", "en": "Journal number that was corrected. It is not changed.", "id": "Nomor jurnal yang dikoreksi. Tidak diubah."},
+      {"label": "Correction Journal", "en": "The new journal with the difference.", "id": "Jurnal baru yang memuat selisih."},
+      {"label": "Before", "en": "Amount of the original journal in IDR.", "id": "Nilai jurnal asal dalam IDR."},
+      {"label": "After", "en": "Amount it should be after the correction.", "id": "Nilai yang seharusnya setelah koreksi."},
+      {"label": "Reason", "en": "Reason typed by the user, or the system reason for a revaluation.", "id": "Alasan yang diketik pengguna, atau alasan sistem untuk penilaian ulang."}
+    ]
+  },
+  {
+    "key": "inv-stock-aging",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stock Aging",
+    "purpose": {
+      "en": "Stock on hand by days since its last movement, per item and bin, with the aging class and the proposed provision. Use it to find stock that stopped moving before you post the provision.",
+      "id": "Stok yang ada menurut hari sejak pergerakan terakhir, per item dan bin, lengkap dengan kelas umur dan usulan provisi. Dipakai untuk menemukan stok yang berhenti bergerak sebelum provisi diposting."
+    },
+    "keywords": "aging stok, umur stok, stock aging, slow moving, non moving, dead stock, stok mati, stok usang, hari tanpa pergerakan, provisi",
+    "steps": [
+      {"en": "Set the To date of Period (the date to age from) and click Show.", "id": "Atur tanggal To pada Period (tanggal acuan umur) lalu klik Show."},
+      {"en": "Use the tabs Slow, Non-moving and Dead, or group by Aging or Class. Dead rows are red.", "id": "Pakai tab Slow, Non-moving, dan Dead, atau kelompokkan menurut Aging atau Class. Baris Dead berwarna merah."},
+      {"en": "Nothing is posted here. To post the provision, open Obsolete Stock.", "id": "Tidak ada yang diposting di sini. Untuk memposting provisi, buka Obsolete Stock."}
+    ],
+    "fields": [
+      {"label": "Last Movement", "en": "Date of the last movement of the item, transfers between bins not counted. Empty = never moved.", "id": "Tanggal pergerakan terakhir item, transfer antar bin tidak dihitung. Kosong = tidak pernah bergerak."},
+      {"label": "Idle (days)", "en": "Days from the last movement to the To date.", "id": "Hari dari pergerakan terakhir sampai tanggal To."},
+      {"label": "Aging", "en": "Active, Slow, Non-moving or Dead, by the day limits in Settings > Constants.", "id": "Active, Slow, Non-moving, atau Dead, menurut batas hari di Settings > Constants."},
+      {"label": "Provision %", "en": "Percentage of the class from Settings > Constants.", "id": "Persen kelas dari Settings > Constants."},
+      {"label": "Provision", "en": "Stock value x percentage, in IDR.", "id": "Nilai stok x persen, dalam IDR."}
+    ]
+  }
+]
