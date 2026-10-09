@@ -341,7 +341,8 @@ class StockReportsTest extends TestCase
         $reports = $groups->first(fn (array $g) => collect($g['children'])->contains('code', 'INV_WH_RPT_CARD'));
         $this->assertNotNull($reports, 'Grup laporan stok harus tampil di sidebar.');
         $urls = collect($reports['children'])->pluck('url', 'code');
-        foreach (['INV_WH_RPT_LOC' => 'inv-rpt-location', 'INV_WH_RPT_CARD' => 'inv-rpt-card', 'INV_WH_RPT_RECAP' => 'inv-rpt-recap', 'INV_WH_RPT_SUM' => 'inv-rpt-summary',
+        // Stock by Location pindah ke modul Warehouse (menu 2.01 split), tidak lagi di grup laporan Inventory.
+        foreach (['INV_WH_RPT_CARD' => 'inv-rpt-card', 'INV_WH_RPT_RECAP' => 'inv-rpt-recap', 'INV_WH_RPT_SUM' => 'inv-rpt-summary',
             'INV_WH_RPT_OPN' => 'inv-rpt-opname', 'INV_WH_RPT_LG' => 'inv-rpt-loss-gain', 'INV_WH_RPT_QC' => 'inv-rpt-inspection'] as $code => $slug) {
             $this->assertSame(route('v2.screen', $slug), $urls[$code] ?? null, $code);
         }

@@ -27,8 +27,8 @@
                 "id": "Ketik minimal 2 huruf kode atau nama di kotak cari item lalu klik hasilnya untuk menambah baris (bahan baku diambil dari master bahan baku). Ulangi untuk tiap item."
             },
             {
-                "en": "On each line choose Location, enter Qty and, if needed, Lot/Batch and Unit Price. UoM is filled from the item and cannot be typed.",
-                "id": "Di tiap baris pilih Location, isi Qty dan bila perlu Lot/Batch dan Unit Price. UoM terisi dari item dan tidak bisa diketik."
+                "en": "On each line choose Location, enter Qty and, if needed, pick a Batch or choose + New batch and fill Supplier Lot and dates. Fill Unit Price. UoM is filled from the item.",
+                "id": "Di tiap baris pilih Location, isi Qty, dan bila perlu pilih Batch atau pilih + New batch lalu isi Supplier Lot dan tanggal. Isi Unit Price. UoM terisi dari item."
             },
             {
                 "en": "Click Save Draft. The system gives the document its number. You can still edit the draft; Cancel cancels it.",
@@ -76,9 +76,9 @@
                 "id": "Kotak cari untuk menambah baris. Ketik 2 huruf atau lebih; hanya item aktif dari master bahan baku yang ditemukan (maks 15 hasil)."
             },
             {
-                "label": "Lot/Batch",
-                "en": "Optional lot or batch number of the received goods. Kept on the Stock Card.",
-                "id": "Nomor lot atau batch barang yang diterima (opsional). Tersimpan di Kartu Stok."
+                "label": "Batch",
+                "en": "Optional. Pick an existing batch of the item (batch no, supplier lot, expiry) or + New batch. An item with a shelf life needs the expiry date of a new batch. The Stock Card keeps the lot.",
+                "id": "Opsional. Pilih batch item yang ada (no batch, lot supplier, kedaluwarsa) atau + New batch. Item berumur simpan wajib diisi tanggal kedaluwarsa batch baru. Kartu Stok menyimpan lotnya."
             },
             {
                 "label": "Location *",
@@ -591,8 +591,8 @@
                 "id": "Pakai filter Movement, Category, Warehouse dan Location, atau kelompokkan menurut Warehouse atau Movement."
             },
             {
-                "en": "Read Opening, the movement and Balance on the same row. The In, Out and Adjustment columns show totals for the rows on screen.",
-                "id": "Baca Opening, mutasi dan Balance pada baris yang sama. Kolom In, Out dan Adjustment menampilkan total baris di layar."
+                "en": "Read BB, the movement and EB on the same row. BB is the balance of the item in all locations before the row; EB is BB + In - Out + Adjustment and is the BB of the next row.",
+                "id": "Baca BB, mutasi dan EB pada baris yang sama. BB = saldo item di semua lokasi sebelum baris; EB = BB + In - Out + Adjustment dan menjadi BB baris berikutnya."
             }
         ],
         "fields": [
@@ -608,8 +608,8 @@
             },
             {
                 "label": "Movement",
-                "en": "Kind of movement: In, Out, Adjustment or Opening.",
-                "id": "Jenis mutasi: In, Out, Adjustment atau Opening."
+                "en": "Kind of movement: In, Out, Adjustment, Transfer in, Transfer out or Opening.",
+                "id": "Jenis mutasi: In, Out, Adjustment, Transfer in, Transfer out, atau Opening."
             },
             {
                 "label": "Category",
@@ -642,9 +642,9 @@
                 "id": "Nomor dokumen sumber, misalnya penerimaan atau Stock Out asalnya."
             },
             {
-                "label": "Opening",
-                "en": "Balance of that item in that location just before the movement.",
-                "id": "Saldo item di lokasi itu tepat sebelum mutasi."
+                "label": "BB",
+                "en": "Balance of the item in all locations just before the movement. It equals the EB of the row before it.",
+                "id": "Saldo item di semua lokasi tepat sebelum mutasi. Sama dengan EB baris sebelumnya."
             },
             {
                 "label": "In",
@@ -662,9 +662,19 @@
                 "id": "Jumlah yang ditambah atau dikurangi oleh penyesuaian (bisa negatif)."
             },
             {
-                "label": "Balance",
-                "en": "Balance of that item in that location right after the movement.",
-                "id": "Saldo item di lokasi itu sesudah mutasi."
+                "label": "EB",
+                "en": "Balance of the item in all locations right after the movement: BB + In - Out + Adjustment.",
+                "id": "Saldo item di semua lokasi sesudah mutasi: BB + In - Out + Adjustment."
+            },
+            {
+                "label": "Location Opening",
+                "en": "Balance of that item in that one location just before the movement. Hidden at first.",
+                "id": "Saldo item di satu lokasi itu tepat sebelum mutasi. Awalnya tersembunyi."
+            },
+            {
+                "label": "Location Balance",
+                "en": "Balance of that item in that one location right after the movement. Hidden at first.",
+                "id": "Saldo item di satu lokasi itu sesudah mutasi. Awalnya tersembunyi."
             },
             {
                 "label": "Unit",
@@ -797,8 +807,8 @@
                 "id": "Ketik minimal 2 huruf kode atau nama di kotak cari item lalu klik hasilnya untuk menambah baris (produk diambil dari Master Product). Ulangi untuk tiap item."
             },
             {
-                "en": "On each line choose Location, enter Qty and, if needed, Lot/Batch and Unit Price. UoM is filled from the item and cannot be typed.",
-                "id": "Di tiap baris pilih Location, isi Qty dan bila perlu Lot/Batch dan Unit Price. UoM terisi dari item dan tidak bisa diketik."
+                "en": "On each line choose Location, enter Qty and, if needed, pick a Batch or choose + New batch and fill Supplier Lot and dates. Fill Unit Price. UoM is filled from the item.",
+                "id": "Di tiap baris pilih Location, isi Qty, dan bila perlu pilih Batch atau pilih + New batch lalu isi Supplier Lot dan tanggal. Isi Unit Price. UoM terisi dari item."
             },
             {
                 "en": "Click Save Draft. The system gives the document its number. You can still edit the draft; Cancel cancels it.",
@@ -846,9 +856,9 @@
                 "id": "Kotak cari untuk menambah baris. Ketik 2 huruf atau lebih; hanya item aktif dari Master Product yang ditemukan (maks 15 hasil)."
             },
             {
-                "label": "Lot/Batch",
-                "en": "Optional lot or batch number of the received goods. Kept on the Stock Card.",
-                "id": "Nomor lot atau batch barang yang diterima (opsional). Tersimpan di Kartu Stok."
+                "label": "Batch",
+                "en": "Optional. Pick an existing batch of the item (batch no, supplier lot, expiry) or + New batch. An item with a shelf life needs the expiry date of a new batch. The Stock Card keeps the lot.",
+                "id": "Opsional. Pilih batch item yang ada (no batch, lot supplier, kedaluwarsa) atau + New batch. Item berumur simpan wajib diisi tanggal kedaluwarsa batch baru. Kartu Stok menyimpan lotnya."
             },
             {
                 "label": "Location *",
@@ -1282,8 +1292,8 @@
                 "id": "Pakai filter Movement, Category, Warehouse dan Location, atau kelompokkan menurut Warehouse atau Movement."
             },
             {
-                "en": "Read Opening, the movement and Balance on the same row. The In, Out and Adjustment columns show totals for the rows on screen.",
-                "id": "Baca Opening, mutasi dan Balance pada baris yang sama. Kolom In, Out dan Adjustment menampilkan total baris di layar."
+                "en": "Read BB, the movement and EB on the same row. BB is the balance of the item in all locations before the row; EB is BB + In - Out + Adjustment and is the BB of the next row.",
+                "id": "Baca BB, mutasi dan EB pada baris yang sama. BB = saldo item di semua lokasi sebelum baris; EB = BB + In - Out + Adjustment dan menjadi BB baris berikutnya."
             }
         ],
         "fields": [
@@ -1299,8 +1309,8 @@
             },
             {
                 "label": "Movement",
-                "en": "Kind of movement: In, Out, Adjustment or Opening.",
-                "id": "Jenis mutasi: In, Out, Adjustment atau Opening."
+                "en": "Kind of movement: In, Out, Adjustment, Transfer in, Transfer out or Opening.",
+                "id": "Jenis mutasi: In, Out, Adjustment, Transfer in, Transfer out, atau Opening."
             },
             {
                 "label": "Category",
@@ -1333,9 +1343,9 @@
                 "id": "Nomor dokumen sumber, misalnya penerimaan atau Stock Out asalnya."
             },
             {
-                "label": "Opening",
-                "en": "Balance of that item in that location just before the movement.",
-                "id": "Saldo item di lokasi itu tepat sebelum mutasi."
+                "label": "BB",
+                "en": "Balance of the item in all locations just before the movement. It equals the EB of the row before it.",
+                "id": "Saldo item di semua lokasi tepat sebelum mutasi. Sama dengan EB baris sebelumnya."
             },
             {
                 "label": "In",
@@ -1353,9 +1363,19 @@
                 "id": "Jumlah yang ditambah atau dikurangi oleh penyesuaian (bisa negatif)."
             },
             {
-                "label": "Balance",
-                "en": "Balance of that item in that location right after the movement.",
-                "id": "Saldo item di lokasi itu sesudah mutasi."
+                "label": "EB",
+                "en": "Balance of the item in all locations right after the movement: BB + In - Out + Adjustment.",
+                "id": "Saldo item di semua lokasi sesudah mutasi: BB + In - Out + Adjustment."
+            },
+            {
+                "label": "Location Opening",
+                "en": "Balance of that item in that one location just before the movement. Hidden at first.",
+                "id": "Saldo item di satu lokasi itu tepat sebelum mutasi. Awalnya tersembunyi."
+            },
+            {
+                "label": "Location Balance",
+                "en": "Balance of that item in that one location right after the movement. Hidden at first.",
+                "id": "Saldo item di satu lokasi itu sesudah mutasi. Awalnya tersembunyi."
             },
             {
                 "label": "Unit",
@@ -1488,8 +1508,8 @@
                 "id": "Ketik minimal 2 huruf kode atau nama di kotak cari item lalu klik hasilnya untuk menambah baris (part diambil dari Master Card). Ulangi untuk tiap item."
             },
             {
-                "en": "On each line choose Location, enter Qty and, if needed, Lot/Batch and Unit Price. UoM is filled from the item and cannot be typed.",
-                "id": "Di tiap baris pilih Location, isi Qty dan bila perlu Lot/Batch dan Unit Price. UoM terisi dari item dan tidak bisa diketik."
+                "en": "On each line choose Location, enter Qty and, if needed, pick a Batch or choose + New batch and fill Supplier Lot and dates. Fill Unit Price. UoM is filled from the item.",
+                "id": "Di tiap baris pilih Location, isi Qty, dan bila perlu pilih Batch atau pilih + New batch lalu isi Supplier Lot dan tanggal. Isi Unit Price. UoM terisi dari item."
             },
             {
                 "en": "Click Save Draft. The system gives the document its number. You can still edit the draft; Cancel cancels it.",
@@ -1537,9 +1557,9 @@
                 "id": "Kotak cari untuk menambah baris. Ketik 2 huruf atau lebih; hanya item aktif dari Master Card yang ditemukan (maks 15 hasil)."
             },
             {
-                "label": "Lot/Batch",
-                "en": "Optional lot or batch number of the received goods. Kept on the Stock Card.",
-                "id": "Nomor lot atau batch barang yang diterima (opsional). Tersimpan di Kartu Stok."
+                "label": "Batch",
+                "en": "Optional. Pick an existing batch of the item (batch no, supplier lot, expiry) or + New batch. An item with a shelf life needs the expiry date of a new batch. The Stock Card keeps the lot.",
+                "id": "Opsional. Pilih batch item yang ada (no batch, lot supplier, kedaluwarsa) atau + New batch. Item berumur simpan wajib diisi tanggal kedaluwarsa batch baru. Kartu Stok menyimpan lotnya."
             },
             {
                 "label": "Location *",
@@ -2052,8 +2072,8 @@
                 "id": "Pakai filter Movement, Category, Warehouse dan Location, atau kelompokkan menurut Warehouse atau Movement."
             },
             {
-                "en": "Read Opening, the movement and Balance on the same row. The In, Out and Adjustment columns show totals for the rows on screen.",
-                "id": "Baca Opening, mutasi dan Balance pada baris yang sama. Kolom In, Out dan Adjustment menampilkan total baris di layar."
+                "en": "Read BB, the movement and EB on the same row. BB is the balance of the item in all locations before the row; EB is BB + In - Out + Adjustment and is the BB of the next row.",
+                "id": "Baca BB, mutasi dan EB pada baris yang sama. BB = saldo item di semua lokasi sebelum baris; EB = BB + In - Out + Adjustment dan menjadi BB baris berikutnya."
             }
         ],
         "fields": [
@@ -2069,8 +2089,8 @@
             },
             {
                 "label": "Movement",
-                "en": "Kind of movement: In, Out, Adjustment or Opening.",
-                "id": "Jenis mutasi: In, Out, Adjustment atau Opening."
+                "en": "Kind of movement: In, Out, Adjustment, Transfer in, Transfer out or Opening.",
+                "id": "Jenis mutasi: In, Out, Adjustment, Transfer in, Transfer out, atau Opening."
             },
             {
                 "label": "Category",
@@ -2103,9 +2123,9 @@
                 "id": "Nomor dokumen sumber, misalnya penerimaan atau Stock Out asalnya."
             },
             {
-                "label": "Opening",
-                "en": "Balance of that item in that location just before the movement.",
-                "id": "Saldo item di lokasi itu tepat sebelum mutasi."
+                "label": "BB",
+                "en": "Balance of the item in all locations just before the movement. It equals the EB of the row before it.",
+                "id": "Saldo item di semua lokasi tepat sebelum mutasi. Sama dengan EB baris sebelumnya."
             },
             {
                 "label": "In",
@@ -2123,9 +2143,19 @@
                 "id": "Jumlah yang ditambah atau dikurangi oleh penyesuaian (bisa negatif)."
             },
             {
-                "label": "Balance",
-                "en": "Balance of that item in that location right after the movement.",
-                "id": "Saldo item di lokasi itu sesudah mutasi."
+                "label": "EB",
+                "en": "Balance of the item in all locations right after the movement: BB + In - Out + Adjustment.",
+                "id": "Saldo item di semua lokasi sesudah mutasi: BB + In - Out + Adjustment."
+            },
+            {
+                "label": "Location Opening",
+                "en": "Balance of that item in that one location just before the movement. Hidden at first.",
+                "id": "Saldo item di satu lokasi itu tepat sebelum mutasi. Awalnya tersembunyi."
+            },
+            {
+                "label": "Location Balance",
+                "en": "Balance of that item in that one location right after the movement. Hidden at first.",
+                "id": "Saldo item di satu lokasi itu sesudah mutasi. Awalnya tersembunyi."
             },
             {
                 "label": "Unit",

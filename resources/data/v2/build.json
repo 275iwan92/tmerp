@@ -1,10 +1,10 @@
 {
-    "generated": "2026-10-09 00:49",
+    "generated": "2026-10-09 18:15",
     "database": "ddtsys",
     "totals": {
         "objects": 152,
-        "modules": 10,
-        "modules_done": 7,
+        "modules": 11,
+        "modules_done": 8,
         "screens": 270,
         "v2": 263,
         "v1": 5,
@@ -17,16 +17,16 @@
         "grid_classes": 169,
         "lookups": 46,
         "report_grids": 44,
-        "engines": 39,
+        "engines": 57,
         "engine_groups": 13,
-        "tables": 400,
+        "tables": 401,
         "databases": 10,
         "models": 354,
-        "migrations": 578,
-        "tests": 139,
-        "dictionary": 12062,
+        "migrations": 580,
+        "tests": 140,
+        "dictionary": 12147,
         "languages": 4,
-        "commits": "1248",
+        "commits": "1253",
         "since": "2026-08-06"
     },
     "modules": [
@@ -68,15 +68,27 @@
         },
         {
             "label": "Inventory",
-            "total": 65,
-            "v2": 65,
+            "total": 48,
+            "v2": 48,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 65,
+            "waiting_qc": 48,
             "locked": 0,
-            "form": 29,
-            "grid": 13,
-            "report": 23
+            "form": 21,
+            "grid": 7,
+            "report": 20
+        },
+        {
+            "label": "Warehouse",
+            "total": 17,
+            "v2": 17,
+            "v1": 0,
+            "not_built": 0,
+            "waiting_qc": 17,
+            "locked": 0,
+            "form": 8,
+            "grid": 6,
+            "report": 3
         },
         {
             "label": "Production",
@@ -166,16 +178,16 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 50,
+            "commits": 54,
             "days": 3,
             "last": "2026-10-09",
-            "screens": 102,
+            "screens": 103,
             "objects": 6,
-            "engines": 19,
-            "tests": 36
+            "engines": 37,
+            "tests": 37
         }
     ],
-    "untracked": 1117,
+    "untracked": 1118,
     "days": [
         {
             "date": "2026-09-26",
@@ -258,8 +270,8 @@
         {
             "date": "2026-10-09",
             "iwan": 0,
-            "jo": 12,
-            "other": 0
+            "jo": 16,
+            "other": 1
         }
     ],
     "weeks": [
@@ -320,8 +332,8 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 50,
-            "other": 37
+            "jo": 54,
+            "other": 38
         }
     ],
     "items": [
@@ -384,7 +396,7 @@
             "type": "FORM",
             "key": "menu:INV_LBL_LOC",
             "name": "Print Location Label (QR)",
-            "module": "Inventory",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -780,7 +792,7 @@
             "type": "FORM",
             "key": "menu:INV_LBL_ITEM1",
             "name": "Print Pallet Label (QR)",
-            "module": "Inventory",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -791,7 +803,7 @@
             "type": "REPORT",
             "key": "menu:INV_LBL_ITEM3",
             "name": "Label Print History",
-            "module": "Inventory",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -828,8 +840,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -1077,7 +1089,7 @@
             "type": "FORM",
             "key": "menu:INV_WH_MAP",
             "name": "Warehouse Map",
-            "module": "Inventory",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -1085,21 +1097,21 @@
             "changed_by": "iwan"
         },
         {
-            "type": "GRID",
-            "key": "menu:INV_WH_BLD",
-            "name": "Buildings",
+            "type": "FORM",
+            "key": "menu:INV_WH_TF",
+            "name": "Stock Transfer",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
         },
         {
-            "type": "REPORT",
-            "key": "menu:INV_WH_RPT_LOC",
-            "name": "Stock by Location",
-            "module": "Inventory",
+            "type": "GRID",
+            "key": "menu:INV_WH_BLD",
+            "name": "Buildings",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -1174,6 +1186,28 @@
         },
         {
             "type": "GRID",
+            "key": "menu:INV_WH_RCV",
+            "name": "Receiving & Putaway",
+            "module": "Warehouse",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_PICK",
+            "name": "Pick List",
+            "module": "Warehouse",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "GRID",
             "key": "menu:INV_BQ_BATCH",
             "name": "Batch",
             "module": "Inventory",
@@ -1206,10 +1240,54 @@
             "changed_by": "jo"
         },
         {
+            "type": "FORM",
+            "key": "menu:INV_WH_TRANSIT",
+            "name": "In Transit",
+            "module": "Warehouse",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_COUNT",
+            "name": "Count Tasks",
+            "module": "Warehouse",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_SUBCON",
+            "name": "Send to Subcontractor",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_CUSTMAT",
+            "name": "Customer Material",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
             "type": "GRID",
             "key": "menu:INV_TOOLS_REG",
             "name": "Tool Register",
-            "module": "Inventory",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
@@ -1306,17 +1384,6 @@
         },
         {
             "type": "GRID",
-            "key": "menu:INV_WH_RCV",
-            "name": "Receiving & Putaway",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
-        },
-        {
-            "type": "GRID",
             "key": "menu:PROD_RULE_LIB",
             "name": "Rule Library",
             "module": "Production",
@@ -1339,31 +1406,9 @@
         },
         {
             "type": "FORM",
-            "key": "menu:INV_WH_TRANSIT",
-            "name": "In Transit",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
-        },
-        {
-            "type": "FORM",
             "key": "menu:PROD_PREBOOK",
             "name": "Pre-Booking",
             "module": "Production",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
-        },
-        {
-            "type": "FORM",
-            "key": "menu:INV_WH_COUNT",
-            "name": "Count Tasks",
-            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
@@ -1605,18 +1650,7 @@
             "type": "FORM",
             "key": "menu:INV_LBL_ITEM2",
             "name": "Print Item Label (QR)",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-02",
-            "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
-        },
-        {
-            "type": "FORM",
-            "key": "menu:INV_SCAN_ITEM2",
-            "name": "Track via QR/Barcode",
-            "module": "Inventory",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -1822,10 +1856,10 @@
             "changed_by": null
         },
         {
-            "type": "FORM",
-            "key": "menu:INV_WH_TF",
-            "name": "Stock Transfer",
-            "module": "Inventory",
+            "type": "GRID",
+            "key": "menu:INV_WH_ZONE",
+            "name": "Storage Areas",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -1833,15 +1867,15 @@
             "changed_by": "jo"
         },
         {
-            "type": "GRID",
-            "key": "menu:INV_WH_ZONE",
-            "name": "Storage Areas",
+            "type": "FORM",
+            "key": "menu:INV_WH_TF_APPR",
+            "name": "Stock Transfer Approval Center",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-02",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -1853,6 +1887,17 @@
             "built_by": null,
             "changed_at": "2026-10-09",
             "changed_by": "jo"
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_STACK",
+            "name": "Stack Monitor",
+            "module": "Warehouse",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-03",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1932,6 +1977,17 @@
             "changed_by": "jo"
         },
         {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_VENDOR",
+            "name": "Stock at Vendor",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
             "type": "GRID",
             "key": "menu:FIN_TO_INVOICE",
             "name": "To Invoice",
@@ -1985,28 +2041,6 @@
             "built_by": null,
             "changed_at": "2026-10-05",
             "changed_by": "iwan"
-        },
-        {
-            "type": "FORM",
-            "key": "menu:INV_WH_PICK",
-            "name": "Pick List",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
-        },
-        {
-            "type": "FORM",
-            "key": "menu:INV_WH_SUBCON",
-            "name": "Send to Subcontractor",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -2185,6 +2219,17 @@
             "changed_by": "jo"
         },
         {
+            "type": "FORM",
+            "key": "menu:INV_SCAN_ITEM2",
+            "name": "Track via QR/Barcode",
+            "module": "Warehouse",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
+        },
+        {
             "type": "GRID",
             "key": "menu:INV_REF_PROD",
             "name": "Product Master",
@@ -2342,7 +2387,7 @@
             "type": "GRID",
             "key": "menu:INV_WH_BIN",
             "name": "Bins",
-            "module": "Inventory",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -2350,10 +2395,10 @@
             "changed_by": null
         },
         {
-            "type": "FORM",
-            "key": "menu:INV_WH_TF_APPR",
-            "name": "Stock Transfer Approval Center",
-            "module": "Inventory",
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_LOC",
+            "name": "Stock by Location",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -2369,17 +2414,6 @@
             "built_at": "2026-10-02",
             "built_by": null,
             "changed_at": "2026-10-02",
-            "changed_by": null
-        },
-        {
-            "type": "REPORT",
-            "key": "menu:INV_WH_STACK",
-            "name": "Stack Monitor",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-03",
-            "built_by": null,
-            "changed_at": "2026-10-03",
             "changed_by": null
         },
         {
@@ -2661,7 +2695,7 @@
             "type": "GRID",
             "key": "menu:INV_REF_WH",
             "name": "Warehouse & Location",
-            "module": "Inventory",
+            "module": "Warehouse",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
@@ -3197,17 +3231,6 @@
             "changed_by": "jo"
         },
         {
-            "type": "REPORT",
-            "key": "menu:INV_WH_RPT_VENDOR",
-            "name": "Stock at Vendor",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
-        },
-        {
             "type": "GRID",
             "key": "menu:MD_PAYMENT_TERM",
             "name": "Payment Terms",
@@ -3250,17 +3273,6 @@
             "built_by": null,
             "changed_at": "2026-10-03",
             "changed_by": null
-        },
-        {
-            "type": "REPORT",
-            "key": "menu:INV_WH_RPT_CUSTMAT",
-            "name": "Customer Material",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -3446,6 +3458,204 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:batch",
+            "name": "Batch Service (batch master and quality status)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-08",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:batch-backfill",
+            "name": "Batch Backfill (batches from old lot data)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:putaway-planner",
+            "name": "Putaway Planner (suggests a bin)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:warehouse-task",
+            "name": "Warehouse Task Service (putaway tasks)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:pick-allocator",
+            "name": "Pick Allocator (which pallet to take)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:pick-list",
+            "name": "Pick List Service",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:booking-maintenance",
+            "name": "Booking Maintenance (hold and stale booking)",
+            "module": "Planning",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:qc-sampling",
+            "name": "QC Sampling Service (sampling plan)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:qc-decision",
+            "name": "QC Decision Service",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:qc-trace",
+            "name": "QC Trace Service (forward trace of a rejected batch)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:urgent-receipt",
+            "name": "Urgent Receipt Service",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:shortage-detector",
+            "name": "Shortage Detector (short delivery found late)",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:shortage-request",
+            "name": "Shortage Request Service (send us the shortfall)",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:stock-reversal",
+            "name": "Stock Reversal Service (cancel a posted stock document)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:count-task",
+            "name": "Count Task Service (cycle count)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:subcon-stock",
+            "name": "Subcontract Stock Service (material at the vendor)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:customer-material",
+            "name": "Customer Material Service (consignment)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-09",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:virtual-location",
+            "name": "Virtual Location Service (Loss, In Transit, vendor bins)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
             "changed_at": "2026-10-09",
             "changed_by": "jo"
         },
@@ -5689,6 +5899,14 @@
                     "mode": "suggest",
                     "used": 4,
                     "tests": 0
+                },
+                {
+                    "key": "booking-maintenance",
+                    "name": "Booking Maintenance (hold and stale booking)",
+                    "purpose": "Frees reservations nobody uses: a Hold that has expired, and a Confirmed booking that never became a work order.",
+                    "mode": "auto",
+                    "used": 2,
+                    "tests": 1
                 }
             ]
         },
@@ -5717,6 +5935,118 @@
                     "purpose": "Moves stock from one bin to another, in the same warehouse or between warehouses, with or without approval, and can take the move back.",
                     "mode": "flow",
                     "used": 4,
+                    "tests": 3
+                },
+                {
+                    "key": "batch",
+                    "name": "Batch Service (batch master and quality status)",
+                    "purpose": "The one door for creating batches and changing their quality status. Screens, receiving, backfill and QC all call it; nothing writes the batch table directly.",
+                    "mode": "flow",
+                    "used": 5,
+                    "tests": 1
+                },
+                {
+                    "key": "batch-backfill",
+                    "name": "Batch Backfill (batches from old lot data)",
+                    "purpose": "Turns the lot numbers already in stock cards and pallets into batches and links the old rows to them. Safe to run twice; a check run only counts.",
+                    "mode": "auto",
+                    "used": 1,
+                    "tests": 1
+                },
+                {
+                    "key": "putaway-planner",
+                    "name": "Putaway Planner (suggests a bin)",
+                    "purpose": "Suggests the bins where a received pallet may be put away, best first. The warehouse officer confirms by scanning; the planner never moves stock.",
+                    "mode": "suggest",
+                    "used": 1,
+                    "tests": 1
+                },
+                {
+                    "key": "warehouse-task",
+                    "name": "Warehouse Task Service (putaway tasks)",
+                    "purpose": "Keeps the list of putaway tasks for pallets that wait in a receiving or QC Hold area and moves the pallet when the officer scans it and its bin.",
+                    "mode": "flow",
+                    "used": 1,
+                    "tests": 1
+                },
+                {
+                    "key": "pick-allocator",
+                    "name": "Pick Allocator (which pallet to take)",
+                    "purpose": "For one material, chooses the pallets, batches and bins that may be taken and in which order. The warehouse officer confirms by scanning.",
+                    "mode": "suggest",
+                    "used": 1,
+                    "tests": 2
+                },
+                {
+                    "key": "pick-list",
+                    "name": "Pick List Service",
+                    "purpose": "Makes a pick list per Work Order from its confirmed booking, lets the officer scan pallets and bins, and issues the material to the work order when all lines are picked.",
+                    "mode": "flow",
+                    "used": 1,
+                    "tests": 1
+                },
+                {
+                    "key": "qc-sampling",
+                    "name": "QC Sampling Service (sampling plan)",
+                    "purpose": "Works out how a received lot is checked: the risk class of the item, how tight the checks are for this supplier, and the sample size for the lot.",
+                    "mode": "suggest",
+                    "used": 2,
+                    "tests": 1
+                },
+                {
+                    "key": "qc-decision",
+                    "name": "QC Decision Service",
+                    "purpose": "The one door for a quality decision on a batch: sampling at the dock, first article at the press, a later usage decision, or a deviation. Each decision changes the batch status and is kept.",
+                    "mode": "flow",
+                    "used": 2,
+                    "tests": 1
+                },
+                {
+                    "key": "qc-trace",
+                    "name": "QC Trace Service (forward trace of a rejected batch)",
+                    "purpose": "Finds where a rejected batch went: the issue documents, the work orders, and the orders or deliveries made from it; holds those work orders and opens one supplier claim.",
+                    "mode": "flow",
+                    "used": 2,
+                    "tests": 1
+                },
+                {
+                    "key": "stock-reversal",
+                    "name": "Stock Reversal Service (cancel a posted stock document)",
+                    "purpose": "Cancels a posted stock document without editing or deleting it: a reversing document with the opposite direction is posted through the normal path.",
+                    "mode": "flow",
+                    "used": 1,
+                    "tests": 1
+                },
+                {
+                    "key": "count-task",
+                    "name": "Count Task Service (cycle count)",
+                    "purpose": "Makes count tasks for storage areas that are due, locks their bins while counting, and turns the difference into a Stock Opname document.",
+                    "mode": "flow",
+                    "used": 2,
+                    "tests": 1
+                },
+                {
+                    "key": "subcon-stock",
+                    "name": "Subcontract Stock Service (material at the vendor)",
+                    "purpose": "Sends raw material to a subcontractor against a Subcontract PO and keeps the material at the vendor as our own stock until it is used or comes back.",
+                    "mode": "flow",
+                    "used": 3,
+                    "tests": 1
+                },
+                {
+                    "key": "customer-material",
+                    "name": "Customer Material Service (consignment)",
+                    "purpose": "Turns the material a customer brings (a Customer receipt with a raw material item) into stock owned by that customer, kept in a consignment bin, without value and without journal.",
+                    "mode": "flow",
+                    "used": 3,
+                    "tests": 1
+                },
+                {
+                    "key": "virtual-location",
+                    "name": "Virtual Location Service (Loss, In Transit, vendor bins)",
+                    "purpose": "Makes the places where stock exists in the books but not on the warehouse floor: Loss, In Transit and one bin per subcontractor. Created when needed, never twice.",
+                    "mode": "auto",
+                    "used": 3,
                     "tests": 2
                 },
                 {
@@ -5734,6 +6064,43 @@
                     "mode": "calc",
                     "used": 3,
                     "tests": 1
+                }
+            ]
+        },
+        {
+            "group": "Procurement",
+            "items": [
+                {
+                    "key": "urgent-receipt",
+                    "name": "Urgent Receipt Service",
+                    "purpose": "Lets a receipt line be posted before the quality result and go straight to production (URGENT), while sampling runs in parallel and the batch stays Conditional.",
+                    "mode": "flow",
+                    "used": 2,
+                    "tests": 1
+                },
+                {
+                    "key": "shortage-detector",
+                    "name": "Shortage Detector (short delivery found late)",
+                    "purpose": "Compares the material issued to a work order with its good output plus standard waste and suspects a short delivery when material is missing.",
+                    "mode": "suggest",
+                    "used": 1,
+                    "tests": 1
+                },
+                {
+                    "key": "shortage-request",
+                    "name": "Shortage Request Service (send us the shortfall)",
+                    "purpose": "Follows a short delivery from suspicion to settlement: recount, confirm, ask the supplier, subcontractor or customer to send the shortfall, and close or refuse.",
+                    "mode": "flow",
+                    "used": 3,
+                    "tests": 1
+                },
+                {
+                    "key": "pq-matcher",
+                    "name": "Purchase Quotation Matcher",
+                    "purpose": "Matches the text of a supplier quotation file to the supplier master and to the requisition lines.",
+                    "mode": "suggest",
+                    "used": 1,
+                    "tests": 0
                 }
             ]
         },
@@ -5896,19 +6263,6 @@
                     "mode": "calc",
                     "used": 3,
                     "tests": 1
-                }
-            ]
-        },
-        {
-            "group": "Procurement",
-            "items": [
-                {
-                    "key": "pq-matcher",
-                    "name": "Purchase Quotation Matcher",
-                    "purpose": "Matches the text of a supplier quotation file to the supplier master and to the requisition lines.",
-                    "mode": "suggest",
-                    "used": 1,
-                    "tests": 0
                 }
             ]
         },

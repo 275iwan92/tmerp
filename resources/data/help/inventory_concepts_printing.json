@@ -399,8 +399,8 @@
     "keywords": "booking, reservasi, material booking, customer order, co, pegging, soft hard, ppic, shortage, kekurangan bahan, available, atp, pick list, hot job",
     "steps": [
       {
-        "en": "Four levels: soft (a proposal that locks nothing), hard (stock locked for one document), allocated to pick (bin and batch chosen) and issued (the reservation becomes consumption).",
-        "id": "Empat tingkat: soft (usulan yang tidak mengunci apa pun), hard (stok dikunci untuk satu dokumen), dialokasikan ke pick (bin dan batch dipilih) dan issued (reservasi menjadi konsumsi)."
+        "en": "Levels: pre-booking (soft, starts when costing has calculated, shown as Not CO yet), hard (stock locked once the CO is Confirmed), allocated to pick (bin and batch chosen) and issued (the reservation becomes consumption).",
+        "id": "Tingkat: pre-booking (lunak, mulai saat costing sudah menghitung, tampil Not CO yet), hard (stok dikunci setelah CO Confirmed), dialokasikan ke pick (bin dan batch dipilih) dan issued (reservasi menjadi konsumsi)."
       },
       {
         "en": "The engine proposes a booking from the customer order: finished goods of the same product first, then every material from the layout, the bill of materials and the usage standards.",
@@ -415,8 +415,8 @@
         "id": "Tanggal butuh adalah yang lebih awal dari due date dan tanggal order ditambah tiga hari kerja. Tanggal beli paling lambat adalah tanggal butuh dikurangi lead time dan buffer QC serta istirahat kertas."
       },
       {
-        "en": "PPIC confirms the proposal. Confirm locks the stock per location and a Confirmed booking is frozen. Back to Draft is available when the order changed.",
-        "id": "PPIC mengonfirmasi usulan. Confirm mengunci stok per lokasi dan booking Confirmed dibekukan. Back to Draft tersedia bila order berubah."
+        "en": "PPIC confirms the proposal. Confirm locks the stock per location; Back to Draft is open when the order changed. A Confirmed booking without a work order long after its need date is warned (Stale), then released.",
+        "id": "PPIC mengonfirmasi usulan. Confirm mengunci stok per lokasi; Back to Draft tersedia bila order berubah. Booking Confirmed tanpa work order lama setelah tanggal butuh diperingatkan (Stale), lalu dilepas."
       },
       {
         "en": "Create PR groups the shortages per proposed supplier, rounds to the purchase pack, and fills the order line and the need date. Round the total of several orders, not each order.",
@@ -619,12 +619,12 @@
         "id": "Penerimaan normal: ambil sampel menurut rencana sampling, uji cepat di dok, putuskan lot (Released atau Rejected), lalu posting penerimaan dan simpan barang."
       },
       {
-        "en": "URGENT receipt: an authorised person marks it URGENT with a reason and the work order. The receipt is posted at once with status Conditional and goes straight to the machine.",
-        "id": "Penerimaan URGENT: pihak berwenang menandainya URGENT dengan alasan dan work order. Penerimaan langsung diposting berstatus Conditional dan dibawa langsung ke mesin."
+        "en": "URGENT receipt: an authorised person marks the line URGENT in the card URGENT and Sampling of Purchase Receive, with a reason and the work order. It is posted at once as Conditional and goes straight to the machine.",
+        "id": "Penerimaan URGENT: pihak berwenang menandai baris URGENT di kartu URGENT and Sampling pada Purchase Receive, dengan alasan dan work order. Langsung diposting berstatus Conditional dan dibawa langsung ke mesin."
       },
       {
-        "en": "For an URGENT receipt the sampling goes on in parallel, at the dock on a kept sample or on the first sheets at the press. The result changes the batch to Released or Rejected.",
-        "id": "Pada penerimaan URGENT sampling berjalan paralel, di dok pada sampel yang disisihkan atau pada lembar pertama di mesin. Hasilnya mengubah batch menjadi Released atau Rejected."
+        "en": "For an URGENT receipt the sampling goes on in parallel, at the dock on a kept sample or on the first sheets at the press. The decision is recorded in Conditional Stock and changes the batch to Released or Rejected.",
+        "id": "Pada penerimaan URGENT sampling berjalan paralel, di dok pada sampel yang disisihkan atau pada lembar pertama di mesin. Keputusan dicatat di Conditional Stock dan mengubah batch menjadi Released atau Rejected."
       },
       {
         "en": "If a Conditional batch is rejected after use, trace forward to the work orders and finished goods made from it, hold them, and raise a claim to the supplier.",

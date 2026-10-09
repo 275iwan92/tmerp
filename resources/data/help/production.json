@@ -123,6 +123,10 @@
       {
         "en": "If the CO changes after confirmation a warning appears. Click Back to Draft, which recalculates, then Confirm again.",
         "id": "Bila CO berubah setelah dikonfirmasi, muncul peringatan. Klik Back to Draft (hitung ulang otomatis), lalu Confirm lagi."
+      },
+      {
+        "en": "Rows Not CO yet are soft pre-bookings of costed inquiries: they only show the need and become a real booking when the CO is Confirmed. Stale in Note means the booking is unused and will be released.",
+        "id": "Baris Not CO yet adalah pre-booking lunak dari inquiry yang sudah dihitung biaya: hanya menampilkan kebutuhan dan menjadi booking nyata saat CO Confirmed. Stale di Note berarti booking tidak terpakai dan akan dilepas."
       }
     ],
     "fields": [
@@ -131,13 +135,13 @@
       {"label": "Last Calculated", "en": "When the proposal was last calculated by the system.", "id": "Waktu terakhir usulan dihitung oleh sistem."},
       {"label": "Confirmed By", "en": "User and time that locked the booking. Empty while the booking is Draft.", "id": "User dan waktu yang mengunci booking. Kosong selama booking masih Draft."},
       {"label": "CO No. / Customer", "en": "Grid column: Customer Order number and customer. Double-click to open the booking.", "id": "Kolom grid: nomor Customer Order dan customer. Klik dua kali untuk membuka booking."},
-      {"label": "CO Status", "en": "Grid column: Draft, Submitted, Confirmed or Forecast (expected order from Demand Forecast).", "id": "Kolom grid: Draft, Submitted, Confirmed atau Forecast (order perkiraan dari Demand Forecast)."},
+      {"label": "CO Status", "en": "Grid column: Draft, Submitted, Confirmed, Forecast (from Demand Forecast), Not CO yet (pre-booking from a costed inquiry), Quotation or Held.", "id": "Kolom grid: Draft, Submitted, Confirmed, Forecast (dari Demand Forecast), Not CO yet (pre-booking dari inquiry yang sudah dihitung biaya), Quotation, atau Held."},
       {"label": "Material Needed By", "en": "Grid column: date the material must be ready.", "id": "Kolom grid: tanggal bahan harus sudah siap."},
       {"label": "Lines Not Covered", "en": "Grid column: number of material lines that are short, have no item chosen or lack a layout.", "id": "Kolom grid: jumlah baris bahan yang kurang, belum dipilih itemnya, atau belum punya layout."},
       {"label": "Coverage", "en": "Result per order or line: Covered by stock, Booked, Waiting PO/PR, Late, Short, Need item or Need layout.", "id": "Hasil per order atau baris: Covered by stock, Booked, Waiting PO/PR, Late, Short, Need item atau Need layout."},
       {"label": "Booking No.", "en": "Grid column: booking number, created when the booking is first calculated.", "id": "Kolom grid: nomor booking, dibuat saat booking pertama kali dihitung."},
-      {"label": "Booking", "en": "Grid column: NOT BOOKED, DRAFT, CONFIRMED (locked) or FORECAST.", "id": "Kolom grid: NOT BOOKED, DRAFT, CONFIRMED (terkunci) atau FORECAST."},
-      {"label": "Note", "en": "Shows CO changed when the order was changed after the booking was confirmed.", "id": "Menampilkan CO changed bila order berubah setelah booking dikonfirmasi."},
+      {"label": "Booking", "en": "Grid column: NOT BOOKED, DRAFT, CONFIRMED (locked), FORECAST, PRE-BOOKING (soft, before the CO exists) or HELD (kept for a limited time).", "id": "Kolom grid: NOT BOOKED, DRAFT, CONFIRMED (terkunci), FORECAST, PRE-BOOKING (lunak, sebelum CO ada), atau HELD (ditahan untuk waktu terbatas)."},
+      {"label": "Note", "en": "CO changed: the order changed after the booking was confirmed. Stale: the confirmed booking has no work order long after its need date and is warned, then released by the system.", "id": "CO changed: order berubah setelah booking dikonfirmasi. Stale: booking terkonfirmasi belum punya work order lama setelah tanggal butuh; diperingatkan lalu dilepas sistem."},
       {"label": "Line", "en": "In Pick Item: the booking line that still has no stock item (status Need item).", "id": "Di Pick Item: baris booking yang belum punya item stok (status Need item)."},
       {"label": "Stock Item", "en": "In Pick Item: the raw material to book. Type at least 2 letters of the name or code and pick from Master Raw Material.", "id": "Di Pick Item: bahan baku yang akan dibooking. Ketik minimal 2 huruf nama atau kode lalu pilih dari Master Raw Material."}
     ]
@@ -176,6 +180,10 @@
       {
         "en": "Use the buttons at the top to go to Demand Forecast, Material Usage Standard and Purchase Lead Time when the numbers need correcting.",
         "id": "Pakai tombol di atas untuk menuju Demand Forecast, Material Usage Standard dan Purchase Lead Time bila angkanya perlu dikoreksi."
+      },
+      {
+        "en": "Check Stage before ordering: Not CO yet means the shortage comes only from costed inquiries that have no Customer Order yet. Order early only if the planner accepts that risk.",
+        "id": "Cek Stage sebelum memesan: Not CO yet berarti kekurangan hanya berasal dari inquiry yang sudah dihitung biaya dan belum punya Customer Order. Pesan dini hanya bila perencana menerima risikonya."
       }
     ],
     "fields": [
@@ -192,6 +200,7 @@
       {"label": "Coverage", "en": "Grid column: Covered by stock, Booked, Waiting PO/PR, Late, Short, Need item or Need layout.", "id": "Kolom grid: Covered by stock, Booked, Waiting PO/PR, Late, Short, Need item atau Need layout."},
       {"label": "Suggested Supplier", "en": "Grid column: supplier proposed for the purchase. Requisitions are grouped by this supplier.", "id": "Kolom grid: supplier yang diusulkan untuk pembelian. Requisition dikelompokkan menurut supplier ini."},
       {"label": "For Orders", "en": "Grid column: the order numbers that need this material.", "id": "Kolom grid: nomor order yang membutuhkan bahan ini."},
+      {"label": "Stage", "en": "Grid column: Not CO yet = the shortage comes only from pre-bookings of costed inquiries; Includes not CO yet = part of it does. Empty = confirmed orders and forecast only. Judge an early PR with it.", "id": "Kolom grid: Not CO yet = kekurangan hanya dari pre-booking inquiry yang sudah dihitung biaya; Includes not CO yet = sebagian. Kosong = hanya order terkonfirmasi dan forecast. Pakai untuk menilai PR dini."},
       {"label": "Short materials", "en": "In Create Purchase Requisition: tick the materials to order. All short materials start ticked. Quantity is rounded up to the purchase unit.", "id": "Di Create Purchase Requisition: centang bahan yang akan dipesan. Semua bahan kurang tercentang di awal. Jumlah dibulatkan ke atas ke satuan beli."}
     ]
   },

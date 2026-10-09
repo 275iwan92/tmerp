@@ -182,6 +182,7 @@
       {"en": "Waiting for inspection: receipt lines that Quality Control has not judged yet. They are not stock yet.", "id": "Waiting for inspection: baris penerimaan yang belum dinilai Quality Control. Belum menjadi stok."},
       {"en": "Rejected, to return: quantity rejected by Quality Control that has not been returned to the supplier.", "id": "Rejected, to return: qty yang ditolak Quality Control dan belum diretur ke supplier."},
       {"en": "QC hold and Blocked bin: stock that sits in a QC Hold area or in a bin that is blocked.", "id": "QC hold dan Blocked bin: stok yang berada di area QC Hold atau di bin yang diblokir."},
+      {"en": "Stock that is posted but still waits for a sampling decision (Conditional batch, for example an URGENT receipt) is not here: follow it in Conditional Stock under Batch & Quality.", "id": "Stok yang sudah diposting tetapi menunggu keputusan sampling (batch Conditional, misalnya penerimaan URGENT) tidak ada di sini: ikuti di Conditional Stock pada Batch & Quality."},
       {"en": "Sort by Days to see what has waited longest.", "id": "Urutkan menurut Days untuk melihat yang paling lama menunggu."},
       {"en": "Click Print for the paper version: company header, the period, the same rows, totals and signature boxes.", "id": "Klik Print untuk versi kertas: kop perusahaan, periode, baris yang sama, total, dan kotak tanda tangan."}
     ],

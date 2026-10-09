@@ -1890,6 +1890,13 @@
                 ],
                 "returns": "void",
                 "note": "PPIC chooses the stock item for a line that only has a specification."
+            },
+            {
+                "method": "runPre",
+                "static": false,
+                "params": [],
+                "returns": "int",
+                "note": "Pre-booking: recalculates the soft bookings of costed inquiries that have no Customer Order yet, and releases those whose chain ended."
             }
         ],
         "key": "material-planning",
@@ -1935,6 +1942,7 @@
             "Netting per material: Confirmed first, then Draft, then Forecast, each by need date.",
             "Supply is used in this order: available stock, PO on time, PR, late PO / PR, then SHORT.",
             "A booking confirmed by PPIC is frozen: read from the database, not recalculated.",
+            "Pre-booking (runPre): from the moment costing has calculated, a soft booking (stage B0 / B1, shown as Not CO yet) is written per inquiry without a Customer Order. When the CO is Confirmed it takes over that header; when costing is reversed, the quotation expires or the inquiry is cancelled, the pre-booking is cancelled.",
             "The engine only reads master data; it writes bookings and requisitions only."
         ],
         "reads": [
@@ -2355,7 +2363,7 @@
     {
         "class": "App\\Services\\Inventory\\StockTransferService",
         "file": "app/Services/Inventory/StockTransferService.php",
-        "lines": 253,
+        "lines": 407,
         "entries": [
             {
                 "method": "confirmErrors",
@@ -2492,6 +2500,75 @@
                 ],
                 "returns": "float",
                 "note": "Stock of one item in one bin right now."
+            },
+            {
+                "method": "ship",
+                "static": false,
+                "params": [
+                    {
+                        "name": "transfer",
+                        "type": "InvTransfer",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?string",
+                "note": "Two-step transfer, step 1: moves the stock from the source bin to the In Transit bin and confirms the document. Returns an error text or null."
+            },
+            {
+                "method": "receive",
+                "static": false,
+                "params": [
+                    {
+                        "name": "transfer",
+                        "type": "InvTransfer",
+                        "default": null
+                    },
+                    {
+                        "name": "received",
+                        "type": "array",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?string",
+                "note": "Two-step transfer, step 2: moves the received quantity from In Transit to the destination bin; a shortage stays in In Transit as a discrepancy."
+            },
+            {
+                "method": "resolveDiscrepancy",
+                "static": false,
+                "params": [
+                    {
+                        "name": "transfer",
+                        "type": "InvTransfer",
+                        "default": null
+                    },
+                    {
+                        "name": "lineId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "how",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?string",
+                "note": "Settles a received-short line: write it off to the Loss bin, or return it to the source bin."
             }
         ],
         "key": "stock-transfer",
@@ -2542,7 +2619,8 @@
             "The destination bin gets a weighted average price. The total stock of the item does not change and no journal is made.",
             "Notes on the line whether the item was dead stock at that moment.",
             "Pallets follow: a line made from one pallet moves that pallet; a line that empties the bin moves all its pallets; otherwise the oldest pallets move when their quantities add up exactly, else they stay and the label work list shows the difference.",
-            "Cancel writes the same two rows the other way round and brings the pallets back; it stops when the stock is no longer in the destination bin."
+            "Cancel writes the same two rows the other way round and brings the pallets back; it stops when the stock is no longer in the destination bin.",
+            "Two-step transfer (In Transit): Ship moves the stock to the virtual In Transit bin and numbers the document; Receive moves what arrived to the destination bin. Quantity not received stays in In Transit until Loss or Return settles it. No journal and no approval."
         ],
         "reads": [
             "tm2inv.inv_transfer",
@@ -2571,10 +2649,2911 @@
         ],
         "tests": [
             "tests/Feature/StockTransferServiceTest.php",
-            "tests/Feature/PalletServiceTest.php"
+            "tests/Feature/PalletServiceTest.php",
+            "tests/Feature/TransitTransferTest.php"
         ],
         "docs": [
             "docs/warehouselayout_tier1.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\BatchService",
+        "file": "app/Services/Inventory/BatchService.php",
+        "lines": 110,
+        "entries": [
+            {
+                "method": "ensure",
+                "static": true,
+                "params": [
+                    {
+                        "name": "class",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "itemId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "supplierLot",
+                        "type": "?string",
+                        "default": null
+                    },
+                    {
+                        "name": "attrs",
+                        "type": "array",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvBatch",
+                "note": "Uses the batch of this item and supplier lot if it exists, otherwise creates it. Attributes are used only when creating."
+            },
+            {
+                "method": "create",
+                "static": true,
+                "params": [
+                    {
+                        "name": "class",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "itemId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "supplierLot",
+                        "type": "?string",
+                        "default": null
+                    },
+                    {
+                        "name": "attrs",
+                        "type": "array",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvBatch",
+                "note": "Creates a batch with the next batch number; the status starts as given (Released by default)."
+            },
+            {
+                "method": "setStatus",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "status",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "?string",
+                        "default": "null"
+                    }
+                ],
+                "returns": "InvBatch",
+                "note": "Changes the quality status after sampling, first article or a usage decision. Rejected and Blocked need a reason."
+            },
+            {
+                "method": "findByLot",
+                "static": true,
+                "params": [
+                    {
+                        "name": "class",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "itemId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "supplierLot",
+                        "type": "?string",
+                        "default": null
+                    }
+                ],
+                "returns": "?InvBatch",
+                "note": "The batch of an item and supplier lot; upper and lower case and edge spaces are not told apart."
+            },
+            {
+                "method": "allocatable",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "?InvBatch",
+                        "default": null
+                    }
+                ],
+                "returns": "bool",
+                "note": "True when stock of this batch may be picked. Stock without a batch (old data) counts as allowed."
+            },
+            {
+                "method": "flags",
+                "static": true,
+                "params": [
+                    {
+                        "name": "status",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Label, tone, available and allocatable flags of one status."
+            },
+            {
+                "method": "needsExpiry",
+                "static": true,
+                "params": [
+                    {
+                        "name": "class",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "itemId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "bool",
+                "note": "True for a raw material with a shelf life: a new batch then needs an expiry date."
+            },
+            {
+                "method": "normalizeLot",
+                "static": true,
+                "params": [
+                    {
+                        "name": "lot",
+                        "type": "?string",
+                        "default": null
+                    }
+                ],
+                "returns": "string",
+                "note": "Upper case, trimmed lot; an empty lot becomes the constant INV_NO_LOT_BATCH_CODE."
+            },
+            {
+                "method": "itemByCode",
+                "static": true,
+                "params": [
+                    {
+                        "name": "class",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "code",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?array",
+                "note": "Finds the item (raw material, part or product) by its code, with its shelf life."
+            }
+        ],
+        "key": "batch",
+        "name": "Batch Service (batch master and quality status)",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "The one door for creating batches and changing their quality status. Screens, receiving, backfill and QC all call it; nothing writes the batch table directly.",
+        "inputs": [
+            [
+                "class",
+                "Stock class: RM, SFG or FG."
+            ],
+            [
+                "itemId",
+                "The item in its master."
+            ],
+            [
+                "supplierLot",
+                "Lot number written by the supplier; may be empty."
+            ],
+            [
+                "attrs",
+                "Optional: part, supplier, production and expiry date, quality status, certification, food grade, grain direction, notes."
+            ],
+            [
+                "status / reason",
+                "The new status; the reason is required for Rejected and Blocked."
+            ],
+            [
+                "login",
+                "Who makes the change."
+            ]
+        ],
+        "outputs": [
+            [
+                "Batch",
+                "One batch per class, item and lot, with a batch number and a quality status."
+            ],
+            [
+                "Status flags",
+                "Whether stock of the batch counts as Available and whether it may be allocated."
+            ]
+        ],
+        "steps": [
+            "A batch is one class + item + supplier lot. The same lot is never made twice.",
+            "Statuses: Quarantine (not available), Conditional (available, with a mark), Released, Rejected and Blocked (neither available nor allocatable).",
+            "Only setStatus changes the status, and every change keeps who and when.",
+            "Rejected or Blocked without a reason is refused."
+        ],
+        "reads": [
+            "tm2inv.inv_batch",
+            "tm2mst.mat_raw, prod_part, prod_product"
+        ],
+        "writes": [
+            "tm2inv.inv_batch"
+        ],
+        "settings": [
+            "Settings > Constants: INV_NO_LOT_BATCH_CODE"
+        ],
+        "used": [
+            "Batch",
+            "Stock In (batch picker)",
+            "Purchase Receive",
+            "Conditional Stock",
+            "Putaway and Pick List"
+        ],
+        "tests": [
+            "tests/Feature/BatchServiceTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\BatchBackfillService",
+        "file": "app/Services/Inventory/BatchBackfillService.php",
+        "lines": 106,
+        "entries": [
+            {
+                "method": "run",
+                "static": true,
+                "params": [
+                    {
+                        "name": "write",
+                        "type": "bool",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": "'inv:backfill-batch'"
+                    },
+                    {
+                        "name": "classes",
+                        "type": "?array",
+                        "default": "null"
+                    },
+                    {
+                        "name": "itemIds",
+                        "type": "?array",
+                        "default": "null"
+                    }
+                ],
+                "returns": "array",
+                "note": "With write = false it only counts what would be created and linked."
+            }
+        ],
+        "key": "batch-backfill",
+        "name": "Batch Backfill (batches from old lot data)",
+        "group": "Inventory",
+        "mode": "auto",
+        "purpose": "Turns the lot numbers already in stock cards and pallets into batches and links the old rows to them. Safe to run twice; a check run only counts.",
+        "inputs": [
+            [
+                "write",
+                "False = check only, nothing is written."
+            ],
+            [
+                "login",
+                "Name recorded on the new batches."
+            ],
+            [
+                "classes",
+                "Limit to these stock classes; empty = RM, SFG and FG."
+            ],
+            [
+                "itemIds",
+                "Limit to these items; empty = all."
+            ]
+        ],
+        "outputs": [
+            [
+                "Counts",
+                "Batches created and already existing, lot spellings merged, and rows linked per stock class."
+            ],
+            [
+                "Links",
+                "batch_id filled on stock cards, document lines and pallets that had none."
+            ]
+        ],
+        "steps": [
+            "Groups the existing rows by class, item and lot (upper case, edge spaces removed).",
+            "An empty lot belongs to the batch named by INV_NO_LOT_BATCH_CODE.",
+            "Uses the batch of that group if it exists, otherwise creates it as Released with the nearest pallet expiry date.",
+            "Fills batch_id only on rows that have none, so a second run changes nothing."
+        ],
+        "reads": [
+            "tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard",
+            "tm2inv.inv_pallet",
+            "tm2inv.inv_batch"
+        ],
+        "writes": [
+            "tm2inv.inv_batch",
+            "batch_id of stock cards, document lines and pallets"
+        ],
+        "settings": [
+            "Settings > Constants: INV_NO_LOT_BATCH_CODE"
+        ],
+        "used": [
+            "Command inv:backfill-batch (check run first)"
+        ],
+        "tests": [
+            "tests/Feature/BatchBackfillTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\PutawayPlanner",
+        "file": "app/Services/Inventory/PutawayPlanner.php",
+        "lines": 151,
+        "entries": [
+            {
+                "method": "suggest",
+                "static": false,
+                "params": [
+                    {
+                        "name": "pallet",
+                        "type": "InvPallet",
+                        "default": null
+                    },
+                    {
+                        "name": "batch",
+                        "type": "?InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "limit",
+                        "type": "int",
+                        "default": "5"
+                    }
+                ],
+                "returns": "array",
+                "note": "Up to a limit of bins that follow the rules, with free weight and the reason for the suggestion."
+            },
+            {
+                "method": "reserve",
+                "static": false,
+                "params": [
+                    {
+                        "name": "bin",
+                        "type": "WhLoc",
+                        "default": null
+                    },
+                    {
+                        "name": "pallet",
+                        "type": "InvPallet",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": "Marks a bin as used by this pallet so the next suggestion of the same run does not overfill it."
+            },
+            {
+                "method": "toLine",
+                "static": false,
+                "params": [
+                    {
+                        "name": "pallet",
+                        "type": "InvPallet",
+                        "default": null
+                    },
+                    {
+                        "name": "woNo",
+                        "type": "?string",
+                        "default": "null"
+                    }
+                ],
+                "returns": "?array",
+                "note": "Dock to line: the bin in a WIP area (then Staging) for a pallet that goes straight to production."
+            }
+        ],
+        "key": "putaway-planner",
+        "name": "Putaway Planner (suggests a bin)",
+        "group": "Inventory",
+        "mode": "suggest",
+        "purpose": "Suggests the bins where a received pallet may be put away, best first. The warehouse officer confirms by scanning; the planner never moves stock.",
+        "inputs": [
+            [
+                "pallet",
+                "The pallet to put away, with its item, quantity, batch and current bin."
+            ],
+            [
+                "batch",
+                "Its batch; a Rejected, Blocked or Quarantine batch gets no suggestion."
+            ],
+            [
+                "limit",
+                "How many bins to suggest."
+            ],
+            [
+                "woNo",
+                "Work order for dock to line."
+            ]
+        ],
+        "outputs": [
+            [
+                "Suggestions",
+                "Bin, storage area, whether the bin is empty, free kilograms and a short reason."
+            ],
+            [
+                "Dock to line bin",
+                "A WIP or Staging bin, or nothing when the area has none."
+            ]
+        ],
+        "steps": [
+            "Only batches that may be allocated are put away.",
+            "Active Storage areas that are not virtual and whose stock class fits (Any or the class of the pallet).",
+            "Active, usable bins that are not locked for counting and follow the Mixing rule of the area.",
+            "Capacity check by weight, number of pallets and the stack limit of the area; a weight that cannot be estimated does not refuse a bin.",
+            "Order: same building as the pallet first, area order, empty bins first, then bin code."
+        ],
+        "reads": [
+            "tm2mst.wh_zone, wh_loc",
+            "tm2inv.inv_pallet, inv_batch",
+            "stock per bin (Warehouse Stock)"
+        ],
+        "writes": [
+            "Nothing: it only suggests."
+        ],
+        "used": [
+            "Receiving & Putaway"
+        ],
+        "tests": [
+            "tests/Feature/WarehouseTaskServiceTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\WarehouseTaskService",
+        "file": "app/Services/Inventory/WarehouseTaskService.php",
+        "lines": 217,
+        "entries": [
+            {
+                "method": "sync",
+                "static": false,
+                "params": [
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Creates a task for each pallet still in a receiving or QC Hold area and cancels the tasks whose pallet has moved."
+            },
+            {
+                "method": "state",
+                "static": true,
+                "params": [
+                    {
+                        "name": "task",
+                        "type": "WhTask",
+                        "default": null
+                    },
+                    {
+                        "name": "batch",
+                        "type": "?InvBatch",
+                        "default": null
+                    }
+                ],
+                "returns": "string",
+                "note": "Waiting (Quarantine), Ready, To line (Conditional: dock to line) or Blocked (Rejected, Blocked) from the batch quality."
+            },
+            {
+                "method": "suggestions",
+                "static": false,
+                "params": [
+                    {
+                        "name": "task",
+                        "type": "WhTask",
+                        "default": null
+                    },
+                    {
+                        "name": "pallet",
+                        "type": "?InvPallet",
+                        "default": "null"
+                    },
+                    {
+                        "name": "batch",
+                        "type": "?InvBatch",
+                        "default": "null"
+                    },
+                    {
+                        "name": "planner",
+                        "type": "?PutawayPlanner",
+                        "default": "null"
+                    },
+                    {
+                        "name": "limit",
+                        "type": "int",
+                        "default": "3"
+                    }
+                ],
+                "returns": "array",
+                "note": "The bins of the Putaway Planner for one task."
+            },
+            {
+                "method": "confirm",
+                "static": false,
+                "params": [
+                    {
+                        "name": "task",
+                        "type": "WhTask",
+                        "default": null
+                    },
+                    {
+                        "name": "scanPallet",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "scanBin",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "?string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "WhTask",
+                "note": "The officer scans the pallet then the bin; the stock moves through a real Stock Transfer document."
+            }
+        ],
+        "key": "warehouse-task",
+        "name": "Warehouse Task Service (putaway tasks)",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "Keeps the list of putaway tasks for pallets that wait in a receiving or QC Hold area and moves the pallet when the officer scans it and its bin.",
+        "inputs": [
+            [
+                "task",
+                "The putaway task."
+            ],
+            [
+                "scanPallet / scanBin",
+                "What the officer scanned."
+            ],
+            [
+                "reason",
+                "Required when the bin differs from the suggestion."
+            ],
+            [
+                "login",
+                "Who confirms."
+            ]
+        ],
+        "outputs": [
+            [
+                "Task",
+                "Status Open, Done or Cancelled, with the bin used and who and when."
+            ],
+            [
+                "Stock Transfer",
+                "The document that moved the pallet; balances change only there."
+            ]
+        ],
+        "steps": [
+            "Sync is run when Receiving & Putaway opens; one open task per pallet.",
+            "A task is Urgent when the pallet comes from a receipt line marked URGENT.",
+            "Confirm refuses a wrong pallet or bin scan and a task that is Waiting or Blocked.",
+            "A bin other than the suggested ones needs a reason. Putaway is an internal bin move: the Stock Transfer approval is not used."
+        ],
+        "reads": [
+            "tm2inv.inv_pallet, inv_batch",
+            "tm2mst.wh_zone, wh_loc"
+        ],
+        "writes": [
+            "tm2inv.wh_task",
+            "Stock Transfer document (through StockTransferService::post)"
+        ],
+        "used": [
+            "Receiving & Putaway"
+        ],
+        "tests": [
+            "tests/Feature/WarehouseTaskServiceTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\PickAllocator",
+        "file": "app/Services/Inventory/PickAllocator.php",
+        "lines": 132,
+        "entries": [
+            {
+                "method": "allocate",
+                "static": false,
+                "params": [
+                    {
+                        "name": "materialId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "need",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "req",
+                        "type": "PickRequirement",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "The pallets to take for a needed quantity; what is not covered comes back as SHORT."
+            },
+            {
+                "method": "candidates",
+                "static": false,
+                "params": [
+                    {
+                        "name": "materialId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "req",
+                        "type": "PickRequirement",
+                        "default": null
+                    }
+                ],
+                "returns": "Collection",
+                "note": "All pallets that may be used, in pick order."
+            },
+            {
+                "method": "batchRefusal",
+                "static": false,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "?InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "req",
+                        "type": "PickRequirement",
+                        "default": null
+                    }
+                ],
+                "returns": "?string",
+                "note": "Why a batch may not be picked for this need; null = it may."
+            },
+            {
+                "method": "ownerOf",
+                "static": true,
+                "params": [
+                    {
+                        "name": "materialId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "locationId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "batchId",
+                        "type": "?int",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Owner (company or customer) of the stock in one bin and batch."
+            }
+        ],
+        "key": "pick-allocator",
+        "name": "Pick Allocator (which pallet to take)",
+        "group": "Inventory",
+        "mode": "suggest",
+        "purpose": "For one material, chooses the pallets, batches and bins that may be taken and in which order. The warehouse officer confirms by scanning.",
+        "inputs": [
+            [
+                "materialId",
+                "The raw material needed."
+            ],
+            [
+                "need",
+                "Quantity needed."
+            ],
+            [
+                "requirement",
+                "Grain direction, certification and food grade asked by the booking."
+            ]
+        ],
+        "outputs": [
+            [
+                "Allocation",
+                "Pallet, batch, bin and quantity per piece of the need."
+            ],
+            [
+                "Short",
+                "The quantity that no pallet could cover. Material is never invented."
+            ]
+        ],
+        "steps": [
+            "Only active pallets in usable bins that are not locked for counting, in Storage or Consignment areas.",
+            "Only batches that may be allocated; Conditional only for class B and C material (never food grade, FSC or PEFC), and INV_PICK_CONDITIONAL_ALLOWED = 0 switches it off.",
+            "Expired batches and batches that do not fit the grain or certification are skipped.",
+            "Stock owned by someone else is skipped, except the customer of that order.",
+            "Order per area follows its Pick Order: FIFO (oldest first) or FEFO (earliest expiry first).",
+            "Pallets already allocated to another open pick list are subtracted."
+        ],
+        "reads": [
+            "tm2inv.inv_pallet, inv_batch, wh_pick_list_line",
+            "tm2mst.wh_zone, wh_loc"
+        ],
+        "writes": [
+            "Nothing: it only suggests."
+        ],
+        "settings": [
+            "Settings > Constants: INV_PICK_CONDITIONAL_ALLOWED"
+        ],
+        "used": [
+            "Pick List"
+        ],
+        "tests": [
+            "tests/Feature/PickListServiceTest.php",
+            "tests/Feature/CustomerMaterialTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\PickListService",
+        "file": "app/Services/Inventory/PickListService.php",
+        "lines": 356,
+        "entries": [
+            {
+                "method": "create",
+                "static": true,
+                "params": [
+                    {
+                        "name": "woId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "deliverToLocationId",
+                        "type": "?int",
+                        "default": "null"
+                    }
+                ],
+                "returns": "WhPickList",
+                "note": "Makes the list from the Confirmed booking of the work order; lines that cannot be covered are SHORT."
+            },
+            {
+                "method": "reallocate",
+                "static": true,
+                "params": [
+                    {
+                        "name": "list",
+                        "type": "WhPickList",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "WhPickList",
+                "note": "Recalculates the lines that are not scanned yet, after stock arrived or a batch changed."
+            },
+            {
+                "method": "scanPallet",
+                "static": true,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "WhPickListLine",
+                        "default": null
+                    },
+                    {
+                        "name": "scanned",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "WhPickListLine",
+                "note": "Confirms the right pallet for a line."
+            },
+            {
+                "method": "scanBin",
+                "static": true,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "WhPickListLine",
+                        "default": null
+                    },
+                    {
+                        "name": "scanned",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "WhPickListLine",
+                "note": "Confirms the right bin; the line becomes PICKED."
+            },
+            {
+                "method": "scan",
+                "static": true,
+                "params": [
+                    {
+                        "name": "list",
+                        "type": "WhPickList",
+                        "default": null
+                    },
+                    {
+                        "name": "scanned",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "One scan box: finds out whether the code is a pallet or a bin and applies it."
+            },
+            {
+                "method": "confirm",
+                "static": true,
+                "params": [
+                    {
+                        "name": "list",
+                        "type": "WhPickList",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "All lines picked: posts Stock Out RM to the work order (one document per warehouse) and marks the list DONE."
+            },
+            {
+                "method": "cancel",
+                "static": true,
+                "params": [
+                    {
+                        "name": "list",
+                        "type": "WhPickList",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": "Cancels before DONE; only the allocation is released because no stock moved yet."
+            }
+        ],
+        "key": "pick-list",
+        "name": "Pick List Service",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "Makes a pick list per Work Order from its confirmed booking, lets the officer scan pallets and bins, and issues the material to the work order when all lines are picked.",
+        "inputs": [
+            [
+                "woId",
+                "The work order."
+            ],
+            [
+                "deliverToLocationId",
+                "Where the material is delivered; empty = default."
+            ],
+            [
+                "scanned",
+                "The pallet or bin code scanned."
+            ],
+            [
+                "reason",
+                "Why a list is cancelled."
+            ],
+            [
+                "login",
+                "Who acts."
+            ]
+        ],
+        "outputs": [
+            [
+                "Pick list",
+                "Lines with pallet, batch, bin, quantity and status."
+            ],
+            [
+                "Stock Out RM",
+                "Posted by the normal stock posting when the list is confirmed."
+            ],
+            [
+                "Booking",
+                "Issued quantity of the booking lines goes up; used pallets are relabelled."
+            ]
+        ],
+        "steps": [
+            "Needs a Confirmed booking for the work order.",
+            "The Pick Allocator chooses pallets, batches and bins; the officer confirms by scanning, never by trusting the suggestion.",
+            "Confirm writes no stock card itself: it calls the stock document and posting services, so balances stay owned by Inventory.",
+            "The leftover reservation is released when the work order ends."
+        ],
+        "reads": [
+            "tm2inv.rm_booking, rm_booking_d",
+            "tm2inv.inv_pallet",
+            "tm2prd.prd_wo"
+        ],
+        "writes": [
+            "tm2inv.wh_pick_list, wh_pick_list_line",
+            "Stock Out RM document",
+            "rm_booking_d.qty_issued",
+            "tm2inv.inv_pallet"
+        ],
+        "used": [
+            "Pick List"
+        ],
+        "tests": [
+            "tests/Feature/PickListServiceTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Planning\\BookingMaintenance",
+        "file": "app/Services/Planning/BookingMaintenance.php",
+        "lines": 60,
+        "entries": [
+            {
+                "method": "run",
+                "static": false,
+                "params": [
+                    {
+                        "name": "dryRun",
+                        "type": "bool",
+                        "default": "false"
+                    },
+                    {
+                        "name": "today",
+                        "type": "?CarbonImmutable",
+                        "default": "null"
+                    }
+                ],
+                "returns": "array",
+                "note": "With dryRun = true it only lists what would happen."
+            }
+        ],
+        "key": "booking-maintenance",
+        "name": "Booking Maintenance (hold and stale booking)",
+        "group": "Planning",
+        "mode": "auto",
+        "purpose": "Frees reservations nobody uses: a Hold that has expired, and a Confirmed booking that never became a work order.",
+        "inputs": [
+            [
+                "dryRun",
+                "True = list only."
+            ],
+            [
+                "today",
+                "Date to judge from; empty = today."
+            ]
+        ],
+        "outputs": [
+            [
+                "holds",
+                "Booking numbers whose Hold expired and was released."
+            ],
+            [
+                "warned",
+                "Booking numbers marked Stale: no work order a while after the need date."
+            ],
+            [
+                "released",
+                "Booking numbers released: no work order long after the need date."
+            ]
+        ],
+        "steps": [
+            "A HELD booking whose hold date has passed is released.",
+            "A Confirmed booking with a Customer Order and no work order is warned (Stale) after INV_BOOKING_STALE_WARN_DAYS days past the need date.",
+            "After INV_BOOKING_STALE_RELEASE_DAYS days it is released and the stock is Available again.",
+            "A booking with any issued quantity or an existing work order is never released."
+        ],
+        "reads": [
+            "tm2inv.rm_booking, rm_booking_d",
+            "tm2prd.prd_wo"
+        ],
+        "writes": [
+            "tm2inv.rm_booking (warning date, release)"
+        ],
+        "settings": [
+            "Settings > Constants: INV_BOOKING_STALE_WARN_DAYS, INV_BOOKING_STALE_RELEASE_DAYS"
+        ],
+        "used": [
+            "Command inventory:booking-maintain",
+            "Material Booking (Stale note)"
+        ],
+        "tests": [
+            "tests/Feature/PreBookingTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\QcSamplingService",
+        "file": "app/Services/Inventory/QcSamplingService.php",
+        "lines": 133,
+        "entries": [
+            {
+                "method": "planFor",
+                "static": true,
+                "params": [
+                    {
+                        "name": "itemId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "supplierId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "lotQty",
+                        "type": "float",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "The whole plan: risk class, intensity and sample size."
+            },
+            {
+                "method": "riskClass",
+                "static": true,
+                "params": [
+                    {
+                        "name": "itemId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "string",
+                "note": "A (high risk), B (standard) or C (low risk) of the item."
+            },
+            {
+                "method": "history",
+                "static": true,
+                "params": [
+                    {
+                        "name": "supplierId",
+                        "type": "?int",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Pass and reject history of a supplier, read from the sampling decisions."
+            },
+            {
+                "method": "sampleSize",
+                "static": true,
+                "params": [
+                    {
+                        "name": "intensity",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "lotQty",
+                        "type": "float",
+                        "default": null
+                    }
+                ],
+                "returns": "int",
+                "note": "Pieces to sample for an intensity and a lot quantity; Skip = certificate only."
+            }
+        ],
+        "key": "qc-sampling",
+        "name": "QC Sampling Service (sampling plan)",
+        "group": "Inventory",
+        "mode": "suggest",
+        "purpose": "Works out how a received lot is checked: the risk class of the item, how tight the checks are for this supplier, and the sample size for the lot.",
+        "inputs": [
+            [
+                "itemId",
+                "The received item."
+            ],
+            [
+                "supplierId",
+                "The supplier of the lot."
+            ],
+            [
+                "lotQty",
+                "Quantity of the lot."
+            ]
+        ],
+        "outputs": [
+            [
+                "Plan",
+                "Risk class, intensity (Tightened, Normal, Reduced or Skip) and sample size."
+            ]
+        ],
+        "steps": [
+            "Risk class: the item first, then its category, the deepest category wins; with no data it is B.",
+            "Starting intensity follows the class. A new supplier (fewer decided lots than INV_QC_NEW_SUPPLIER_LOTS) starts Tightened.",
+            "After a reject the supplier stays Tightened until enough lots in a row pass; enough passes in a row move it to Reduced.",
+            "Sample size comes from the sampling plan table by intensity and lot range; Skip = 0 (certificate only). It never exceeds the lot.",
+            "Shortage events do not yet count in the history."
+        ],
+        "reads": [
+            "tm2inv.inv_qc_risk_class, inv_qc_intensity_rule, inv_qc_sampling_plan, inv_qc_decision"
+        ],
+        "writes": [
+            "Nothing: it only advises."
+        ],
+        "settings": [
+            "Quality Setup: Sampling Plan, Sampling Rules, Risk Class",
+            "Settings > Constants: INV_QC_NEW_SUPPLIER_LOTS"
+        ],
+        "used": [
+            "Purchase Receive (URGENT and Sampling card)",
+            "Conditional Stock"
+        ],
+        "tests": [
+            "tests/Feature/QcSamplingTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\QcDecisionService",
+        "file": "app/Services/Inventory/QcDecisionService.php",
+        "lines": 93,
+        "entries": [
+            {
+                "method": "record",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "type",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "decision",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "in",
+                        "type": "array",
+                        "default": "[]"
+                    }
+                ],
+                "returns": "InvQcDecision",
+                "note": "Records the decision, changes the batch status and, when rejected or blocked, holds the work orders and opens a supplier claim."
+            },
+            {
+                "method": "firstArticle",
+                "static": true,
+                "params": [
+                    {
+                        "name": "woId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "result",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "notes",
+                        "type": "?string",
+                        "default": "null"
+                    }
+                ],
+                "returns": "InvQcFirstArticle",
+                "note": "Records the first article result of a work order for a batch."
+            },
+            {
+                "method": "age",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "How long a batch has waited for a decision."
+            }
+        ],
+        "key": "qc-decision",
+        "name": "QC Decision Service",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "The one door for a quality decision on a batch: sampling at the dock, first article at the press, a later usage decision, or a deviation. Each decision changes the batch status and is kept.",
+        "inputs": [
+            [
+                "batch",
+                "The batch decided on."
+            ],
+            [
+                "type",
+                "Sampling at dock, First article, Usage decision or Deviation."
+            ],
+            [
+                "decision",
+                "Released, Rejected, Blocked or Conditional use."
+            ],
+            [
+                "reason / notes",
+                "Required to reject or block."
+            ],
+            [
+                "login",
+                "Who decides. The right to decide is checked by the caller (QcAuthority)."
+            ]
+        ],
+        "outputs": [
+            [
+                "Decision row",
+                "Type, decision, reason, who and when; the sampling history of the supplier is read from it."
+            ],
+            [
+                "Batch status",
+                "Changed through the Batch Service."
+            ],
+            [
+                "Holds and claim",
+                "Work orders that used a rejected batch are held and one supplier claim is opened."
+            ]
+        ],
+        "steps": [
+            "Each decision sets the batch status through the Batch Service and writes one decision row.",
+            "Rejected or Blocked needs a reason; the work orders that used the batch are held and a supplier claim is opened (QC Trace Service).",
+            "A later decision that is not Rejected or Blocked releases the holds.",
+            "The right to decide is not checked here, so screens and tests use the same path."
+        ],
+        "reads": [
+            "tm2inv.inv_batch, inv_qc_decision"
+        ],
+        "writes": [
+            "tm2inv.inv_batch",
+            "tm2inv.inv_qc_decision",
+            "tm2inv.inv_qc_first_article",
+            "tm2inv.inv_qc_hold, inv_supplier_claim"
+        ],
+        "used": [
+            "Conditional Stock",
+            "First Article"
+        ],
+        "tests": [
+            "tests/Feature/QcDecisionTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\QcTraceService",
+        "file": "app/Services/Inventory/QcTraceService.php",
+        "lines": 103,
+        "entries": [
+            {
+                "method": "forward",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Batch to issue documents to work orders to Customer Orders and deliveries."
+            },
+            {
+                "method": "onReject",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Holds the work orders and opens the claim for a rejected or blocked batch."
+            },
+            {
+                "method": "holdWorkOrders",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "int",
+                "note": "Puts a hold on every work order that used the batch."
+            },
+            {
+                "method": "openClaim",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?InvSupplierClaim",
+                "note": "Opens one claim to the supplier of the batch."
+            },
+            {
+                "method": "clearHolds",
+                "static": true,
+                "params": [
+                    {
+                        "name": "batch",
+                        "type": "InvBatch",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "int",
+                "note": "Frees the holds when the batch is later decided as not rejected."
+            },
+            {
+                "method": "setClaimStatus",
+                "static": true,
+                "params": [
+                    {
+                        "name": "claim",
+                        "type": "InvSupplierClaim",
+                        "default": null
+                    },
+                    {
+                        "name": "status",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "notes",
+                        "type": "?string",
+                        "default": "null"
+                    }
+                ],
+                "returns": "InvSupplierClaim",
+                "note": "Moves a supplier claim to its next status."
+            }
+        ],
+        "key": "qc-trace",
+        "name": "QC Trace Service (forward trace of a rejected batch)",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "Finds where a rejected batch went: the issue documents, the work orders, and the orders or deliveries made from it; holds those work orders and opens one supplier claim.",
+        "inputs": [
+            [
+                "batch",
+                "The rejected or blocked batch."
+            ],
+            [
+                "reason",
+                "Why it was rejected or blocked."
+            ],
+            [
+                "claim / status",
+                "The claim to update and its new status."
+            ]
+        ],
+        "outputs": [
+            [
+                "Trace",
+                "The work orders, orders and deliveries that used the batch."
+            ],
+            [
+                "Holds",
+                "One hold per affected work order."
+            ],
+            [
+                "Claim",
+                "One supplier claim per batch."
+            ]
+        ],
+        "steps": [
+            "Issue lines carry the batch; old issue lines without a batch are matched by item and supplier lot.",
+            "Every work order that used the batch is held and the number of held orders is reported.",
+            "One claim is opened for the supplier, not one per work order.",
+            "The holds are freed again if the batch is later decided as not rejected or blocked."
+        ],
+        "reads": [
+            "tm2inv.rm_stock_d (batch_id)",
+            "tm2prd.prd_wo",
+            "tm2sdi.co_order"
+        ],
+        "writes": [
+            "tm2inv.inv_qc_hold",
+            "tm2inv.inv_supplier_claim"
+        ],
+        "used": [
+            "Conditional Stock (batch use)",
+            "Supplier Claims"
+        ],
+        "tests": [
+            "tests/Feature/QcDecisionTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Pur\\UrgentReceiptService",
+        "file": "app/Services/Pur/UrgentReceiptService.php",
+        "lines": 142,
+        "entries": [
+            {
+                "method": "mark",
+                "static": true,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "PvLine",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "woId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "by",
+                        "type": "SecUser|string",
+                        "default": null
+                    }
+                ],
+                "returns": "PvLine",
+                "note": "Marks a stock line URGENT with a reason and the work order that needs it."
+            },
+            {
+                "method": "unmark",
+                "static": true,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "PvLine",
+                        "default": null
+                    },
+                    {
+                        "name": "by",
+                        "type": "SecUser|string",
+                        "default": null
+                    }
+                ],
+                "returns": "PvLine",
+                "note": "Takes the mark and its approval away."
+            },
+            {
+                "method": "approve",
+                "static": true,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "PvLine",
+                        "default": null
+                    },
+                    {
+                        "name": "by",
+                        "type": "SecUser|string",
+                        "default": null
+                    },
+                    {
+                        "name": "note",
+                        "type": "?string",
+                        "default": "null"
+                    }
+                ],
+                "returns": "PvLine",
+                "note": "Head of QC or an operations manager approves an FSC, PEFC or food grade URGENT line."
+            },
+            {
+                "method": "setCertification",
+                "static": true,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "PvLine",
+                        "default": null
+                    },
+                    {
+                        "name": "certification",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "foodGrade",
+                        "type": "bool",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "PvLine",
+                "note": "Sets the certification and food grade claim of the line."
+            },
+            {
+                "method": "needsApproval",
+                "static": true,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "PvLine",
+                        "default": null
+                    }
+                ],
+                "returns": "bool",
+                "note": "True for FSC, PEFC or food grade material (switch INV_URGENT_FSC_APPROVAL)."
+            },
+            {
+                "method": "postBlockers",
+                "static": true,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "PvLine",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "What still stops the line from being posted."
+            },
+            {
+                "method": "prepareForPost",
+                "static": true,
+                "params": [
+                    {
+                        "name": "pv",
+                        "type": "PvReceipt",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": "Makes the batch of the URGENT lines before posting."
+            }
+        ],
+        "key": "urgent-receipt",
+        "name": "Urgent Receipt Service",
+        "group": "Procurement",
+        "mode": "flow",
+        "purpose": "Lets a receipt line be posted before the quality result and go straight to production (URGENT), while sampling runs in parallel and the batch stays Conditional.",
+        "inputs": [
+            [
+                "line",
+                "The receipt line (a stock item)."
+            ],
+            [
+                "reason",
+                "At least 5 characters."
+            ],
+            [
+                "woId",
+                "The work order that needs the material."
+            ],
+            [
+                "by",
+                "Who acts: PPIC, production supervisor or manager, operations manager for the mark; head of QC or operations manager for approval."
+            ]
+        ],
+        "outputs": [
+            [
+                "URGENT mark",
+                "Who, when, why and which work order, on the receipt line."
+            ],
+            [
+                "Posting",
+                "The receipt may post although the quality result is pending; the batch is born Conditional."
+            ]
+        ],
+        "steps": [
+            "Only an authorised person can mark; it needs a reason of 5 characters and an existing work order.",
+            "Changing the reason or the work order removes an earlier approval.",
+            "A line with FSC, PEFC or food grade needs approval before posting, when INV_URGENT_FSC_APPROVAL is 1.",
+            "The line is no longer blocked by the pending quality result; its batch is Conditional and sampling goes on in Conditional Stock."
+        ],
+        "reads": [
+            "tm2pur.pv_line, pv_receipt",
+            "tm2inv.inv_batch"
+        ],
+        "writes": [
+            "tm2pur.pv_line (URGENT, approval, certification)",
+            "tm2inv.inv_batch"
+        ],
+        "settings": [
+            "Settings > Constants: INV_URGENT_FSC_APPROVAL"
+        ],
+        "used": [
+            "Purchase Receive (URGENT and Sampling card)",
+            "URGENT Usage report"
+        ],
+        "tests": [
+            "tests/Feature/QcUrgentReceiptTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Pur\\ShortageDetector",
+        "file": "app/Services/Pur/ShortageDetector.php",
+        "lines": 61,
+        "entries": [
+            {
+                "method": "evaluate",
+                "static": true,
+                "params": [
+                    {
+                        "name": "issuedNet",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "outputGood",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "wasteStandard",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "tolPct",
+                        "type": "float",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "The suspected shortage of one comparison: issued minus output and standard waste."
+            },
+            {
+                "method": "tolerancePct",
+                "static": true,
+                "params": [
+                    {
+                        "name": "poLineId",
+                        "type": "?int",
+                        "default": null
+                    }
+                ],
+                "returns": "float",
+                "note": "Tolerance of the PO line of the receipt; empty = RECEIVE_TOLERANCE_PCT."
+            },
+            {
+                "method": "reconcile",
+                "static": true,
+                "params": [
+                    {
+                        "name": "woId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "materialId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "?array",
+                "note": "The comparison of one work order and material."
+            },
+            {
+                "method": "reconcileOptions",
+                "static": true,
+                "params": [],
+                "returns": "array",
+                "note": "The work order and material pairs that can be compared."
+            }
+        ],
+        "key": "shortage-detector",
+        "name": "Shortage Detector (short delivery found late)",
+        "group": "Procurement",
+        "mode": "suggest",
+        "purpose": "Compares the material issued to a work order with its good output plus standard waste and suspects a short delivery when material is missing.",
+        "inputs": [
+            [
+                "issuedNet",
+                "Material issued to the work order, net of returns, in material unit."
+            ],
+            [
+                "outputGood",
+                "Good output in material unit, typed by the officer."
+            ],
+            [
+                "wasteStandard",
+                "Standard waste of the work order."
+            ],
+            [
+                "tolPct",
+                "Tolerance percent of the PO line."
+            ]
+        ],
+        "outputs": [
+            [
+                "Suspected shortage",
+                "Quantity above the tolerance; zero when it is within tolerance."
+            ]
+        ],
+        "steps": [
+            "Suspected shortage = net issued - (good output + standard waste).",
+            "Actual waste above standard is usage variance, not a short delivery.",
+            "Only a suspicion above the tolerance becomes a request; the head of the warehouse must recount before it counts.",
+            "Good output in material unit is typed by the officer: there is no unit conversion from product output yet."
+        ],
+        "reads": [
+            "tm2inv.rm_stock_d",
+            "tm2prd.prd_wo",
+            "tm2pur.po_line (tolerance)"
+        ],
+        "writes": [
+            "Nothing: it only compares."
+        ],
+        "settings": [
+            "Settings > Constants: RECEIVE_TOLERANCE_PCT"
+        ],
+        "used": [
+            "Shortage Request"
+        ],
+        "tests": [
+            "tests/Feature/ShortageRequestTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Pur\\ShortageRequestService",
+        "file": "app/Services/Pur/ShortageRequestService.php",
+        "lines": 246,
+        "entries": [
+            {
+                "method": "create",
+                "static": true,
+                "params": [
+                    {
+                        "name": "in",
+                        "type": "array",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvShortageRequest",
+                "note": "Makes a Draft request from a suspected shortage."
+            },
+            {
+                "method": "recount",
+                "static": true,
+                "params": [
+                    {
+                        "name": "req",
+                        "type": "InvShortageRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "countedQty",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "weight",
+                        "type": "?float",
+                        "default": null
+                    },
+                    {
+                        "name": "confirmedShort",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "note",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvShortageRequest",
+                "note": "The head of the warehouse recounts or reweighs; the confirmed shortage is the proof."
+            },
+            {
+                "method": "dismiss",
+                "static": true,
+                "params": [
+                    {
+                        "name": "req",
+                        "type": "InvShortageRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "note",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvShortageRequest",
+                "note": "Closes the suspicion as usage variance."
+            },
+            {
+                "method": "confirm",
+                "static": true,
+                "params": [
+                    {
+                        "name": "req",
+                        "type": "InvShortageRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvShortageRequest",
+                "note": "PPIC confirms: received quantity goes down, the PO line reopens, GR/IR is corrected and stock is reduced."
+            },
+            {
+                "method": "send",
+                "static": true,
+                "params": [
+                    {
+                        "name": "req",
+                        "type": "InvShortageRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvShortageRequest",
+                "note": "Purchasing tells the source; the sending window starts."
+            },
+            {
+                "method": "receive",
+                "static": true,
+                "params": [
+                    {
+                        "name": "req",
+                        "type": "InvShortageRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "note",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvShortageRequest",
+                "note": "The shortfall arrived through a normal receipt."
+            },
+            {
+                "method": "refuse",
+                "static": true,
+                "params": [
+                    {
+                        "name": "req",
+                        "type": "InvShortageRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "note",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "outcome",
+                        "type": "string",
+                        "default": "'REFUSED'"
+                    }
+                ],
+                "returns": "InvShortageRequest",
+                "note": "The source refuses or the window lapsed: the PO line closes at the received quantity."
+            },
+            {
+                "method": "close",
+                "static": true,
+                "params": [
+                    {
+                        "name": "req",
+                        "type": "InvShortageRequest",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvShortageRequest",
+                "note": "Finishes the request."
+            },
+            {
+                "method": "closeLapsed",
+                "static": true,
+                "params": [
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "int",
+                "note": "Closes requests whose window has passed."
+            },
+            {
+                "method": "hasCorrections",
+                "static": true,
+                "params": [
+                    {
+                        "name": "pv",
+                        "type": "PvReceipt",
+                        "default": null
+                    }
+                ],
+                "returns": "bool",
+                "note": "True when a receipt has shortage corrections."
+            }
+        ],
+        "key": "shortage-request",
+        "name": "Shortage Request Service (send us the shortfall)",
+        "group": "Procurement",
+        "mode": "flow",
+        "purpose": "Follows a short delivery from suspicion to settlement: recount, confirm, ask the supplier, subcontractor or customer to send the shortfall, and close or refuse.",
+        "inputs": [
+            [
+                "in",
+                "Source (supplier, subcontractor, customer), receipt line, work order and suspected quantity."
+            ],
+            [
+                "countedQty / weight / confirmedShort",
+                "The recount and the confirmed shortage."
+            ],
+            [
+                "note",
+                "Evidence or reason of each step."
+            ],
+            [
+                "login",
+                "Who acts."
+            ]
+        ],
+        "outputs": [
+            [
+                "Request",
+                "Draft, Confirmed, Sent, Received, Refused or Closed with its outcome."
+            ],
+            [
+                "Corrections",
+                "Lower received quantity, reopened PO line, GR/IR correction (PV_SHORT) and a Stock Out ref PV_SHORT."
+            ],
+            [
+                "Refusal",
+                "The PO line is closed at the received quantity and marked as needing a debit note."
+            ]
+        ],
+        "steps": [
+            "Draft from a suspicion above the PO tolerance, then recount as proof or dismiss as usage variance.",
+            "Confirm lowers the received quantity, reopens the PO line as backorder, corrects GR/IR and reduces the stock; a subcontractor receipt uses its own shortage report and customer material changes quantity only.",
+            "Send tells the source; it has INV_SHORTAGE_WINDOW_DAYS days to send the shortfall.",
+            "Received closes the request; a refusal or a lapsed window closes the PO line at the received quantity (CLOSED_SHORT).",
+            "Popup notices, an extra requisition and an automatic debit note are not built: only a mark and a note."
+        ],
+        "reads": [
+            "tm2inv.inv_shortage_request",
+            "tm2pur.pv_line, po_line"
+        ],
+        "writes": [
+            "tm2inv.inv_shortage_request",
+            "tm2pur.pv_line, po_line",
+            "GR/IR correction journal",
+            "Stock Out document ref PV_SHORT"
+        ],
+        "settings": [
+            "Settings > Constants: INV_SHORTAGE_WINDOW_DAYS"
+        ],
+        "used": [
+            "Shortage Request",
+            "Shortage by Supplier",
+            "Purchase Receive"
+        ],
+        "tests": [
+            "tests/Feature/ShortageRequestTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\StockReversalService",
+        "file": "app/Services/Inventory/StockReversalService.php",
+        "lines": 200,
+        "entries": [
+            {
+                "method": "refusal",
+                "static": false,
+                "params": [
+                    {
+                        "name": "h",
+                        "type": "Model",
+                        "default": null
+                    }
+                ],
+                "returns": "?string",
+                "note": "Why the document cannot be reversed; null = it can."
+            },
+            {
+                "method": "state",
+                "static": false,
+                "params": [
+                    {
+                        "name": "category",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "docId",
+                        "type": "?int",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Whether the document is reversed, and by which document."
+            },
+            {
+                "method": "reverse",
+                "static": false,
+                "params": [
+                    {
+                        "name": "category",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "docId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Posts the reversing document and marks the original Cancelled."
+            },
+            {
+                "method": "duplicate",
+                "static": false,
+                "params": [
+                    {
+                        "name": "category",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "docId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?int",
+                "note": "Makes a new Draft copy of a document, to post it again corrected."
+            },
+            {
+                "method": "defaultReason",
+                "static": false,
+                "params": [
+                    {
+                        "name": "docNo",
+                        "type": "?string",
+                        "default": null
+                    }
+                ],
+                "returns": "string",
+                "note": "The reason text suggested for a document."
+            }
+        ],
+        "key": "stock-reversal",
+        "name": "Stock Reversal Service (cancel a posted stock document)",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "Cancels a posted stock document without editing or deleting it: a reversing document with the opposite direction is posted through the normal path.",
+        "inputs": [
+            [
+                "category",
+                "Stock class: RM, SFG or FG."
+            ],
+            [
+                "docId",
+                "The posted document."
+            ],
+            [
+                "reason",
+                "Why it is cancelled."
+            ],
+            [
+                "login",
+                "Who cancels."
+            ]
+        ],
+        "outputs": [
+            [
+                "Reversing document",
+                "Category REVERSAL with the number prefix RV, opposite direction, referring to the original."
+            ],
+            [
+                "Original",
+                "Status Cancelled, pointing to its reversal."
+            ],
+            [
+                "Stock card",
+                "Chains on: BB equals the previous EB; the average follows the normal chain."
+            ],
+            [
+                "Usage journal",
+                "The usage journal of a Stock Out RM or SFG is reversed too."
+            ]
+        ],
+        "steps": [
+            "Refused as a whole when the inventory period is closed or the balance would turn negative.",
+            "Refused for Adjustment, Opname and opening balance (own paths), documents of other processes such as a receipt (cancel it there) and a reversal itself.",
+            "A reversed Stock Out returns the goods at the value it left; a reversed Stock In leaves at the current average price.",
+            "The original is never edited or deleted; a copy can be made as a Draft."
+        ],
+        "reads": [
+            "tm2inv.rm_stock / sfg_stock / fg_stock and their lines",
+            "inventory period"
+        ],
+        "writes": [
+            "Reversing stock document",
+            "Stock cards",
+            "Usage journal reversal"
+        ],
+        "used": [
+            "Stock Out, Return and Stock In screens (Cancel)"
+        ],
+        "tests": [
+            "tests/Feature/StockReversalServiceTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\CountTaskService",
+        "file": "app/Services/Inventory/CountTaskService.php",
+        "lines": 135,
+        "entries": [
+            {
+                "method": "dueZones",
+                "static": false,
+                "params": [],
+                "returns": "Collection",
+                "note": "Areas never counted or last counted more than their Count Every days ago, without an open count."
+            },
+            {
+                "method": "startDue",
+                "static": false,
+                "params": [
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "int",
+                "note": "Starts the count of every due area; returns the number of new tasks."
+            },
+            {
+                "method": "start",
+                "static": false,
+                "params": [
+                    {
+                        "name": "zone",
+                        "type": "WhZone",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "int",
+                "note": "Makes one task per item in a bin for one area and locks those bins."
+            },
+            {
+                "method": "confirm",
+                "static": false,
+                "params": [
+                    {
+                        "name": "task",
+                        "type": "WhTask",
+                        "default": null
+                    },
+                    {
+                        "name": "counted",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "WhTask",
+                "note": "The officer types the counted quantity; the difference with the stock card posts as a Stock Opname document."
+            },
+            {
+                "method": "cancel",
+                "static": false,
+                "params": [
+                    {
+                        "name": "task",
+                        "type": "WhTask",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "WhTask",
+                "note": "Cancels the task without adjustment."
+            }
+        ],
+        "key": "count-task",
+        "name": "Count Task Service (cycle count)",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "Makes count tasks for storage areas that are due, locks their bins while counting, and turns the difference into a Stock Opname document.",
+        "inputs": [
+            [
+                "zone",
+                "The storage area to count."
+            ],
+            [
+                "task / counted",
+                "The count task and the quantity counted."
+            ],
+            [
+                "reason",
+                "Why a task is cancelled."
+            ],
+            [
+                "login",
+                "Who acts."
+            ]
+        ],
+        "outputs": [
+            [
+                "Count tasks",
+                "One per item per bin, with the system quantity."
+            ],
+            [
+                "Bin lock",
+                "Transfer to or from a locked bin is refused; putaway and pick skip it."
+            ],
+            [
+                "Stock Opname",
+                "Document category OP for the differences, posted like any adjustment."
+            ]
+        ],
+        "steps": [
+            "An area is due when it is active, not virtual, has Count Every days and that time has passed.",
+            "Start makes a task for each position with stock and locks the bins of the area.",
+            "Confirm compares the counted quantity with the stock card balance of that moment and posts the difference.",
+            "A bin is opened again when no open count task is left in it. A closed period refuses the posting as usual."
+        ],
+        "reads": [
+            "tm2mst.wh_zone, wh_loc",
+            "stock per bin (Warehouse Stock)",
+            "tm2inv.wh_task"
+        ],
+        "writes": [
+            "tm2inv.wh_task",
+            "tm2mst.wh_loc.count_lock",
+            "Stock Opname document"
+        ],
+        "used": [
+            "Count Tasks",
+            "Command inv:count-due"
+        ],
+        "tests": [
+            "tests/Feature/CountLockTest.php"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\SubconStockService",
+        "file": "app/Services/Inventory/SubconStockService.php",
+        "lines": 178,
+        "entries": [
+            {
+                "method": "send",
+                "static": false,
+                "params": [
+                    {
+                        "name": "poId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "fromLocationId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "materialId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "qty",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "poLineId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "dueReturn",
+                        "type": "?string",
+                        "default": null
+                    },
+                    {
+                        "name": "notes",
+                        "type": "?string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvSubconIssue",
+                "note": "Moves material from a warehouse bin to the vendor bin through a Stock Transfer."
+            },
+            {
+                "method": "returnUnused",
+                "static": false,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "InvSubconIssueLine",
+                        "default": null
+                    },
+                    {
+                        "name": "qty",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "toLocationId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": "Unused material comes back to a warehouse bin."
+            },
+            {
+                "method": "consume",
+                "static": false,
+                "params": [
+                    {
+                        "name": "line",
+                        "type": "InvSubconIssueLine",
+                        "default": null
+                    },
+                    {
+                        "name": "qty",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": "Material used at the vendor: a normal Stock Out RM from the vendor bin."
+            },
+            {
+                "method": "settleReceipt",
+                "static": false,
+                "params": [
+                    {
+                        "name": "pv",
+                        "type": "PvReceipt",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "A Subcontract receipt uses material in proportion to the quantity received from the PO line."
+            },
+            {
+                "method": "cancel",
+                "static": false,
+                "params": [
+                    {
+                        "name": "issue",
+                        "type": "InvSubconIssue",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": "Cancels a send while nothing was used or returned."
+            }
+        ],
+        "key": "subcon-stock",
+        "name": "Subcontract Stock Service (material at the vendor)",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "Sends raw material to a subcontractor against a Subcontract PO and keeps the material at the vendor as our own stock until it is used or comes back.",
+        "inputs": [
+            [
+                "poId / poLineId",
+                "The open Subcontract PO and its line."
+            ],
+            [
+                "fromLocationId / materialId / qty",
+                "Where the material leaves, which one and how much."
+            ],
+            [
+                "dueReturn / notes",
+                "When it should come back."
+            ],
+            [
+                "login",
+                "Who acts."
+            ]
+        ],
+        "outputs": [
+            [
+                "Subcon issue",
+                "Document with lines per material and the quantity sent, used and returned."
+            ],
+            [
+                "Stock",
+                "The vendor bin holds the stock, still owned by the company and valued at the average of the source bin."
+            ],
+            [
+                "Usage",
+                "Standard usage journal when the material is consumed."
+            ]
+        ],
+        "steps": [
+            "The PO must be a Subcontract PO that is not finished.",
+            "Send is a Stock Transfer to the virtual bin of that vendor, so the stock card, value and pallets behave like a transfer; no journal.",
+            "Consume is a Stock Out RM from the vendor bin, so usage is booked in the standard way.",
+            "A receipt of the subcontract product reduces the vendor balance in proportion to the received quantity.",
+            "Only raw material is supported; semi finished and finished goods to a subcontractor are not built."
+        ],
+        "reads": [
+            "tm2pur.po, po_line",
+            "tm2inv.inv_subcon_issue, inv_subcon_issue_line",
+            "stock per bin"
+        ],
+        "writes": [
+            "tm2inv.inv_subcon_issue, inv_subcon_issue_line",
+            "Stock Transfer document",
+            "Stock Out RM document"
+        ],
+        "used": [
+            "Send to Subcontractor",
+            "Stock at Vendor",
+            "Purchase Receive (Subcon)"
+        ],
+        "tests": [
+            "tests/Feature/SubconStockTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\CustomerMaterialService",
+        "file": "app/Services/Inventory/CustomerMaterialService.php",
+        "lines": 55,
+        "entries": [
+            {
+                "method": "receive",
+                "static": false,
+                "params": [
+                    {
+                        "name": "pv",
+                        "type": "PvReceipt",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?int",
+                "note": "Puts the stock lines of the receipt into the consignment bin as stock owned by the customer; returns the stock document id."
+            },
+            {
+                "method": "consignBin",
+                "static": false,
+                "params": [
+                    {
+                        "name": "warehouseCode",
+                        "type": "?string",
+                        "default": "null"
+                    }
+                ],
+                "returns": "?WhLoc",
+                "note": "The consignment bin of a warehouse."
+            },
+            {
+                "method": "stockLines",
+                "static": false,
+                "params": [
+                    {
+                        "name": "pv",
+                        "type": "PvReceipt",
+                        "default": null
+                    }
+                ],
+                "returns": "Collection",
+                "note": "The lines of the receipt that point to a raw material."
+            }
+        ],
+        "key": "customer-material",
+        "name": "Customer Material Service (consignment)",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "Turns the material a customer brings (a Customer receipt with a raw material item) into stock owned by that customer, kept in a consignment bin, without value and without journal.",
+        "inputs": [
+            [
+                "pv",
+                "The Customer receipt."
+            ],
+            [
+                "warehouseCode",
+                "Warehouse of the consignment bin; empty = default."
+            ],
+            [
+                "login",
+                "Who posts."
+            ]
+        ],
+        "outputs": [
+            [
+                "Stock",
+                "Raw material stock with owner CUSTOMER in a Customer Consignment area."
+            ],
+            [
+                "No value",
+                "No price, no stock value and no journal."
+            ]
+        ],
+        "steps": [
+            "Only lines that point to a raw material become stock; a line with a description only stays a note.",
+            "The stock posting already treats an owner other than the company as not valued and not journalled.",
+            "The Pick Allocator lets this stock be picked only for work of that customer."
+        ],
+        "reads": [
+            "tm2pur.pv_receipt, pv_line",
+            "tm2mst.wh_zone, wh_loc"
+        ],
+        "writes": [
+            "Stock In RM document with owner CUSTOMER",
+            "stock card"
+        ],
+        "used": [
+            "Purchase Receive (From Customer)",
+            "Customer Material",
+            "Pick List"
+        ],
+        "tests": [
+            "tests/Feature/CustomerMaterialTest.php"
+        ],
+        "docs": [
+            "docs/md_for_systems/inventorywarehouse_v201_scope.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\VirtualLocationService",
+        "file": "app/Services/Inventory/VirtualLocationService.php",
+        "lines": 88,
+        "entries": [
+            {
+                "method": "warehouse",
+                "static": false,
+                "params": [],
+                "returns": "WhWarehouse",
+                "note": "The virtual warehouse (code VIRT)."
+            },
+            {
+                "method": "zone",
+                "static": false,
+                "params": [
+                    {
+                        "name": "type",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "WhZone",
+                "note": "The virtual area of a type: Loss, In Transit or At Subcontractor."
+            },
+            {
+                "method": "loss",
+                "static": false,
+                "params": [],
+                "returns": "WhLoc",
+                "note": "The one Loss bin."
+            },
+            {
+                "method": "transit",
+                "static": false,
+                "params": [],
+                "returns": "WhLoc",
+                "note": "The one In Transit bin."
+            },
+            {
+                "method": "vendor",
+                "static": false,
+                "params": [
+                    {
+                        "name": "supplierId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "WhLoc",
+                "note": "The bin of one subcontractor."
+            },
+            {
+                "method": "ensure",
+                "static": false,
+                "params": [],
+                "returns": "array",
+                "note": "Makes the warehouse, the areas and the Loss and In Transit bins."
+            }
+        ],
+        "key": "virtual-location",
+        "name": "Virtual Location Service (Loss, In Transit, vendor bins)",
+        "group": "Inventory",
+        "mode": "auto",
+        "purpose": "Makes the places where stock exists in the books but not on the warehouse floor: Loss, In Transit and one bin per subcontractor. Created when needed, never twice.",
+        "inputs": [
+            [
+                "type",
+                "LOSS, TRANSIT or SUBCON."
+            ],
+            [
+                "supplierId",
+                "The subcontractor, for a vendor bin."
+            ]
+        ],
+        "outputs": [
+            [
+                "Bin",
+                "A bin in a virtual area. Calling again returns the same row."
+            ]
+        ],
+        "steps": [
+            "One virtual warehouse holds three areas: Loss (one bin), In Transit (one bin) and At Subcontractor (one bin per supplier).",
+            "Everything is created on demand and is idempotent.",
+            "Virtual areas are not on the Warehouse Map and get no bins from Generate Bins."
+        ],
+        "reads": [
+            "tm2mst.wh_warehouse, wh_zone, wh_loc"
+        ],
+        "writes": [
+            "tm2mst.wh_warehouse, wh_zone, wh_loc (virtual rows only)"
+        ],
+        "used": [
+            "Subcontract Stock Service",
+            "Stock Transfer In Transit",
+            "Loss of discrepancies"
+        ],
+        "tests": [
+            "tests/Feature/SubconStockTest.php",
+            "tests/Feature/TransitTransferTest.php"
         ]
     },
     {

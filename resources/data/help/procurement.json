@@ -734,6 +734,10 @@
       {
         "en": "A posted receipt can be reversed with Cancel (reason required) and a Draft can be deleted. For a posted Subcon receipt, use Report Shortage to correct a shortage found later.",
         "id": "Penerimaan yang sudah diposting bisa dibatalkan dengan Cancel (alasan wajib) dan Draft bisa dihapus. Untuk penerimaan Subcon yang sudah diposting, pakai Report Shortage bila kekurangan baru ketahuan belakangan."
+      },
+      {
+        "en": "In the card URGENT and Sampling (PO receipts with stock lines) set Certification and Food grade, or mark a line URGENT with a work order and reason so it can be posted before QC ends. Its batch stays Conditional until sampling.",
+        "id": "Di kartu URGENT and Sampling (penerimaan PO dengan baris stok) isi Certification dan Food grade, atau tandai baris URGENT dengan work order dan alasan agar bisa diposting sebelum QC selesai. Batchnya tetap Conditional sampai sampling."
       }
     ],
     "fields": [
@@ -896,6 +900,26 @@
         "label": "Shortage found later",
         "en": "Subcon receipts: quantity and note of a shortage recorded after posting. Read only.",
         "id": "Penerimaan subkon: jumlah dan catatan kekurangan yang dicatat setelah posting. Hanya dibaca."
+      },
+      {
+        "label": "Certification",
+        "en": "URGENT and Sampling card: None, FSC, PEFC or Other claim of the material. FSC and PEFC lines need approval before an URGENT line can be posted.",
+        "id": "Kartu URGENT and Sampling: klaim bahan None, FSC, PEFC, atau Other. Baris FSC dan PEFC perlu persetujuan sebelum baris URGENT bisa diposting."
+      },
+      {
+        "label": "URGENT Reason",
+        "en": "URGENT and Sampling card: why the line must go to production before QC ends, at least 5 characters. Only PPIC, a production supervisor or an operations manager may mark URGENT.",
+        "id": "Kartu URGENT and Sampling: alasan baris harus ke produksi sebelum QC selesai, minimal 5 huruf. Hanya PPIC, supervisor produksi, atau ops manager yang boleh menandai URGENT."
+      },
+      {
+        "label": "Approval Note",
+        "en": "URGENT and Sampling card: note of the head of QC or operations manager who approves a food grade, FSC or PEFC URGENT line with Approve.",
+        "id": "Kartu URGENT and Sampling: catatan kepala QC atau ops manager yang menyetujui baris URGENT food grade, FSC, atau PEFC lewat Approve."
+      },
+      {
+        "label": "Sampling",
+        "en": "URGENT and Sampling card, read only: the sampling plan of the line: risk class, sampling intensity and sample size (or certificate only).",
+        "id": "Kartu URGENT and Sampling, hanya dibaca: rencana sampling baris: kelas risiko, intensitas sampling, dan ukuran sampel (atau hanya sertifikat)."
       },
       {
         "label": "+ Other PO lines from this supplier",
