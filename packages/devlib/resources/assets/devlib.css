@@ -3619,3 +3619,4 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-timer__t{font-size:calc(46px * var(--dl-font-scale));font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1.1}
 .dl-timer__l{font-size:calc(13px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted)}
 .dl-timer--warn{color:var(--dl-amber-2)}.dl-timer--success{color:var(--dl-success)}.dl-timer--danger{color:var(--dl-danger)}.dl-timer--muted{color:var(--dl-muted)}
+.dl-gantt__reason{width:100%;box-sizing:border-box;margin:8px 0 0;padding:6px 8px;border:1px solid var(--dl-border);border-radius:6px;font:inherit}

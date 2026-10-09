@@ -504,6 +504,8 @@ final class Lang
         'gt_load' => ['Beban', 'Load'],
         'gt_impact_title' => ['Dampak pemindahan ini', 'Impact of this move'],
         'gt_cancel' => ['Batal', 'Cancel'],
+        'gt_reason' => ['Alasan pemindahan (wajib)', 'Reason for the move (required)'],
+        'gt_reason_needed' => ['Isi alasan pemindahan lebih dulu.', 'Enter the reason for the move first.'],
         'gt_move_draft' => ['Pindahkan ke Draft', 'Move into Draft'],
         'gt_replanned' => ['Draft dihitung ulang. Memuat ulang jadwal.', 'Draft re-planned. Reloading the schedule.'],
         'gt_check_failed' => ['Pengecekan jadwal gagal.', 'The schedule check failed.'],

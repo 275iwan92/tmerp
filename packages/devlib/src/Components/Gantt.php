@@ -39,6 +39,7 @@ class Gantt extends DevlibComponent
         public ?string $impactUrl = null,
         public ?string $moveUrl = null,
         public ?string $draftLabel = null,
+        public bool $reasonRequired = false,
     ) {}
 
     public function tag(): string
@@ -55,7 +56,7 @@ class Gantt extends DevlibComponent
     {
         return ['rows' => $this->rows, 'tasks' => $this->tasks, 'categories' => (object) $this->categories, 'start' => $this->start, 'end' => $this->end,
             'px' => $this->pxPerHour, 'snap' => $this->snap, 'idle' => $this->idleHours, 'unscheduled' => $this->unscheduled, 'resourceLabel' => \Devlib\Lang::text($this->resourceLabel),
-            'originDate' => $this->originDate, 'lockUntil' => $this->lockUntil, 'nowAt' => $this->nowAt, 'impactUrl' => $this->impactUrl, 'moveUrl' => $this->moveUrl];
+            'originDate' => $this->originDate, 'lockUntil' => $this->lockUntil, 'nowAt' => $this->nowAt, 'impactUrl' => $this->impactUrl, 'moveUrl' => $this->moveUrl, 'reasonRequired' => $this->reasonRequired];
     }
 
     public function render()

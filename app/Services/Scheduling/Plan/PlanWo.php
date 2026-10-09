@@ -19,5 +19,6 @@ final class PlanWo
         public readonly int $ageDays,
         public readonly array $ops,
         public readonly string $label = '',
+        public readonly bool $moveUp = false,
     ) {}
 }

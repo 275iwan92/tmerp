@@ -10,6 +10,7 @@ Route::prefix('v2/ppic')->name('v2.ppic.')->middleware('module:PROD')->group(fun
     Route::post('/confirm', [PpicController::class, 'confirm'])->name('confirm');
     Route::post('/discard', [PpicController::class, 'discard'])->name('discard');
     Route::post('/prioritize', [PpicController::class, 'prioritize'])->name('prioritize');
+    Route::post('/unpin', [PpicController::class, 'unpin'])->name('unpin');
     Route::post('/impact', [PpicController::class, 'impact'])->name('impact');
     Route::post('/move', [PpicController::class, 'moveOp'])->name('move');
     Route::post('/kanban-move', [PpicController::class, 'kanbanMove'])->name('kanban-move');

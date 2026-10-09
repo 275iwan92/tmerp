@@ -27,8 +27,9 @@ final class PlanChangeService
             throw new \DomainException('A reason is required to give a Work Order priority.');
         }
         $wo = PrdWo::findOrFail($woId);
-        $old = $wo->is_hot_job ? 'HOT' : 'NORMAL';
-        $wo->forceFill(['is_hot_job' => true, 'priority' => $kind === 'HOT' ? 'HOT' : 'HIGH', 'hot_job_source' => 'OFFICER:'.$kind])->save();
+        $old = $wo->is_hot_job ? 'HOT' : ($wo->priority === 'URGENT' ? 'MOVE_UP' : 'NORMAL');
+        // Hot job = layer 0 and may break a lock; Move up = ahead of the normal queue (layer 1) but breaks no lock.
+        $wo->forceFill(['is_hot_job' => $kind === 'HOT', 'priority' => $kind === 'HOT' ? 'SUPER_URGENT' : 'URGENT'])->save();
         PrdWoOperation::where('wo_id', $woId)->update(['priority_note' => mb_substr($reason, 0, 120)]);
         PrdPlanDecision::create(['operation_id' => null, 'actor' => $login, 'event' => 'PRIORITY', 'old_value' => $old, 'new_value' => $kind.' '.$wo->wo_no, 'reason' => mb_substr($reason, 0, 190)]);
 
@@ -75,7 +76,7 @@ final class PlanChangeService
 
         $moved = array_map(fn (PlanWo $pw) => new PlanWo($pw->id, $pw->no, $pw->due, $pw->hot, $pw->tier, $pw->ageDays, array_map(
             fn (PlanOp $po) => $po->id === $opId ? new PlanOp($po->id, $po->woId, $po->seq, $po->processName, $po->stage, $po->qtyIn, $po->candidates, $po->facts, $po->waitAfterMinutes,
-                $po->minStart, $po->gate, $po->gateNote, ['machine' => $machineId, 'start' => $newStart, 'finish' => $newFinish], $po->kind, $po->leadDays) : $po, $pw->ops)), $wos);
+                $po->minStart, $po->gate, $po->gateNote, ['machine' => $machineId, 'start' => $newStart, 'finish' => $newFinish], $po->kind, $po->leadDays) : $po, $pw->ops), $pw->label, $pw->moveUp), $wos);
         $after = $solver->solve($moved, $cal, $now);
 
         $oldStart = $this->currentStart($op);
@@ -99,6 +100,9 @@ final class PlanChangeService
     /** Save the move as an officer placement in the Draft and let the engine re-plan the rest around it. */
     public function move(int $opId, int $machineId, CarbonImmutable $start, string $reason, string $login): PrdPlanRun
     {
+        if (trim($reason) === '') {
+            throw new \DomainException('A reason is required to move an operation.');
+        }
         $check = $this->impact($opId, $machineId, $start);
         if (! $check['ok']) {
             throw new \DomainException($check['reason'] ?? 'The move is not allowed.');
@@ -153,5 +157,75 @@ final class PlanChangeService
         }
 
         return $n;
+    }
+
+    /**
+     * Urgent order: what would each way of giving a Work Order priority do, before anything is saved.
+     * Options: nothing (baseline), Move up (ahead of the normal queue, breaks no lock), Hot job (first of all, may break a lock).
+     *
+     * @return array{wo: string, due: ?string, options: list<array{key: string, label: string, finish: ?string, late_h: float, others_late: list<string>, shifted: int}>}
+     */
+    public function simulate(int $woId, ?CarbonImmutable $now = null): array
+    {
+        $now = ($now ?? CarbonImmutable::now())->startOfMinute();
+        $wos = $this->loader->wos($now);
+        $cal = $this->loader->calendar($now, $this->loader->machineIds($wos));
+        $solver = $this->runner->solver();
+        $target = collect($wos)->firstWhere('id', $woId) ?? throw new \DomainException('This Work Order has nothing to plan.');
+        $base = $solver->solve($wos, $cal, $now);
+        $out = [];
+        foreach (['NONE' => 'No priority', 'MOVE_UP' => 'Move up', 'HOT' => 'Hot job'] as $key => $label) {
+            $variant = $key === 'NONE' ? $wos : array_map(fn (PlanWo $w) => $w->id === $woId ? new PlanWo($w->id, $w->no, $w->due, $key === 'HOT', $w->tier, $w->ageDays, $w->ops, $w->label, $key === 'MOVE_UP') : $w, $wos);
+            $res = $key === 'NONE' ? $base : $solver->solve($variant, $cal, $now);
+            $finish = null;
+            foreach (array_reverse($target->ops) as $op) {
+                if (isset($res->placements[$op->id])) {
+                    $finish = $res->placements[$op->id]->finish;
+                    break;
+                }
+            }
+            $others = array_values(array_filter($this->newLate($base, $res), fn ($no) => $no !== $target->no));
+            $out[] = ['key' => $key, 'label' => $label, 'finish' => $finish?->format('D j M H:i'),
+                'late_h' => $finish && $target->due && $finish->greaterThan($target->due) ? round($target->due->diffInMinutes($finish) / 60, 1) : 0.0,
+                'others_late' => $others, 'shifted' => $this->shiftedCount($base, $res, -1)];
+        }
+
+        return ['wo' => $target->no, 'due' => $target->due?->format('D j M H:i'), 'options' => $out];
+    }
+
+    /** Operations an officer placed by hand (Gantt drag), with the reason and who moved them. @return list<array<string, mixed>> */
+    public function overrides(): array
+    {
+        $ops = PrdWoOperation::query()->where('planned_by', 'OFFICER')->whereIn('plan_status', ['DRAFT', 'CONFIRMED'])
+            ->whereNotIn('task_status', ['RUNNING', 'DONE', 'QC_HOLD', 'QC_PASSED', 'QC_REJECTED'])->orderBy('wo_id')->orderBy('seq_no')->get();
+        $logs = PrdPlanDecision::query()->where('event', 'MOVE')->whereIn('operation_id', $ops->pluck('operation_id'))->orderBy('decision_id')->get()->groupBy('operation_id');
+        $nos = PrdWo::whereIn('wo_id', $ops->pluck('wo_id'))->pluck('wo_no', 'wo_id');
+
+        return $ops->map(function (PrdWoOperation $o) use ($logs, $nos) {
+            $last = $logs[$o->operation_id]?->last();
+
+            return ['op_id' => (int) $o->operation_id, 'wo' => $nos[$o->wo_id] ?? '#'.$o->wo_id, 'process' => $o->process_name, 'machine' => $o->plan_status === 'DRAFT' ? $o->draft_machine_id : $o->machine_id,
+                'start' => $this->currentStart($o)?->format('D j M H:i'), 'status' => $o->plan_status, 'locked' => (bool) $o->is_locked,
+                'by' => $last?->actor, 'reason' => $last?->reason, 'at' => $last?->created_at?->format('d-M-Y H:i')];
+        })->all();
+    }
+
+    /** Take an officer placement away: the engine plans the operation again. A locked confirmed operation stays until its lock ends. */
+    public function unpin(int $opId, string $login): PrdPlanRun
+    {
+        $op = PrdWoOperation::findOrFail($opId);
+        if ($op->planned_by !== 'OFFICER') {
+            throw new \DomainException('This operation is not placed by an officer.');
+        }
+        if ($op->plan_status === 'CONFIRMED' && $op->is_locked) {
+            throw new \DomainException('This operation is confirmed and locked; it cannot be released until its lock ends.');
+        }
+        $old = $this->currentStart($op)?->format('Y-m-d H:i').' m'.($op->draft_machine_id ?? $op->machine_id);
+        $op->forceFill($op->plan_status === 'DRAFT'
+            ? ['planned_by' => null, 'plan_status' => 'NONE', 'draft_machine_id' => null, 'draft_start' => null, 'draft_finish' => null, 'draft_run_id' => null]
+            : ['planned_by' => null])->save();
+        PrdPlanDecision::create(['operation_id' => $opId, 'actor' => $login, 'event' => 'UNPIN', 'old_value' => $old, 'new_value' => 'ENGINE', 'reason' => 'Officer placement released']);
+
+        return $this->runner->run('EVENT', $login);
     }
 }

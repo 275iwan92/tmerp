@@ -83,7 +83,7 @@ final class ScheduleSolver
                 ? max(0.0, ($cal->workMinute($wo->due, $m) - $cal->workMinute($now, $m)) / 60) : null;
             $cr = ($left !== null && $remaining > 0) ? $left / $remaining : null;
             $slack = $left !== null ? $left - $remaining : null;
-            $layer = $wo->hot ? 0 : (($cr !== null && $cr < 1.0) ? 1 : 2);
+            $layer = $wo->hot ? 0 : (($wo->moveUp || ($cr !== null && $cr < 1.0)) ? 1 : 2);
             $info[$wo->id] = ['wo' => $wo, 'cr' => $cr, 'slack' => $slack, 'layer' => $layer, 'remaining' => $remaining];
             $result->priority[$wo->id] = ['layer' => $layer, 'cr' => $cr === null ? null : round($cr, 3), 'slack_h' => $slack === null ? null : round($slack, 1)];
         }
@@ -92,7 +92,7 @@ final class ScheduleSolver
         $l1 = array_filter($info, fn ($i) => $i['layer'] === 1);
         $l2 = array_filter($info, fn ($i) => $i['layer'] === 2);
         uasort($l0, fn ($a, $b) => [$a['cr'] ?? INF, $a['wo']->id] <=> [$b['cr'] ?? INF, $b['wo']->id]);
-        uasort($l1, fn ($a, $b) => [$a['cr'], $a['wo']->id] <=> [$b['cr'], $b['wo']->id]);
+        uasort($l1, fn ($a, $b) => [$a['wo']->moveUp ? 0 : 1, $a['cr'] ?? INF, $a['wo']->id] <=> [$b['wo']->moveUp ? 0 : 1, $b['cr'] ?? INF, $b['wo']->id]);
         uasort($l2, fn ($a, $b) => [$a['wo']->due?->getTimestamp() ?? PHP_INT_MAX, $a['wo']->tier, $a['wo']->id] <=> [$b['wo']->due?->getTimestamp() ?? PHP_INT_MAX, $b['wo']->tier, $b['wo']->id]);
 
         $order = array_merge(array_values($l0), array_values($l1), $this->smooth(array_values($l2)));
@@ -262,7 +262,8 @@ final class ScheduleSolver
             foreach ($op->candidates as $m => $cand) {
                 $m = (int) $m;
                 $slot = $this->bestSlot($op, $m, $cand, $cal->workMinute($earliest, $m), $cal);
-                $key = [$slot['end'], $cand['rank'], $this->machineLoad($m), $m];
+                // Compare real clock time: work minutes are counted on each machine's own calendar, so they are not comparable across machines.
+                $key = [$cal->timeAt($slot['end'], $m, true)->getTimestamp(), $cand['rank'], $this->machineLoad($m), $m];
                 if ($best === null || $key < $best['key']) {
                     $best = ['key' => $key, 'm' => $m, 'slot' => $slot, 'cand' => $cand];
                 }

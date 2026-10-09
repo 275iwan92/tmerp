@@ -183,9 +183,9 @@
       return this.check(t, orig, type);
     }
 
-    async post(url, t) {
+    async post(url, t, reason) {
       const r = await fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.DL_CSRF || document.querySelector('meta[name="csrf-token"]')?.content || ''},
-        body: JSON.stringify({task: t.id, row: t.row, start: this.hm(t.s), end: this.hm(t.e)})});
+        body: JSON.stringify({task: t.id, row: t.row, start: this.hm(t.s), end: this.hm(t.e), ...(reason ? {reason} : {})})});
       const body = await r.json().catch(() => ({}));
       if (body.ok === undefined) body.ok = r.ok;
       if (!body.ok && !body.reason) body.reason = body.message || r.statusText;
@@ -213,9 +213,11 @@
     async accept() {
       const p = this.pending; if (!p || p.checking) return;
       if (this.cfg.moveUrl) {
+        const reason = ($(this.impact, '[data-g2-imp-reason]')?.value || '').trim();
+        if (this.cfg.reasonRequired && !reason) { $(this.impact, '[data-g2-imp-reason]')?.focus(); return toast(T('gt_reason_needed'), 'warn'); }
         p.checking = true; $(this.impact, '[data-g2-imp-ok]').disabled = true;
         let res;
-        try { res = await this.post(this.cfg.moveUrl, p.t); } catch (e) { this.revert(); return toast(String(e.message || T('gt_check_failed')), 'danger'); }
+        try { res = await this.post(this.cfg.moveUrl, p.t, reason); } catch (e) { this.revert(); return toast(String(e.message || T('gt_check_failed')), 'danger'); }
         if (!res.ok) { this.revert(); return toast(res.reason || T('gt_check_failed'), 'warn'); }
         if (res.draft) this.setDraft(res.draft);
         if (res.reload) { toast(T('gt_replanned'), 'success'); setTimeout(() => location.reload(), 600); }
@@ -231,7 +233,7 @@
       const p = this.pending, b = p && $(this.board, `[data-g2-task="${p.t.id}"]`); if (!b) return;
       const lines = p.res.lines || [];
       this.impact = document.createElement('div'); this.impact.className = 'dl-gantt__imp';
-      this.impact.innerHTML = `<h3>${esc(T('gt_impact_title'))}</h3><p>${esc(p.t.label)} · ${esc(this.lbl(p.t.s))}–${esc(this.lbl(p.t.e))}</p>${lines.length ? `<ul>${lines.map(l => `<li class="is-${esc(l.tone || 'ok')}"><span>${esc(l.label)}</span><b>${esc(l.value)}</b></li>`).join('')}</ul>` : ''}
+      this.impact.innerHTML = `<h3>${esc(T('gt_impact_title'))}</h3><p>${esc(p.t.label)} · ${esc(this.lbl(p.t.s))}–${esc(this.lbl(p.t.e))}</p>${lines.length ? `<ul>${lines.map(l => `<li class="is-${esc(l.tone || 'ok')}"><span>${esc(l.label)}</span><b>${esc(l.value)}</b></li>`).join('')}</ul>` : ''}${this.cfg.reasonRequired ? `<input type="text" class="dl-gantt__reason" data-g2-imp-reason maxlength="190" placeholder="${esc(T('gt_reason'))}">` : ''}
         <div class="dl-gantt__impf"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-g2-imp-x>${esc(T('gt_cancel'))}</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-g2-imp-ok>${esc(T('gt_move_draft'))}</button></div>`;
       $(this.impact, '[data-g2-imp-x]').addEventListener('click', this.revert);
       $(this.impact, '[data-g2-imp-ok]').addEventListener('click', this.accept);

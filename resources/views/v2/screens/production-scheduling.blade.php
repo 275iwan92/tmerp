@@ -16,6 +16,11 @@
     $keep = array_filter($filter) + ['tab' => $tab, 'view' => $view];
     $link = fn (array $over) => $home.'?'.http_build_query(array_filter(array_merge($keep, $over), fn ($v) => $v !== null && $v !== ''));
     $src = Src::of('tm2prd.prd_wo_operation', 'tm2prd.prd_wo_operation_machine', 'tm2prd.prd_plan_run', 'tm2mst.prod_process_machine', 'tm2mst.prod_machine');
+        $changes = app(\App\Services\Scheduling\Plan\PlanChangeService::class);
+        $pins = $changes->overrides();
+        $simWo = request()->integer('sim');
+        try { $sim = $simWo ? $changes->simulate($simWo) : null; } catch (\DomainException $e) { $sim = null; $simError = $e->getMessage(); }
+        $woOptions = collect($all)->unique('wo_id')->mapWithKeys(fn ($r) => [$r['wo_id'] => $r['wo_no'].' · '.($r['customer'] ?? '')])->all();
 @endphp
 
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
@@ -61,6 +66,44 @@
         </x-dl::action-form>
     </x-dl::card>
 
+    <x-dl::card title="Urgent order: simulate first" description="See what each kind of priority would do before anything is saved. Nothing changes until you apply one with a reason.">
+        <x-dl::action-form method="get" action="{{ $home }}">
+            <input type="hidden" name="tab" value="schedule"><input type="hidden" name="view" value="{{ $view }}">
+            <x-dl::form.row :cols="3">
+                <x-dl::field.select name="sim" label="Work Order" required :options="$woOptions" :value="$simWo ?: null" placeholder="Choose Work Order..." :source="$src" />
+                <x-dl::button variant="secondary" icon="fa-flask" label="Simulate" type="submit" />
+            </x-dl::form.row>
+        </x-dl::action-form>
+        @if (isset($simError))<x-dl::alert tone="warn" :message="raw($simError)" />@endif
+        @if ($sim)
+            <x-dl::table :source="$src" :columns="['label' => 'Option', 'finish' => 'Forecast finish', 'late' => 'Late by (h)', 'others' => 'Other Work Orders that become late', 'shifted' => 'Operations that move']"
+                :rows="array_map(fn ($o) => ['label' => t($o['label']), 'finish' => raw($o['finish'] ?? '—'), 'late' => $o['late_h'] ?: '—', 'others' => raw($o['others_late'] ? implode(', ', $o['others_late']) : t('none')), 'shifted' => $o['shifted']], $sim['options'])" />
+            <x-dl::alert tone="info" :message="raw($sim['wo'].' · '.t('Due').' '.($sim['due'] ?? '—'))" />
+            <x-dl::action-form action="{{ route('v2.ppic.prioritize') }}">
+                <input type="hidden" name="wo_id" value="{{ $simWo }}">
+                <x-dl::form.row :cols="4">
+                    <x-dl::field.select name="kind" label="Apply" required :options="['HOT' => t('Hot job'), 'MOVE_UP' => t('Move up')]" :value="'MOVE_UP'" :source="$src" />
+                    <x-dl::field.text name="reason" label="Reason" required hint="Required. Written to the decision log with your name and the time." :source="Src::of('tm2prd.prd_plan_decision.reason')" />
+                    <x-dl::button icon="fa-check" label="Apply" type="submit" />
+                </x-dl::form.row>
+            </x-dl::action-form>
+        @endif
+    </x-dl::card>
+
+    <x-dl::card title="Placements by an officer" description="Operations you placed by hand. The engine keeps them where you put them. Release one to let the engine plan it again; a confirmed, locked one is released when its lock ends.">
+        <x-dl::table :source="$src" empty="No operation is placed by hand."
+            :columns="['wo' => 'Work Order', 'process' => 'Process', 'start' => 'Start', 'status' => 'Status', 'by' => 'By', 'at' => 'When', 'reason' => 'Reason']"
+            :rows="array_map(fn ($p) => ['wo' => raw($p['wo']), 'process' => raw($p['process']), 'start' => raw($p['start'] ?? '—'), 'status' => raw($p['status'].($p['locked'] ? ' · '.t('Locked') : '')), 'by' => raw($p['by'] ?? '—'), 'at' => raw($p['at'] ?? '—'), 'reason' => raw($p['reason'] ?? '—')], $pins)" />
+        @if ($pins)
+            <x-dl::action-form action="{{ route('v2.ppic.unpin') }}">
+                <x-dl::form.row :cols="3">
+                    <x-dl::field.select name="op" label="Release placement" required :options="collect($pins)->mapWithKeys(fn ($p) => [$p['op_id'] => $p['wo'].' · '.$p['process']])->all()" placeholder="Choose operation..." :source="$src" />
+                    <x-dl::button variant="secondary" icon="fa-link-slash" label="Release" type="submit" />
+                </x-dl::form.row>
+            </x-dl::action-form>
+        @endif
+    </x-dl::card>
+
     <x-dl::card title="Schedule" description="Same operations in four views. Filter by process and machine; a process can run on several machines.">
         <x-dl::action-form method="get" action="{{ $home }}">
             <input type="hidden" name="tab" value="schedule"><input type="hidden" name="view" value="{{ $view }}">
@@ -84,7 +127,7 @@
         @php($g = Ppic::gantt($ops))
         <x-dl::gantt :rows="$g['rows']" :tasks="$g['tasks']" :categories="$g['categories']" :origin-date="$g['originDate']" :start="$g['start']" :end="$g['end']" :px-per-hour="$g['pxPerHour']"
             :snap="$g['snap']" :now-at="$g['nowAt']" :lock-until="$g['lockUntil']" :unscheduled="$g['unscheduled']" :submit-label="null" :draft-label="$g['draftLabel']"
-            impact-url="{{ route('v2.ppic.impact') }}" move-url="{{ route('v2.ppic.move') }}" resource-label="Machine" :source="$src" />
+            impact-url="{{ route('v2.ppic.impact') }}" move-url="{{ route('v2.ppic.move') }}" :reason-required="true" resource-label="Machine" :source="$src" />
     @elseif ($view === 'kanban')
         @php($k = Ppic::kanban($ops))
         <x-dl::kanban :columns="$k['columns']" :cards="$k['cards']" :add-column="false" :add-card="false" move-url="{{ route('v2.ppic.kanban-move') }}" :source="$src" />

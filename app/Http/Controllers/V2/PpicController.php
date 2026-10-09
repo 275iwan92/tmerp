@@ -109,13 +109,28 @@ final class PpicController extends Controller
         $this->schedulerOnly();
         [$op, $machine, $start] = $this->move($r);
         try {
-            $run = $changes->move($op, $machine, $start, 'Moved on the Gantt', $this->login());
+            $run = $changes->move($op, $machine, $start, (string) $r->input('reason', ''), $this->login());
         } catch (\DomainException $e) {
             return response()->json(['ok' => false, 'reason' => $e->getMessage()]);
         }
         Ppic::forget();
 
         return response()->json(['ok' => true, 'draft' => 'DRAFT '.$run->run_id, 'reload' => true]);
+    }
+
+    /** Take an officer placement away (the Overrides list): the engine plans the operation again. */
+    public function unpin(Request $r, PlanChangeService $changes): RedirectResponse
+    {
+        $this->schedulerOnly();
+        $d = $r->validate(['op' => ['required', 'integer']]);
+        try {
+            $run = $changes->unpin((int) $d['op'], $this->login());
+        } catch (\DomainException $e) {
+            return redirect($this->back())->withErrors(['plan' => $e->getMessage()]);
+        }
+        Ppic::forget();
+
+        return redirect($this->back())->with('v2_flash', tf('Placement released. New Draft plan :id.', ['id' => $run->run_id]));
     }
 
     /** @return array{0: int, 1: int, 2: CarbonImmutable} */

@@ -63,7 +63,7 @@ final class PlanLoader
             $out[] = new PlanWo(
                 id: (int) $wo->wo_id, no: (string) $wo->wo_no,
                 due: $wo->due_date ? CarbonImmutable::parse($wo->due_date) : null,
-                hot: (bool) $wo->is_hot_job, tier: (int) ($wo->customer_tier ?: 2),
+                hot: (bool) $wo->is_hot_job, moveUp: ! $wo->is_hot_job && $wo->priority === 'URGENT', tier: (int) ($wo->customer_tier ?: 2),
                 ageDays: (int) ($wo->created_at ? $wo->created_at->diffInDays($now) : 0), ops: $planOps,
             );
         }
