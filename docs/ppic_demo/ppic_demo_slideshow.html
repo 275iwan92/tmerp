@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo Penjadwalan Otomatis PPIC</title>
+<style>
+:root{--bg:#0f172a;--fg:#e2e8f0;--ac:#3b82f6}
+@media (prefers-color-scheme:light){:root{--bg:#f1f5f9;--fg:#0f172a}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif;display:flex;flex-direction:column;height:100vh}
+header{padding:10px 16px;font-weight:700}
+#stage{flex:1;overflow:auto;padding:0 16px;text-align:center}
+#stage img{max-width:100%;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+#cap{padding:12px 16px;min-height:64px;font-size:18px}
+#bar{display:flex;gap:8px;align-items:center;padding:10px 16px}
+button{background:var(--ac);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+button.alt{background:#64748b}
+</style></head><body>
+<header id="t">Demo penjadwalan otomatis PPIC (data dummy ddt*)</header>
+<div id="stage"><img id="im" alt=""></div>
+<div id="cap"></div>
+<div id="bar"><button class="alt" id="prev">Sebelumnya</button><button id="play">Jeda</button><button class="alt" id="next">Berikutnya</button><span id="n"></span></div>
+<script>
+const S=[
+["01_create_wo_before.png","Langkah 1. Production > Work Order. Kartu Create Work Order mendaftar 12 baris rencana kirim dari Customer Order Confirmed yang belum punya Work Order. Semuanya berstatus ProDev Complete (1 part). Tiga baris teratas: CO2600033 2.500, CO2600037 3.000, CO2600031 4.000."],
+["02_after_create_list.png","Langkah 2. Create Work Order ditekan untuk tiga baris itu. Lahir WO2600265 (2.500), WO2600266 (3.000) dan WO2600267 (4.000). Daftar tertunda tinggal 9 baris. Setiap pembuatan langsung membuat rencana Draft baru."],
+["03_wo_detail.png","Langkah 3. Layar WO2600265: BOP lima langkah (CETAK, LAMINASI, PLONG, LEM MESIN, QC PACK), mesin yang boleh mengantre tiap langkah beserta alasan yang tidak boleh (mis. Komori GL440 sedang BREAKDOWN), BOM, dan jadwal Draft. Catatan: Ups, ukuran lembar dan dieline masih kosong karena data ProDev dummy ini memang belum memilikinya."],
+["04_schedule_draft_gantt.png","Langkah 4. Production Scheduling: engine meninggalkan Draft #14. 32 operasi, 31 terjadwal, 10 butuh perhatian. Tombol Confirm plan menunggu officer. Garis oranye = kunci jadwal."],
+["05_confirmed_gantt.png","Langkah 5. Officer menekan Confirm plan. Rencana #14 menjadi jadwal nyata: 17 operasi dikonfirmasi, 12 dikunci untuk shift berjalan. Tombol Confirm hilang."],
+["06_kanban.png","Langkah 6. Data yang sama dalam tampilan Kanban. Tampilan Calendar dan Grid juga memakai daftar operasi yang sama."],
+["07_operator_setup.png","Langkah 7. Operator Queue untuk mesin DIG-02: WO2600265 CETAK. Play memulai timer setup (rencana 15 menit). Pause, Add quantity, Stop dan tombol Problem tersedia."],
+["08_machine_down_replan.png","Langkah 8. Mesin LAM-04 rusak. Seketika engine membuat Draft baru (#15), dan tampil pita merah Down pada LAM-04. Operasi LAMINASI yang sudah terkunci di mesin itu tidak dipindah engine; muncul sebagai pengecualian Machine down untuk ditangani officer (geser dengan Hot job dan alasan). Draft #16 setelah Re-plan."],
+["09_learning.png","Langkah 9. Learning Changes: nilai changeover Assumed dikoreksi dari waktu setup nyata, tercatat dan bisa dikembalikan."],
+["10_tooling_master.png","Langkah 10. Master Tooling: status plat dan pisau menentukan gerbang tooling."],
+["11_grid.png","Langkah 11. Tampilan Grid: target per jam, waste dan spoilage bisa diketik officer."]
+];
+let i=0,t=null;const im=document.getElementById('im'),cap=document.getElementById('cap'),n=document.getElementById('n'),pl=document.getElementById('play');
+function show(k){i=(k+S.length)%S.length;im.src=S[i][0];cap.textContent=S[i][1];n.textContent=(i+1)+' / '+S.length;document.getElementById('stage').scrollTop=0}
+function start(){t=setInterval(()=>show(i+1),9000);pl.textContent='Jeda'}
+function stop(){clearInterval(t);t=null;pl.textContent='Putar'}
+pl.onclick=()=>t?stop():start();
+document.getElementById('next').onclick=()=>show(i+1);document.getElementById('prev').onclick=()=>show(i-1);
+show(0);start();
+</script></body></html>

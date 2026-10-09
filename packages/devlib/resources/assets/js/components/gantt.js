@@ -307,7 +307,8 @@
     }
 
     headHtml() {
-      const ticks = Array.from({length: this.E - this.S + 1}, (_, i) => { const hr = this.S + i; return `<span style="left:${i * this.PX}px">${String(this.origin ? hr % 24 : hr).padStart(2, '0')}:00</span>`; }).join('');
+      const step = Math.max(1, Math.ceil(36 / this.PX));  // label every N hours so the labels never overlap
+      const ticks = Array.from({length: this.E - this.S + 1}, (_, i) => { const hr = this.S + i; if (hr % step) return ''; return `<span style="left:${i * this.PX}px">${String(this.origin ? hr % 24 : hr).padStart(2, '0')}:00</span>`; }).join('');
       let days = '';
       if (this.origin) for (let d = Math.floor(this.S / 24); d * 24 < this.E; d++) {
         const a = Math.max(this.S, d * 24), b = Math.min(this.E, (d + 1) * 24);

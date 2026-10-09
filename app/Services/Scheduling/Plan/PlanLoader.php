@@ -43,7 +43,11 @@ final class PlanLoader
 
         $ops = PrdWoOperation::query()->whereIn('wo_id', $wos->pluck('wo_id'))->orderBy('wo_id')->orderBy('seq_no')->get()->groupBy('wo_id');
         $cands = DB::connection('tm2prd')->table('prd_wo_operation_machine')->whereIn('operation_id', $ops->flatten()->pluck('operation_id'))
-            ->where('eligible', 1)->get()->groupBy('operation_id');
+            ->where('eligible', 1)
+            ->get()->groupBy('operation_id');
+        // A machine that is down or in maintenance right now takes no new work: the plan goes around it (eligibility was stored when the Work Order was enriched).
+        $down = DB::connection('tm2mst')->table('prod_machine')->whereIn('machine_status', ['BREAKDOWN', 'MAINTENANCE'])->pluck('machine_id')->map(fn ($m) => (int) $m)->all();
+        $cands = $cands->map(fn ($list) => $list->reject(fn ($c) => in_array((int) $c->machine_id, $down, true))->values());
         $stage = DB::connection('tm2mst')->table('prod_process')->get(['id_process', 'process_stage', 'process_name', 'is_manual', 'inhouse', 'subcon_lead_days'])->keyBy('id_process');
         $tools = $this->toolMinutes($wos);
 

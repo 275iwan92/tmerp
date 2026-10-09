@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hasil Modul PPIC</title>
+<style>
+:root{--bg:#fff;--fg:#0f172a;--mut:#64748b;--line:#e2e8f0;--ac:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#e2e8f0;--mut:#94a3b8;--line:#1e293b;--ac:#60a5fa}}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:26px}h2{margin-top:36px;border-bottom:1px solid var(--line);padding-bottom:6px}h3{margin-top:22px}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+img{max-width:100%;border:1px solid var(--line);border-radius:6px}
+.mut{color:var(--mut)}.warn{border-left:4px solid #f59e0b;padding:6px 12px;background:rgba(245,158,11,.08)}
+code{background:rgba(100,116,139,.15);padding:1px 5px;border-radius:4px}
+@media print{img{page-break-inside:avoid}h2{page-break-before:auto}}
+</style></head><body><main>
+<h1>Hasil Modul PPIC: Scheduling dan Work Order</h1>
+<p class="mut">Disusun 9 Oktober 2026 (agen Jo). Semua dijalankan di situs dummy (database ddt*). Tidak ada yang ditulis ke tm2*, ProDev/Inquiry/ProCost tidak diubah.</p>
+
+<h2>1. Ulasan modul</h2>
+<p>Tujuan: pembuatan Work Order dan penjadwalan berjalan otomatis, produksi efisien, dan manusia hanya menangani prioritas dan pengecualian. Model yang diputuskan: Work Order lahir dari data ProDev (BOP, routing, BOM). Engine menyiapkan kesiapan bahan, perkiraan target, waste, setup, lalu jadwal sebagai <b>Draft</b>. Officer <b>Confirm</b>; hanya rencana terkonfirmasi yang menjadi jadwal nyata, dan N shift berikutnya dikunci. Officer memberi prioritas (Hot job / Move up dengan alasan) atau menangani pengecualian.</p>
+<table><tr><th>Bagian</th><th>Status</th></tr>
+<tr><td>Create Work Order dari rencana kirim CO Confirmed</td><td>Selesai (kartu di layar Work Order)</td></tr>
+<tr><td>Engine: gerbang, perkiraan, solver, auto-plan, confirm, perubahan</td><td>Selesai, 12 test engine murni lolos</td></tr>
+<tr><td>Layar Production Scheduling (Gantt, Kanban, Calendar, Grid, Monitoring)</td><td>Selesai</td></tr>
+<tr><td>Layar Work Order (dieline ProDev, BOP, mesin yang bisa antre, BOM, jadwal, output)</td><td>Selesai; dieline kosong untuk data dummy yang belum punya</td></tr>
+<tr><td>Master Tooling, Setup and Changeover, Wait Rules, Tier Customer, konstanta PPIC_*</td><td>Selesai</td></tr>
+<tr><td>Operator Queue (timer Play/Pause/Stop, qty, Problem ke Maintenance Request)</td><td>Selesai</td></tr>
+<tr><td>Learning engine + layar Learning Changes</td><td>Selesai (baru changeover)</td></tr>
+<tr><td>Jadwal otomatis (02:00, awal shift) dan re-plan saat mesin rusak/pulih; flag akses</td><td>Selesai</td></tr>
+<tr><td>Rilis ke tm2*, waste tetap di ProDev, format cetak WO</td><td>Menunggu keputusan Jo</td></tr></table>
+
+<h2>2. Workflow</h2>
+<ol>
+<li><b>Customer Order Confirmed</b> menghasilkan baris rencana kirim (CPDEL).</li>
+<li><b>Create Work Order</b> (satu atau semua): <code>Cpdel::post</code> membuat WO per part dari ProDev.</li>
+<li>Engine melengkapi WO: id proses, mesin yang boleh mengantre, target, setup, gerbang bahan dan tooling.</li>
+<li><b>Auto-plan</b> membuat <b>Draft</b> (malam 02:00, awal shift, saat WO dibuat, saat mesin rusak atau pulih).</li>
+<li>Officer meninjau <b>Needs attention</b>, memberi prioritas bila perlu, lalu <b>Confirm plan</b>; N shift dikunci.</li>
+<li>Operator menjalankan antrean terkonfirmasi: setup, run, pause, stop, qty. Masalah mesin membuka Maintenance Request.</li>
+<li>Waktu nyata masuk log; <b>Learning</b> mengoreksi nilai Assumed; Monitoring membandingkan rencana dan aktual.</li>
+</ol>
+
+<h2>3. Data flow</h2>
+<table><tr><th>Dari</th><th>Ke</th><th>Isi</th></tr>
+<tr><td>co_order_delivery (tm2sdi)</td><td>prd_wo, prd_wo_operation, prd_wo_material (tm2prd)</td><td>WO per part dengan BOP dan BOM dari ProDev, beku di WO</td></tr>
+<tr><td>prod_process_machine, prod_machine, prod_tooling_asset (tm2mst)</td><td>prd_wo_operation_machine</td><td>Mesin eligible, target, setup, alasan bila tidak boleh</td></tr>
+<tr><td>Material Planning (MRP)</td><td>gate_material, material_ready_at</td><td>Ready / Waiting + tanggal / Blocked</td></tr>
+<tr><td>Draft_* kolom di prd_wo_operation</td><td>machine_id, target_start/finish, is_locked</td><td>Saat Confirm; dicatat di prd_plan_run dan prd_plan_decision</td></tr>
+<tr><td>Operator Queue</td><td>prd_operation_time_log, prd_wo_operation_output(+defect)</td><td>Menit setup/run/pause dan qty baik, waste, reject</td></tr>
+<tr><td>prd_operation_time_log</td><td>prod_machine_changeover</td><td>Learning: median N job, langkah maks 20 persen, log LEARN</td></tr>
+<tr><td>prod_machine_downtime</td><td>auto-plan (EVENT)</td><td>Mesin rusak/pulih memicu Draft baru</td></tr></table>
+<p class="mut">Tanpa foreign key lintas database; relasi dicocokkan di PHP.</p>
+
+<h2>4. Engine yang dibuat</h2>
+<table><tr><th>Engine</th><th>Fungsi</th><th>Contoh dari demo</th></tr>
+<tr><td>Work Order Enrichment</td><td>Proses, mesin eligible, target, setup, qty masuk dan keluar per langkah</td><td>WO2600265: 2.500 lembar, 5 langkah; Komori GL440 ditolak karena BREAKDOWN</td></tr>
+<tr><td>Readiness Gates</td><td>Gerbang bahan, tooling, artwork</td><td>WO2600250/260: Blocked, kurang tinta BRITE INK BLACK</td></tr>
+<tr><td>Setup Time Engine</td><td>Setup dasar + changeover + tooling</td><td>CETAK 15 menit; Plong 15; Lem 15</td></tr>
+<tr><td>Schedule Solver</td><td>Ranking, mesin paling cepat selesai, kalender, wait</td><td>CETAK 09-Okt 11:33 sampai 12:47 di DIG-02</td></tr>
+<tr><td>PPIC Auto-Planner</td><td>Menyiapkan Draft + daftar pengecualian</td><td>Draft #14: 32 operasi, 31 terjadwal</td></tr>
+<tr><td>Plan Confirm and Change</td><td>Confirm, kunci N shift, prioritas, dampak drag</td><td>Confirm #14: 17 dikonfirmasi, 12 dikunci</td></tr>
+<tr><td>Operator Timer</td><td>Play/Pause/Stop, log waktu, output</td><td>Setup CETAK WO2600265 di DIG-02, rencana 15 menit</td></tr>
+<tr><td>Learning Engine</td><td>Koreksi changeover Assumed, log, revert + bekukan</td><td>Uji: 20 menit menjadi 22 menit dari 5 job median 26</td></tr>
+<tr><td>PlanEvents / Machine Downtime</td><td>Mesin rusak atau pulih memicu Draft baru</td><td>LAM-04 rusak: Draft #15, lalu #16</td></tr></table>
+<p>Semua terdaftar di Engine Catalog (devlib.test &gt; Engines); rumus ProCost tidak disentuh.</p>
+
+<h2>5. Implementasi di layar (screenshot situs dummy)</h2>
+<h3>5.1 Create Work Order (sebelum)</h3><img src="01_create_wo_before.png" alt="Create Work Order">
+<h3>5.2 Setelah membuat tiga WO (WO2600265 2.500, WO2600266 3.000, WO2600267 4.000)</h3><img src="02_after_create_list.png" alt="Daftar WO">
+<h3>5.3 Layar Work Order WO2600265</h3><img src="03_wo_detail.png" alt="Detail WO">
+<h3>5.4 Production Scheduling: Draft #14</h3><img src="04_schedule_draft_gantt.png" alt="Draft">
+<h3>5.5 Setelah Confirm (17 operasi, 12 dikunci)</h3><img src="05_confirmed_gantt.png" alt="Confirmed">
+<h3>5.6 Kanban</h3><img src="06_kanban.png" alt="Kanban">
+<h3>5.7 Operator Queue (setup berjalan)</h3><img src="07_operator_setup.png" alt="Operator">
+<h3>5.8 Mesin LAM-04 rusak, Draft baru #16</h3><img src="08_machine_down_replan.png" alt="Machine down">
+<h3>5.9 Learning Changes</h3><img src="09_learning.png" alt="Learning">
+<h3>5.10 Tooling Master</h3><img src="10_tooling_master.png" alt="Tooling">
+<h3>5.11 Grid</h3><img src="11_grid.png" alt="Grid">
+
+<h2>6. Print out</h2>
+<p>File terlampir: <code>print_work_order_WO2600265.pdf</code> dan <code>print_jadwal_produksi.pdf</code>. Ini cetakan dari layar, <b>bukan</b> format cetak resmi: format cetak Work Order (mockup A5/A4) belum disetujui Jo dan belum dipasang. Cetak langsung dari browser (headless) menghasilkan PDF hampir kosong (2 KB); penyebabnya belum saya selidiki, jadi PDF terlampir dibuat dari screenshot.</p>
+
+<h2>7. Temuan saat saya periksa sendiri (apa adanya)</h2>
+<div class="warn"><ul>
+<li><b>Target tidak konsisten:</b> tabel BOP di WO dan layar operator menampilkan 8.000/jam untuk CETAK di DIG-02, sedangkan tabel mesin di layar yang sama menulis 2.544/jam dan lama jalan 0,98 jam mengikuti 2.544. Nilai tersimpan di operasi belum diperbarui ke target mesin terpilih.</li>
+<li><b>Data ProDev dummy kosong:</b> Ups, ukuran lembar, board, warna, dieline di WO2600265 tampil "—" dan dieline "belum ada"; bahan kertas "belum dipilih di Inquiry" jumlah 0, sehingga gerbang bahan otomatis Ready.</li>
+<li><b>Gantt:</b> bar pendek dan teks terpotong (10 px per jam). Label jam yang bertumpuk sudah saya perbaiki hari ini (label tiap beberapa jam).</li>
+<li><b>Mesin rusak:</b> operasi yang sudah terkunci di mesin itu tidak dipindah engine (sesuai aturan kunci). Engine kini menghindari mesin rusak untuk operasi yang belum terkunci; yang terkunci muncul sebagai "Machine down" untuk officer. Perbaikan ini baru saya tulis hari ini.</li>
+<li><b>Behind plan:</b> daftar penuh dengan WO dummy lama (WO2600261, 263, 264) yang jadwalnya sudah lewat; itu bukan error engine, tetapi data lama.</li>
+<li><b>Breadcrumb "+ New Record"</b> muncul di semua layar PPIC; sisa pola layar, belum saya bersihkan.</li>
+<li><b>Perhitungan material (MRP)</b> lambat; seed 8 job memakan sekitar 3 menit.</li>
+<li><b>Video:</b> yang saya buat adalah slideshow bernomor dengan caption Bahasa Indonesia (autoplay), bukan rekaman video. Rekaman video sungguhan belum dibuat.</li>
+</ul></div>
+
+<h2>8. Asumsi dan keputusan menunggu Jo</h2>
+<ul>
+<li>Asumsi: auto-plan di jam tetap dan saat kejadian; bottleneck otomatis dengan penimpaan officer; subkon = flag inhouse pada proses; layar operator termasuk lingkup; grup Production Planning, Production Manager, Operations Manager memegang PPIC_SCHEDULING; Production Planning dan Manager Inventory memegang PPIC_INVENTORY.</li>
+<li>Menunggu: rilis ke tm2* (migration, help, menu); waste tetap (make-ready) di rantai ProDev; format cetak Work Order; pemegang status tooling; penerapan PPIC_INVENTORY di layar booking dan shortage (milik agen Inventory).</li>
+</ul>
+</main></body></html>
