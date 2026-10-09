@@ -109,7 +109,7 @@ final class Ppic
                 'machine_status' => $m ? ($machines[$m]->machine_status ?? null) : null, 'machine_type' => $m ? ($machines[$m]->machine_type ?? null) : null,
                 'start' => $start ? CarbonImmutable::parse($start) : null, 'finish' => $finish ? CarbonImmutable::parse($finish) : null,
                 'task_status' => $o->task_status, 'plan_status' => $o->plan_status ?: 'NONE', 'planned_by' => $o->planned_by,
-                'qty' => (float) $o->qty, 'uom' => $o->qty_uom ?: $o->waste_uom, 'qty_out' => $qtyOut, 'target' => $o->rate_band_value !== null ? (float) $o->rate_band_value : null,
+                'qty' => (float) $o->qty, 'uom' => $o->qty_uom ?: $o->waste_uom, 'qty_out' => $qtyOut, 'target' => self::targetOn($m, $cands[$o->operation_id] ?? null, $o->rate_band_value),
                 'waste' => $o->waste_qty !== null ? (float) $o->waste_qty : null, 'spoilage' => $o->tolerance_qty !== null ? (float) $o->tolerance_qty : null,
                 'setup_base' => $o->setup_base_min, 'setup_change' => $o->setup_change_min, 'setup_tool' => $o->setup_tool_min,
                 'setup' => (int) ($o->setup_base_min ?? 0) + (int) ($o->setup_change_min ?? 0) + (int) ($o->setup_tool_min ?? 0), 'run' => $o->run_minutes,
@@ -124,6 +124,18 @@ final class Ppic
         }
 
         return self::$cache = $out;
+    }
+
+    /** Target per hour on the machine the operation is placed on (the machine rate wins over the value stored when the Work Order was made). */
+    private static function targetOn(?int $machineId, ?iterable $candidates, mixed $stored): ?float
+    {
+        foreach ($candidates ?? [] as $c) {
+            if ($machineId !== null && (int) $c->machine_id === (int) $machineId && $c->target_qty_per_hour !== null) {
+                return (float) $c->target_qty_per_hour;
+            }
+        }
+
+        return $stored !== null ? (float) $stored : null;
     }
 
     public static function forget(): void
