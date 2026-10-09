@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panduan UAT PPIC</title>
+<style>
+:root{--bg:#f1f5f9;--fg:#0f172a;--card:#fff;--ac:#2563eb;--mut:#64748b;--key:#fde68a;--keyb:#b45309}
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#e2e8f0;--card:#1e293b;--mut:#94a3b8;--key:#78350f;--keyb:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif}
+header{padding:12px 16px;font-weight:700;font-size:18px}
+#path{padding:0 16px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.crumb{background:var(--card);border:1px solid var(--mut);border-radius:6px;padding:2px 10px;font-weight:600}
+.sep{color:var(--mut)}
+#box{margin:0 16px;background:var(--card);border-radius:10px;padding:12px 16px}
+#box h2{margin:0 0 6px;font-size:18px}
+#act{font-size:18px;min-height:56px}
+.key{display:inline-block;background:var(--key);color:var(--fg);border:2px solid var(--keyb);border-bottom-width:4px;border-radius:6px;padding:0 10px;font:600 17px ui-monospace,monospace;margin:0 2px}
+.btn{display:inline-block;background:var(--ac);color:#fff;border-radius:5px;padding:0 8px;font-weight:600}
+#stage{margin:12px 16px;max-height:60vh;overflow:auto;border-radius:8px;background:var(--card)}
+#wrap{position:relative;width:100%}
+#im{display:block;width:100%}
+#cur{position:absolute;width:34px;height:34px;transform:translate(-4px,-4px);transition:left .7s ease,top .7s ease;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+#ring{position:absolute;width:46px;height:46px;margin:-23px 0 0 -23px;border:4px solid #ef4444;border-radius:50%;transition:left .7s ease,top .7s ease;pointer-events:none;animation:p 1s infinite}
+@keyframes p{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.5);opacity:0}}
+#typed{position:absolute;background:var(--key);border:2px solid var(--keyb);border-radius:6px;padding:2px 10px;font:600 15px ui-monospace,monospace;color:var(--fg);transition:left .7s ease,top .7s ease;white-space:nowrap}
+#bar{display:flex;gap:8px;align-items:center;padding:4px 16px 16px;flex-wrap:wrap}
+button{background:var(--ac);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+button.alt{background:#64748b}
+</style></head><body>
+<header>Panduan UAT penjadwalan otomatis PPIC (data dummy ddt*): klik apa, ketik apa</header>
+<div id="path"></div>
+<div id="box"><h2 id="t"></h2><div id="act"></div></div>
+<div id="stage"><div id="wrap"><img id="im" alt=""><div id="ring"></div><svg id="cur" viewBox="0 0 24 24"><path d="M3 2l7 19 3-8 8-3z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg><div id="typed" hidden></div></div></div>
+<div id="bar"><button class="alt" id="prev">Sebelumnya</button><button id="next">Berikutnya</button><button class="alt" id="auto">Putar otomatis</button><span id="n"></span></div>
+<script>
+const W=1440, B=t=>`<span class="btn">${t}</span>`, K=t=>`<span class="key">${t}</span>`;
+// x,y = piksel pada gambar asli (lebar 1440). Tanpa x,y: kursor tidak ditampilkan (posisi tidak ditebak).
+const S=[
+{img:"01_create_wo_before.png",h:1500,title:"1. Buat Work Order dari rencana kirim",menu:["Production","Planning","Work Order"],steps:[
+ {x:192,y:612,act:`Klik kotak <b>Delivery plan line</b>, pilih satu baris, misalnya CO2600033 - 2.500.`},
+ {x:544,y:603,act:`Klik tombol ${B("+ Create Work Order")}. Untuk semua baris sekaligus klik ${B("Create all")} (kanan bawah kartu).`}]},
+{img:"02_after_create_list.png",h:1500,title:"2. Hasil: Work Order baru muncul di daftar",menu:["Production","Planning","Work Order"],steps:[
+ {act:`Tidak ada yang diklik. Periksa daftar di bawah: WO baru (mis. WO2600265) berstatus SCHEDULED dan daftar rencana kirim berkurang.`}]},
+{img:"03_wo_detail.png",h:3200,title:"3. Buka detail Work Order",menu:["Production","Planning","Work Order"],steps:[
+ {act:`Di daftar Work Order, klik nomor WO (kotak berwarna) atau ikon buka di kirinya. Layar menampilkan BOP, mesin yang boleh, BOM dan jadwal Draft. Kursor tidak ditampilkan karena posisinya belum saya ukur di layar panjang ini.`}]},
+{img:"04_schedule_draft_gantt.png",h:2300,title:"4. Tinjau rencana Draft",menu:["Production","Planning","Production Scheduling"],steps:[
+ {act:`Baca kartu <b>Needs attention</b>. Jika ada pekerjaan yang perlu dipercepat: pilih Work Order, pilih Priority <b>Hot job</b>, lalu isi Reason.`},
+ {x:885,y:823,act:`Klik kolom <b>Reason</b>, lalu ketik di keyboard:`,type:"Customer minta lebih cepat"},
+ {x:1248,y:827,act:`Klik tombol ${B("Give priority")}.`},
+ {x:1180,y:269,act:`Atau klik ${B("Re-plan")} untuk menyusun Draft baru.`}]},
+{img:"05_confirmed_gantt.png",h:2300,title:"5. Confirm plan",menu:["Production","Planning","Production Scheduling"],steps:[
+ {x:1285,y:269,act:`Klik tombol hijau ${B("Confirm plan")}. Rencana menjadi jadwal nyata dan tombol itu hilang.`}]},
+{img:"06_kanban.png",h:1500,title:"6. Ganti tampilan jadwal",menu:["Production","Planning","Production Scheduling"],steps:[
+ {x:1252,y:1054,act:`Klik tab <b>Kanban</b> (di atas papan jadwal). Tab lain: Gantt, Calendar, Grid.`}]},
+{img:"07_operator_setup.png",h:1700,title:"7. Operator mencatat produksi",menu:["Production","Output","Operator Queue"],steps:[
+ {x:1270,y:447,act:`Pilih mesin lalu pekerjaan. Klik ${B("Start run")} untuk mulai produksi setelah setup.`},
+ {x:250,y:584,act:`Untuk berhenti sementara: klik kolom <b>Reason</b>, pilih alasan, lalu klik ${B("Pause")}.`},
+ {x:230,y:719,act:`Isi <b>Good quantity</b>: klik kolomnya lalu ketik di keyboard:`,type:"500"},
+ {x:720,y:709,act:`Klik ${B("+ Add")}.`},
+ {x:1188,y:902,act:`Selesai: isi Good, Waste, Reject, lalu klik ${B("Save and stop")}.`}]},
+{img:"08_machine_down_replan.png",h:3400,title:"8. Mesin rusak, jadwal disusun ulang otomatis",menu:["Production","Output","Operator Queue"],steps:[
+ {act:`Dari Operator Queue klik ${B("Problem")} lalu pilih alasan <b>Machine problem</b>; layar Maintenance Request (Maintenance &gt; Breakdown Maintenance) terbuka dengan mesin dan WO terisi. Setelah mesin tercatat Down, Draft baru muncul sendiri di Production Scheduling. Catatan: langkah mencatat Down di layar Maintenance belum saya periksa langsung.`}]},
+{img:"09_learning.png",h:1100,title:"9. Learning Changes",menu:["Production","Planning","Learning Changes"],steps:[{act:`Buka menu di atas. Periksa nilai changeover yang dikoreksi dari waktu setup nyata; setiap perubahan tercatat dan bisa dikembalikan.`}]},
+{img:"10_tooling_master.png",h:900,title:"10. Tooling Master",menu:["Production","Master","Tooling Master"],steps:[{act:`Buka menu di atas. Status plat dan pisau di sini menentukan gerbang tooling pada jadwal.`}]},
+{img:"11_grid.png",h:2300,title:"11. Tampilan Grid",menu:["Production","Planning","Production Scheduling"],steps:[
+ {x:1395,y:1054,act:`Klik tab <b>Grid</b> di atas papan jadwal.`}]}
+];
+let i=0,j=0,timer=null;
+const $=id=>document.getElementById(id);
+function show(){
+ const s=S[i],st=s.steps[j];
+ $("path").innerHTML=s.menu.map(m=>`<span class="crumb">${m}</span>`).join('<span class="sep">&gt;</span>');
+ $("t").textContent=s.title;
+ $("act").innerHTML=st.act+(st.type?` ${K(st.type)}`:'');
+ const im=$("im"); if(!im.src.endsWith(s.img))im.src=s.img;
+ const px=v=>(v/W*100)+'%', py=v=>(v/s.h*100)+'%';
+ const has=st.x!==undefined;
+ for(const e of [$("cur"),$("ring")])e.style.display=has?'block':'none';
+ const ty=$("typed"); ty.hidden=!(has&&st.type);
+ if(has){
+  for(const e of [$("cur"),$("ring")]){e.style.left=px(st.x);e.style.top=py(st.y);}
+  if(st.type){ty.textContent="ketik: "+st.type;ty.style.left=px(Math.min(st.x+30,W-330));ty.style.top=py(st.y+40);}
+  const stg=$("stage"),r=im.clientHeight*st.y/s.h; stg.scrollTo({top:Math.max(0,r-stg.clientHeight/2),behavior:'smooth'});
+ } else $("stage").scrollTo({top:0});
+ $("n").textContent=`Layar ${i+1}/${S.length}, langkah ${j+1}/${S[i].steps.length}`;
+}
+function next(){ if(j<S[i].steps.length-1)j++; else if(i<S.length-1){i++;j=0;} else return false; show(); return true;}
+function prev(){ if(j>0)j--; else if(i>0){i--;j=S[i].steps.length-1;} show();}
+$("next").onclick=next;$("prev").onclick=prev;
+$("auto").onclick=()=>{ if(timer){clearInterval(timer);timer=null;$("auto").textContent="Putar otomatis";} else {$("auto").textContent="Berhenti";timer=setInterval(()=>{if(!next()){clearInterval(timer);timer=null;$("auto").textContent="Putar otomatis";}},4500);} };
+document.addEventListener("keydown",e=>{if(e.key==="ArrowRight")next();if(e.key==="ArrowLeft")prev();});
+$("im").onload=show; show();
+</script></body></html>
