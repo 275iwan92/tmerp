@@ -49,6 +49,22 @@ final class StockCardChain
      */
     public static function recalculate(string $class, Model $from, bool $fresh = false): array
     {
+        // INV_AVG_SCOPE = ITEM: qty per bin tetap dihitung di sini, nilai / Avg ditimpa rantai per item (ItemAverageCost).
+        if (! ItemAverageCost::enabled()) {
+            return self::recalculatePosition($class, $from, $fresh);
+        }
+        $itemId = (int) $from->{self::CARDS[$class][1]};
+        $partId = $class === 'FG' && $from->parts_id ? (int) $from->parts_id : null;
+        $before = ItemAverageCost::snapshot($class, $itemId, $partId);
+        $out = self::recalculatePosition($class, $from, $fresh);
+        $item = ItemAverageCost::recalculate($class, $itemId, $partId, $before);
+
+        return ['revalued_rows' => $item['revalued_rows'], 'revalued_value' => $item['revalued_value']] + $out;
+    }
+
+    /** Rantai satu posisi (qty dan nilai per bin). */
+    private static function recalculatePosition(string $class, Model $from, bool $fresh): array
+    {
         [, $itemKey] = self::CARDS[$class];
         $position = fn () => self::position($class, (int) $from->{$itemKey}, $class === 'FG' ? ($from->parts_id ? (int) $from->parts_id : null) : null, (int) $from->location_id);
         $at = Carbon::parse($from->doc_date)->format('Y-m-d H:i:s');
@@ -120,7 +136,7 @@ final class StockCardChain
                 continue;
             }
             $pair->forceFill(['value_in' => $price === null ? null : (float) $pair->qty_in * $price])->save();
-            $more = self::recalculate($class, $pair);
+            $more = self::recalculatePosition($class, $pair, false);
             $out['rows'] += $more['rows'];
             $out['negative'] ??= $more['negative'];
             $out['revalued_rows'] += $more['revalued_rows'];

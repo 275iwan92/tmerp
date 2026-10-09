@@ -100,6 +100,10 @@ class ConstantsLookup extends DbLookup
             return t('APP_TIMEZONE needs a valid time zone name in Text Value, for example Asia/Jakarta.');
         }
 
+        if ($key === 'INV_AVG_SCOPE' && ! in_array(strtoupper(trim((string) ($in['constant_text'] ?? ''))), ['BIN', 'ITEM'], true)) {
+            return t('INV_AVG_SCOPE needs BIN or ITEM in Text Value. Run inv:revalue-per-item --check, then --apply, before choosing ITEM.');
+        }
+
         return null;
     }
 

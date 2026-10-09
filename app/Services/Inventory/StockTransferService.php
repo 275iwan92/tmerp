@@ -397,6 +397,11 @@ class StockTransferService
         (new $card)->forceFill($base($to, $toId) + ['reference_name' => self::REF.':'.$inTag, 'qty' => $qty, 'qty_bb' => $balTo, 'qty_in' => $qty, 'qty_out' => 0,
             'qty_eb' => $ebTo, 'avg_unitprice' => $newAvg, 'value_in' => $avg === null ? null : $qty * $avg, 'value_eb' => $newAvg === null ? null : $ebTo * $newAvg])->save();
 
+        // INV_AVG_SCOPE = ITEM: transfer membawa Avg item dan tidak mengubahnya (ItemAverageCost menulis ulang nilai kedua baris).
+        if (ItemAverageCost::enabled()) {
+            $avg = ItemAverageCost::recalculate($l->stock_class, $itemId, $l->stock_class === 'FG' && $l->part_id ? (int) $l->part_id : null)['avg'];
+        }
+
         return $avg;
     }
 }

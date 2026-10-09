@@ -1,0 +1,46 @@
+[
+  {
+    "key": "guide-inventory-valuation",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Stock Valuation: Average per Item",
+    "purpose": {
+      "en": "Stock is valued at a moving Average. With INV_AVG_SCOPE = ITEM there is one Average per item for the whole company; with BIN each bin keeps its own Average (the old way).",
+      "id": "Stok dinilai dengan rata-rata bergerak (Average). Dengan INV_AVG_SCOPE = ITEM ada satu Average per item untuk seluruh perusahaan; dengan BIN tiap bin punya Average sendiri (cara lama)."
+    },
+    "keywords": "average, rata-rata, harga rata-rata, valuasi, nilai stok, per item, per bin, inv_avg_scope, revalue, peralihan, cutover, nilai persediaan",
+    "steps": [
+      {
+        "en": "A receipt raises the Average: (item value + received value) / (item quantity + received quantity). An issue or minus adjustment is valued at the Average of that moment and does not change it.",
+        "id": "Penerimaan menaikkan Average: (nilai item + nilai terima) / (qty item + qty terima). Pengeluaran atau adjustment minus bernilai Average saat itu dan tidak mengubahnya."
+      },
+      {
+        "en": "A transfer between bins moves quantity and value at the item Average. The item total and the Average stay the same and no journal is made.",
+        "id": "Transfer antar bin memindah qty dan nilai pada Average item. Total item dan Average tetap sama dan tidak ada jurnal."
+      },
+      {
+        "en": "Stock owned by a customer or supplier is not valued and does not enter the Average. The Stock Card still shows BB and EB per row, continuous.",
+        "id": "Stok milik customer atau supplier tidak dinilai dan tidak ikut Average. Stock Card tetap menampilkan BB dan EB tiap baris, bersambung."
+      },
+      {
+        "en": "A document dated earlier than later rows is inserted in its place and the later rows are recalculated; the changed value of later issues is reported.",
+        "id": "Dokumen bertanggal lebih awal disisipkan di tempatnya dan baris sesudahnya dihitung ulang; perubahan nilai pengeluaran berikutnya dilaporkan."
+      },
+      {
+        "en": "Before switching: run inv:revalue-per-item --check (writes nothing, total value must not change), then --apply (writes one cutover point per item, no journal).",
+        "id": "Sebelum beralih: jalankan inv:revalue-per-item --check (tidak menulis, total nilai tidak boleh berubah), lalu --apply (menulis satu titik peralihan per item, tanpa jurnal)."
+      },
+      {
+        "en": "Then set INV_AVG_SCOPE to ITEM in Setup > Constants (Text Value BIN or ITEM). Setting it back to BIN restores the per-bin way for new postings.",
+        "id": "Lalu ubah INV_AVG_SCOPE menjadi ITEM di Setup > Constants (Text Value BIN atau ITEM). Mengembalikannya ke BIN memulihkan cara per bin untuk posting baru."
+      }
+    ],
+    "fields": [
+      {
+        "label": "INV_AVG_SCOPE",
+        "en": "Text Value in Setup > Constants: BIN (one Average per item per bin) or ITEM (one Average per item for all bins).",
+        "id": "Text Value di Setup > Constants: BIN (satu Average per item per bin) atau ITEM (satu Average per item untuk semua bin)."
+      }
+    ]
+  }
+]
