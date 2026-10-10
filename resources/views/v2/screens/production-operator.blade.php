@@ -5,6 +5,7 @@
     use App\Models\Prd\PrdScrapType;
     use App\Services\Scheduling\Operator\OperatorTimerService as Timer;
     use App\Support\V2\Data\Ppic;
+    use App\Support\V2\Data\Sales;
     use App\Support\V2\Src;
     use Devlib\Locale;
 
@@ -51,19 +52,33 @@
             $runH = max($sum['run'], 1) / 60;
             $speed = $sum['run'] > 0 ? round($sum['good'] / $runH) : null;
             $expected = Ppic::expectedQty($current, $sum);
-            $nextJobs = $queue->filter(fn ($o) => $o['op_id'] !== $current['op_id'])->take(3);
+            $nextJobs = $queue->filter(fn ($o) => $o['op_id'] !== $current['op_id'])->take(3)->values();
             $scrap = PrdScrapType::query()->where('activate', 1)->where('category', 'REJECT')->orderBy('sort_order')->pluck('type_name', 'type_id')->all();
+            $types = Sales::dielineTypes();
+            $visual = Ppic::jobVisual($current['wo_id']);
+            $nextVisual = $nextJobs->isNotEmpty() ? Ppic::jobVisual($nextJobs[0]['wo_id']) : null;
         @endphp
         <x-dl::card :title="raw($current['wo_no'].' · '.($current['product'] ?? '—'))" :description="raw(($current['customer'] ?? '—').' · '.$current['process'].' · '.Locale::number($current['qty'], 0).' '.$current['uom'].' '.t('planned').($current['target'] ? ' · '.t('target').' '.Locale::number($current['target'], 0).'/h' : ''))">
-            <x-dl::badge :label="$kindLabel" :tone="$paused ? 'warn' : ($open->kind === 'SETUP' ? 'info' : 'success')" />
-            <x-dl::timer :seconds="$svc->elapsed($open)" :running="! $paused" :tone="$paused ? 'warn' : 'accent'" :label="raw($paused ? t('paused').' · '.t(Timer::PAUSE_REASONS[$open->pause_reason] ?? 'Other') : ($open->kind === 'SETUP' ? t('setup time') : t('run time')))" />
-            <x-dl::form.row :cols="4">
-                <x-dl::field.display label="Setup so far (min)" :value="$sum['setup'].' / '.$current['setup'].' '.t('plan')" :source="$src" />
-                <x-dl::field.display label="Good so far" :value="raw(Locale::number($sum['good'], 0).' / '.Locale::number($current['qty_out'], 0))" :source="$src" />
-                <x-dl::field.display label="Should be by now" :value="$expected !== null ? raw(Locale::number($expected, 0).' '.$current['uom']) : '—'" :source="$src" />
-                <x-dl::field.display label="Difference" :value="$expected !== null ? raw(Locale::number($sum['good'] - $expected, 0)) : '—'" :source="$src" />
-                <x-dl::field.display label="Actual speed" :value="$speed ? raw(Locale::number($speed, 0).' /h') : '—'" :source="$src" />
-                <x-dl::field.display label="Paused (min)" :value="$sum['pause']" :source="$src" />
+            <x-dl::form.row :cols="2">
+                <div>
+                    <x-dl::badge :label="$kindLabel" :tone="$paused ? 'warn' : ($open->kind === 'SETUP' ? 'info' : 'success')" />
+                    <x-dl::timer :seconds="$svc->elapsed($open)" :running="! $paused" :tone="$paused ? 'warn' : 'accent'" :label="raw($paused ? t('paused').' · '.t(Timer::PAUSE_REASONS[$open->pause_reason] ?? 'Other') : ($open->kind === 'SETUP' ? t('setup time') : t('run time')))" />
+                    <x-dl::form.row :cols="2">
+                        <x-dl::field.display label="Good so far" :value="raw(Locale::number($sum['good'], 0).' / '.Locale::number($current['qty_out'], 0))" :source="$src" />
+                        <x-dl::field.display label="Should be by now" :value="$expected !== null ? raw(Locale::number($expected, 0).' '.$current['uom']) : '—'" :source="$src" />
+                        <x-dl::field.display label="Difference" :value="$expected !== null ? raw(Locale::number($sum['good'] - $expected, 0)) : '—'" :source="$src" />
+                        <x-dl::field.display label="Actual speed" :value="$speed ? raw(Locale::number($speed, 0).' /h') : '—'" :source="$src" />
+                        <x-dl::field.display label="Setup so far (min)" :value="$sum['setup'].' / '.$current['setup'].' '.t('plan')" :source="$src" />
+                        <x-dl::field.display label="Paused (min)" :value="$sum['pause']" :source="$src" />
+                    </x-dl::form.row>
+                </div>
+                <div>
+                    @if ($visual)
+                        <x-mp::sales.part-visual :part="$visual" :types="$types" height="230px" />
+                    @else
+                        <x-dl::alert tone="info" message="No dieline or artwork for this job in Product Development." />
+                    @endif
+                </div>
             </x-dl::form.row>
             <x-dl::action-bar>
                 @if ($paused || $open->kind === 'SETUP')
@@ -73,30 +88,38 @@
             </x-dl::action-bar>
         </x-dl::card>
 
-        <x-dl::card title="Next jobs" description="Confirmed queue after this job, in order.">
-            <x-dl::table :source="$src" empty="No job is waiting after this one." :columns="['wo' => 'Work Order', 'product' => 'Product', 'qty' => 'Quantity', 'start' => 'Planned start']"
-                :rows="$nextJobs->values()->map(fn ($o) => ['wo' => raw($o['wo_no']), 'product' => raw($o['product'] ?? '—'), 'qty' => raw(Locale::number($o['qty'], 0).' '.$o['uom']), 'start' => $o['start'] ? raw(Locale::dt($o['start'])) : '—'])->all()" />
+        <x-dl::card title="Next job" description="The confirmed queue after this job, in order.">
+            <x-dl::form.row :cols="2">
+                <div>
+                    @if ($nextVisual)
+                        <x-mp::sales.part-visual :part="$nextVisual" :types="$types" height="170px" />
+                    @endif
+                </div>
+                <div>
+                    <x-dl::table :source="$src" empty="No job is waiting after this one." :columns="['wo' => 'Work Order', 'product' => 'Product', 'qty' => 'Quantity', 'start' => 'Planned start']"
+                        :rows="$nextJobs->map(fn ($o) => ['wo' => raw($o['wo_no']), 'product' => raw($o['product'] ?? '—'), 'qty' => raw(Locale::number($o['qty'], 0).' '.$o['uom']), 'start' => $o['start'] ? raw(Locale::dt($o['start'])) : '—'])->all()" />
+                </div>
+            </x-dl::form.row>
         </x-dl::card>
 
-        @unless ($paused)
-            <x-dl::card title="Pause: why?" description="The timer stops and the reason is saved. Machine problem opens a Maintenance Request filled with this machine and Work Order.">
-                <x-dl::action-form action="{{ route('v2.ppic.op.pause', $current['op_id']) }}">
-                    <x-dl::form.row :cols="3">
-                        <x-dl::field.select name="reason" label="Reason" required :options="$reasons" :source="Src::of('tm2prd.prd_operation_time_log.pause_reason')" />
-                        <x-dl::button variant="secondary" icon="fa-pause" label="Pause" type="submit" />
-                    </x-dl::form.row>
-                </x-dl::action-form>
-            </x-dl::card>
-
-            <x-dl::card title="Add quantity" description="Good quantity made so far. Press as often as you like during the run.">
-                <x-dl::action-form action="{{ route('v2.ppic.op.quantity', $current['op_id']) }}">
-                    <x-dl::form.row :cols="3">
-                        <x-dl::field.number name="qty" label="Good quantity" required :source="Src::of('tm2prd.prd_wo_operation_output.qty_good')" />
-                        <x-dl::button icon="fa-plus" label="Add" type="submit" />
-                    </x-dl::form.row>
-                </x-dl::action-form>
-            </x-dl::card>
-        @endunless
+        <x-dl::card title="Pause and quantity">
+            <x-dl::form.row :cols="2">
+                @unless ($paused)
+                    <x-dl::action-form action="{{ route('v2.ppic.op.pause', $current['op_id']) }}">
+                        <x-dl::form.row :cols="2">
+                            <x-dl::field.select name="reason" label="Pause: why?" required :options="$reasons" :source="Src::of('tm2prd.prd_operation_time_log.pause_reason')" />
+                            <x-dl::button variant="secondary" icon="fa-pause" label="Pause" type="submit" />
+                        </x-dl::form.row>
+                    </x-dl::action-form>
+                    <x-dl::action-form action="{{ route('v2.ppic.op.quantity', $current['op_id']) }}">
+                        <x-dl::form.row :cols="2">
+                            <x-dl::field.number name="qty" label="Add quantity" required :source="Src::of('tm2prd.prd_wo_operation_output.qty_good')" />
+                            <x-dl::button icon="fa-plus" label="Add" type="submit" />
+                        </x-dl::form.row>
+                    </x-dl::action-form>
+                @endunless
+            </x-dl::form.row>
+        </x-dl::card>
 
         <x-dl::card title="Stop" description="Closes the timer. Enter what was made in this run; the Work Order output is saved and the operation is finished.">
             <x-dl::action-form action="{{ route('v2.ppic.op.stop', $current['op_id']) }}">
@@ -113,14 +136,27 @@
             </x-dl::action-form>
         </x-dl::card>
     @elseif ($next)
+        @php
+            $types = Sales::dielineTypes();
+            $nextVisual = Ppic::jobVisual($next['wo_id']);
+        @endphp
         <x-dl::card :title="raw(t('Next job').' · '.$next['wo_no'].' · '.($next['product'] ?? '—'))" :description="raw(($next['customer'] ?? '—').' · '.$next['process'].' · '.Locale::number($next['qty'], 0).' '.$next['uom'].' · '.t('expected setup').' '.$next['setup'].' min')">
-            <x-dl::field.display label="Planned start" :value="$next['start'] ? raw(Locale::dt($next['start'])) : '—'" :source="$src" />
-            @if (in_array('BLOCK', $next['gates'], true) || in_array('WAIT', $next['gates'], true))
-                <x-dl::alert tone="warn" :message="raw(t('Not ready').': '.($next['gate_note'] ?: t('material or tooling not ready')))" />
-            @endif
-            <x-dl::action-form action="{{ route('v2.ppic.op.play', $next['op_id']) }}">
-                <x-dl::button icon="fa-play" label="Play: start setup" type="submit" />
-            </x-dl::action-form>
+            <x-dl::form.row :cols="2">
+                <div>
+                    <x-dl::field.display label="Planned start" :value="$next['start'] ? raw(Locale::dt($next['start'])) : '—'" :source="$src" />
+                    @if (in_array('BLOCK', $next['gates'], true) || in_array('WAIT', $next['gates'], true))
+                        <x-dl::alert tone="warn" :message="raw(t('Not ready').': '.($next['gate_note'] ?: t('material or tooling not ready')))" />
+                    @endif
+                    <x-dl::action-form action="{{ route('v2.ppic.op.play', $next['op_id']) }}">
+                        <x-dl::button icon="fa-play" label="Play: start setup" type="submit" />
+                    </x-dl::action-form>
+                </div>
+                <div>
+                    @if ($nextVisual)
+                        <x-mp::sales.part-visual :part="$nextVisual" :types="$types" height="230px" />
+                    @endif
+                </div>
+            </x-dl::form.row>
         </x-dl::card>
     @else
         <x-dl::alert tone="info" message="The queue of this machine is empty." />

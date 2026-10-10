@@ -197,6 +197,14 @@ final class Ppic
         return $out;
     }
 
+    /** Dieline, artwork and spec of the part a Work Order makes (Product Development), for the operator and PPIC screens. null = no part linked. @return array<string, mixed>|null */
+    public static function jobVisual(int $woId): ?array
+    {
+        $wo = DB::connection('tm2prd')->table('prd_wo')->where('wo_id', $woId)->first();
+
+        return $wo ? self::dielinePart($wo) : null;
+    }
+
     public static function draftRun(): ?PrdPlanRun
     {
         return PrdPlanRun::query()->where('status', 'DRAFT')->orderByDesc('run_id')->first();
@@ -685,6 +693,13 @@ final class Ppic
             : null;
         $part = $partId ? ProdPart::find($partId) : null;
 
-        return $part ? ProductMaster::part($part) : null;
+        if (! $part) {
+            return null;
+        }
+        $visual = ProductMaster::part($part);
+        // A part that has a dieline type and dimensions is drawn from the type even when no drawing elements were stored on the part.
+        $visual['has_spec'] = $visual['has_spec'] || isset(Sales::dielineTypes()[$visual['type_code'] ?? '']);
+
+        return $visual;
     }
 }
