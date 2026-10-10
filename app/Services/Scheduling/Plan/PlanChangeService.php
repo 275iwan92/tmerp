@@ -117,6 +117,31 @@ final class PlanChangeService
         return $this->runner->run('EVENT', $login);
     }
 
+    /**
+     * Colour order: run an operation before another one on the same press. Saved as an officer placement in the Draft (a reason is required),
+     * so it needs Confirm like every other change. A locked operation moves only when its Work Order is a Hot job.
+     */
+    public function moveBefore(int $opId, int $beforeOpId, string $reason, string $login): PrdPlanRun
+    {
+        $op = PrdWoOperation::findOrFail($opId);
+        $target = PrdWoOperation::findOrFail($beforeOpId);
+        $machine = (int) ($target->plan_status === 'DRAFT' ? $target->draft_machine_id : $target->machine_id);
+        $start = $this->currentStart($target);
+        if ($opId === $beforeOpId || ! $machine || ! $start) {
+            throw new \DomainException('Choose another job on the same press.');
+        }
+        $own = (int) ($op->plan_status === 'DRAFT' ? $op->draft_machine_id : $op->machine_id);
+        if ($own !== $machine) {
+            throw new \DomainException('Both jobs must be on the same press.');
+        }
+        $hot = PrdWo::where('wo_id', $op->wo_id)->value('priority') === 'SUPER_URGENT';
+        if ($op->is_locked && ! $hot) {
+            throw new \DomainException('This job is locked in the confirmed schedule. Make the Work Order a Hot job first, or release the lock.');
+        }
+
+        return $this->move($opId, $machine, $start, 'Colour order: '.$reason, $login);
+    }
+
     private function currentStart(PrdWoOperation $op): ?CarbonImmutable
     {
         $t = $op->plan_status === 'DRAFT' ? $op->draft_start : $op->target_start;

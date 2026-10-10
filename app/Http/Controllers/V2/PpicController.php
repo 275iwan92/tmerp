@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
+use App\Models\Prd\PrdPlanDecision;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
 use App\Services\Scheduling\Learning\LearningEngine;
@@ -173,6 +174,49 @@ final class PpicController extends Controller
         Ppic::forget();
 
         return redirect($this->back())->with('v2_flash', tf('Placement released. New Draft plan :id.', ['id' => $run->run_id]));
+    }
+
+    /** Colour Sequence: the officer runs a job before another one on the same press (a reason is required; the result is a Draft). */
+    public function colorMove(Request $r, PlanChangeService $changes): RedirectResponse
+    {
+        $this->schedulerOnly();
+        $d = $r->validate(['op' => ['required', 'integer'], 'before' => ['required', 'integer'], 'reason' => ['required', 'string', 'max:170']], [], ['reason' => t('Reason')]);
+        try {
+            $run = $changes->moveBefore((int) $d['op'], (int) $d['before'], $d['reason'], $this->login());
+        } catch (\DomainException $e) {
+            return redirect($this->back('ppic-color-sequence'))->withErrors(['plan' => t($e->getMessage())]);
+        }
+        Ppic::forget();
+
+        return redirect($this->back('ppic-color-sequence'))->with('v2_flash', tf('Colour order saved in Draft plan :id. Confirm it on the PPIC Workspace.', ['id' => $run->run_id]));
+    }
+
+    /** Colour Sequence: an operator asks for another order; the officer answers on the Workspace. Nothing in the plan changes by itself. */
+    public function colorRequest(Request $r): RedirectResponse
+    {
+        $d = $r->validate(['op' => ['required', 'integer'], 'before' => ['required', 'integer'], 'reason' => ['required', 'string', 'max:170']], [], ['reason' => t('Reason')]);
+        PrdPlanDecision::create(['operation_id' => (int) $d['op'], 'actor' => $this->login(), 'event' => 'COLOR_REQUEST', 'new_value' => (string) (int) $d['before'], 'reason' => $d['reason']]);
+
+        return redirect($this->back('ppic-color-sequence'))->with('v2_flash', t('Request sent to the PPIC officer.'));
+    }
+
+    /** The officer accepts (moves the job into the Draft) or rejects an operator request. */
+    public function colorAnswer(Request $r, PlanChangeService $changes): RedirectResponse
+    {
+        $this->schedulerOnly();
+        $d = $r->validate(['request' => ['required', 'integer'], 'answer' => ['required', 'in:ACCEPT,REJECT'], 'reason' => ['required', 'string', 'max:170']], [], ['reason' => t('Reason')]);
+        $req = PrdPlanDecision::where('decision_id', (int) $d['request'])->where('event', 'COLOR_REQUEST')->firstOrFail();
+        try {
+            if ($d['answer'] === 'ACCEPT') {
+                $changes->moveBefore((int) $req->operation_id, (int) $req->new_value, $req->actor.': '.$req->reason, $this->login());
+            }
+        } catch (\DomainException $e) {
+            return redirect($this->back())->withErrors(['plan' => t($e->getMessage())]);
+        }
+        PrdPlanDecision::create(['operation_id' => $req->operation_id, 'actor' => $this->login(), 'event' => 'COLOR_'.$d['answer'], 'old_value' => (string) $req->decision_id, 'reason' => $d['reason']]);
+        Ppic::forget();
+
+        return redirect($this->back())->with('v2_flash', $d['answer'] === 'ACCEPT' ? t('Request accepted: the job is moved in the Draft. Confirm it to apply.') : t('Request rejected.'));
     }
 
     /** @return array{0: int, 1: int, 2: CarbonImmutable} */

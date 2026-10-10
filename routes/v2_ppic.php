@@ -14,6 +14,9 @@ Route::prefix('v2/ppic')->name('v2.ppic.')->middleware('module:PROD')->group(fun
     Route::post('/undo-priority', [PpicController::class, 'undoPriority'])->name('undo-priority');
     Route::post('/die-group', [PpicController::class, 'dieGroup'])->name('die-group');
     Route::post('/unpin', [PpicController::class, 'unpin'])->name('unpin');
+    Route::post('/color/move', [PpicController::class, 'colorMove'])->name('color.move');
+    Route::post('/color/request', [PpicController::class, 'colorRequest'])->name('color.request');
+    Route::post('/color/answer', [PpicController::class, 'colorAnswer'])->name('color.answer');
     Route::post('/impact', [PpicController::class, 'impact'])->name('impact');
     Route::post('/move', [PpicController::class, 'moveOp'])->name('move');
     Route::post('/kanban-move', [PpicController::class, 'kanbanMove'])->name('kanban-move');

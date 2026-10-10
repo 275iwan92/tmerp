@@ -140,7 +140,7 @@ final class Ppic
                     }
                 }
                 $total += $wash['minutes'];
-                $jobs[] = ['n' => $i + 1, 'start' => $o['start'], 'wo_id' => $o['wo_id'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'inks' => $inks, 'colours' => $w->colour_count ?? null,
+                $jobs[] = ['n' => $i + 1, 'op_id' => $o['op_id'], 'machine_id' => $o['machine_id'], 'start' => $o['start'], 'wo_id' => $o['wo_id'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'inks' => $inks, 'colours' => $w->colour_count ?? null,
                     'plan' => $o['plan_status'], 'wash' => $wash['minutes'], 'wash_label' => $wash['label'], 'known' => $inks !== [], 'unknown' => $unknown];
                 $prev = $facts;
             }
@@ -149,6 +149,27 @@ final class Ppic
         usort($out, fn ($a, $b) => strcmp($a['machine'], $b['machine']));
 
         return $out;
+    }
+
+    /**
+     * Colour order requests from operators that the officer has not answered yet.
+     *
+     * @return list<array{id: int, op_id: int, before_op_id: int, wo: string, before_wo: string, actor: string, reason: string, at: string}>
+     */
+    public static function colorRequests(): array
+    {
+        $prd = DB::connection('tm2prd');
+        $answered = $prd->table('prd_plan_decision')->whereIn('event', ['COLOR_ACCEPT', 'COLOR_REJECT'])->pluck('old_value')->map(fn ($v) => (int) $v)->all();
+        $rows = $prd->table('prd_plan_decision')->where('event', 'COLOR_REQUEST')->whereNotIn('decision_id', $answered ?: [0])->orderBy('decision_id')->get();
+        if ($rows->isEmpty()) {
+            return [];
+        }
+        $opIds = $rows->pluck('operation_id')->merge($rows->pluck('new_value'))->filter()->map(fn ($v) => (int) $v)->unique()->all();
+        $wo = $prd->table('prd_wo_operation as o')->join('prd_wo as w', 'w.wo_id', '=', 'o.wo_id')->whereIn('o.operation_id', $opIds)->pluck('w.wo_no', 'o.operation_id');
+
+        return $rows->map(fn ($r) => ['id' => (int) $r->decision_id, 'op_id' => (int) $r->operation_id, 'before_op_id' => (int) $r->new_value,
+            'wo' => (string) ($wo[$r->operation_id] ?? '#'.$r->operation_id), 'before_wo' => (string) ($wo[(int) $r->new_value] ?? '#'.$r->new_value),
+            'actor' => (string) $r->actor, 'reason' => (string) $r->reason, 'at' => (string) $r->created_at])->all();
     }
 
     /**

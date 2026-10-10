@@ -162,6 +162,23 @@
         @endif
     </x-dl::card>
 
+    @php($colorRequests = Ppic::colorRequests())
+    @if ($colorRequests)
+        <x-dl::card title="Colour order requests" description="An operator asked for another print order. Accept puts the job in the Draft (then Confirm); Reject keeps the plan. A reason is required.">
+            @foreach ($colorRequests as $q)
+                <x-dl::alert tone="info" :message="raw($q['actor'].': '.$q['wo'].' → '.t('before').' '.$q['before_wo'].' · '.$q['reason'])" />
+                <x-dl::action-form action="{{ route('v2.ppic.color.answer') }}">
+                    <input type="hidden" name="request" value="{{ $q['id'] }}">
+                    <x-dl::form.row :cols="4">
+                        <x-dl::field.select name="answer" label="Answer" required :options="['ACCEPT' => t('Accept'), 'REJECT' => t('Reject')]" :value="'ACCEPT'" :source="$src" />
+                        <x-dl::field.text name="reason" label="Reason" required hint="Required. Written to the decision log." :source="Src::of('tm2prd.prd_plan_decision.reason')" />
+                        <x-dl::button icon="fa-check" label="Save" type="submit" />
+                    </x-dl::form.row>
+                </x-dl::action-form>
+            @endforeach
+        </x-dl::card>
+    @endif
+
     <x-dl::card title="Placements by an officer" description="Operations you placed by hand. The engine keeps them where you put them. Release one to let the engine plan it again; a confirmed, locked one is released when its lock ends.">
         <x-dl::table :source="$src" empty="No operation is placed by hand."
             :columns="['wo' => 'Work Order', 'process' => 'Process', 'start' => 'Start', 'status' => 'Status', 'by' => 'By', 'at' => 'When', 'reason' => 'Reason']"
