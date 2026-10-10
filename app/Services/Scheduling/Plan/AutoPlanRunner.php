@@ -81,10 +81,15 @@ final class AutoPlanRunner
             }
         }
         $moved = 0;
+        // Setup and die mounts of the operations that are in the schedule in force, so the Draft can be compared with it like for like.
+        $sameSetup = 0;
+        $sameDies = 0;
         $ids = array_keys($r->placements);
         if ($ids) {
             foreach (PrdWoOperation::query()->whereIn('operation_id', $ids)->where('plan_status', 'CONFIRMED')->get(['operation_id', 'machine_id', 'target_start']) as $o) {
                 $p = $r->placements[$o->operation_id];
+                $sameSetup += $p->setupMinutes;
+                $sameDies += in_array('die', array_column($p->setup['parts'] ?? [], 'kind'), true) ? 1 : 0;
                 if ((int) $o->machine_id !== $p->machineId || ! $o->target_start || $o->target_start->ne($p->start)) {
                     $moved++;
                 }
@@ -93,7 +98,7 @@ final class AutoPlanRunner
         $loads = array_column($r->loads, 'pct');
 
         return ['planned' => count($r->placements), 'late' => $late, 'attention' => count($r->exceptions), 'setup_minutes' => $setup, 'die_mounts' => $dies, 'washes' => $washes,
-            'die_saved_minutes' => $saved, 'moved' => $moved, 'load_avg' => $loads ? round(array_sum($loads) / count($loads), 1) : 0.0];
+            'setup_minutes_same_ops' => $sameSetup, 'die_mounts_same_ops' => $sameDies, 'die_saved_minutes' => $saved, 'moved' => $moved, 'load_avg' => $loads ? round(array_sum($loads) / count($loads), 1) : 0.0];
     }
 
     /**
@@ -104,7 +109,7 @@ final class AutoPlanRunner
     private function baseline(): array
     {
         $ops = PrdWoOperation::query()->where('plan_status', 'CONFIRMED')->whereNotIn('task_status', ['DONE', 'QC_HOLD', 'QC_PASSED', 'QC_REJECTED'])
-            ->get(['wo_id', 'target_finish', 'setup_base_min', 'setup_change_min', 'setup_tool_min']);
+            ->get(['wo_id', 'target_finish', 'is_locked', 'setup_base_min', 'setup_change_min', 'setup_tool_min']);
         if ($ops->isEmpty()) {
             return [];
         }
@@ -112,8 +117,11 @@ final class AutoPlanRunner
         $lastFinish = $ops->groupBy('wo_id')->map(fn ($g) => $g->max('target_finish'));
         $late = $lastFinish->filter(fn ($f, $id) => $f && ($due[$id] ?? null) && $f->greaterThan($due[$id]))->count();
 
-        return ['planned' => $ops->count(), 'late' => $late, 'setup_minutes' => (int) $ops->sum(fn ($o) => (int) $o->setup_base_min + (int) $o->setup_change_min + (int) $o->setup_tool_min),
-            'die_mounts' => $ops->where('setup_tool_min', '>', 0)->count()];
+        // Setup and die mounts only for operations the engine may still move (not locked): those are the ones a Draft can change.
+        $open = $ops->where('is_locked', false);
+
+        return ['planned' => $ops->count(), 'late' => $late, 'setup_minutes' => (int) $open->sum(fn ($o) => (int) $o->setup_base_min + (int) $o->setup_change_min + (int) $o->setup_tool_min),
+            'die_mounts' => $open->where('setup_tool_min', '>', 0)->count()];
     }
 
     public function solver(): ScheduleSolver

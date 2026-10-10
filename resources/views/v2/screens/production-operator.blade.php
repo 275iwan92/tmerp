@@ -50,6 +50,8 @@
             $kindLabel = ['SETUP' => t('Setup'), 'RUN' => t('Run'), 'PAUSE' => t('Paused')][$open->kind];
             $runH = max($sum['run'], 1) / 60;
             $speed = $sum['run'] > 0 ? round($sum['good'] / $runH) : null;
+            $expected = Ppic::expectedQty($current, $sum);
+            $nextJobs = $queue->filter(fn ($o) => $o['op_id'] !== $current['op_id'])->take(3);
             $scrap = PrdScrapType::query()->where('activate', 1)->where('category', 'REJECT')->orderBy('sort_order')->pluck('type_name', 'type_id')->all();
         @endphp
         <x-dl::card :title="raw($current['wo_no'].' · '.($current['product'] ?? '—'))" :description="raw(($current['customer'] ?? '—').' · '.$current['process'].' · '.Locale::number($current['qty'], 0).' '.$current['uom'].' '.t('planned').($current['target'] ? ' · '.t('target').' '.Locale::number($current['target'], 0).'/h' : ''))">
@@ -58,6 +60,8 @@
             <x-dl::form.row :cols="4">
                 <x-dl::field.display label="Setup so far (min)" :value="$sum['setup'].' / '.$current['setup'].' '.t('plan')" :source="$src" />
                 <x-dl::field.display label="Good so far" :value="raw(Locale::number($sum['good'], 0).' / '.Locale::number($current['qty_out'], 0))" :source="$src" />
+                <x-dl::field.display label="Should be by now" :value="$expected !== null ? raw(Locale::number($expected, 0).' '.$current['uom']) : '—'" :source="$src" />
+                <x-dl::field.display label="Difference" :value="$expected !== null ? raw(Locale::number($sum['good'] - $expected, 0)) : '—'" :source="$src" />
                 <x-dl::field.display label="Actual speed" :value="$speed ? raw(Locale::number($speed, 0).' /h') : '—'" :source="$src" />
                 <x-dl::field.display label="Paused (min)" :value="$sum['pause']" :source="$src" />
             </x-dl::form.row>
@@ -67,6 +71,11 @@
                 @endif
                 <x-dl::button variant="secondary" icon="fa-wrench" label="Problem" :href="route('v2.ppic.op.problem', $current['op_id'])" />
             </x-dl::action-bar>
+        </x-dl::card>
+
+        <x-dl::card title="Next jobs" description="Confirmed queue after this job, in order.">
+            <x-dl::table :source="$src" empty="No job is waiting after this one." :columns="['wo' => 'Work Order', 'product' => 'Product', 'qty' => 'Quantity', 'start' => 'Planned start']"
+                :rows="$nextJobs->values()->map(fn ($o) => ['wo' => raw($o['wo_no']), 'product' => raw($o['product'] ?? '—'), 'qty' => raw(Locale::number($o['qty'], 0).' '.$o['uom']), 'start' => $o['start'] ? raw(Locale::dt($o['start'])) : '—'])->all()" />
         </x-dl::card>
 
         @unless ($paused)

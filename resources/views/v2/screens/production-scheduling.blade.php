@@ -64,6 +64,19 @@
 </x-dl::card>
 
 @if ($tab === 'schedule')
+@php($floor = \App\Support\V2\Data\Ppic::shopFloor())
+@if ($floor)
+    <x-dl::card title="On the shop floor now" description="Mirror of the operator screens: what each machine is making, what it should have made by now, and the next jobs. Reload to refresh.">
+        <x-dl::table :source="\App\Support\V2\Src::of('tm2prd.prd_operation_time_log', 'tm2prd.prd_wo_operation')"
+            :columns="['machine' => 'Machine', 'job' => 'Job', 'state' => 'State', 'time' => 'Time', 'good' => 'Made', 'expected' => 'Should be', 'next' => 'Next jobs']"
+            :rows="array_map(fn ($f) => ['machine' => raw($f['machine']), 'job' => raw($f['wo'].' · '.($f['product'] ?? '—').' · '.$f['process']),
+                'state' => raw(['SETUP' => t('Setup'), 'RUN' => t('Run'), 'PAUSE' => t('Paused')][$f['state']].($f['why'] ? ' · '.$f['why'] : '')),
+                'time' => raw(sprintf('%02d:%02d:%02d', intdiv($f['seconds'], 3600), intdiv($f['seconds'] % 3600, 60), $f['seconds'] % 60)),
+                'good' => raw(\Devlib\Locale::number($f['good'], 0).' / '.\Devlib\Locale::number($f['planned'], 0)),
+                'expected' => $f['expected'] !== null ? raw(\Devlib\Locale::number($f['expected'], 0)) : '—',
+                'next' => raw($f['next'] ? implode(' · ', array_map(fn ($n) => $n['wo'], $f['next'])) : '—')], $floor)" />
+    </x-dl::card>
+@endif
     @php($pending = Ppic::pendingDeliveries(60))
     @if ($pending)
         <x-dl::card title="Work waiting to be created" description="Delivery plan lines of Confirmed Customer Orders with no Work Order yet. Creating a Work Order asks the engines for a new Draft; the schedule in force does not change.">

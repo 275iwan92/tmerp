@@ -7,6 +7,7 @@ namespace App\Support\V2\Data;
 use App\Models\Master\ProdPart;
 use App\Models\Prd\PrdPlanRun;
 use App\Models\Sdi\IqpInquiry;
+use App\Services\Scheduling\Operator\OperatorTimerService;
 use App\Services\Scheduling\Plan\PlanLoader;
 use App\Services\Scheduling\Plan\PpicSettings;
 use App\Services\Scheduling\Plan\SetupTimeEngine;
@@ -82,9 +83,11 @@ final class Ppic
         $rows = [['late', 'Work Orders forecast late', true], ['attention', 'Operations that need attention', true], ['setup_minutes', 'Setup minutes in total', true],
             ['die_mounts', 'Die mounts', true], ['die_saved_minutes', 'Die setup minutes saved by grouping', false], ['washes', 'Ink washes', true], ['moved', 'Operations that move from the plan in force', null], ['load_avg', 'Average machine load (percent)', null]];
         $out = [];
+        // Setup and die mounts: the Draft is measured on the same operations the plan in force has, so new Work Orders do not look like a loss.
+        $same = ['setup_minutes' => 'setup_minutes_same_ops', 'die_mounts' => 'die_mounts_same_ops'];
         foreach ($rows as [$k, $label, $lowerIsBetter]) {
             $now = $a[$k] ?? null;
-            $new = $b[$k] ?? null;
+            $new = $b[$same[$k] ?? $k] ?? null;
             $out[] = ['label' => $label, 'now' => $now === null ? '—' : (string) $now, 'draft' => $new === null ? '—' : (string) $new,
                 'better' => ($lowerIsBetter === null || $now === null || $new === null || $now == $new) ? null : ($lowerIsBetter ? $new < $now : $new > $now)];
         }
@@ -144,6 +147,52 @@ final class Ppic
             $out[] = ['machine' => (string) $list[0]['machine'], 'jobs' => $jobs, 'wash_minutes' => $total];
         }
         usort($out, fn ($a, $b) => strcmp($a['machine'], $b['machine']));
+
+        return $out;
+    }
+
+    /**
+     * Quantity that should have been made by now: target per hour times the run time so far (setup and pauses do not count), never above the planned good output.
+     *
+     * @param  array<string, mixed>  $op  a row of operations()
+     * @param  array{run: int, good: float}  $sum  OperatorTimerService::summary()
+     */
+    public static function expectedQty(array $op, array $sum): ?float
+    {
+        if (! $op['target']) {
+            return null;
+        }
+
+        return round(min((float) $op['qty_out'], (float) $op['target'] * $sum['run'] / 60), 0);
+    }
+
+    /**
+     * What every machine with a running timer is doing right now, for the PPIC mirror of the operator screens.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function shopFloor(): array
+    {
+        $open = DB::connection('tm2prd')->table('prd_operation_time_log')->whereNull('ended_at')->orderBy('machine_id')->get();
+        if ($open->isEmpty()) {
+            return [];
+        }
+        $svc = app(OperatorTimerService::class);
+        $ops = collect(self::operations())->keyBy('op_id');
+        $queue = collect(self::operations())->filter(fn ($o) => $o['plan_status'] === 'CONFIRMED' && $o['machine_id'] && $o['bucket'] !== 'done')->groupBy('machine_id');
+        $reasons = OperatorTimerService::PAUSE_REASONS;
+        $out = [];
+        foreach ($open as $seg) {
+            $o = $ops[(int) $seg->operation_id] ?? null;
+            if (! $o) {
+                continue;
+            }
+            $sum = $svc->summary((int) $seg->operation_id);
+            $next = ($queue[$o['machine_id']] ?? collect())->where('op_id', '!=', $o['op_id'])->sortBy(fn ($x) => $x['start']?->timestamp ?? PHP_INT_MAX)->take(3);
+            $out[] = ['machine' => (string) $o['machine'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'process' => $o['process'], 'state' => $seg->kind, 'why' => $seg->kind === 'PAUSE' ? t($reasons[$seg->pause_reason] ?? 'Other') : null,
+                'seconds' => $svc->elapsed($seg), 'planned' => $o['qty_out'], 'good' => $sum['good'], 'expected' => self::expectedQty($o, $sum), 'uom' => $o['uom'], 'operator' => $seg->operator,
+                'next' => $next->map(fn ($x) => ['wo' => $x['wo_no'], 'product' => $x['product'], 'qty' => $x['qty'], 'start' => $x['start']])->values()->all()];
+        }
 
         return $out;
     }
