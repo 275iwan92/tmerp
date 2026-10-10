@@ -14,6 +14,7 @@
     $home = route('v2.screen', 'quotation');
     $q = request('id') ? QuoQuotation::with(['customer', 'ccs', 'items.inquiry', 'activities'])->find((int) request('id')) : null;
     abort_if(request('id') && ! $q, 404);
+    \App\Support\V2\Crumb::set($q ? raw($q->quotation_no) : null);
     $rp = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
     $trim = fn ($v) => $v === null ? '' : rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
 @endphp

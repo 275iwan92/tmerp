@@ -5,14 +5,19 @@
         @include($screen['view'], ['screen' => $screen, 'crumbs' => [t($screen['module']) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]])
         <x-dl::code-button :code="$code" :file="'resources/views/'.str_replace('.', '/', $screen['view']).'.blade.php'" />
     @else
+    @php
+        // Isi layar dirender dulu supaya layar bisa menyebut identitas dokumennya lewat Crumb::set() untuk breadcrumb.
+        \App\Support\V2\Crumb::set(null);
+        $screenBody = $built ? view($screen['view'] ?? 'v2.screens.'.$screen['slug'], ['screen' => $screen])->render() : null;
+    @endphp
     <div class="dl-cat">
         <div class="dl-cat__nav">
             {{-- Modul/Grup = buka Layer Menu di cabang itu; nama layar = kembali ke grid (DevLib Breadcrumb menu + current). --}}
             <x-dl::breadcrumb menu :items="[t($screen['module']) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]"
-                :current="request('id') ? t('Form') : (request('new') || (request()->query() && empty($screen['filters'])) ? '+ New Record' : null)" />
+                :current="\App\Support\V2\Crumb::current()" />
         </div>
         @if ($built)
-            @include($screen['view'] ?? 'v2.screens.'.$screen['slug'], ['screen' => $screen])
+            {!! $screenBody !!}
         @else
             <x-dl::card :title="$screen['label']" :icon="$screen['icon']" description="Not built in the mockup yet — its reference is mapped.">
                 <x-dl::table :columns="['k' => 'Topic', 'v' => 'Description']" :rows="[

@@ -5,6 +5,9 @@
     use App\Support\V2\Src;
 
     $partId = request('part') ? Prodev::resolve((string) request('part')) : null;
+    if ($partId) {
+        \App\Support\V2\Crumb::set(raw(\App\Models\Master\ProdPart::whereKey($partId)->value('part_name')));
+    }
 @endphp
 
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif

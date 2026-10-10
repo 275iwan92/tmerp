@@ -13,6 +13,7 @@
     $home = route('v2.screen', 'customer-order');
     $o = request('id') ? CoOrder::with(['customer', 'quotation', 'items.inquiry', 'items.product', 'items.deliveries', 'externalCosts'])->find((int) request('id')) : null;
     abort_if(request('id') && ! $o, 404);
+    \App\Support\V2\Crumb::set($o ? raw($o->co_no) : null);
     $rp = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
     $trim = fn ($v) => $v === null ? '' : rtrim(rtrim(number_format((float) $v, 4, '.', ''), '0'), '.');
 @endphp

@@ -32,6 +32,18 @@ class V2ShellTest extends TestCase
         $this->assertMatchesRegularExpression('/class="dl-lm__head"\s+data-lm-home role="button" tabindex="0" title="[^"]+"/', $html);
     }
 
+    // Breadcrumb: tanpa label tebakan "+ New Record"; ?new=1 = "New", ?part= memakai nama part (user 2026-10-10).
+    public function test_breadcrumb_current_is_document_identity_not_a_guess(): void
+    {
+        $this->actingAs($this->admin());
+        $this->get('/v2/s/customer-order')->assertOk()->assertDontSee('+ New Record</span>', false);
+        $this->get('/v2/s/customer-order?new=1')->assertOk()->assertSee('<span>'.t('New').'</span>', false);
+        if ($co = \App\Models\Sdi\CoOrder::query()->first()) {
+            $this->get('/v2/s/customer-order?id='.$co->getKey())->assertOk()->assertSee('<span>'.$co->co_no.'</span>', false);
+        }
+        $this->get('/v2/s/prodev?part=999999999')->assertOk()->assertDontSee('+ New Record</span>', false);
+    }
+
     public function test_v2_screens_flows_and_dictionary_open(): void
     {
         $this->actingAs($this->admin());
