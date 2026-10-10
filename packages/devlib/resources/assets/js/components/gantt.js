@@ -178,7 +178,17 @@
 
     /* ---------- server check before commit (impactUrl / moveUrl) ---------- */
     // Without impactUrl the change is committed at once (old behaviour); with it the server judges the move first.
+    // A block dropped on another one in the same row slides to the next free place (never before the lock).
+    snapToGap(t) {
+      const d = t.e - t.s, rest = this.tasks.filter(o => o !== t && o.row === t.row).sort((a, b) => a.s - b.s);
+      let s = t.s;
+      for (const o of rest) { if (s < o.e - 1e-9 && s + d > o.s + 1e-9) s = o.e; }
+      s = Math.min(Math.max(s, this.minStart(t)), this.E - d);
+      t.s = s; t.e = s + d;
+    }
+
     commit(t, orig, type) {
+      if (type !== 'resize') this.snapToGap(t);
       if (!this.cfg.impactUrl) { this.touch(t, type); return this.render(); }
       return this.check(t, orig, type);
     }

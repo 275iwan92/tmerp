@@ -18,6 +18,9 @@
     $src = Src::of('tm2prd.prd_wo_operation', 'tm2prd.prd_wo_operation_machine', 'tm2prd.prd_plan_run', 'tm2mst.prod_process_machine', 'tm2mst.prod_machine');
         $changes = app(\App\Services\Scheduling\Plan\PlanChangeService::class);
         $pins = $changes->overrides();
+        $groups = $changes->groups();
+        $sorted = collect(Ppic::exceptions())->sortBy(fn ($e) => $e['kind'] === 'Behind plan' ? 1 : 0)->values();
+        $count = $sorted->countBy('kind')->map(fn ($n, $k) => t($k).' '.$n)->implode(' · ');
         $simWo = request()->integer('sim');
         try { $sim = $simWo ? $changes->simulate($simWo) : null; } catch (\DomainException $e) { $sim = null; $simError = $e->getMessage(); }
         $woOptions = collect($all)->unique('wo_id')->mapWithKeys(fn ($r) => [$r['wo_id'] => $r['wo_no'].' · '.($r['customer'] ?? '')])->all();
@@ -26,7 +29,7 @@
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
-<x-dl::card title="Production Scheduling" description="The engines plan automatically and leave a Draft. Review what needs attention, give priority if needed, then Confirm the plan.">
+<x-dl::card title="PPIC Workspace" description="The engines plan automatically and leave a Draft. Review what needs attention, give priority if needed, then Confirm the plan.">
     <div class="dl-grid__stats">
         <x-dl::stat-box label="Operations" :value="(string) $stats['ops']" tone="accent" :sub="$stats['planned'].' planned'" />
         <x-dl::stat-box label="Ready, not scheduled" :value="(string) $stats['ready']" tone="success" />
@@ -82,8 +85,10 @@
     <x-dl::card title="Needs attention" description="Only these, or a priority you want to give, need a person. Everything else is already planned.">
         @php($ex = Ppic::exceptions())
         @if ($ex)
-            <x-dl::table :columns="['kind' => 'Type', 'wo' => 'Work Order', 'text' => 'Detail', 'options' => 'What you can do']" :rows="array_map(fn ($e) => ['kind' => t($e['kind']), 'wo' => raw($e['wo']), 'text' => raw($e['text']), 'options' => t($e['options'])], $ex)" />
-        @else
+            <x-dl::alert tone="warn" :message="raw($count)" />
+            <x-dl::table :columns="['kind' => 'Type', 'wo' => 'Work Order', 'text' => 'Detail', 'options' => 'What you can do']" :rows="$sorted->take(8)->map(fn ($e) => ['kind' => t($e['kind']), 'wo' => raw($e['wo']), 'text' => raw($e['text']), 'options' => t($e['options'])])->all()" />
+            @if ($sorted->count() > 8)<x-dl::alert tone="info" :message="raw(tf(':n more, see the list on Monitoring.', ['n' => $sorted->count() - 8]))" />@endif
+            @else
             <x-dl::alert tone="info" message="Nothing needs attention." />
         @endif
         <x-dl::action-form action="{{ route('v2.ppic.prioritize') }}">
@@ -94,6 +99,22 @@
                 <x-dl::button icon="fa-fire" label="Give priority" type="submit" />
             </x-dl::form.row>
         </x-dl::action-form>
+    </x-dl::card>
+
+    <x-dl::card title="Die groups (mall)" description="Work Orders that share a die are put one after the other so the die is mounted once. Take one out when it must not wait for the others; a reason is required and goes to the decision log.">
+        <x-dl::table :source="$src" empty="No two open Work Orders share a die code yet. The die code comes from the part, the master card or the layout in Product Development."
+            :columns="['die' => 'Die', 'wos' => 'Work Orders', 'saved' => 'Setup minutes saved']"
+            :rows="array_map(fn ($g) => ['die' => raw($g['die']), 'wos' => raw(implode(' · ', array_map(fn ($w) => $w['no'].($w['out'] ? ' ('.t('out').')' : '').' '.($w['due'] ?? ''), $g['wos']))), 'saved' => $g['saved_minutes']], $groups)" />
+        @if ($groups)
+            <x-dl::action-form action="{{ route('v2.ppic.die-group') }}">
+                <x-dl::form.row :cols="4">
+                    <x-dl::field.select name="wo_id" label="Work Order" required :options="collect($groups)->flatMap(fn ($g) => collect($g['wos'])->mapWithKeys(fn ($w) => [$w['id'] => $w['no'].' · '.$g['die']]))->all()" placeholder="Choose Work Order..." :source="$src" />
+                    <x-dl::field.select name="mode" label="Action" required :options="['OUT' => t('Take out of the group'), 'IN' => t('Put back in the group')]" :value="'OUT'" :source="$src" />
+                    <x-dl::field.text name="reason" label="Reason" required hint="Required. Written to the decision log." :source="Src::of('tm2prd.prd_plan_decision.reason')" />
+                    <x-dl::button icon="fa-link" label="Save" type="submit" />
+                </x-dl::form.row>
+            </x-dl::action-form>
+        @endif
     </x-dl::card>
 
     <x-dl::card title="Urgent order: simulate first" description="See what each kind of priority would do before anything is saved. Nothing changes until you apply one with a reason.">

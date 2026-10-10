@@ -79,7 +79,7 @@ final class Ppic
         $a = (array) ($draft->summary['baseline'] ?? []);   // the schedule in force, measured when the Draft was made
         $b = (array) ($draft->summary['metrics'] ?? []);
         $rows = [['late', 'Work Orders forecast late', true], ['attention', 'Operations that need attention', true], ['setup_minutes', 'Setup minutes in total', true],
-            ['die_mounts', 'Die mounts', true], ['washes', 'Ink washes', true], ['moved', 'Operations that move from the plan in force', null], ['load_avg', 'Average machine load (percent)', null]];
+            ['die_mounts', 'Die mounts', true], ['die_saved_minutes', 'Die setup minutes saved by grouping', false], ['washes', 'Ink washes', true], ['moved', 'Operations that move from the plan in force', null], ['load_avg', 'Average machine load (percent)', null]];
         $out = [];
         foreach ($rows as [$k, $label, $lowerIsBetter]) {
             $now = $a[$k] ?? null;

@@ -293,4 +293,18 @@ final class ScheduleSolverTest extends TestCase
         $this->assertSame(2, $r->placements[20]->machineId);
         $this->assertSame([], $r->exceptionsOf('LATE_RISK'));
     }
+
+    public function test_a_work_order_taken_out_of_die_grouping_is_not_pulled_next_to_the_others(): void
+    {
+        $c = [1 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15]];
+        $x = ['stage' => 'DIE', 'die' => 'DIE-X'];
+        $y = ['stage' => 'DIE', 'die' => 'DIE-Y'];
+        $a = $this->wo(1, [$this->op(10, 1, 10, $c, 1000, $x, 'DIE')], '2026-10-14 10:00');
+        $b = $this->wo(2, [$this->op(20, 2, 10, $c, 1000, $y, 'DIE')], '2026-10-14 12:00');
+        $d = new PlanWo(3, 'WO3', CarbonImmutable::parse('2026-10-15 20:00'), false, 2, 1, [$this->op(30, 3, 10, $c, 1000, $x, 'DIE')], '', false, true);
+        $r = $this->solver()->solve([$a, $b, $d], $this->cal([1 => ['shifts' => 2, 'hours' => 8]]), $this->now());
+
+        $order = collect($r->placements)->sortBy(fn ($p) => $p->start->getTimestamp())->keys()->all();
+        $this->assertSame([10, 20, 30], $order);
+    }
 }

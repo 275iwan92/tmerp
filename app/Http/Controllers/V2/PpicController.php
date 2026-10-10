@@ -149,6 +149,17 @@ final class PpicController extends Controller
         return redirect($this->back())->with('v2_flash', tf('Priority taken back. New Draft plan :id.', ['id' => $run->run_id]));
     }
 
+    /** Take a Work Order out of die grouping, or put it back. */
+    public function dieGroup(Request $r, PlanChangeService $changes): RedirectResponse
+    {
+        $this->schedulerOnly();
+        $d = $r->validate(['wo_id' => ['required', 'integer'], 'mode' => ['required', 'in:OUT,IN'], 'reason' => ['required', 'string', 'max:190']], [], ['reason' => t('Reason')]);
+        $run = $changes->setGroupOut((int) $d['wo_id'], $d['mode'] === 'OUT', $d['reason'], $this->login());
+        Ppic::forget();
+
+        return redirect($this->back())->with('v2_flash', tf('Die grouping saved. New Draft plan :id.', ['id' => $run->run_id]));
+    }
+
     /** Take an officer placement away (the Overrides list): the engine plans the operation again. */
     public function unpin(Request $r, PlanChangeService $changes): RedirectResponse
     {

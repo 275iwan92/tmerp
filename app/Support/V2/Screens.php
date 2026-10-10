@@ -147,7 +147,8 @@ final class Screens
             ]],
             ['code' => 'PROD', 'short' => 'PP', 'label' => 'Production', 'icon' => 'fa-solid fa-industry', 'groups' => [
                 ['label' => 'Planning', 'items' => [
-                    $it('production-scheduling', ['Production Scheduling', 'fa-solid fa-chart-gantt', 'v2 baru: PPIC (engine Draft + Confirm officer) -- Gantt, Kanban, Calendar, Grid, Monitoring', 'ppic_sched_gantt.jpg']),
+                    $it('ppic-settings', ['PPIC Settings', 'fa-solid fa-sliders', 'v2 baru: satu pintu untuk semua pengaturan PPIC dalam 8 kategori, dengan kotak cari', null]),
+                    $it('production-scheduling', ['PPIC Workspace', 'fa-solid fa-chart-gantt', 'v2 baru: PPIC (engine Draft + Confirm officer) -- Gantt, Kanban, Calendar, Grid, Monitoring', 'ppic_sched_gantt.jpg']),
                     $it('production-wo', ['Work Order (PPIC)', 'fa-solid fa-clipboard-list', 'v2 baru: Work Order dari ProDev (BOP, routing, BOM, mesin yang bisa antre)', 'ppic_wo_detail.jpg']),
                     $it('production-operator', ['Operator Queue', 'fa-solid fa-stopwatch', 'v2 baru: antrean terkonfirmasi per mesin, Play / Pause / Stop, input qty, tombol Problem ke Maintenance Request', 'ppic_operator_queue.jpg']),
                     $it('production-learning', ['Learning Changes', 'fa-solid fa-graduation-cap', 'v2 baru: nilai changeover Assumed dikoreksi dari waktu setup nyata, tiap perubahan tercatat dan bisa dikembalikan', null]),

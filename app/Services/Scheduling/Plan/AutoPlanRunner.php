@@ -40,7 +40,7 @@ final class AutoPlanRunner
             $run = PrdPlanRun::create([
                 'trigger_kind' => $trigger, 'status' => 'DRAFT', 'plan_from' => $now, 'operations_planned' => count($result->placements),
                 'exceptions_found' => count($result->exceptions), 'duration_ms' => (int) ((microtime(true) - $t0) * 1000), 'started_by' => $actor,
-                'summary' => ['exceptions' => $result->exceptions, 'priority' => $result->priority, 'loads' => $result->loads, 'work_orders' => count($wos), 'metrics' => $this->metrics($result), 'baseline' => $this->baseline()],
+                'summary' => ['exceptions' => $result->exceptions, 'priority' => $result->priority, 'loads' => $result->loads, 'work_orders' => count($wos), 'metrics' => $this->metrics($result, $wos), 'baseline' => $this->baseline()],
             ]);
             $this->writeDraft($result, $run);
             PrdPlanDecision::create(['run_id' => $run->run_id, 'actor' => $actor, 'event' => 'AUTO_PLAN',
@@ -57,8 +57,18 @@ final class AutoPlanRunner
      *
      * @return array<string, int|float>
      */
-    private function metrics(PlanResult $r): array
+    private function metrics(PlanResult $r, array $wos = []): array
     {
+        // Setup minutes saved by grouping: an operation with a die whose placement mounts no die.
+        $saved = 0;
+        foreach ($wos as $w) {
+            foreach ($w->ops as $op) {
+                $p = $r->placements[$op->id] ?? null;
+                if ($p && ! empty($op->facts['die']) && ! in_array('die', array_column($p->setup['parts'] ?? [], 'kind'), true)) {
+                    $saved += (int) ($op->facts['tool_min'] ?? PpicSettings::number('setup.base_minutes'));
+                }
+            }
+        }
         $late = count(array_unique(array_column($r->exceptionsOf('LATE_RISK'), 'wo')));
         $setup = 0;
         $dies = 0;
@@ -83,7 +93,7 @@ final class AutoPlanRunner
         $loads = array_column($r->loads, 'pct');
 
         return ['planned' => count($r->placements), 'late' => $late, 'attention' => count($r->exceptions), 'setup_minutes' => $setup, 'die_mounts' => $dies, 'washes' => $washes,
-            'moved' => $moved, 'load_avg' => $loads ? round(array_sum($loads) / count($loads), 1) : 0.0];
+            'die_saved_minutes' => $saved, 'moved' => $moved, 'load_avg' => $loads ? round(array_sum($loads) / count($loads), 1) : 0.0];
     }
 
     /**

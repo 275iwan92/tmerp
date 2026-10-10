@@ -170,6 +170,9 @@ final class ScheduleSolver
     /** The die (mall) code of a Work Order: carried by its die-cutting operation, not by the first (print) operation. */
     private function dieOf(PlanWo $wo): ?string
     {
+        if ($wo->groupOff) {
+            return null;   // the officer took this Work Order out of die grouping
+        }
         foreach ($wo->ops as $op) {
             if (! empty($op->facts['die'])) {
                 return (string) $op->facts['die'];
@@ -294,7 +297,7 @@ final class ScheduleSolver
             }
             // Die (mall) grouping: a machine whose last job uses the same die is preferred when it finishes within the slack of the earliest
             // option and does not make this Work Order miss its due date.
-            $die = $op->facts['die'] ?? null;
+            $die = $wo->groupOff ? null : ($op->facts['die'] ?? null);
             if ($die !== null) {
                 $limit = $best['key'][0] + (int) ($this->groupSlackHours * 3600);
                 $same = array_filter($options, fn ($o) => ($o['slot']['prev_die'] ?? null) === $die && $o['key'][0] <= $limit

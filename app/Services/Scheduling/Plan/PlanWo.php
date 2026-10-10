@@ -20,5 +20,6 @@ final class PlanWo
         public readonly array $ops,
         public readonly string $label = '',
         public readonly bool $moveUp = false,
+        public readonly bool $groupOff = false,
     ) {}
 }
