@@ -227,7 +227,7 @@ final class PpicController extends Controller
                 $made++;
             }
         }
-        $back = redirect(route('v2.screen', 'production-wo'));
+        $back = redirect($this->back());
         if ($made === 0) {
             return $back->withErrors(['create' => $errors ? implode(' ', $errors) : t('No Work Order was created.')]);
         }

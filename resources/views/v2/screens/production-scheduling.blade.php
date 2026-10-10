@@ -61,6 +61,24 @@
 </x-dl::card>
 
 @if ($tab === 'schedule')
+    @php($pending = Ppic::pendingDeliveries(60))
+    @if ($pending)
+        <x-dl::card title="Work waiting to be created" description="Delivery plan lines of Confirmed Customer Orders with no Work Order yet. Creating a Work Order asks the engines for a new Draft; the schedule in force does not change.">
+            <x-dl::table :source="$src" :columns="['co' => 'Customer Order', 'customer' => 'Customer', 'product' => 'Product', 'qty' => 'Quantity', 'ship' => 'Ship Date', 'pd' => 'Product Development']"
+                :rows="array_map(fn ($p) => ['co' => raw($p['co']), 'customer' => raw($p['customer']), 'product' => raw($p['product']), 'qty' => raw(\Devlib\Locale::number($p['qty'], 0)), 'ship' => raw(\Devlib\Locale::d($p['ship'])),
+                    'pd' => $p['complete'] ? t('Complete') : t('Simple Work Order (no operations)')], array_slice($pending, 0, 8))" />
+            <x-dl::action-form action="{{ route('v2.ppic.wo.create') }}">
+                <x-dl::form.row :cols="4">
+                    <x-dl::field.select name="delivery" label="Delivery plan line" :options="collect($pending)->mapWithKeys(fn ($p) => [$p['id'] => $p['co'].' · '.$p['product'].' · '.\Devlib\Locale::number($p['qty'], 0)])->all()" placeholder="Choose line..." :source="$src" />
+                    <x-dl::button icon="fa-plus" label="Create Work Order" type="submit" />
+                </x-dl::form.row>
+            </x-dl::action-form>
+            <x-dl::action-form action="{{ route('v2.ppic.wo.create') }}">
+                <input type="hidden" name="all" value="1">
+                <x-dl::action-bar><x-dl::button variant="secondary" icon="fa-wand-magic-sparkles" label="Create all" type="submit" /></x-dl::action-bar>
+            </x-dl::action-form>
+        </x-dl::card>
+    @endif
     <x-dl::card title="Needs attention" description="Only these, or a priority you want to give, need a person. Everything else is already planned.">
         @php($ex = Ppic::exceptions())
         @if ($ex)

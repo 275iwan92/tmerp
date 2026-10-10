@@ -2261,7 +2261,7 @@
     {
         "class": "App\\Services\\Inventory\\StockPostingService",
         "file": "app/Services/Inventory/StockPostingService.php",
-        "lines": 312,
+        "lines": 340,
         "entries": [
             {
                 "method": "postDocument",
@@ -6019,7 +6019,7 @@
     {
         "class": "App\\Services\\Inventory\\StockLedger",
         "file": "app/Services/Inventory/StockLedger.php",
-        "lines": 194,
+        "lines": 195,
         "entries": [
             {
                 "method": "between",
@@ -8207,7 +8207,7 @@
     {
         "class": "App\\Services\\Scheduling\\Plan\\AutoPlanRunner",
         "file": "app/Services/Scheduling/Plan/AutoPlanRunner.php",
-        "lines": 90,
+        "lines": 124,
         "entries": [
             {
                 "method": "run",
@@ -8314,7 +8314,7 @@
     {
         "class": "App\\Services\\Scheduling\\Plan\\ScheduleSolver",
         "file": "app/Services/Scheduling/Plan/ScheduleSolver.php",
-        "lines": 384,
+        "lines": 426,
         "entries": [
             {
                 "method": "solve",
@@ -8373,6 +8373,9 @@
             "Ranks the Work Orders: Hot job first, then Critical Ratio below one, then due date; inside the similar-urgency window the setup-aware score decides.",
             "Places the operations of a Work Order in routing order: each starts after the previous one finishes plus its wait.",
             "For each operation picks the eligible machine with the earliest finish including setup, then lower load, then preference rank.",
+            "Same die (mall): jobs on one die inside the due tolerance are put one after the other, and a machine that already has the die is preferred when it finishes within the slack and the due date holds.",
+            "Machines are compared by clock time, not by work minutes of their own calendars.",
+            "A job confirmed and locked on a machine that is down is proposed on another machine in the Draft, with the reason; the officer decides at Confirm.",
             "Fixed placements (running, locked) are never moved; blocked operations are listed, not placed."
         ],
         "reads": [
@@ -8392,7 +8395,7 @@
     {
         "class": "App\\Services\\Scheduling\\Plan\\SetupTimeEngine",
         "file": "app/Services/Scheduling/Plan/SetupTimeEngine.php",
-        "lines": 153,
+        "lines": 171,
         "entries": [
             {
                 "method": "between",
@@ -8460,7 +8463,8 @@
         "steps": [
             "Starts from the base setup minutes of the machine (or the constant).",
             "Adds one item for every difference between the two jobs, using the changeover table.",
-            "Adds the tool mounting minutes of the next job (first run or repeat run) from the tooling master."
+            "Adds the tool mounting minutes of the next job (first run or repeat run) from the tooling master.",
+            "When both jobs carry their real inks, a wash from light to dark inks is shortened by an assumed factor (PPIC_COLOR_ORDER_FACTOR)."
         ],
         "reads": [
             "Nothing: rules are passed in."
@@ -8635,7 +8639,7 @@
     {
         "class": "App\\Services\\Scheduling\\Plan\\PlanConfirmService",
         "file": "app/Services/Scheduling/Plan/PlanConfirmService.php",
-        "lines": 79,
+        "lines": 121,
         "entries": [
             {
                 "method": "confirm",
