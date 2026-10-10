@@ -43,6 +43,9 @@ return new class extends Migration
         $menu()->where('code', 'PROD_OUT')->update(['label' => 'Process Entry', 'sort_order' => 10]);
         $menu()->where('code', 'PROD_QC')->update(['label' => 'QC', 'sort_order' => 20]);
         $menu()->where('code', 'PROD_GRP_RPT')->update(['label' => 'Reports', 'sort_order' => 30]);
+        // QA = fourth group (user 2026-10-10); the complaint review is QA's answer to a complaint, so it moves here. QC stays under Production.
+        $qa = $group($prod, 'PROD_QA', 'QA', 'fa-solid fa-clipboard-check', 40);
+        $menu()->where('code', 'PROD_QC_COMPLAINT')->update(['parent_id' => $qa, 'sort_order' => 10]);
         if ($maint = $id('MAINT')) {
             $menu()->where('id', $maint)->update(['parent_id' => $prod, 'menu_type' => 'group', 'label' => 'Maintenance', 'sort_order' => 30, 'short_label' => null, 'tooltip' => null]);
         }
