@@ -107,13 +107,31 @@ final class SetupTimeEngine
             return [(int) $r['minutes'], (int) ($r['waste'] ?? 0), 'Add spot colour (partial wash)'];
         }
         $r = $rules['color_full_wash'] ?? ['minutes' => 38, 'waste' => 60];
+        // Only when both jobs carry their real inks: light to dark needs a lighter wash (assumed factor).
+        if (! empty($prev['inks']) && ! empty($next['inks']) && $this->darkness($b) > $this->darkness($a)) {
+            $f = (float) ($rules['color_order_factor'] ?? 0.7);
+
+            return [(int) round($r['minutes'] * $f), (int) round(($r['waste'] ?? 0) * $f), 'Different inks, light to dark (lighter wash)'];
+        }
 
         return [(int) $r['minutes'], (int) ($r['waste'] ?? 0), 'Different inks (full wash)'];
+    }
+
+    /** Mean darkness of an ink set: yellow lightest, black darkest, other names (spot colours) in the middle. @param list<string> $set */
+    private function darkness(array $set): float
+    {
+        $map = ['YELLOW' => 1, 'Y' => 1, 'CYAN' => 2, 'C' => 2, 'MAGENTA' => 3, 'M' => 3, 'BLACK' => 5, 'K' => 5];
+        $v = array_map(fn ($n) => $map[$n] ?? 3, $set);
+
+        return $v ? array_sum($v) / count($v) : 0.0;
     }
 
     /** @return list<string> */
     private function inkSet(array $job): array
     {
+        if (! empty($job['inks'])) {
+            return array_values(array_unique(array_map(fn ($i) => strtoupper(trim((string) $i)), $job['inks'])));
+        }
         $set = [];
         $n = (int) ($job['colours'] ?? 0);
         foreach (array_slice(['C', 'M', 'Y', 'K'], 0, min(4, $n)) as $c) {

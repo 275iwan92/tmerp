@@ -38,5 +38,6 @@ final class PlanOp
         public readonly ?array $fixed = null,
         public readonly string $kind = 'MACHINE',
         public readonly int $leadDays = 0,
+        public readonly bool $wasDown = false,
     ) {}
 }

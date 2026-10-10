@@ -50,12 +50,13 @@ final class PlanLoader
         $cands = $cands->map(fn ($list) => $list->reject(fn ($c) => in_array((int) $c->machine_id, $down, true))->values());
         $stage = DB::connection('tm2mst')->table('prod_process')->get(['id_process', 'process_stage', 'process_name', 'is_manual', 'inhouse', 'subcon_lead_days'])->keyBy('id_process');
         $tools = $this->toolMinutes($wos);
+        $inks = $this->inksFor($wos);
 
         $out = [];
         foreach ($wos as $wo) {
             $planOps = [];
             foreach ($ops[$wo->wo_id] ?? [] as $op) {
-                $planOps[] = $this->op($wo, $op, $cands[$op->operation_id] ?? collect(), $stage, $tools, $now);
+                $planOps[] = $this->op($wo, $op, $cands[$op->operation_id] ?? collect(), $stage, $tools, $now, $inks, $down);
             }
             if (! $planOps) {
                 continue;
@@ -109,8 +110,11 @@ final class PlanLoader
         return array_values(array_unique(array_merge([0], $ids)));
     }
 
-    private function op(PrdWo $wo, PrdWoOperation $op, $cands, $stage, array $tools, CarbonImmutable $now): PlanOp
+    private function op(PrdWo $wo, PrdWoOperation $op, $cands, $stage, array $tools, CarbonImmutable $now, array $inks = [], array $down = []): PlanOp
     {
+        // Confirmed and locked on a machine that is down now: the engine proposes a new place in the Draft (the officer decides at Confirm).
+        $wasDown = $op->plan_status === 'CONFIRMED' && $op->is_locked && in_array((int) $op->machine_id, $down, true)
+            && ! in_array($op->task_status, array_merge(self::DONE, self::WORKING), true);
         $stageName = strtoupper((string) ($stage[$op->process_id]->process_stage ?? 'PRESS'));
         $isDie = str_starts_with(strtoupper((string) ($stage[$op->process_id]->process_name ?? $op->process_name)), 'PLONG');
         $candidates = [];
@@ -138,13 +142,14 @@ final class PlanLoader
             'die' => $isDie ? ($wo->dieline_ref ?: null) : null,
             'plate' => $stageName === 'PRESS' && str_starts_with($name, 'CETAK') ? 'PL-'.$wo->product_id : null,
             'tool_min' => $tools[$wo->wo_id] ?? null,
+            'inks' => $inks[$wo->wo_id] ?? [],
         ];
 
         return new PlanOp(
             id: (int) $op->operation_id, woId: (int) $wo->wo_id, seq: (int) $op->seq_no, processName: (string) $op->process_name, stage: $stageName,
             qtyIn: (float) $op->qty, candidates: $candidates, facts: $facts, waitAfterMinutes: $wait,
             minStart: $op->material_ready_at ? CarbonImmutable::parse($op->material_ready_at) : null,
-            gate: $gate, gateNote: $op->gate_note, fixed: $this->fixed($op, $now), kind: $kind, leadDays: (int) ($stage[$op->process_id]->subcon_lead_days ?? 3),
+            gate: $gate, gateNote: $op->gate_note, fixed: $wasDown ? null : $this->fixed($op, $now), kind: $kind, leadDays: (int) ($stage[$op->process_id]->subcon_lead_days ?? 3), wasDown: $wasDown,
         );
     }
 
@@ -167,6 +172,20 @@ final class PlanLoader
         }
 
         return null;
+    }
+
+    /** @return array<int, list<string>> wo id => ink names per unit from Product Development (empty = only the colour count is known) */
+    private function inksFor($wos): array
+    {
+        $partIds = DB::connection('tm2sdi')->table('iqp_part')->whereIn('id_part', $wos->pluck('source_iqp_part_id')->filter()->unique())->pluck('prod_part_id', 'id_part');
+        $rows = DB::connection('tm2mst')->table('prod_part_ink')->whereIn('part_id', $partIds->filter()->unique())->orderBy('pass_seq')->orderBy('unit_no')->get(['part_id', 'ink_name'])->groupBy('part_id');
+        $out = [];
+        foreach ($wos as $wo) {
+            $pid = $partIds[$wo->source_iqp_part_id] ?? null;
+            $out[$wo->wo_id] = $pid ? $rows->get($pid, collect())->pluck('ink_name')->map(fn ($n) => strtoupper(trim((string) $n)))->filter()->unique()->values()->all() : [];
+        }
+
+        return $out;
     }
 
     /** @return array<int, ?int> wo id => minutes to mount the die of its dieline (first run) from the tooling master */

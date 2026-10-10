@@ -353,10 +353,11 @@ final class Ppic
     {
         $run = self::latestRun();
         $nos = DB::connection('tm2prd')->table('prd_wo')->pluck('wo_no', 'wo_id');
-        $labels = ['LATE_RISK' => 'Late risk', 'WAITING' => 'Waiting', 'BLOCKED' => 'Blocked', 'CHAIN_BLOCKED' => 'Blocked', 'NO_MACHINE' => 'No machine'];
+        $labels = ['LATE_RISK' => 'Late risk', 'WAITING' => 'Waiting', 'BLOCKED' => 'Blocked', 'CHAIN_BLOCKED' => 'Blocked', 'NO_MACHINE' => 'No machine', 'MOVED_FROM_DOWN' => 'Moved (machine down)'];
         $options = ['LATE_RISK' => 'Re-plan, move to another machine, overtime, split the lot, subcontract or ask the customer to move the date',
             'WAITING' => 'Follow up the purchase, or the job waits for its arrival', 'BLOCKED' => 'Clear the gate (material, tooling) then Re-plan',
-            'CHAIN_BLOCKED' => 'Resolves when the earlier operation is unblocked', 'NO_MACHINE' => 'Check the process-machine master: no machine fits this job'];
+            'CHAIN_BLOCKED' => 'Resolves when the earlier operation is unblocked', 'NO_MACHINE' => 'Check the process-machine master: no machine fits this job',
+            'MOVED_FROM_DOWN' => 'Confirm the Draft to accept the move, or give the job priority and place it yourself'];
         $out = [];
         foreach ($run?->summary['exceptions'] ?? [] as $e) {
             $out[] = ['kind' => $labels[$e['kind']] ?? $e['kind'], 'wo' => $nos[$e['wo']] ?? '#'.$e['wo'], 'text' => (string) $e['message'], 'options' => $options[$e['kind']] ?? ''];

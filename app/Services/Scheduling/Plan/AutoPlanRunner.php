@@ -55,7 +55,7 @@ final class AutoPlanRunner
     public function solver(): ScheduleSolver
     {
         return new ScheduleSolver(new SetupTimeEngine, PpicSettings::setupRules(), PpicSettings::weights(),
-            PpicSettings::number('similar_window_hours'), PpicSettings::number('horizon_hours'));
+            PpicSettings::number('similar_window_hours'), PpicSettings::number('horizon_hours'), PpicSettings::number('group_due_hours'));
     }
 
     /** Enrich Work Orders that have no process ids yet and refresh the gates of all active ones. */

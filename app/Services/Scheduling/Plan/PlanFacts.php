@@ -39,6 +39,7 @@ final class PlanFacts
         $sheetL = isset($detail['canvas_l_cm']) ? (float) $detail['canvas_l_cm'] * 10 : ($src?->plano_w_mm ? (float) $src->plano_w_mm : null);
         $sheetW = isset($detail['canvas_w_cm']) ? (float) $detail['canvas_w_cm'] * 10 : ($src?->plano_h_mm ? (float) $src->plano_h_mm : null);
 
+        $cardKnife = $prodPart?->mastercard_code ? $mst->table('prod_master_card')->where('card_code', $prodPart->mastercard_code)->value('knife_code') : null;
         $gsm = $part ? $sdi->table('iqp_part_material')->where('part_id', $part->id_part)->where('is_primary', 1)->value('gram_weight') : null;
         $cfg = $part->cfg_color ?? $prodPart->cfg_color ?? null;
         $customerId = $wo->source_co_id ? $sdi->table('co_order')->where('id_order', $wo->source_co_id)->value('customer_id') : null;
@@ -50,7 +51,8 @@ final class PlanFacts
             'sheet_w' => $sheetW,
             'gsm' => $gsm ? (int) round((float) $gsm) : null,
             'colours' => $this->colours($cfg),
-            'dieline' => $prodPart->dieline_ref ?? $prodPart->die_code ?? $src?->knife_code ?? null,
+            // Die (mall) code: part, then the master card of the part, then the layout group. One order so the same die is always seen as the same code.
+            'dieline' => $prodPart->dieline_ref ?: ($prodPart->die_code ?: ($cardKnife ?: ($src?->knife_code ?: null))),
             'tier' => max(1, min(3, (int) ($tier ?: 2))),
             'layout' => array_filter([
                 'plano_w_mm' => $src?->plano_w_mm, 'plano_h_mm' => $src?->plano_h_mm, 'up_count' => $src?->up_count,

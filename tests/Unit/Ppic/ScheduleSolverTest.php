@@ -192,4 +192,79 @@ final class ScheduleSolverTest extends TestCase
         $this->assertSame(['colour', 'ink_type', 'size', 'die'], array_column($r['parts'], 'kind'));
         $this->assertSame(15, $s->between($prev, $next, self::RULES, 'QC')['total']);   // stage without changeover pays base only
     }
+
+    public function test_machine_is_chosen_by_clock_time_not_by_work_minutes_of_its_own_calendar(): void
+    {
+        // Machine 3 works one shift a day, machine 1 two. A 20 hour job ends days later on machine 3 although machine 3 has the better rank.
+        $c = [3 => ['rank' => 1, 'rate' => 1000, 'setup_base' => 15], 1 => ['rank' => 2, 'rate' => 1000, 'setup_base' => 15]];
+        $r = $this->solver()->solve([$this->wo(1, [$this->op(10, 1, 10, $c, 20000)])], $this->cal(), $this->now());
+
+        $this->assertSame(1, $r->placements[10]->machineId);
+    }
+
+    public function test_jobs_on_the_same_die_are_put_together_inside_the_due_tolerance(): void
+    {
+        $c = [1 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15]];
+        $x = ['stage' => 'DIE', 'die' => 'DIE-X', 'gsm' => 300];
+        $y = ['stage' => 'DIE', 'die' => 'DIE-Y', 'gsm' => 300];
+        $a = $this->wo(1, [$this->op(10, 1, 10, $c, 1000, $x, 'DIE')], '2026-10-14 10:00');
+        $b = $this->wo(2, [$this->op(20, 2, 10, $c, 1000, $y, 'DIE')], '2026-10-14 12:00');
+        $d = $this->wo(3, [$this->op(30, 3, 10, $c, 1000, $x, 'DIE')], '2026-10-15 20:00');   // 34 h after A: outside 8 h window, inside 48 h
+        $r = $this->solver()->solve([$a, $b, $d], $this->cal([1 => ['shifts' => 2, 'hours' => 8]]), $this->now());
+
+        $order = collect($r->placements)->sortBy(fn ($p) => $p->start->getTimestamp())->keys()->all();
+        $this->assertSame([10, 30, 20], $order);
+        // The die is mounted once: the second X job pays no die setup.
+        $this->assertSame(15, $r->placements[30]->setup['total']);
+    }
+
+    public function test_same_die_outside_the_tolerance_is_not_pulled_forward(): void
+    {
+        $c = [1 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15]];
+        $x = ['stage' => 'DIE', 'die' => 'DIE-X'];
+        $y = ['stage' => 'DIE', 'die' => 'DIE-Y'];
+        $a = $this->wo(1, [$this->op(10, 1, 10, $c, 1000, $x, 'DIE')], '2026-10-14 10:00');
+        $b = $this->wo(2, [$this->op(20, 2, 10, $c, 1000, $y, 'DIE')], '2026-10-14 12:00');
+        $d = $this->wo(3, [$this->op(30, 3, 10, $c, 1000, $x, 'DIE')], '2026-10-19 12:00');   // five days later
+        $r = $this->solver()->solve([$a, $b, $d], $this->cal([1 => ['shifts' => 2, 'hours' => 8]]), $this->now());
+
+        $order = collect($r->placements)->sortBy(fn ($p) => $p->start->getTimestamp())->keys()->all();
+        $this->assertSame([10, 20, 30], $order);
+    }
+
+    public function test_hot_job_is_never_held_back_by_grouping(): void
+    {
+        $c = [1 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15]];
+        $a = $this->wo(1, [$this->op(10, 1, 10, $c, 1000, ['stage' => 'DIE', 'die' => 'DIE-X'], 'DIE')], '2026-10-14 10:00');
+        $hot = $this->wo(2, [$this->op(20, 2, 10, $c, 1000, ['stage' => 'DIE', 'die' => 'DIE-Y'], 'DIE')], '2026-10-16 10:00', true);
+        $b = $this->wo(3, [$this->op(30, 3, 10, $c, 1000, ['stage' => 'DIE', 'die' => 'DIE-X'], 'DIE')], '2026-10-14 11:00');
+        $r = $this->solver()->solve([$a, $hot, $b], $this->cal([1 => ['shifts' => 2, 'hours' => 8]]), $this->now());
+
+        $first = collect($r->placements)->sortBy(fn ($p) => $p->start->getTimestamp())->keys()->first();
+        $this->assertSame(20, $first);
+    }
+
+    public function test_ink_order_light_to_dark_washes_lighter_than_dark_to_light(): void
+    {
+        $s = new SetupTimeEngine;
+        $rules = self::RULES + ['color_order_factor' => 0.7];
+        $light = ['inks' => ['YELLOW', 'CYAN'], 'colours' => 2];
+        $dark = ['inks' => ['BLACK', 'MAGENTA'], 'colours' => 2];
+
+        $up = $s->between($light, $dark, $rules, 'PRESS');
+        $down = $s->between($dark, $light, $rules, 'PRESS');
+        $this->assertSame(15 + 27, $up['total']);      // 38 x 0.7 rounded
+        $this->assertSame(15 + 38, $down['total']);
+        $this->assertSame(15, $s->between($light, ['inks' => ['CYAN', 'YELLOW'], 'colours' => 2], $rules, 'PRESS')['total']);   // same set: no wash
+    }
+
+    public function test_locked_operation_on_a_machine_that_is_down_is_proposed_elsewhere_with_a_reason(): void
+    {
+        $now = $this->now();
+        $moved = new PlanOp(10, 1, 10, 'CETAK', 'PRESS', 4500, [2 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15]], [], 0, null, 'READY', null, null, 'MACHINE', 0, true);
+        $r = $this->solver()->solve([$this->wo(1, [$moved])], $this->cal(), $now);
+
+        $this->assertSame(2, $r->placements[10]->machineId);
+        $this->assertCount(1, $r->exceptionsOf('MOVED_FROM_DOWN'));
+    }
 }

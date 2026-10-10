@@ -21,6 +21,8 @@ final class PpicSettings
         'similar_window_hours' => 'PPIC_SIMILAR_WINDOW_HOURS',
         'horizon_hours' => 'PPIC_HORIZON_HOURS',
         'horizon_days' => 'PPIC_HORIZON_DAYS',
+        'group_due_hours' => 'PPIC_GROUP_DUE_HOURS',
+        'color_order_factor' => 'PPIC_COLOR_ORDER_FACTOR',
         'bottleneck_load_pct' => 'PPIC_BOTTLENECK_LOAD_PCT',
         'default_shifts' => 'PPIC_DEFAULT_SHIFTS',
         'default_hours_per_shift' => 'PPIC_HOURS_PER_SHIFT',
@@ -55,6 +57,7 @@ final class PpicSettings
     {
         $rules = (array) config('ppic.setup');
         $rules['base_minutes'] = self::number('setup.base_minutes');
+        $rules['color_order_factor'] = self::number('color_order_factor');
 
         return $rules;
     }

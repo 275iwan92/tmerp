@@ -17,6 +17,12 @@ return [
     'similar_window_hours' => 8,
     'horizon_hours' => 72,
 
+    // Jobs on the same die within this many hours of each other are put one after the other (the die is mounted once). ASSUMED.
+    'group_due_hours' => 48,
+
+    // Wash minutes are multiplied by this when the next job's inks are darker than the previous (light to dark). ASSUMED, not proven for this plant.
+    'color_order_factor' => 0.7,
+
     // Bottleneck threshold (load percent)
     'bottleneck_load_pct' => 90,
 

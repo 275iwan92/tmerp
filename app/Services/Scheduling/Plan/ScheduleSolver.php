@@ -38,6 +38,7 @@ final class ScheduleSolver
         private readonly array $weights = ['urgency' => 0.50, 'setup' => 0.35, 'tier' => 0.15],
         private readonly float $similarWindowHours = 8.0,
         private readonly float $horizonHours = 72.0,
+        private readonly float $groupDueHours = 48.0,
     ) {}
 
     /**
@@ -119,7 +120,9 @@ final class ScheduleSolver
                     continue;
                 }
                 $gap = $this->hoursBetween($first['wo']->due, $it['wo']->due);
-                if ($gap <= $this->similarWindowHours) {
+                $die = $this->dieOf($first['wo']);
+                $sameDie = $die !== null && $die === $this->dieOf($it['wo']);
+                if ($gap <= $this->similarWindowHours || ($sameDie && $gap <= $this->groupDueHours)) {
                     $groupIdx[] = $i;
                 }
             }
@@ -163,14 +166,32 @@ final class ScheduleSolver
         return abs($b->getTimestamp() - $a->getTimestamp()) / 3600;
     }
 
+    /** The die (mall) code of a Work Order: carried by its die-cutting operation, not by the first (print) operation. */
+    private function dieOf(PlanWo $wo): ?string
+    {
+        foreach ($wo->ops as $op) {
+            if (! empty($op->facts['die'])) {
+                return (string) $op->facts['die'];
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed> facts of the first operation plus the die of the Work Order */
+    private function jobFacts(PlanWo $wo): array
+    {
+        return ['die' => $this->dieOf($wo)] + ($wo->ops[0]->facts ?? []);
+    }
+
     /** Distance between the first operation facts of two Work Orders (0 = same set-up). */
     private function distance(?PlanWo $a, PlanWo $b): float
     {
-        $fb = $b->ops[0]->facts ?? [];
+        $fb = $this->jobFacts($b);
         if (! $a) {
             return 0.0;
         }
-        $fa = $a->ops[0]->facts ?? [];
+        $fa = $this->jobFacts($a);
         $d = 0.0;
         $d += min(3.0, abs((float) ($fa['gsm'] ?? 0) - (float) ($fb['gsm'] ?? 0)) / 20);
         $d += (($fa['sheet_l'] ?? null) != ($fb['sheet_l'] ?? null) || ($fa['sheet_w'] ?? null) != ($fb['sheet_w'] ?? null)) ? 1.0 : 0.0;
@@ -280,6 +301,9 @@ final class ScheduleSolver
                 warnings: $slot['warnings'], rank: $best['cand']['rank'],
             ));
             $predFinish = $finish->addMinutes($op->waitAfterMinutes);
+            if ($op->wasDown) {
+                $result->exception($wo->id, $op->id, 'MOVED_FROM_DOWN', sprintf('Confirmed on a machine that is down; proposed on machine %d from %s. The officer decides at Confirm.', $m, $start->format('D j M H:i')));
+            }
             if ($op->gate === 'WAIT' && $op->minStart && $start->lessThan($op->minStart)) {
                 $result->exception($wo->id, $op->id, 'WAITING', $op->gateNote ?: 'Waiting for material.');
             }
