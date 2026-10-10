@@ -40,7 +40,7 @@ final class AutoPlanRunner
             $run = PrdPlanRun::create([
                 'trigger_kind' => $trigger, 'status' => 'DRAFT', 'plan_from' => $now, 'operations_planned' => count($result->placements),
                 'exceptions_found' => count($result->exceptions), 'duration_ms' => (int) ((microtime(true) - $t0) * 1000), 'started_by' => $actor,
-                'summary' => ['exceptions' => $result->exceptions, 'priority' => $result->priority, 'loads' => $result->loads, 'work_orders' => count($wos), 'metrics' => $this->metrics($result)],
+                'summary' => ['exceptions' => $result->exceptions, 'priority' => $result->priority, 'loads' => $result->loads, 'work_orders' => count($wos), 'metrics' => $this->metrics($result), 'baseline' => $this->baseline()],
             ]);
             $this->writeDraft($result, $run);
             PrdPlanDecision::create(['run_id' => $run->run_id, 'actor' => $actor, 'event' => 'AUTO_PLAN',
@@ -84,6 +84,26 @@ final class AutoPlanRunner
 
         return ['planned' => count($r->placements), 'late' => $late, 'attention' => count($r->exceptions), 'setup_minutes' => $setup, 'die_mounts' => $dies, 'washes' => $washes,
             'moved' => $moved, 'load_avg' => $loads ? round(array_sum($loads) / count($loads), 1) : 0.0];
+    }
+
+    /**
+     * The same numbers for the schedule in force (confirmed operations that have not finished), so a Draft always has something to be compared with.
+     *
+     * @return array<string, int|float>
+     */
+    private function baseline(): array
+    {
+        $ops = PrdWoOperation::query()->where('plan_status', 'CONFIRMED')->whereNotIn('task_status', ['DONE', 'QC_HOLD', 'QC_PASSED', 'QC_REJECTED'])
+            ->get(['wo_id', 'target_finish', 'setup_base_min', 'setup_change_min', 'setup_tool_min']);
+        if ($ops->isEmpty()) {
+            return [];
+        }
+        $due = PrdWo::whereIn('wo_id', $ops->pluck('wo_id')->unique())->pluck('due_date', 'wo_id');
+        $lastFinish = $ops->groupBy('wo_id')->map(fn ($g) => $g->max('target_finish'));
+        $late = $lastFinish->filter(fn ($f, $id) => $f && ($due[$id] ?? null) && $f->greaterThan($due[$id]))->count();
+
+        return ['planned' => $ops->count(), 'late' => $late, 'setup_minutes' => (int) $ops->sum(fn ($o) => (int) $o->setup_base_min + (int) $o->setup_change_min + (int) $o->setup_tool_min),
+            'die_mounts' => $ops->where('setup_tool_min', '>', 0)->count()];
     }
 
     public function solver(): ScheduleSolver
