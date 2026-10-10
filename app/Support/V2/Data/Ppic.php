@@ -140,7 +140,7 @@ final class Ppic
                     }
                 }
                 $total += $wash['minutes'];
-                $jobs[] = ['n' => $i + 1, 'start' => $o['start'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'inks' => $inks, 'colours' => $w->colour_count ?? null,
+                $jobs[] = ['n' => $i + 1, 'start' => $o['start'], 'wo_id' => $o['wo_id'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'inks' => $inks, 'colours' => $w->colour_count ?? null,
                     'plan' => $o['plan_status'], 'wash' => $wash['minutes'], 'wash_label' => $wash['label'], 'known' => $inks !== [], 'unknown' => $unknown];
                 $prev = $facts;
             }
@@ -189,7 +189,7 @@ final class Ppic
             }
             $sum = $svc->summary((int) $seg->operation_id);
             $next = ($queue[$o['machine_id']] ?? collect())->where('op_id', '!=', $o['op_id'])->sortBy(fn ($x) => $x['start']?->timestamp ?? PHP_INT_MAX)->take(3);
-            $out[] = ['machine' => (string) $o['machine'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'process' => $o['process'], 'state' => $seg->kind, 'why' => $seg->kind === 'PAUSE' ? t($reasons[$seg->pause_reason] ?? 'Other') : null,
+            $out[] = ['machine' => (string) $o['machine'], 'wo_id' => $o['wo_id'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'process' => $o['process'], 'state' => $seg->kind, 'why' => $seg->kind === 'PAUSE' ? t($reasons[$seg->pause_reason] ?? 'Other') : null,
                 'seconds' => $svc->elapsed($seg), 'planned' => $o['qty_out'], 'good' => $sum['good'], 'expected' => self::expectedQty($o, $sum), 'uom' => $o['uom'], 'operator' => $seg->operator,
                 'next' => $next->map(fn ($x) => ['wo' => $x['wo_no'], 'product' => $x['product'], 'qty' => $x['qty'], 'start' => $x['start']])->values()->all()];
         }

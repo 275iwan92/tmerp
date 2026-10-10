@@ -28,5 +28,7 @@
             :rows="array_map(fn ($j) => ['n' => $j['n'], 'start' => raw(Locale::dt($j['start'])), 'wo' => raw($j['wo']), 'product' => raw($j['product'] ?? '—'),
                 'inks' => raw($j['known'] ? implode(' · ', $j['inks']) : ($j['colours'] ? $j['colours'].' '.t('colours (inks not in Product Development)') : '—')),
                 'wash' => $j['n'] === 1 || $j['unknown'] ? '—' : $j['wash'], 'why' => raw($j['wash_label']), 'plan' => raw($j['plan'] === 'DRAFT' ? t('Draft') : t('Confirmed'))], $m['jobs'])" />
+        {{-- The first job of the press: its dieline and artwork are the reference for the people at the machine. --}}
+        @include('v2.screens._job-visual', ['woId' => $m['jobs'][0]['wo_id'], 'height' => '170px'])
     </x-dl::card>
 @endforeach
