@@ -76,7 +76,7 @@ final class PlanChangeService
 
         $moved = array_map(fn (PlanWo $pw) => new PlanWo($pw->id, $pw->no, $pw->due, $pw->hot, $pw->tier, $pw->ageDays, array_map(
             fn (PlanOp $po) => $po->id === $opId ? new PlanOp($po->id, $po->woId, $po->seq, $po->processName, $po->stage, $po->qtyIn, $po->candidates, $po->facts, $po->waitAfterMinutes,
-                $po->minStart, $po->gate, $po->gateNote, ['machine' => $machineId, 'start' => $newStart, 'finish' => $newFinish], $po->kind, $po->leadDays) : $po, $pw->ops), $pw->label, $pw->moveUp, $pw->groupOff), $wos);
+                $po->minStart, $po->gate, $po->gateNote, ['machine' => $machineId, 'start' => $newStart, 'finish' => $newFinish], $po->kind, $po->leadDays) : $po, $pw->ops), $pw->label, $pw->moveUp, $pw->groupOff, $pw->dependsOn), $wos);
         $after = $solver->solve($moved, $cal, $now);
 
         $oldStart = $this->currentStart($op);
@@ -233,7 +233,7 @@ final class PlanChangeService
         $base = $solver->solve($wos, $cal, $now);
         $out = [];
         foreach (['NONE' => 'No priority', 'MOVE_UP' => 'Move up', 'HOT' => 'Hot job'] as $key => $label) {
-            $variant = $key === 'NONE' ? $wos : array_map(fn (PlanWo $w) => $w->id === $woId ? new PlanWo($w->id, $w->no, $w->due, $key === 'HOT', $w->tier, $w->ageDays, $w->ops, $w->label, $key === 'MOVE_UP', $w->groupOff) : $w, $wos);
+            $variant = $key === 'NONE' ? $wos : array_map(fn (PlanWo $w) => $w->id === $woId ? new PlanWo($w->id, $w->no, $w->due, $key === 'HOT', $w->tier, $w->ageDays, $w->ops, $w->label, $key === 'MOVE_UP', $w->groupOff, $w->dependsOn) : $w, $wos);
             $res = $key === 'NONE' ? $base : $solver->solve($variant, $cal, $now);
             $finish = null;
             foreach (array_reverse($target->ops) as $op) {

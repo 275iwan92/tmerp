@@ -307,4 +307,31 @@ final class ScheduleSolverTest extends TestCase
         $order = collect($r->placements)->sortBy(fn ($p) => $p->start->getTimestamp())->keys()->all();
         $this->assertSame([10, 20, 30], $order);
     }
+
+    public function test_an_assembly_starts_only_after_its_components_are_finished(): void
+    {
+        $c = [1 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15], 2 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15], 3 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15]];
+        // The assembly is more urgent than its components, but it needs both of them: it must still come last.
+        $assembly = new PlanWo(1, 'WO1', CarbonImmutable::parse('2026-10-12'), false, 2, 1, [$this->op(10, 1, 10, $c, 1000)], '', false, false, [2, 3]);
+        $partA = $this->wo(2, [$this->op(20, 2, 10, $c, 30000)], '2026-10-20');
+        $partB = $this->wo(3, [$this->op(30, 3, 10, $c, 9000)], '2026-10-20');
+        $r = $this->solver()->solve([$assembly, $partA, $partB], $this->cal([1 => ['shifts' => 2, 'hours' => 8], 2 => ['shifts' => 2, 'hours' => 8], 3 => ['shifts' => 2, 'hours' => 8]]), $this->now());
+
+        $latest = max($r->placements[20]->finish->getTimestamp(), $r->placements[30]->finish->getTimestamp());
+        $this->assertGreaterThanOrEqual($latest, $r->placements[10]->start->getTimestamp());
+    }
+
+    public function test_jobs_with_the_same_inks_are_ordered_together(): void
+    {
+        $c = [1 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15]];
+        $cmyk = ['stage' => 'PRESS', 'colours' => 4, 'inks' => ['CYAN', 'MAGENTA', 'YELLOW', 'BLACK']];
+        $spot = ['stage' => 'PRESS', 'colours' => 1, 'inks' => ['PANTONE 485']];
+        $a = $this->wo(1, [$this->op(10, 1, 10, $c, 1000, $cmyk)], '2026-10-14 10:00');
+        $b = $this->wo(2, [$this->op(20, 2, 10, $c, 1000, $spot)], '2026-10-14 11:00');
+        $d = $this->wo(3, [$this->op(30, 3, 10, $c, 1000, $cmyk)], '2026-10-14 12:00');
+        $r = $this->solver()->solve([$a, $b, $d], $this->cal([1 => ['shifts' => 2, 'hours' => 8]]), $this->now());
+
+        $order = collect($r->placements)->sortBy(fn ($p) => $p->start->getTimestamp())->keys()->all();
+        $this->assertSame([10, 30, 20], $order);
+    }
 }

@@ -51,6 +51,7 @@ final class PlanLoader
         $stage = DB::connection('tm2mst')->table('prod_process')->get(['id_process', 'process_stage', 'process_name', 'is_manual', 'inhouse', 'subcon_lead_days'])->keyBy('id_process');
         $tools = $this->toolMinutes($wos);
         $inks = $this->inksFor($wos);
+        $deps = $this->componentsOf($wos);
 
         $out = [];
         foreach ($wos as $wo) {
@@ -64,7 +65,7 @@ final class PlanLoader
             $out[] = new PlanWo(
                 id: (int) $wo->wo_id, no: (string) $wo->wo_no,
                 due: $wo->due_date ? CarbonImmutable::parse($wo->due_date) : null,
-                hot: (bool) $wo->is_hot_job, groupOff: (bool) ($wo->die_group_off ?? false), moveUp: ! $wo->is_hot_job && $wo->priority === 'URGENT', tier: (int) ($wo->customer_tier ?: 2),
+                hot: (bool) $wo->is_hot_job, groupOff: (bool) ($wo->die_group_off ?? false), dependsOn: $deps[$wo->wo_id] ?? [], moveUp: ! $wo->is_hot_job && $wo->priority === 'URGENT', tier: (int) ($wo->customer_tier ?: 2),
                 ageDays: (int) ($wo->created_at ? $wo->created_at->diffInDays($now) : 0), ops: $planOps,
             );
         }
@@ -172,6 +173,32 @@ final class PlanLoader
         }
 
         return null;
+    }
+
+    /**
+     * Assembly Work Orders wait for the Work Orders of their components: same delivery line, and the component part has the assembly part as parent in Product Development.
+     *
+     * @return array<int, list<int>> wo id => ids of the Work Orders that must finish first
+     */
+    private function componentsOf($wos): array
+    {
+        $partOf = DB::connection('tm2sdi')->table('iqp_part')->whereIn('id_part', $wos->pluck('source_iqp_part_id')->filter()->unique())->pluck('prod_part_id', 'id_part');
+        $parent = DB::connection('tm2mst')->table('prod_part')->whereIn('id_part', $partOf->filter()->unique())->pluck('parent_part_id', 'id_part');
+        $out = [];
+        foreach ($wos as $assembly) {
+            $a = $partOf[$assembly->source_iqp_part_id] ?? null;
+            if (! $a || ! $assembly->source_delivery_id) {
+                continue;
+            }
+            foreach ($wos as $c) {
+                $p = $partOf[$c->source_iqp_part_id] ?? null;
+                if ($c->wo_id !== $assembly->wo_id && $c->source_delivery_id === $assembly->source_delivery_id && $p && (int) ($parent[$p] ?? 0) === (int) $a) {
+                    $out[$assembly->wo_id][] = (int) $c->wo_id;
+                }
+            }
+        }
+
+        return $out;
     }
 
     /** @return array<int, list<string>> wo id => ink names per unit from Product Development (empty = only the colour count is known) */

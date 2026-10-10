@@ -25,6 +25,9 @@ final class ScheduleSolver
 
     private const LOAD_HORIZON_DAYS = 7;
 
+    /** @var array<int, PlanWo> */
+    private array $byId = [];
+
     /** @var array<int, list<array{from: int, to: int, facts: array, opId: int}>> machine => blocks sorted by start (work minutes) */
     private array $blocks = [];
 
@@ -61,8 +64,29 @@ final class ScheduleSolver
         }
 
         $ranked = $this->rank($wos, $cal, $now, $result);
-        foreach ($ranked as $wo) {
-            $this->placeWo($wo, $cal, $now, $result);
+        $this->byId = [];
+        foreach ($wos as $w) {
+            $this->byId[$w->id] = $w;
+        }
+        // A Work Order is placed after the Work Orders it depends on (components before the assembly); a cycle is broken in rank order.
+        $done = [];
+        $waiting = $ranked;
+        while ($waiting) {
+            $progress = false;
+            foreach ($waiting as $k => $wo) {
+                if (array_diff(array_filter($wo->dependsOn, fn ($d) => isset($this->byId[$d])), array_keys($done)) === []) {
+                    $this->placeWo($wo, $cal, $now, $result);
+                    $done[$wo->id] = true;
+                    unset($waiting[$k]);
+                    $progress = true;
+                }
+            }
+            if (! $progress) {
+                foreach ($waiting as $wo) {
+                    $this->placeWo($wo, $cal, $now, $result);
+                }
+                break;
+            }
         }
         $result->loads = $this->loads($cal, $now);
 
@@ -199,7 +223,13 @@ final class ScheduleSolver
         $d = 0.0;
         $d += min(3.0, abs((float) ($fa['gsm'] ?? 0) - (float) ($fb['gsm'] ?? 0)) / 20);
         $d += (($fa['sheet_l'] ?? null) != ($fb['sheet_l'] ?? null) || ($fa['sheet_w'] ?? null) != ($fb['sheet_w'] ?? null)) ? 1.0 : 0.0;
-        $d += (($fa['colours'] ?? 0) != ($fb['colours'] ?? 0) || ($fa['spots'] ?? []) != ($fb['spots'] ?? [])) ? 1.5 : 0.0;
+        if (! empty($fa['inks']) && ! empty($fb['inks'])) {
+            // Real inks: distance grows as the two ink sets share less (same set = 0).
+            $u = count(array_unique(array_merge($fa['inks'], $fb['inks'])));
+            $d += 1.5 * (1 - count(array_intersect($fa['inks'], $fb['inks'])) / max(1, $u));
+        } else {
+            $d += (($fa['colours'] ?? 0) != ($fb['colours'] ?? 0) || ($fa['spots'] ?? []) != ($fb['spots'] ?? [])) ? 1.5 : 0.0;
+        }
         $d += (($fa['ink_type'] ?? 'CONVENTIONAL') !== ($fb['ink_type'] ?? 'CONVENTIONAL')) ? 3.0 : 0.0;
         $d += (($fa['die'] ?? null) !== ($fb['die'] ?? null)) ? 1.0 : 0.0;
 
@@ -242,6 +272,16 @@ final class ScheduleSolver
     private function placeWo(PlanWo $wo, WorkingCalendar $cal, CarbonImmutable $now, PlanResult $result): void
     {
         $predFinish = $now;
+        // An assembly cannot start before its components are finished.
+        foreach ($wo->dependsOn as $depId) {
+            $dep = $this->byId[$depId] ?? null;
+            foreach ($dep?->ops ?? [] as $dop) {
+                $f = ($result->placements[$dop->id] ?? null)?->finish ?? ($dop->fixed['finish'] ?? null);
+                if ($f && $f->addMinutes($dop->waitAfterMinutes)->greaterThan($predFinish)) {
+                    $predFinish = $f->addMinutes($dop->waitAfterMinutes);
+                }
+            }
+        }
         $blockedBy = null;
         foreach ($wo->ops as $op) {
             if ($op->fixed) {

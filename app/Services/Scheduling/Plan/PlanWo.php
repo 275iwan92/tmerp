@@ -21,5 +21,7 @@ final class PlanWo
         public readonly string $label = '',
         public readonly bool $moveUp = false,
         public readonly bool $groupOff = false,
+        /** @var list<int> Work Orders that must finish before this one starts (the components of an assembly) */
+        public readonly array $dependsOn = [],
     ) {}
 }

@@ -19,7 +19,7 @@ class SchedulingRuleEngine
     /**
      * @param  Collection<int, PrdWoOperation>  $candidates
      * @return Collection<int, Collection<int, PrdWoOperation>> daftar "grup" — grup isi 1
-     *         task berarti tak ada batching yang cocok untuknya
+     *                                                          task berarti tak ada batching yang cocok untuknya
      */
     public function applyBatching(Collection $candidates, int $machineId, string $processName): Collection
     {
