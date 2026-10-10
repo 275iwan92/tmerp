@@ -9,6 +9,7 @@ use App\Models\Prd\PrdPlanRun;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\Scheduling\Plan\PlanLoader;
 use App\Services\Scheduling\Plan\PpicSettings;
+use App\Services\Scheduling\Plan\SetupTimeEngine;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
@@ -87,6 +88,62 @@ final class Ppic
             $out[] = ['label' => $label, 'now' => $now === null ? '—' : (string) $now, 'draft' => $new === null ? '—' : (string) $new,
                 'better' => ($lowerIsBetter === null || $now === null || $new === null || $now == $new) ? null : ($lowerIsBetter ? $new < $now : $new > $now)];
         }
+
+        return $out;
+    }
+
+    /**
+     * Colour sequence of the print process: per press machine the jobs in planned order (Draft first, else confirmed) with their inks and the wash
+     * the machine needs before each job. Inks come from Product Development (prod_part_ink); a job without them shows only its colour count.
+     *
+     * @return list<array{machine: string, jobs: list<array<string, mixed>>, wash_minutes: int}>
+     */
+    public static function colorSequence(): array
+    {
+        $ops = array_values(array_filter(self::operations(), fn ($o) => $o['stage'] === 'PRESS' && str_starts_with(strtoupper($o['process']), 'CETAK') && $o['machine_id'] && $o['start']));
+        if (! $ops) {
+            return [];
+        }
+        $wos = DB::connection('tm2prd')->table('prd_wo')->whereIn('wo_id', array_unique(array_column($ops, 'wo_id')))->get(['wo_id', 'source_iqp_part_id', 'colour_count', 'board_gsm', 'sheet_length_mm', 'sheet_width_mm'])->keyBy('wo_id');
+        $partOf = DB::connection('tm2sdi')->table('iqp_part')->whereIn('id_part', $wos->pluck('source_iqp_part_id')->filter()->unique())->pluck('prod_part_id', 'id_part');
+        $inkRows = DB::connection('tm2mst')->table('prod_part_ink')->whereIn('part_id', $partOf->filter()->unique())->orderBy('pass_seq')->orderBy('unit_no')->get(['part_id', 'ink_name', 'unit_no'])->groupBy('part_id');
+        $engine = new SetupTimeEngine;
+        $rules = PpicSettings::setupRules();
+
+        $byMachine = [];
+        foreach ($ops as $o) {
+            $byMachine[$o['machine_id']][] = $o;
+        }
+        $out = [];
+        foreach ($byMachine as $list) {
+            usort($list, fn ($a, $b) => $a['start'] <=> $b['start']);
+            $prev = null;
+            $jobs = [];
+            $total = 0;
+            foreach ($list as $i => $o) {
+                $w = $wos[$o['wo_id']] ?? null;
+                $inks = $w && ($pid = $partOf[$w->source_iqp_part_id] ?? null) ? ($inkRows[$pid] ?? collect())->pluck('ink_name')->map(fn ($n) => strtoupper(trim((string) $n)))->filter()->unique()->values()->all() : [];
+                $facts = ['colours' => $w->colour_count ?? null, 'inks' => $inks, 'spots' => [], 'ink_type' => 'CONVENTIONAL', 'gsm' => $w->board_gsm ?? null];
+                $wash = ['minutes' => 0, 'label' => $prev === null ? '—' : t('Same inks')];
+                $unknown = $prev !== null && ((empty($prev['inks']) && empty($prev['colours'])) || ($inks === [] && empty($facts['colours'])));
+                if ($unknown) {
+                    $wash = ['minutes' => 0, 'label' => t('Inks not known')];
+                }
+                if ($prev !== null && ! $unknown) {
+                    foreach ($engine->between($prev, $facts, $rules, 'PRESS')['parts'] as $part) {
+                        if (in_array($part['kind'], ['colour', 'ink_type'], true)) {
+                            $wash = ['minutes' => $part['minutes'], 'label' => $part['label']];
+                        }
+                    }
+                }
+                $total += $wash['minutes'];
+                $jobs[] = ['n' => $i + 1, 'start' => $o['start'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'inks' => $inks, 'colours' => $w->colour_count ?? null,
+                    'plan' => $o['plan_status'], 'wash' => $wash['minutes'], 'wash_label' => $wash['label'], 'known' => $inks !== [], 'unknown' => $unknown];
+                $prev = $facts;
+            }
+            $out[] = ['machine' => (string) $list[0]['machine'], 'jobs' => $jobs, 'wash_minutes' => $total];
+        }
+        usort($out, fn ($a, $b) => strcmp($a['machine'], $b['machine']));
 
         return $out;
     }

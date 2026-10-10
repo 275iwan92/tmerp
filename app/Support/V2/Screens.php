@@ -147,6 +147,7 @@ final class Screens
             ]],
             ['code' => 'PROD', 'short' => 'PP', 'label' => 'Production', 'icon' => 'fa-solid fa-industry', 'groups' => [
                 ['label' => 'Planning', 'items' => [
+                    $it('ppic-color-sequence', ['Colour Sequence', 'fa-solid fa-palette', 'v2 baru: urutan job di proses cetak per mesin, tinta tiap job (ProDev) dan menit cuci sebelum job', null]),
                     $it('ppic-settings', ['PPIC Settings', 'fa-solid fa-sliders', 'v2 baru: satu pintu untuk semua pengaturan PPIC dalam 8 kategori, dengan kotak cari', null]),
                     $it('production-scheduling', ['PPIC Workspace', 'fa-solid fa-chart-gantt', 'v2 baru: PPIC (engine Draft + Confirm officer) -- Gantt, Kanban, Calendar, Grid, Monitoring', 'ppic_sched_gantt.jpg']),
                     $it('production-wo', ['Work Order (PPIC)', 'fa-solid fa-clipboard-list', 'v2 baru: Work Order dari ProDev (BOP, routing, BOM, mesin yang bisa antre)', 'ppic_wo_detail.jpg']),
