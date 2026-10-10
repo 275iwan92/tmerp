@@ -40,7 +40,7 @@ final class AutoPlanRunner
             $run = PrdPlanRun::create([
                 'trigger_kind' => $trigger, 'status' => 'DRAFT', 'plan_from' => $now, 'operations_planned' => count($result->placements),
                 'exceptions_found' => count($result->exceptions), 'duration_ms' => (int) ((microtime(true) - $t0) * 1000), 'started_by' => $actor,
-                'summary' => ['exceptions' => $result->exceptions, 'priority' => $result->priority, 'loads' => $result->loads, 'work_orders' => count($wos)],
+                'summary' => ['exceptions' => $result->exceptions, 'priority' => $result->priority, 'loads' => $result->loads, 'work_orders' => count($wos), 'metrics' => $this->metrics($result)],
             ]);
             $this->writeDraft($result, $run);
             PrdPlanDecision::create(['run_id' => $run->run_id, 'actor' => $actor, 'event' => 'AUTO_PLAN',
@@ -52,10 +52,44 @@ final class AutoPlanRunner
         return $run;
     }
 
+    /**
+     * What a plan means in numbers, so a Draft can be compared with the plan in force before anyone confirms it.
+     *
+     * @return array<string, int|float>
+     */
+    private function metrics(PlanResult $r): array
+    {
+        $late = count(array_unique(array_column($r->exceptionsOf('LATE_RISK'), 'wo')));
+        $setup = 0;
+        $dies = 0;
+        $washes = 0;
+        foreach ($r->placements as $p) {
+            $setup += $p->setupMinutes;
+            foreach ($p->setup['parts'] ?? [] as $part) {
+                $dies += ($part['kind'] ?? '') === 'die' ? 1 : 0;
+                $washes += ($part['kind'] ?? '') === 'colour' ? 1 : 0;
+            }
+        }
+        $moved = 0;
+        $ids = array_keys($r->placements);
+        if ($ids) {
+            foreach (PrdWoOperation::query()->whereIn('operation_id', $ids)->where('plan_status', 'CONFIRMED')->get(['operation_id', 'machine_id', 'target_start']) as $o) {
+                $p = $r->placements[$o->operation_id];
+                if ((int) $o->machine_id !== $p->machineId || ! $o->target_start || $o->target_start->ne($p->start)) {
+                    $moved++;
+                }
+            }
+        }
+        $loads = array_column($r->loads, 'pct');
+
+        return ['planned' => count($r->placements), 'late' => $late, 'attention' => count($r->exceptions), 'setup_minutes' => $setup, 'die_mounts' => $dies, 'washes' => $washes,
+            'moved' => $moved, 'load_avg' => $loads ? round(array_sum($loads) / count($loads), 1) : 0.0];
+    }
+
     public function solver(): ScheduleSolver
     {
         return new ScheduleSolver(new SetupTimeEngine, PpicSettings::setupRules(), PpicSettings::weights(),
-            PpicSettings::number('similar_window_hours'), PpicSettings::number('horizon_hours'), PpicSettings::number('group_due_hours'));
+            PpicSettings::number('similar_window_hours'), PpicSettings::number('horizon_hours'), PpicSettings::number('group_due_hours'), PpicSettings::number('group_slack_hours'));
     }
 
     /** Enrich Work Orders that have no process ids yet and refresh the gates of all active ones. */

@@ -41,6 +41,18 @@
             <x-dl::action-form action="{{ route('v2.ppic.discard') }}"><input type="hidden" name="run" value="{{ $run->run_id }}"><x-dl::button size="sm" variant="secondary" icon="fa-rotate-left" label="Undo" type="submit" data-dl-confirm="{{ t('Discard this Draft?') }}" /></x-dl::action-form>
         @endif
     </x-dl::action-bar>
+    @php($cmp = Ppic::compare())
+    @php($inForce = Ppic::lastConfirmedRun())
+    @if ($cmp)
+        <x-dl::alert tone="info" message="This is a Draft. The schedule in force has not changed. Compare, then Confirm plan or Undo (discard)." />
+        <x-dl::table :source="$src" :columns="['label' => 'Measure', 'now' => 'Plan in force', 'draft' => 'This Draft', 'better' => 'Change']"
+            :rows="array_map(fn ($c) => ['label' => t($c['label']), 'now' => raw($c['now']), 'draft' => raw($c['draft']), 'better' => $c['better'] === null ? '—' : ($c['better'] ? t('Better') : t('Worse'))], $cmp)" />
+    @endif
+    <x-dl::action-bar>
+        @if ($inForce && ! $stats['draft'])
+            <x-dl::action-form action="{{ route('v2.ppic.undo-confirm') }}"><x-dl::button size="sm" variant="secondary" icon="fa-rotate-left" label="Undo last Confirm" type="submit" data-dl-confirm="{{ t('Put the schedule back as it was before the last Confirm?') }}" /></x-dl::action-form>
+        @endif
+    </x-dl::action-bar>
     <x-dl::action-bar>
         @foreach (['schedule' => 'Schedule', 'material' => 'Material Control', 'incoming' => 'Incoming Purchases', 'monitoring' => 'Monitoring'] as $k => $label)
             <x-dl::button size="sm" :variant="$tab === $k ? 'primary' : 'secondary'" :label="$label" :href="$link(['tab' => $k])" />

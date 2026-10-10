@@ -8,6 +8,7 @@ return new class extends Migration
 {
     private const CONSTANTS = [
         'PPIC_GROUP_DUE_HOURS' => [48, 'Scheduling: jobs on the same die whose due dates are within this many hours are put one after the other, so the die is mounted once.'],
+        'PPIC_GROUP_SLACK_HOURS' => [8, 'Scheduling: a machine that already has the same die is chosen when it finishes within this many hours of the earliest machine, if the due date holds.'],
         'PPIC_COLOR_ORDER_FACTOR' => [0.7, 'Scheduling: wash minutes are multiplied by this when the next job inks are darker than the previous (light to dark). Assumed, not proven for this plant.'],
     ];
 

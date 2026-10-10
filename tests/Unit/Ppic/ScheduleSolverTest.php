@@ -267,4 +267,30 @@ final class ScheduleSolverTest extends TestCase
         $this->assertSame(2, $r->placements[10]->machineId);
         $this->assertCount(1, $r->exceptionsOf('MOVED_FROM_DOWN'));
     }
+
+    public function test_second_job_with_the_same_die_follows_the_first_one_on_its_machine_when_the_due_date_holds(): void
+    {
+        $c = [1 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15], 2 => ['rank' => 2, 'rate' => 4500, 'setup_base' => 15]];
+        $x = ['stage' => 'DIE', 'die' => 'DIE-X'];
+        $a = $this->wo(1, [$this->op(10, 1, 10, $c, 1000, $x, 'DIE')], '2026-10-14 10:00');
+        $b = $this->wo(2, [$this->op(20, 2, 10, $c, 1000, $x, 'DIE')], '2026-10-14 11:00');
+        $r = $this->solver()->solve([$a, $b], $this->cal([1 => ['shifts' => 2, 'hours' => 8], 2 => ['shifts' => 2, 'hours' => 8]]), $this->now());
+
+        $this->assertSame($r->placements[10]->machineId, $r->placements[20]->machineId);
+        $this->assertSame(15, $r->placements[20]->setup['total']);   // no die mounted again
+    }
+
+    public function test_grouping_on_the_same_die_is_given_up_when_it_would_make_the_job_late(): void
+    {
+        $x = ['stage' => 'DIE', 'die' => 'DIE-X'];
+        $both = [1 => ['rank' => 1, 'rate' => 4500, 'setup_base' => 15], 2 => ['rank' => 2, 'rate' => 4500, 'setup_base' => 15]];
+        // The first job (hot, only machine 1) ends 10:15. Following it on machine 1 would finish the second job about 10:43,
+        // after its due date 10:30, while machine 2 finishes it before 10:00: the die must not pull it onto machine 1.
+        $a = $this->wo(1, [$this->op(10, 1, 10, [1 => $both[1]], 4500, $x, 'DIE')], '2026-10-08 12:00', true);
+        $b = $this->wo(2, [$this->op(20, 2, 10, $both, 1000, $x, 'DIE')], '2026-10-08 10:30');
+        $r = $this->solver()->solve([$a, $b], $this->cal([1 => ['shifts' => 2, 'hours' => 8], 2 => ['shifts' => 2, 'hours' => 8]]), $this->now());
+
+        $this->assertSame(2, $r->placements[20]->machineId);
+        $this->assertSame([], $r->exceptionsOf('LATE_RISK'));
+    }
 }

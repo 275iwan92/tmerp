@@ -8,6 +8,7 @@ use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sys\SysConstant;
 use App\Services\Sales\CpdelPromiseService as Promise;
 use App\Services\Sales\DeliveryPromiseService;
+use App\Services\Scheduling\Plan\PlanEvents;
 use App\Services\Scheduling\WoGenerationService;
 use App\Support\V2\Print\PrintDocs;
 use App\Support\WorkCalendar;
@@ -85,6 +86,8 @@ final class Cpdel
             }
         }
         $d->update(['posted_at' => now(), 'posted_by' => Auth::user()->login, 'updated_by' => Auth::user()->login]);
+        // A new Work Order: the engines prepare a Draft plan (never the schedule in force).
+        PlanEvents::replan('Work Order created from delivery line '.$d->id_delivery);
 
         return null;
     }

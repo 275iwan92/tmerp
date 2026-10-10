@@ -35,6 +35,11 @@ final class PlanConfirmService
         return DB::connection('tm2prd')->transaction(function () use ($ops, $cal, $shifts, $now, $run, $login) {
             $locked = 0;
             $woIds = [];
+            // Everything the confirm is about to overwrite, so Undo can put it back.
+            $undo = [
+                'ops' => $ops->map(fn ($o) => $o->only(['operation_id', 'plan_status', 'machine_id', 'resource_type', 'target_start', 'target_finish', 'is_locked', 'lock_reason', 'task_status', 'planned_by', 'draft_machine_id', 'draft_start', 'draft_finish', 'draft_run_id']))->all(),
+                'wos' => PrdWo::whereIn('wo_id', $ops->pluck('wo_id')->unique())->get(['wo_id', 'wo_status', 'schedule_layer'])->map(fn ($w) => $w->only(['wo_id', 'wo_status', 'schedule_layer']))->all(),
+            ];
             foreach ($ops as $op) {
                 /** @var PrdWoOperation $op */
                 $m = (int) $op->draft_machine_id;      // 0 = crew job or subcontract step, no machine
@@ -60,11 +65,48 @@ final class PlanConfirmService
                 }
             }
 
-            $run->update(['status' => 'CONFIRMED', 'confirmed_by' => $login, 'confirmed_at' => $now]);
+            $run->update(['status' => 'CONFIRMED', 'confirmed_by' => $login, 'confirmed_at' => $now, 'summary' => array_merge((array) $run->summary, ['undo' => $undo])]);
             PrdPlanDecision::create(['run_id' => $run->run_id, 'actor' => $login, 'event' => 'CONFIRM',
                 'new_value' => sprintf('%d operations, %d locked', $ops->count(), $locked), 'reason' => 'Plan confirmed']);
 
             return ['confirmed' => $ops->count(), 'locked' => $locked, 'run_id' => (int) $run->run_id];
+        });
+    }
+
+    /**
+     * Put the schedule back as it was before the last Confirm. Refused once any of its operations has started.
+     *
+     * @throws \DomainException
+     */
+    public function undo(int $runId, string $login): void
+    {
+        $run = PrdPlanRun::findOrFail($runId);
+        $undo = $run->summary['undo'] ?? null;
+        if ($run->status !== 'CONFIRMED' || ! $undo) {
+            throw new \DomainException('Only the last confirmed plan can be undone.');
+        }
+        if (PrdPlanRun::where('status', 'CONFIRMED')->where('run_id', '>', $run->run_id)->exists()) {
+            throw new \DomainException('A later plan was confirmed; undo that one first.');
+        }
+        $ids = array_column($undo['ops'], 'operation_id');
+        if (PrdWoOperation::whereIn('operation_id', $ids)->whereIn('task_status', ['RUNNING', 'DONE', 'QC_HOLD', 'QC_PASSED', 'QC_REJECTED'])->exists()) {
+            throw new \DomainException('Work has already started on this plan; it cannot be undone.');
+        }
+        DB::connection('tm2prd')->transaction(function () use ($undo, $run, $login) {
+            foreach ($undo['ops'] as $row) {
+                $id = $row['operation_id'];
+                unset($row['operation_id']);
+                // The snapshot was stored as JSON (ISO strings in UTC); the table wants local date-times.
+                foreach (['target_start', 'target_finish', 'draft_start', 'draft_finish'] as $k) {
+                    $row[$k] = ! empty($row[$k]) ? CarbonImmutable::parse($row[$k])->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s') : null;
+                }
+                PrdWoOperation::whereKey($id)->update($row);
+            }
+            foreach ($undo['wos'] as $row) {
+                PrdWo::whereKey($row['wo_id'])->update(['wo_status' => $row['wo_status'], 'schedule_layer' => $row['schedule_layer']]);
+            }
+            $run->update(['status' => 'UNDONE']);
+            PrdPlanDecision::create(['run_id' => $run->run_id, 'actor' => $login, 'event' => 'UNDO_CONFIRM', 'reason' => 'Confirm undone']);
         });
     }
 

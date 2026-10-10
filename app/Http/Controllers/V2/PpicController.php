@@ -118,6 +118,37 @@ final class PpicController extends Controller
         return response()->json(['ok' => true, 'draft' => 'DRAFT '.$run->run_id, 'reload' => true]);
     }
 
+    /** Put the schedule back as it was before the last Confirm. */
+    public function undoConfirm(PlanConfirmService $service): RedirectResponse
+    {
+        $this->schedulerOnly();
+        $run = Ppic::lastConfirmedRun();
+        try {
+            abort_unless($run, 404);
+            $service->undo((int) $run->run_id, $this->login());
+        } catch (\DomainException $e) {
+            return redirect($this->back())->withErrors(['plan' => $e->getMessage()]);
+        }
+        Ppic::forget();
+
+        return redirect($this->back())->with('v2_flash', tf('Plan :id undone: the schedule is as it was before it was confirmed.', ['id' => $run->run_id]));
+    }
+
+    /** Take the priority given to a Work Order back. */
+    public function undoPriority(Request $r, PlanChangeService $changes): RedirectResponse
+    {
+        $this->schedulerOnly();
+        $d = $r->validate(['wo_id' => ['required', 'integer']]);
+        try {
+            $run = $changes->undoPriority((int) $d['wo_id'], $this->login());
+        } catch (\DomainException $e) {
+            return redirect($this->back())->withErrors(['plan' => $e->getMessage()]);
+        }
+        Ppic::forget();
+
+        return redirect($this->back())->with('v2_flash', tf('Priority taken back. New Draft plan :id.', ['id' => $run->run_id]));
+    }
+
     /** Take an officer placement away (the Overrides list): the engine plans the operation again. */
     public function unpin(Request $r, PlanChangeService $changes): RedirectResponse
     {
@@ -200,10 +231,11 @@ final class PpicController extends Controller
         if ($made === 0) {
             return $back->withErrors(['create' => $errors ? implode(' ', $errors) : t('No Work Order was created.')]);
         }
-        $run = $runner->run('EVENT', $this->login());
+        // Cpdel::post already asked the engines for a Draft (PlanEvents); read it instead of planning again.
+        $run = Ppic::draftRun();
         Ppic::forget();
 
-        return $back->with('v2_flash', tf(':n Work Order(s) created. Draft plan :id is ready on Production Scheduling for you to Confirm.', ['n' => $made, 'id' => $run->run_id]))
+        return $back->with('v2_flash', tf(':n Work Order(s) created. Draft plan :id is ready on Production Scheduling for you to Confirm.', ['n' => $made, 'id' => $run?->run_id ?? '-']))
             ->withErrors($errors ? ['create' => implode(' ', $errors)] : []);
     }
 

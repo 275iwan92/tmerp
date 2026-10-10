@@ -159,6 +159,21 @@ final class PlanChangeService
         return $n;
     }
 
+    /** Take the last priority given to a Work Order back (the log keeps the old value). */
+    public function undoPriority(int $woId, string $login): PrdPlanRun
+    {
+        $no = PrdWo::whereKey($woId)->value('wo_no');
+        $d = PrdPlanDecision::query()->where('event', 'PRIORITY')->where('new_value', 'like', '% '.$no)->orderByDesc('decision_id')->first();
+        if (! $d) {
+            throw new \DomainException('This Work Order has no priority to take back.');
+        }
+        $old = $d->old_value;
+        PrdWo::whereKey($woId)->update(['is_hot_job' => $old === 'HOT', 'priority' => $old === 'HOT' ? 'SUPER_URGENT' : ($old === 'MOVE_UP' ? 'URGENT' : 'NORMAL')]);
+        PrdPlanDecision::create(['actor' => $login, 'event' => 'UNDO_PRIORITY', 'old_value' => $d->new_value, 'new_value' => $old, 'reason' => 'Priority taken back']);
+
+        return $this->runner->run('EVENT', $login);
+    }
+
     /**
      * Urgent order: what would each way of giving a Work Order priority do, before anything is saved.
      * Options: nothing (baseline), Move up (ahead of the normal queue, breaks no lock), Hot job (first of all, may break a lock).

@@ -20,6 +20,9 @@ return [
     // Jobs on the same die within this many hours of each other are put one after the other (the die is mounted once). ASSUMED.
     'group_due_hours' => 48,
 
+    // A machine that already has the same die is chosen when it finishes within this many hours of the earliest machine (and the due date holds). ASSUMED.
+    'group_slack_hours' => 8,
+
     // Wash minutes are multiplied by this when the next job's inks are darker than the previous (light to dark). ASSUMED, not proven for this plant.
     'color_order_factor' => 0.7,
 

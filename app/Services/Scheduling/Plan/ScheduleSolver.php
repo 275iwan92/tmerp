@@ -39,6 +39,7 @@ final class ScheduleSolver
         private readonly float $similarWindowHours = 8.0,
         private readonly float $horizonHours = 72.0,
         private readonly float $groupDueHours = 48.0,
+        private readonly float $groupSlackHours = 8.0,
     ) {}
 
     /**
@@ -280,13 +281,30 @@ final class ScheduleSolver
             }
 
             $best = null;
+            $options = [];
             foreach ($op->candidates as $m => $cand) {
                 $m = (int) $m;
                 $slot = $this->bestSlot($op, $m, $cand, $cal->workMinute($earliest, $m), $cal);
                 // Compare real clock time: work minutes are counted on each machine's own calendar, so they are not comparable across machines.
                 $key = [$cal->timeAt($slot['end'], $m, true)->getTimestamp(), $cand['rank'], $this->machineLoad($m), $m];
+                $options[] = ['key' => $key, 'm' => $m, 'slot' => $slot, 'cand' => $cand];
                 if ($best === null || $key < $best['key']) {
                     $best = ['key' => $key, 'm' => $m, 'slot' => $slot, 'cand' => $cand];
+                }
+            }
+            // Die (mall) grouping: a machine whose last job uses the same die is preferred when it finishes within the slack of the earliest
+            // option and does not make this Work Order miss its due date.
+            $die = $op->facts['die'] ?? null;
+            if ($die !== null) {
+                $limit = $best['key'][0] + (int) ($this->groupSlackHours * 3600);
+                $same = array_filter($options, fn ($o) => ($o['slot']['prev_die'] ?? null) === $die && $o['key'][0] <= $limit
+                    && ($wo->due === null || $o['key'][0] <= $wo->due->getTimestamp() || $best['key'][0] > $wo->due->getTimestamp()));
+                if ($same) {
+                    usort($same, fn ($x, $y) => $x['key'] <=> $y['key']);
+                    if ($same[0]['m'] !== $best['m']) {
+                        $best = $same[0];
+                        $best['slot']['warnings'][] = 'Grouped on die '.$die.': it follows a job with the same die.';
+                    }
                 }
             }
 
@@ -357,7 +375,7 @@ final class ScheduleSolver
             $setup = $this->setup->between($prevFacts, $op->facts, $this->setupRules, $op->stage, $cand['setup_base']);
             $dur = $setup['total'] + $run;
             if ($i === $n || $start + $dur <= $blocks[$i]['from']) {
-                return ['start' => $start, 'end' => $start + $dur, 'run' => $run, 'setup' => $setup, 'warnings' => $warnings];
+                return ['start' => $start, 'end' => $start + $dur, 'run' => $run, 'setup' => $setup, 'warnings' => $warnings, 'prev_die' => $prevFacts['die'] ?? null];
             }
         }
 

@@ -22,6 +22,7 @@ final class PpicSettings
         'horizon_hours' => 'PPIC_HORIZON_HOURS',
         'horizon_days' => 'PPIC_HORIZON_DAYS',
         'group_due_hours' => 'PPIC_GROUP_DUE_HOURS',
+        'group_slack_hours' => 'PPIC_GROUP_SLACK_HOURS',
         'color_order_factor' => 'PPIC_COLOR_ORDER_FACTOR',
         'bottleneck_load_pct' => 'PPIC_BOTTLENECK_LOAD_PCT',
         'default_shifts' => 'PPIC_DEFAULT_SHIFTS',

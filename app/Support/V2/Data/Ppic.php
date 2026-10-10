@@ -59,6 +59,38 @@ final class Ppic
         return PrdPlanRun::query()->whereIn('status', ['DRAFT', 'CONFIRMED'])->orderByDesc('run_id')->first();
     }
 
+    /** The plan in force: the last confirmed run that was not undone. */
+    public static function lastConfirmedRun(): ?PrdPlanRun
+    {
+        return PrdPlanRun::query()->where('status', 'CONFIRMED')->orderByDesc('run_id')->first();
+    }
+
+    /**
+     * Before and after for the Draft: the numbers of the plan in force next to the numbers of the Draft.
+     *
+     * @return list<array{label: string, now: string, draft: string, better: ?bool}>
+     */
+    public static function compare(): array
+    {
+        $draft = self::draftRun();
+        if (! $draft) {
+            return [];
+        }
+        $a = (array) (self::lastConfirmedRun()?->summary['metrics'] ?? []);
+        $b = (array) ($draft->summary['metrics'] ?? []);
+        $rows = [['late', 'Work Orders forecast late', true], ['attention', 'Operations that need attention', true], ['setup_minutes', 'Setup minutes in total', true],
+            ['die_mounts', 'Die mounts', true], ['washes', 'Ink washes', true], ['moved', 'Operations that move from the plan in force', null], ['load_avg', 'Average machine load (percent)', null]];
+        $out = [];
+        foreach ($rows as [$k, $label, $lowerIsBetter]) {
+            $now = $a[$k] ?? null;
+            $new = $b[$k] ?? null;
+            $out[] = ['label' => $label, 'now' => $now === null ? '—' : (string) $now, 'draft' => $new === null ? '—' : (string) $new,
+                'better' => ($lowerIsBetter === null || $now === null || $new === null || $now == $new) ? null : ($lowerIsBetter ? $new < $now : $new > $now)];
+        }
+
+        return $out;
+    }
+
     public static function draftRun(): ?PrdPlanRun
     {
         return PrdPlanRun::query()->where('status', 'DRAFT')->orderByDesc('run_id')->first();
