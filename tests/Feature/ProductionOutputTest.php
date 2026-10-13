@@ -118,6 +118,23 @@ class ProductionOutputTest extends TestCase
         $this->assertArrayNotHasKey('empty', $picked);
     }
 
+    public function test_bad_is_split_by_reason_and_must_add_up(): void
+    {
+        $reasons = array_keys($this->svc->rejectReasons());
+        if (count($reasons) < 2) {
+            $this->markTestSkipped('Needs two REJECT reasons in prd_scrap_type.');
+        }
+        $id = $this->op['op_id'];
+        $before = DB::connection('tm2prd')->table('prd_wo_operation_output_defect as d')->join('prd_wo_operation_output as o', 'o.output_id', '=', 'd.output_id')->where('o.operation_id', $id)->count();
+        $r = $this->svc->saveResult($id, 100, 7, 'tester', [['scrap_type_id' => $reasons[0], 'qty' => 4], ['scrap_type_id' => $reasons[1], 'qty' => 3]]);
+        $this->assertSame(7.0, $r['bad']);
+        $after = DB::connection('tm2prd')->table('prd_wo_operation_output_defect as d')->join('prd_wo_operation_output as o', 'o.output_id', '=', 'd.output_id')->where('o.operation_id', $id)->count();
+        $this->assertSame($before + 2, $after);
+
+        $this->expectException(\DomainException::class);
+        $this->svc->saveResult($id, 0, 5, 'tester', [['scrap_type_id' => $reasons[0], 'qty' => 2]]);   // rows add up to 2, not 5
+    }
+
     public function test_stop_before_start_is_refused(): void
     {
         $this->expectException(\DomainException::class);

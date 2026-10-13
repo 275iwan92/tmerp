@@ -89,6 +89,7 @@ final class ProductionOutput
                 'url' => $base.'&op='.$o['op_id'],
             ])->all(),
             'urls' => ['timer' => route('v2.ppic.output.timer', $active['op_id']), 'result' => route('v2.ppic.output.result', $active['op_id'])],
+            'reasons' => $svc->rejectReasons(),
         ];
     }
 

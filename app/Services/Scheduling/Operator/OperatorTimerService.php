@@ -6,7 +6,7 @@
  * Sumber hulu  : Antrean CONFIRMED dari PPIC Planning (prd_wo_operation); durasi dari prd_operation_time_log; Stop dari prd_output_action_log.
  * Input        : Operasi WO, timer (setup | prod), aksi (play | pause | stop), qty good / bad, login pelaku.
  * Output       : prd_operation_time_log (segmen SETUP / RUN / PAUSE), prd_wo_operation (task_status, actual_start / actual_finish / actual_setup_min),
- *                prd_wo_operation_output + _defect (hasil), prd_output_action_log (satu baris per aksi, lewat OutputActionLog).
+ *                prd_wo_operation_output + _defect (hasil; BAD terpecah per alasan, satu baris defect per alasan), prd_output_action_log (satu baris per aksi, lewat OutputActionLog).
  * Dipakai oleh : PpicController::outputTimer / outputResult (layar Production Output), Ppic::shopFloor (cermin PPIC), ProductionOutput.
  * Status       : Aktif di mockup (ddt*).
  */
@@ -172,34 +172,58 @@ final class OperatorTimerService
     /**
      * SIMPAN HASIL: Good and Bad are added to what is saved (accumulative). Bad is stored as a reject line (reason "Lainnya").
      *
+     * @param  list<array{scrap_type_id: int, qty: float}>  $defects  BAD split by reason (multi row); empty = one row with the default reason
      * @return array{good: float, bad: float} totals saved for the operation
      *
-     * @throws \DomainException when both are zero or negative
+     * @throws \DomainException when both are zero or negative, or the reason rows do not add up to BAD
      */
-    public function saveResult(int $operationId, float $good, float $bad, string $operator): array
+    public function saveResult(int $operationId, float $good, float $bad, string $operator, array $defects = []): array
     {
         if ($good < 0 || $bad < 0 || ($good == 0.0 && $bad == 0.0)) {
             throw new \DomainException(t('Enter GOOD or BAD first.'));
         }
+        if ($defects !== []) {
+            $valid = array_keys($this->rejectReasons());
+            foreach ($defects as $d) {
+                if (! in_array((int) $d['scrap_type_id'], $valid, true) || (float) $d['qty'] <= 0) {
+                    throw new \DomainException(t('Choose a reason and a quantity for every BAD row.'));
+                }
+            }
+            if (abs(array_sum(array_column($defects, 'qty')) - $bad) > 0.0001) {
+                throw new \DomainException(t('The BAD reasons must add up to the BAD quantity.'));
+            }
+        }
         $op = PrdWoOperation::findOrFail($operationId);
         $prd = DB::connection('tm2prd');
 
-        $prd->transaction(function () use ($op, $good, $bad, $operator, $prd) {
+        $prd->transaction(function () use ($op, $good, $bad, $operator, $prd, $defects) {
             $before = $this->results((int) $op->operation_id);
             $outputId = $prd->table('prd_wo_operation_output')->insertGetId([
                 'operation_id' => $op->operation_id, 'qty_good' => $good, 'notes' => 'Entry (Production Output)', 'recorded_by' => $operator, 'recorded_at' => now(), 'created_at' => now(),
             ]);
             if ($bad > 0) {
-                $scrap = $prd->table('prd_scrap_type')->where('category', 'REJECT')->where('activate', 1)->orderByRaw("type_name = 'Lainnya' desc")->orderBy('type_id')->value('type_id');
-                if (! $scrap) {
-                    throw new \DomainException(t('No reject reason is set up for BAD quantity.'));
+                if ($defects === []) {
+                    $scrap = $prd->table('prd_scrap_type')->where('category', 'REJECT')->where('activate', 1)->orderByRaw("type_name = 'Lainnya' desc")->orderBy('type_id')->value('type_id');
+                    if (! $scrap) {
+                        throw new \DomainException(t('No reject reason is set up for BAD quantity.'));
+                    }
+                    $defects = [['scrap_type_id' => $scrap, 'qty' => $bad]];
                 }
-                $prd->table('prd_wo_operation_output_defect')->insert(['output_id' => $outputId, 'scrap_type_id' => $scrap, 'qty' => $bad, 'created_at' => now()]);
+                foreach ($defects as $d) {
+                    $prd->table('prd_wo_operation_output_defect')->insert(['output_id' => $outputId, 'scrap_type_id' => (int) $d['scrap_type_id'], 'qty' => (float) $d['qty'], 'created_at' => now()]);
+                }
             }
             OutputActionLog::record($op, 'SAVE_RESULT', ['before' => $before, 'add' => ['good' => $good, 'bad' => $bad], 'after' => $this->results((int) $op->operation_id)], $operator);
         });
 
         return $this->results($operationId);
+    }
+
+    /** Active REJECT reasons for the BAD pop-up. @return array<int, string> id => name */
+    public function rejectReasons(): array
+    {
+        return DB::connection('tm2prd')->table('prd_scrap_type')->where('category', 'REJECT')->where('activate', 1)->orderBy('type_name')->pluck('type_name', 'type_id')
+            ->map(fn ($n) => (string) $n)->all();
     }
 
     /** Good and bad quantity saved so far for one operation. @return array{good: float, bad: float} */

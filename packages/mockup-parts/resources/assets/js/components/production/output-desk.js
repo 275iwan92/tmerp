@@ -1,6 +1,6 @@
 /*
  * REMARK
- * Tujuan       : Perilaku layar Production Output: timer SETUP / PRODUCTION berdetak, estimasi hasil, Play / Pause / Stop, zoom Master Card, stepper dan SIMPAN HASIL.
+ * Tujuan       : Perilaku layar Production Output: timer SETUP / PRODUCTION berdetak, estimasi hasil, Play / Pause / Stop, zoom Master Card, stepper, TOTAL GOOD + BAD, pop-up alasan BAD (multi baris) dan SIMPAN HASIL.
  * Sumber hulu  : data-desk dari OutputDesk (ProductionOutput::desk); aksi POST ke v2.ppic.output.timer / output.result.
  * Input        : Klik tombol timer, stepper, SIMPAN HASIL, baris job, gambar dieline.
  * Output       : Tampilan terbarui dari jawaban server (tidak menyimpan apa pun di browser).
@@ -36,8 +36,13 @@
       this.desk = JSON.parse(this.el.dataset.desk);
       this.t = this.desk.timers; this.saved = this.desk.saved; this.at = Date.now();
       this.on('click', '[data-od-act]', (e, b) => this.act(b.closest('[data-od-timer]').dataset.odTimer, b.dataset.odAct));
-      this.on('click', '[data-od-step]', (e, b) => { const i = $(this.el, `[data-od-in="${b.dataset.odStep}"]`); i.value = Math.max(0, (+i.value || 0) + +b.dataset.d); });
+      this.on('click', '[data-od-step]', (e, b) => { const i = $(this.el, `[data-od-in="${b.dataset.odStep}"]`); i.value = Math.max(0, (+i.value || 0) + +b.dataset.d); this.total(); });
       this.on('click', '[data-od-save]', () => this.save());
+      this.on('input', '[data-od-in]', () => this.total());
+      this.on('click', '[data-od-bad-add]', () => this.badRow());
+      this.on('click', '[data-od-bad-rm]', (e, b) => { b.closest('.mp-od__badrow').remove(); this.badSum(); });
+      this.on('input', '[data-od-bad-qty]', () => this.badSum());
+      this.on('click', '[data-od-bad-ok]', () => this.confirmBad());
       this.on('click', '[data-od-job]', (e, r) => { location.href = r.dataset.odJob; });
       this.on('keydown', '[data-od-job]', (e, r) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); r.click(); } });
       const layer = $(this.el, '[data-od-zoomlayer]');
@@ -97,13 +102,53 @@
       if (j) { this.t = j.timers; this.at = Date.now(); this.draw(); }
     }
 
-    async save() {
+    // GOOD + BAD shown under the two inputs, counted live.
+    total() {
+      const g = +$(this.el, '[data-od-in="good"]').value || 0, b = +$(this.el, '[data-od-in="bad"]').value || 0;
+      $(this.el, '[data-od="total"]').textContent = num(g + b);
+    }
+
+    // SAVE RESULT: GOOD only is saved at once; BAD first asks the reason(s) in a pop-up (one row per reason, rows add up to BAD).
+    save() {
       const good = +$(this.el, '[data-od-in="good"]').value || 0, bad = +$(this.el, '[data-od-in="bad"]').value || 0;
       if (!good && !bad) return Devlib.toast(T('Enter GOOD or BAD first.'), 'warn');
-      const j = await this.post(this.desk.urls.result, {good, bad});
+      if (!bad) return this.send(good, 0, []);
+      this.pending = {good, bad};
+      $(this.el, '[data-od-bad-rows]').innerHTML = '';
+      $(this.el, '[data-od="bad-want"]').textContent = num(bad);
+      this.badRow(bad);
+      $(this.el, '[data-dl-modal-id="od-bad"]').classList.add('is-on');
+    }
+
+    badRow(qty = 0) {
+      const opts = Object.entries(this.desk.reasons || {}).map(([id, n]) => `<option value="${id}">${Devlib.h.esc(n)}</option>`).join('');
+      const row = document.createElement('div');
+      row.className = 'mp-od__badrow';
+      row.innerHTML = `<select data-od-bad-reason>${opts}</select><input type="number" min="0" step="any" inputmode="numeric" data-od-bad-qty value="${qty || ''}" placeholder="${T('Qty')}"><button type="button" class="dl-btn dl-btn--secondary dl-btn--sm" data-od-bad-rm aria-label="${T('Remove')}">✕</button>`;
+      $(this.el, '[data-od-bad-rows]').appendChild(row);
+      this.badSum();
+    }
+
+    badSum() {
+      const sum = $$(this.el, '[data-od-bad-qty]').reduce((a, i) => a + (+i.value || 0), 0);
+      $(this.el, '[data-od="bad-total"]').textContent = num(sum);
+      return sum;
+    }
+
+    confirmBad() {
+      const rows = $$(this.el, '.mp-od__badrow').map(r => ({scrap_type_id: +$(r, '[data-od-bad-reason]').value, qty: +$(r, '[data-od-bad-qty]').value || 0}));
+      if (!rows.length || rows.some(r => !r.scrap_type_id || r.qty <= 0)) return Devlib.toast(T('Choose a reason and a quantity for every BAD row.'), 'warn');
+      if (Math.abs(this.badSum() - this.pending.bad) > 0.0001) return Devlib.toast(T('The BAD reasons must add up to the BAD quantity.'), 'warn');
+      $(this.el, '[data-dl-modal-id="od-bad"]').classList.remove('is-on');
+      this.send(this.pending.good, this.pending.bad, rows);
+    }
+
+    async send(good, bad, defects) {
+      const j = await this.post(this.desk.urls.result, {good, bad, defects});
       if (!j) return;
       this.saved = j.saved;
       $$(this.el, '[data-od-in]').forEach(i => { i.value = 0; });
+      this.total();
       Devlib.toast(T('Saved: +:g good, +:b bad for :j.').replace(':g', num(good)).replace(':b', num(bad)).replace(':j', this.desk.card.info[0][1]), 'success');
       this.draw();
     }

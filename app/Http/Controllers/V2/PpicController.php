@@ -988,9 +988,10 @@ final class PpicController extends Controller
     /** SIMPAN HASIL: GOOD and BAD are added to what is saved for the operation. */
     public function outputResult(Request $r, int $op, OperatorTimerService $timer): JsonResponse
     {
-        $d = $r->validate(['good' => ['nullable', 'numeric', 'min:0'], 'bad' => ['nullable', 'numeric', 'min:0']]);
+        $d = $r->validate(['good' => ['nullable', 'numeric', 'min:0'], 'bad' => ['nullable', 'numeric', 'min:0'],
+            'defects' => ['nullable', 'array'], 'defects.*.scrap_type_id' => ['required', 'integer'], 'defects.*.qty' => ['required', 'numeric', 'gt:0']]);
         try {
-            $saved = $timer->saveResult($op, (float) ($d['good'] ?? 0), (float) ($d['bad'] ?? 0), $this->login());
+            $saved = $timer->saveResult($op, (float) ($d['good'] ?? 0), (float) ($d['bad'] ?? 0), $this->login(), $d['defects'] ?? []);
         } catch (\DomainException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
