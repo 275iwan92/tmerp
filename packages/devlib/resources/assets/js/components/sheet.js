@@ -2,7 +2,7 @@
  * REMARK
  * Tujuan       : Perilaku grid sel: edit, undo, save ke server, sel terhitung (links), tanya Reason sekali saat Save (reasonOnSave).
  * Sumber hulu  : config JSON dari Sheet.php.
- * Input        : Edit sel (teks, angka, select, date, time, datetime = "dd-Mmm-yyyy hh:mm" disimpan ISO), klik Save/Undo, drag baris, nomor baris (memilih baris untuk DELETE), tombol ADD / DELETE / RESET (resetUrl: dry run lalu konfirmasi dengan jumlah); event dl:plan-sync dari Gantt (kolom start/finish/machine ikut posisi bar).
+ * Input        : Edit sel (teks, angka, select, date, time, datetime = "dd-Mmm-yyyy hh:mm" disimpan ISO, tombol kalender membuka pop-up tanggal + jam seperti x-dl::field.date-time), klik Save/Undo, drag baris, nomor baris (memilih baris untuk DELETE), tombol ADD / DELETE / RESET (resetUrl: dry run lalu konfirmasi dengan jumlah); event dl:plan-sync dari Gantt (kolom start/finish/machine ikut posisi bar).
  * Output       : POST saveUrl {changed, reason}; render ulang dari baris balasan.
  * Dipakai oleh : x-dl::sheet dan x-dl::lookup-grid.
  * Status       : Aktif (DevLib).
@@ -166,7 +166,7 @@
       this.el.dlSheet = {get data() { return self.data; }, render: this.render, apply: this.apply, get cur() { return self.cur; }, set cur(v) { self.cur = v; self.anchor = null; self.render(); }};
       this.render();
     }
-    isPick(c) { return c.type === 'date' || c.type === 'time' || this.num(c); }
+    isPick(c) { return c.type === 'date' || c.type === 'time' || c.type === 'datetime' || this.num(c); }
 
     // Pemilih kecil utk sel aktif (tampilan sama x-dl::field.date / field.time): date = kalender, time = Jam + Menit (5 menit).
     // Panel fixed di body supaya tidak terpotong scroll lembar.
@@ -185,6 +185,32 @@
         p.innerHTML = `<div class="dl-pick__head">${esc(T('s_pick_time'))}</div><div class="dl-pick__time"><label>${esc(T('s_hour'))} <select data-h>${Array.from({length: 24}, (_, i) => `<option ${i === h0 ? 'selected' : ''}>${pad(i)}</option>`).join('')}</select></label><b>:</b><label>${esc(T('s_minute'))} <select data-m>${Array.from({length: 12}, (_, i) => `<option ${i * 5 === Math.round(m0 / 5) * 5 % 60 ? 'selected' : ''}>${pad(i * 5)}</option>`).join('')}</select></label></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-a>Apply</button></div>`;
         p.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if ('x' in b.dataset) pick(''); else if ('a' in b.dataset) pick(`${$(p, '[data-h]').value}:${$(p, '[data-m]').value}`); });
         p.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $(p, '[data-a]').click(); } });
+      } else if (col.type === 'datetime') {
+        // Tanggal + jam dalam satu pop-up (tampilan sama x-dl::field.date-time): kalender, Jam : Menit, ringkasan, Clear / Apply.
+        const MON = NUM.months, dt = DlDateTime.of(cur), sel0 = dt?.date.iso() ?? null;
+        let sel = sel0, [h0, m0] = dt ? [dt.time.display().slice(0, 2), dt.time.display().slice(3, 5)] : ['08', '00'];
+        const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        const view = sel ? new Date(sel + 'T00:00') : new Date(); view.setDate(1);
+        const opts = (n, v) => Array.from({length: n}, (_, i) => `<option ${pad(i) === v ? 'selected' : ''}>${pad(i)}</option>`).join('');
+        p.className = 'dl-pick__panel is-open dl-sheet__calpanel';
+        p.innerHTML = `<div class="dl-pick__head">${esc(T('lbl.034'))}</div><div class="dl-pick__nav"><button type="button" data-p>&lt;</button><span data-t></span><button type="button" data-n>&gt;</button></div><div class="dl-cal dl-cal--names">${Devlib.h.dow2().map(d => '<div>' + d + '</div>').join('')}</div><div class="dl-cal" data-d></div>`
+          + `<div class="dl-pick__time"><label>${esc(T('s_hour'))} <select data-h>${opts(24, h0)}</select></label><b>:</b><label>${esc(T('s_minute'))} <select data-m>${opts(60, m0)}</select></label></div><div class="dl-pick__preview" data-pv></div>`
+          + '<div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-a>Apply</button></div>';
+        const preview = () => { $(p, '[data-pv]').textContent = T('fd_selected') + ': ' + (sel ? DlDateTime.of(`${sel} ${$(p, '[data-h]').value}:${$(p, '[data-m]').value}`)?.display() ?? '-' : '-'); };
+        const draw = () => {
+          $(p, '[data-t]').textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
+          let h = '<div></div>'.repeat(view.getDay()); const n = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+          for (let d = 1; d <= n; d++) { const v = iso(new Date(view.getFullYear(), view.getMonth(), d)); h += `<button type="button" data-v="${v}" class="${v === sel ? 'is-sel' : ''}">${d}</button>`; }
+          $(p, '[data-d]').innerHTML = h; preview();
+        };
+        p.addEventListener('click', e => {
+          const b = e.target.closest('button'); if (!b) return;
+          if (b.dataset.v) { sel = b.dataset.v; draw(); } else if ('p' in b.dataset) { view.setMonth(view.getMonth() - 1); draw(); } else if ('n' in b.dataset) { view.setMonth(view.getMonth() + 1); draw(); }
+          else if ('x' in b.dataset) pick(''); else if ('a' in b.dataset) pick(`${sel ?? iso(new Date())} ${$(p, '[data-h]').value}:${$(p, '[data-m]').value}:00`);
+        });
+        p.addEventListener('change', preview);
+        p.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $(p, '[data-a]').click(); } });
+        draw();
       } else {
         const MON = NUM.months;
         const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -300,7 +326,7 @@
       this.countStats();
       const R = this.rng();
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-        + this.data.map((r, i) => this.hide(r) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.num(c) && !this.int(c) ? 'is-dec' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''} ${c.emptyWarn && (v === '' || v == null) ? 'is-empty' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? (this.int(c) ? `<span class="dl-sheet__spin"><button type="button" data-s-spin="1" tabindex="-1">▲</button><button type="button" data-s-spin="-1" tabindex="-1">▼</button></span>` : this.num(c) ? `<button type="button" class="dl-sheet__cal dl-sheet__dec" data-s-dec tabindex="-1" title="${esc(T('nt_tip'))}">${this.decLabel(c)}</button>` : `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${esc(T(c.type === 'date' ? 's_tip_date' : 's_tip_time'))}"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : 'fa-regular fa-clock'}"></i></button>`) : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="' + esc(T('s_fill_tip')) + '"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+        + this.data.map((r, i) => this.hide(r) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.num(c) && !this.int(c) ? 'is-dec' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''} ${c.emptyWarn && (v === '' || v == null) ? 'is-empty' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? (this.int(c) ? `<span class="dl-sheet__spin"><button type="button" data-s-spin="1" tabindex="-1">▲</button><button type="button" data-s-spin="-1" tabindex="-1">▼</button></span>` : this.num(c) ? `<button type="button" class="dl-sheet__cal dl-sheet__dec" data-s-dec tabindex="-1" title="${esc(T('nt_tip'))}">${this.decLabel(c)}</button>` : `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${esc(T(c.type === 'time' ? 's_tip_time' : 's_tip_date'))}"><i class="${c.type === 'time' ? 'fa-regular fa-clock' : 'fa-regular fa-calendar'}"></i></button>`) : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="' + esc(T('s_fill_tip')) + '"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
       if (sv) sv.disabled = !changed.length;
       // DELETE (server) is enabled only after a row number was clicked (a whole row is chosen), never by a plain cell click
