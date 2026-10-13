@@ -53,11 +53,11 @@
         </x-dl::action-bar>
     </x-dl::card>
 
-    <div class="dl-grid__stats">
+    <x-dl::kpi-row>
         @foreach (Bank::kpis($stats, $account) as $k)
             <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous']" :good-when="$k['goodWhen']" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
         @endforeach
-    </div>
+    </x-dl::kpi-row>
 
     <x-dl::flow title="Bank Reconciliation Flow" :steps="Bank::flow($stats)" :source="$src" />
 

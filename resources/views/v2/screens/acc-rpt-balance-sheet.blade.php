@@ -30,11 +30,11 @@
     </x-dl::action-form>
 </x-dl::card>
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     @foreach (FS::balanceSheetKpis($bs, $prior) as $k)
         <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous']" :good-when="$k['goodWhen']" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
     @endforeach
-</div>
+</x-dl::kpi-row>
 
 <x-dl::statement title="Statement of Financial Position" :subtitle="raw(tf('As at :date · IDR', ['date' => Locale::d($asOf)]))" :rows="FS::balanceSheetRows($bs)" :source="$src" />
 

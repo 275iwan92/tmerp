@@ -46,25 +46,25 @@
 </x-dl::card>
 
 <x-dl::card title="Indicators" description="The lamp compares each figure with its target (Settings, Constants).">
-    <div class="dl-grid__stats">
+    <x-dl::kpi-row>
         <x-dl::kpi label="Availability" :value="$k['availability'] ?? '—'" format="percent" :tone="$lamp($k['availability'], $t['availability'], true)" icon="fa-power-off" :target="$t['availability']" :note="raw(tf('Target ≥ :n %', ['n' => $t['availability']]))" />
         <x-dl::kpi label="MTBF" :value="$k['mtbf'] === null ? '—' : $k['mtbf'].' h'" :tone="$lamp($k['mtbf'], $t['mtbf'], true)" icon="fa-heart-pulse" :note="raw(tf('Target ≥ :n h', ['n' => $t['mtbf']]))" />
         <x-dl::kpi label="MTTR" :value="$k['mttr'] === null ? '—' : $k['mttr'].' h'" :tone="$lamp($k['mttr'], $t['mttr'], false)" icon="fa-stopwatch" :note="raw(tf('Target ≤ :n h', ['n' => $t['mttr']]))" />
         <x-dl::kpi label="PM Compliance" :value="$k['pm_compliance'] ?? '—'" format="percent" :tone="$lamp($k['pm_compliance'], $t['pm_compliance'], true)" icon="fa-calendar-check" :target="$t['pm_compliance']" :note="raw(tf('Target ≥ :n %', ['n' => $t['pm_compliance']]))" />
         <x-dl::kpi label="Planned Work" :value="$k['planned_work'] ?? '—'" format="percent" :tone="$lamp($k['planned_work'], $t['planned_work'], true)" icon="fa-list-check" :target="$t['planned_work']" :note="raw(tf('Target ≥ :n %', ['n' => $t['planned_work']]))" />
         <x-dl::kpi label="Backlog" :value="$k['backlog_weeks'] === null ? '—' : $k['backlog_weeks'].' wk'" :tone="$lamp($k['backlog_weeks'], $t['backlog_max'], false)" icon="fa-inbox" :note="raw(tf('Target ≤ :n wk', ['n' => $t['backlog_max']]))" />
-    </div>
+    </x-dl::kpi-row>
 </x-dl::card>
 
 <x-dl::card title="Needs action today" description="Counts, no target. Open the list to act.">
-    <div class="dl-grid__stats">
+    <x-dl::kpi-row>
         <x-dl::kpi label="Machines Down Now" :value="$act['down']['n']" :tone="$act['down']['n'] ? 'danger' : 'success'" icon="fa-triangle-exclamation" :note="raw($act['down']['hint'])" />
         <x-dl::kpi label="Open Requests" :value="$act['requests']['n']" :tone="$act['requests']['n'] ? 'warn' : 'success'" icon="fa-inbox" :note="raw($act['requests']['hint'])" />
         <x-dl::kpi label="Overdue PM" :value="$act['overdue_pm']['n']" :tone="$act['overdue_pm']['n'] ? 'danger' : 'success'" icon="fa-calendar-xmark" :note="raw($act['overdue_pm']['hint'])" />
         <x-dl::kpi label="In Progress" :value="$act['in_progress']['n']" tone="accent" icon="fa-screwdriver-wrench" :note="raw($act['in_progress']['hint'])" />
         <x-dl::kpi label="Waiting Part" :value="$act['waiting']['n']" :tone="$act['waiting']['n'] ? 'warn' : 'success'" icon="fa-hourglass-half" :note="raw($act['waiting']['hint'])" />
         <x-dl::kpi label="Critical Parts Below Min" :value="$act['parts_low']['n']" :tone="$act['parts_low']['n'] ? 'danger' : 'success'" icon="fa-boxes-packing" :note="raw($act['parts_low']['hint'])" />
-    </div>
+    </x-dl::kpi-row>
     <x-dl::action-bar>
         <x-dl::button variant="secondary" size="sm" icon="fa-inbox" label="Maintenance Request" :href="route('v2.screen', 'maintenance-request')" />
         <x-dl::button variant="secondary" size="sm" icon="fa-screwdriver-wrench" label="Breakdown Maintenance Order" :href="route('v2.screen', 'maintenance-bmo')" />

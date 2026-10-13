@@ -44,11 +44,11 @@
     @endif
 </x-dl::card>
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     @foreach (Closing::kpis($period, $completion, $lastClosed) as $k)
         <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous']" :good-when="$k['goodWhen']" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
     @endforeach
-</div>
+</x-dl::kpi-row>
 
 <x-dl::flow title="Month-End Close Flow" :steps="Closing::flow()" :source="$src" />
 

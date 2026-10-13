@@ -17,11 +17,11 @@
     <x-dl::action-bar><x-dl::button variant="secondary" icon="fa-download" label="Export Rules" :href="route('v2.acc.engine.rules-csv')" /></x-dl::action-bar>
 </x-dl::card>
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     @foreach (Desk::engineKpis($m) as $k)
         <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous']" :good-when="$k['goodWhen']" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
     @endforeach
-</div>
+</x-dl::kpi-row>
 
 <x-dl::flow title="Canonical Accounting Posting Flow" :steps="Desk::postingFlow($m)" :source="$src" />
 

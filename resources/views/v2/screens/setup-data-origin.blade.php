@@ -28,11 +28,11 @@
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     <x-dl::stat-box label="LIVE rows" :value="$n($totals['LIVE'])" tone="success" />
     <x-dl::stat-box label="DUMMY rows" :value="$n($totals['DUMMY'])" tone="warn" />
     <x-dl::stat-box label="LEGACY rows" :value="$n($totals['LEGACY'])" tone="accent" />
-</div>
+</x-dl::kpi-row>
 
 <x-dl::card title="Data Display" description="Hiding does not delete data. It applies to every screen that reads through the application models.">
     <x-dl::action-form action="{{ $act('settings') }}">

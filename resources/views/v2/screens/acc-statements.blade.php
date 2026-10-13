@@ -25,11 +25,11 @@
     </x-dl::action-form>
 </x-dl::card>
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     @foreach (FS::summaryKpis($bs, $is, FS::priorYearIncome($asOf)) as $k)
         <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous']" :good-when="$k['goodWhen']" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
     @endforeach
-</div>
+</x-dl::kpi-row>
 
 <x-dl::statement title="Balance Sheet" :subtitle="raw(tf('Statement of financial position as at :date.', ['date' => Locale::d($asOf)]))" :rows="$bsRows" :source="$src" />
 <x-dl::action-bar><x-dl::button variant="secondary" size="sm" icon="fa-arrow-right" label="Open report" :href="route('v2.screen', 'acc-rpt-balance-sheet').'?as_of='.$asOf" /></x-dl::action-bar>

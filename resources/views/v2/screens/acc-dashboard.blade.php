@@ -21,11 +21,11 @@
     </x-dl::action-form>
 </x-dl::card>
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     @foreach (Desk::dashboardKpis($h) as $k)
         <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous']" :good-when="$k['goodWhen']" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
     @endforeach
-</div>
+</x-dl::kpi-row>
 
 @if (array_filter($trend['series'][0]['data']))
     <x-dl::chart type="area" title="Cash Flow Overview" subtitle="Monthly operating cash movement — last 12 months" format="money" :labels="$trend['labels']" :series="$trend['series']" :source="$src" />

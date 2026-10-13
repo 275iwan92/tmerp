@@ -31,11 +31,11 @@
     <x-dl::alert tone="warn" :message="raw(tf('Attention: prices on delivery notes were only recorded by the old system from mid-2023. For :year the Shipment figures will look like 0 — use the Incoming PO basis for this period.', ['year' => $es->year]))" />
 @endif
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     @foreach ($es->kpis() as $k)
         <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous'] ?? null" :good-when="$k['goodWhen'] ?? 'up'" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
     @endforeach
-</div>
+</x-dl::kpi-row>
 
 <x-dl::chart type="area" :title="raw(tf('Monthly revenue :year vs :prev', ['year' => $es->year, 'prev' => $es->year - 1]))" :subtitle="raw(t('Basis').': '.t(ExecutiveSummary::BASES[$es->basis]))"
     format="money" :labels="$trend['labels']" :series="$trend['series']" :source="$src" />

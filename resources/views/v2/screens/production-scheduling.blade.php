@@ -30,13 +30,13 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 <x-dl::card title="PPIC Workspace" description="The engines plan automatically and leave a Draft. Review what needs attention, give priority if needed, then Confirm the plan.">
-    <div class="dl-grid__stats">
+    <x-dl::kpi-row>
         <x-dl::stat-box label="Operations" :value="(string) $stats['ops']" tone="accent" :sub="$stats['planned'].' planned'" />
         <x-dl::stat-box label="Ready, not scheduled" :value="(string) $stats['ready']" tone="success" />
         <x-dl::stat-box label="Not ready" :value="(string) $stats['not_ready']" tone="warn" sub="material or tooling" />
         <x-dl::stat-box label="Needs attention" :value="(string) $stats['exceptions']" tone="danger" sub="from the last plan" />
         <x-dl::stat-box label="Last plan" :value="$run ? '#'.$run->run_id : '—'" tone="info" :sub="$run ? raw($run->status.' · '.\Devlib\Locale::dt($run->created_at)) : 'No plan yet'" />
-    </div>
+    </x-dl::kpi-row>
     <x-dl::action-bar>
         <x-dl::action-form action="{{ route('v2.ppic.run') }}"><x-dl::button size="sm" variant="secondary" icon="fa-wand-magic-sparkles" label="Re-plan" type="submit" /></x-dl::action-form>
         @if ($stats['draft'])

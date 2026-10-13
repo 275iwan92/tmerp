@@ -43,11 +43,11 @@
     </x-dl::action-bar>
 </x-dl::card>
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     @foreach (Tax::kpis($current, $period) as $k)
         <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous']" :good-when="$k['goodWhen']" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
     @endforeach
-</div>
+</x-dl::kpi-row>
 
 <x-dl::flow title="Tax-to-Accounting Flow" :steps="Tax::flow()" :source="$src" />
 

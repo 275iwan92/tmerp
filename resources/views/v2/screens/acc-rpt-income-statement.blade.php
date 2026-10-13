@@ -27,11 +27,11 @@
     </x-dl::action-form>
 </x-dl::card>
 
-<div class="dl-grid__stats">
+<x-dl::kpi-row>
     @foreach (FS::incomeStatementKpis($is, $from, $to) as $k)
         <x-dl::kpi :label="$k['label']" :value="$k['value']" :format="$k['format']" :previous="$k['previous']" :good-when="$k['goodWhen']" :icon="$k['icon']" :tone="$k['tone']" :note="$k['note']" />
     @endforeach
-</div>
+</x-dl::kpi-row>
 
 <x-dl::statement title="Statement of Profit or Loss" :subtitle="raw(Locale::d($from).' — '.Locale::d($to).' · IDR')" :rows="FS::incomeStatementRows($is)" :source="$src" />
 
