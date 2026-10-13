@@ -39,7 +39,7 @@ class DevlibOnlyRatchetTest extends TestCase
         'v1_component' => 0,      // x-ui.* / x-form.* / x-grid.* / livewire di layar v2
         'raw_tag' => 141,           // div / span / p / ul / li / h1-h6 / a / img / svg ... di layar (bukan objek DevLib)
         'color_literal' => 5,     // #hex / rgb() / hsl() di markup layar (warna = token DevLib)
-        'local_class' => 70,       // class="..." selain dl-* dan ikon fa-* di layar
+        'local_class' => 35,       // class="..." selain dl-* dan ikon fa-* di layar
     ];
 
     // Warna literal di CSS lokal (di luar definisi token --x:). Berkas yang tidak terdaftar = baseline 0.
