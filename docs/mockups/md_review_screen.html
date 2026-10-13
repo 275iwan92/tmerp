@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Mockup MD Review</title>
+<style>
+:root{--bg:#f4f6f5;--card:#fff;--fg:#1d2420;--mut:#5d6a63;--line:#dde2dd;--acc:#2c5a7a;--accbg:#e2edf4;--yes:#1f7a4d;--yesbg:#e1f2e8;--sum:#9a6200;--sumbg:#fbefd2;--no:#b3341f;--nobg:#fbe3de}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.45 system-ui,"Segoe UI",sans-serif;width:1280px}
+.crumb{padding:10px 18px;color:var(--mut);font-size:12px;border-bottom:1px solid var(--line);background:var(--card)}
+.head{display:flex;align-items:center;gap:12px;padding:12px 18px;background:var(--card);border-bottom:1px solid var(--line)}
+.head h1{font-size:17px;margin:0}.head .sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);padding:7px 14px;border-radius:6px;font:inherit}
+.btn.p{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.note{margin:12px 18px 0;padding:8px 12px;background:var(--accbg);border-left:3px solid var(--acc);border-radius:4px;color:var(--acc)}
+.filters{display:flex;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line);margin-top:8px}
+.f{padding-bottom:5px;color:var(--mut)}.f.on{color:var(--acc);font-weight:600;border-bottom:2px solid var(--acc)}.f b{font-weight:400;margin-left:4px}
+.search{margin-left:auto;border:1px solid var(--line);border-radius:6px;padding:5px 10px;color:var(--mut);background:var(--card);width:240px}
+table{width:calc(100% - 36px);margin:10px 18px;border-collapse:collapse;background:var(--card)}
+th{text-align:left;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.mono{font-family:Consolas,monospace;font-size:12px}.mut{color:var(--mut);font-size:12px}
+.tag{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px}
+.BUANG{background:var(--nobg);color:var(--no)}.RAGU{background:var(--accbg);color:var(--acc)}.RINGKAS{background:var(--sumbg);color:var(--sum)}.PERTAHANKAN{background:var(--yesbg);color:var(--yes)}
+.seg{display:flex;gap:4px}.seg span{border:1px solid var(--line);padding:4px 9px;border-radius:5px;color:var(--mut);font-weight:600;font-size:12px}
+.seg .y{background:var(--yesbg);border-color:var(--yes);color:var(--yes)}.seg .r{background:var(--sumbg);border-color:var(--sum);color:var(--sum)}.seg .n{background:var(--nobg);border-color:var(--no);color:var(--no)}
+.seg .d{border-style:dashed}
+.foot{padding:6px 18px 16px;color:var(--mut);font-size:12px}
+</style></head><body>
+<div class="crumb">Setup &rsaquo; Others &rsaquo; <b>MD Review</b></div>
+<div class="head">
+  <h1>MD Review</h1><span class="mut">193 berkas .md &middot; diputuskan Jo 4 &middot; menunggu proses 4</span>
+  <span class="sp"></span>
+  <button class="btn">Setujui usulan untuk yang tampil</button>
+  <button class="btn">Salin keputusan</button>
+  <button class="btn p">Proses ke Claude</button>
+</div>
+<div class="note">Permintaan terakhir: <b>REQUESTED</b> 13-Okt-2026 14:32 oleh Jo, 4 keputusan (2 TIDAK, 1 RINGKAS, 1 YA). Claude membaca antrean ini di awal sesi lalu memproses; berkas tidak dihapus sebelum Jo menyetujui hasilnya.</div>
+<div class="filters">
+  <span class="f on">Semua<b>193</b></span><span class="f">Belum diputuskan<b>189</b></span><span class="f">Usulan buang<b>29</b></span><span class="f">Ragu<b>23</b></span><span class="f">Usulan ringkas<b>30</b></span><span class="f">Usulan pertahankan<b>111</b></span>
+  <span class="search">Cari berkas atau alasan</span>
+</div>
+<table>
+<tr><th>Berkas</th><th>Baris</th><th>Ubah terakhir</th><th>Usulan</th><th>Alasan</th><th>Keputusan</th></tr>
+<tr><td class="mono">docs/ringkasanstatus.md</td><td>297</td><td>05-Okt-2026</td><td><span class="tag BUANG">BUANG</span></td><td>Menandai diri BASI (snapshot 16-Sep, era v1); diganti backlog + LOG_JOB_DONE</td><td><div class="seg"><span>YA</span><span>RINGKAS</span><span class="n">TIDAK</span></div></td></tr>
+<tr><td class="mono">docs/usang_untuk_dipindah/themestandard.md</td><td>197</td><td>07-Okt-2026</td><td><span class="tag BUANG">BUANG</span></td><td>Sudah dipindah ke folder usang; menunggu OK Jo untuk hapus</td><td><div class="seg"><span>YA</span><span>RINGKAS</span><span class="n d">TIDAK</span></div></td></tr>
+<tr><td class="mono">docs/md_for_systems/production_scheduling_tier1.md</td><td>783</td><td>22-Sep-2026</td><td><span class="tag RAGU">RAGU</span></td><td>PPIC lama (27-Agu); bandingkan dengan autopilot terbaru sebelum dipakai</td><td><div class="seg"><span>YA</span><span class="r">RINGKAS</span><span>TIDAK</span></div></td></tr>
+<tr><td class="mono">docs/globaluserrules.md</td><td>843</td><td>08-Okt-2026</td><td><span class="tag RINGKAS">RINGKAS</span></td><td>Sudah ada versi ringkas 111 baris di docs/ringkas</td><td><div class="seg"><span>YA</span><span class="r d">RINGKAS</span><span>TIDAK</span></div></td></tr>
+<tr><td class="mono">docs/flow_product_master.md</td><td>174</td><td>01-Okt-2026</td><td><span class="tag PERTAHANKAN">PERTAHANKAN</span></td><td>Alur Inquiry &rarr; Quotation WIN &rarr; Master Product (inti)</td><td><div class="seg"><span class="y">YA</span><span>RINGKAS</span><span>TIDAK</span></div></td></tr>
+</table>
+<div class="foot">Garis putus-putus = usulan Claude, belum diputuskan Jo. Setiap klik menyimpan ke <span class="mono">sys_md_review.decision, decided_by, decided_at</span>. Tombol <b>Proses ke Claude</b> menulis satu baris ke <span class="mono">sys_review_request</span> (scope, jumlah keputusan, waktu, pemohon, status REQUESTED).</div>
+</body></html>

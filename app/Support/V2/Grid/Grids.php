@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Daftar semua grid DB v2 (turunan DbGrid); menu menunjuk ke sini lewat sys_app_menu.target = 'v2:<slug>'.
+ * Sumber hulu  : Kelas grid per modul di App\Support\V2\Grid\*.
+ * Input        : slug layar.
+ * Output       : Objek grid (find / screen / all).
+ * Dipakai oleh : routes/v2.php, AppMenu, layar v2.screens._dbgrid dan layar kustom turunan grid.
+ * Status       : Aktif.
+ */
+
 namespace App\Support\V2\Grid;
 
 // Daftar semua grid DB (turunan DbGrid). Menu v2 menunjuk ke sini lewat sys_app_menu.target = 'v2:<slug>'.
@@ -125,6 +135,8 @@ final class Grids
         Setup\BoardTemplateLookup::class,
         Setup\KpiTargetLookup::class,
         Setup\DailyQuoteLookup::class,
+        Setup\MdReviewLookup::class,
+        Setup\StoryReviewLookup::class,
         Setup\LanguageLookup::class,
         Setup\DictionaryGroupLookup::class,
         Inv\RmStockInGrid::class,

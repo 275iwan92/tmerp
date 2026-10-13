@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Pintu rute web: PWA, login, portal kandidat, dan pemuatan rute v2 (v2*.php) di dalam grup auth.
+ * Sumber hulu  : Komponen Livewire halaman dan file rute v2 per modul (v2_review.php = tombol Process with Claude di Setup > Others).
+ * Input        : Permintaan HTTP.
+ * Output       : Halaman Livewire, rute v2, JSON.
+ * Dipakai oleh : bootstrap/app.php.
+ * Status       : Aktif.
+ */
+
 use App\Models\Sys\SysDocShare;
 use App\Services\Portal\CandidateAuthService;
 use App\Support\Branding\Brand;
@@ -128,6 +138,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
         require __DIR__.'/v2_valuation.php';
+        require __DIR__.'/v2_review.php';
 
         Route::middleware('module:SALES')->group(function () {
             Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');

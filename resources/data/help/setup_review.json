@@ -1,0 +1,124 @@
+[
+  {
+    "key": "setup-md-review",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "MD Review",
+    "purpose": {
+      "en": "Review every .md document of the project: keep it, condense it or discard it. Your decisions are queued for Claude; nothing is deleted from this screen.",
+      "id": "Tinjau setiap dokumen .md proyek: pertahankan, ringkas, atau buang. Keputusan Anda diantre untuk Claude; tidak ada yang dihapus dari layar ini."
+    },
+    "keywords": "md review, review md, berkas md, dokumen usang, ringkas dokumen, buang dokumen, markdown, tinjauan berkas",
+    "steps": [
+      {
+        "en": "Open MD Review. Each row is one document with Claude's proposal and the reason.",
+        "id": "Buka MD Review. Tiap baris satu dokumen beserta usulan Claude dan alasannya."
+      },
+      {
+        "en": "Use the boxes on top or Search to narrow the list, for example Proposed discard.",
+        "id": "Pakai kotak di atas atau Search untuk menyaring daftar, misalnya Proposed discard."
+      },
+      {
+        "en": "Pick Keep, Condense or Discard in the Decision column. Each choice is saved at once with your name and the time.",
+        "id": "Pilih Keep, Condense atau Discard di kolom Decision. Tiap pilihan langsung tersimpan dengan nama dan waktu Anda."
+      },
+      {
+        "en": "Click Process with Claude in the header. Claude reads the queue at the start of a session and applies the decisions; you approve the result.",
+        "id": "Klik Process with Claude di header. Claude membaca antrean di awal sesi dan menerapkan keputusan; Anda menyetujui hasilnya."
+      }
+    ],
+    "fields": [
+      {
+        "label": "File",
+        "en": "Path of the document in the repository.",
+        "id": "Lokasi dokumen di repositori."
+      },
+      {
+        "label": "Proposal",
+        "en": "Claude's suggestion: Keep, Condense, Unsure or Discard.",
+        "id": "Saran Claude: Keep, Condense, Unsure atau Discard."
+      },
+      {
+        "label": "Decision",
+        "en": "Your choice: Keep, Condense or Discard. Empty means not decided yet.",
+        "id": "Pilihan Anda: Keep, Condense atau Discard. Kosong berarti belum diputuskan."
+      },
+      {
+        "label": "Reason",
+        "en": "Why Claude made that proposal.",
+        "id": "Alasan Claude membuat usulan itu."
+      },
+      {
+        "label": "Lines",
+        "en": "Number of lines of the document.",
+        "id": "Jumlah baris dokumen."
+      },
+      {
+        "label": "Last changed",
+        "en": "Date of the last commit that changed the document.",
+        "id": "Tanggal commit terakhir yang mengubah dokumen."
+      },
+      {
+        "label": "References",
+        "en": "How many other files mention this document by name.",
+        "id": "Berapa berkas lain yang menyebut nama dokumen ini."
+      }
+    ]
+  },
+  {
+    "key": "setup-story-review",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Old Stories Review",
+    "purpose": {
+      "en": "Review your own earlier messages about the ERP and mark which ones are your story to adopt into the documents. Decisions are queued for Claude.",
+      "id": "Tinjau pesan-pesan lama Anda tentang ERP dan tandai mana yang cerita Anda untuk diadopsi ke dokumen. Keputusan diantre untuk Claude."
+    },
+    "keywords": "cerita lama, old stories, review cerita, pesan lama, riwayat sesi, adopsi cerita, keputusan lama",
+    "steps": [
+      {
+        "en": "Open Old Stories Review. The Decide tab lists each message with its date and the start of the text.",
+        "id": "Buka Old Stories Review. Tab Decide menampilkan tiap pesan dengan tanggal dan awal teksnya."
+      },
+      {
+        "en": "Open the Full text tab to read a whole message, or use Search to find a word.",
+        "id": "Buka tab Full text untuk membaca pesan utuh, atau pakai Search untuk mencari kata."
+      },
+      {
+        "en": "Pick Adopt (this is my story), Later or Ignore in the Decision column. Each choice is saved at once.",
+        "id": "Pilih Adopt (ini cerita saya), Later atau Ignore di kolom Decision. Tiap pilihan langsung tersimpan."
+      },
+      {
+        "en": "Click Process with Claude in the header. Claude writes the adopted stories into the right document and you approve the result.",
+        "id": "Klik Process with Claude di header. Claude menulis cerita yang diadopsi ke dokumen yang benar dan Anda menyetujui hasilnya."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Message date",
+        "en": "Date the message was written.",
+        "id": "Tanggal pesan ditulis."
+      },
+      {
+        "label": "Decision",
+        "en": "Your choice: Adopt, Later or Ignore. Empty means not decided yet.",
+        "id": "Pilihan Anda: Adopt, Later atau Ignore. Kosong berarti belum diputuskan."
+      },
+      {
+        "label": "Message",
+        "en": "The first part of the message. The Full text tab shows all of it.",
+        "id": "Bagian awal pesan. Tab Full text menampilkan seluruhnya."
+      },
+      {
+        "label": "Session",
+        "en": "Short reference of the session the message came from.",
+        "id": "Rujukan singkat sesi asal pesan."
+      },
+      {
+        "label": "Characters",
+        "en": "Length of the message in characters.",
+        "id": "Panjang pesan dalam karakter."
+      }
+    ]
+  }
+]
