@@ -33,13 +33,13 @@ class DevlibOnlyRatchetTest extends TestCase
         'raw_visible_input' => 0,
         'raw_select' => 0,
         'raw_textarea' => 0,
-        'raw_table' => 2,         // product-acc: lembar ACC / Proof Digital (zona beku ProDev)
+        'raw_table' => 0,         // lembar ACC / Proof Digital = objek x-mp::sales.proof-sheet
         'style_block' => 1,       // share.blade.php: tema untuk halaman publik
-        'inline_style' => 2,
+        'inline_style' => 1,
         'v1_component' => 0,      // x-ui.* / x-form.* / x-grid.* / livewire di layar v2
-        'raw_tag' => 141,           // div / span / p / ul / li / h1-h6 / a / img / svg ... di layar (bukan objek DevLib)
-        'color_literal' => 5,     // #hex / rgb() / hsl() di markup layar (warna = token DevLib)
-        'local_class' => 35,       // class="..." selain dl-* dan ikon fa-* di layar
+        'raw_tag' => 86,           // div / span / p / ul / li / h1-h6 / a / img / svg ... di layar (bukan objek DevLib)
+        'color_literal' => 0,     // #hex / rgb() / hsl() di markup layar (warna = token DevLib)
+        'local_class' => 13,       // class="..." selain dl-* dan ikon fa-* di layar
     ];
 
     // Warna literal di CSS lokal (di luar definisi token --x:). Berkas yang tidak terdaftar = baseline 0.
