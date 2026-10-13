@@ -124,7 +124,7 @@
             @endphp
             <x-dl::card title="Big flow map" description="From Inquiry to Customer Invoice, as drawn by Jo. Scroll sideways on a narrow screen." icon="fa-map">
                 <x-dl::alert tone="info" :message="raw($legend)" />
-                <div class="mp-flowmap"><img src="{{ asset('images/peta-alur/flow-besar-tmerp-final.png') }}" alt="Flow besar tmerp: Inquiry, IQ PROD, PRO DEV, PRO COST, QUO, BOP, BOM, Booking, MRP, PR, PO, PV, Customer, CO, Ship Schedule, WO, Engine, Gantt, Reschedule, Master Card, QC, Warehouse Product, Delivery, Customer Invoice"></div>
+                <x-dl::box class="mp-flowmap"><img src="{{ asset('images/peta-alur/flow-besar-tmerp-final.png') }}" alt="Flow besar tmerp: Inquiry, IQ PROD, PRO DEV, PRO COST, QUO, BOP, BOM, Booking, MRP, PR, PO, PV, Customer, CO, Ship Schedule, WO, Engine, Gantt, Reschedule, Master Card, QC, Warehouse Product, Delivery, Customer Invoice"></x-dl::box>
             </x-dl::card>
             <x-dl::card title="Line by line" icon="fa-bezier-curve">
                 <x-dl::table :columns="['a' => 'Line', 'b' => 'From', 'c' => 'To', 'd' => 'Status']" :rows="$keys($lines)" />
@@ -164,7 +164,7 @@
                 @forelse ($tickets as $t)
                     <x-dl::card :title="raw($t->ticket_no.' · '.Locale::dt($t->created_at))" :description="raw($t->screen_context ?: '')" icon="fa-ticket">
                         <x-dl::badge :label="$statusLabel[$t->status] ?? $t->status" :tone="$statusTone[$t->status] ?? 'neutral'" />
-                        <p>{{ $t->description }}</p>
+                        <x-dl::box as="p">{{ $t->description }}</x-dl::box>
                         @if ($t->attachments->isNotEmpty())
                             <x-dl::action-bar align="start">
                                 @foreach ($t->attachments as $a)

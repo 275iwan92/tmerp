@@ -17,7 +17,7 @@
         $verified = MailSettings::verified($u);
         $setting = MailSettings::current();
     @endphp
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
         @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
         <x-dl::card title="My E-mail" icon="email" description="This address is used when you send documents (Print > Email) and receive customer replies.">
@@ -33,5 +33,5 @@
             @endif
             <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="route('v2.home')" /></x-dl::action-bar>
         </x-dl::card>
-    </div>
+    </x-dl::box>
 @endsection

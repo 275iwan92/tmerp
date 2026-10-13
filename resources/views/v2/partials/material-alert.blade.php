@@ -26,7 +26,7 @@
         <x-dl::button variant="secondary" size="sm" icon="fa-chart-gantt" :label="t('Open Material Planning')" :href="$mpUrl" />
     </x-dl::alert>
     <x-dl::modal id="material-alert" :title="t('Material Shortage')" icon="fa-triangle-exclamation" tone="danger" size="lg" :open="$mpPopup">
-        <p><b>{{ $mpText }}</b></p>
+        <x-dl::box as="p"><x-dl::box as="b">{{ $mpText }}</x-dl::box></x-dl::box>
         <x-dl::table :columns="['material' => 'Material', 'short' => 'Short', 'first_need' => 'First Needed', 'order_by' => 'Order By (latest)', 'orders' => 'For Orders', 'status' => 'Coverage']"
             :rows="collect($mpAlert['top'])->map(fn ($r) => ['material' => $r['material'], 'short' => Locale::number((float) $r['short'], 2).' '.$r['uom'],
                 'first_need' => Locale::d($r['first_need']) ?? '—', 'order_by' => Locale::d($r['order_by']) ?? '—', 'orders' => $r['orders'], 'status' => t($r['status'])])->all()"

@@ -14,7 +14,7 @@
 @endphp
 @extends('v2.layout', ['title' => trim($doc->fileTitle().' '.$number), 'bodyClass' => 'dl-page-body'])
 @section('body')
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         <x-dl::action-bar>
             <x-dl::button variant="secondary" icon="back" label="Back" :href="$back" />
             @if ($twoFormats)
@@ -28,5 +28,5 @@
                 :orientation="$doc->paper() === 'a5' ? 'landscape' : 'portrait'" />
         </x-dl::action-bar>
         <x-dl::print-doc :doc="$doc" id="print-doc" />
-    </div>
+    </x-dl::box>
 @endsection

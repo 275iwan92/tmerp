@@ -16,7 +16,7 @@
         $s = MailSettings::current();
         $t = fn ($c) => Src::of('tm2sys.sys_mail_setting.'.$c);
     @endphp
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
         @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
         <x-dl::action-form action="{{ route('v2.settings.mail.save') }}" autocomplete="off" data-dl-guard>
@@ -47,5 +47,5 @@
                 </x-dl::action-bar>
             </x-dl::card>
         </x-dl::action-form>
-    </div>
+    </x-dl::box>
 @endsection

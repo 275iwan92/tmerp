@@ -9,7 +9,7 @@
 --}}
 @extends('v2.layout', ['title' => t('Labels'), 'bodyClass' => 'dl-page-body'])
 @section('body')
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
         @if (session('v2_error'))<x-dl::alert tone="danger" :message="raw(session('v2_error'))" />@endif
         @if (! $labels)
@@ -30,5 +30,5 @@
                 @endforeach
             </x-dl::label-sheet>
         @endif
-    </div>
+    </x-dl::box>
 @endsection

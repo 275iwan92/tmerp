@@ -21,8 +21,8 @@
         @else
             @include('v2.partials.material-alert')
         @endif
-        <p>{!! t('This is <b>Build & UAT</b>: the ERP screens are built from <b>DevLib</b> objects with <b>dummy</b> data') !!} ({{ config('database.connections.tm2mst.database') }} {{ t('etc.') }}).
+        <x-dl::box as="p">{!! t('This is <b>Build & UAT</b>: the ERP screens are built from <b>DevLib</b> objects with <b>dummy</b> data') !!} ({{ config('database.connections.tm2mst.database') }} {{ t('etc.') }}).
             {!! t('Badges in the menu: <b>Review</b> = v2 screen waiting for review, <b>v1</b> = opens the old screen for now, <b>To Do</b> = no screen yet.') !!}
-            {!! t('The document flow between screens is in <b>Help & support</b> (press <kbd>F1</kbd>).') !!}</p>
+            {!! t('The document flow between screens is in <b>Help & support</b> (press <kbd>F1</kbd>).') !!}</x-dl::box>
     </x-dl::layer-shell>
 @endsection

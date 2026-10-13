@@ -37,7 +37,7 @@ class DevlibOnlyRatchetTest extends TestCase
         'style_block' => 1,       // share.blade.php: tema untuk halaman publik
         'inline_style' => 1,
         'v1_component' => 0,      // x-ui.* / x-form.* / x-grid.* / livewire di layar v2
-        'raw_tag' => 83,           // div / span / p / ul / li / h1-h6 / a / img / svg ... di layar (bukan objek DevLib)
+        'raw_tag' => 35,           // div / span / p / ul / li / h1-h6 / a / img / svg ... di layar (bukan objek DevLib)
         'color_literal' => 0,     // #hex / rgb() / hsl() di markup layar (warna = token DevLib)
         'local_class' => 13,       // class="..." selain dl-* dan ikon fa-* di layar
     ];

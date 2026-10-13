@@ -69,14 +69,14 @@
                 :options="collect($types)->map(fn ($t) => $t['label'])->all()" hint="Automatic from Category Detail — this is the name searched on Pacdora. Custom: choose the closest dieline."
                 :source="Src::of('tm2sdi.iqp_part.part_type', 'tm2mst.prod_type.type_code')" />
         </x-dl::form.row>
-        <div data-inq-custom hidden>
+        <x-dl::box data-inq-custom hidden>
             <x-dl::form.row cols="2">
                 <x-dl::field.text name="product_detail_custom" label="Custom Product Name" required placeholder="e.g. Stand Smartphone / Dus Telur / Dus Pot Tanaman"
                     :source="'catatan detail custom (belum ada di Master Product Market)'" />
                 <x-dl::alert tone="info">{!! t('The product is not in the list yet: choose the closest <b>Product Type</b> (dieline) and fill in the dimensions manually in the part.') !!}
                     {!! t('If it is ordered often, ask the ProDev officer to add it to <b>Master Product Market</b>.') !!}</x-dl::alert>
             </x-dl::form.row>
-        </div>
+        </x-dl::box>
         <x-dl::form.row cols="2">
             <x-dl::alert tone="info" data-inq-template-note><span data-inq-template-text></span><x-dl::button size="sm" variant="secondary" label="Add Automatically" data-inq-template /></x-dl::alert>
         </x-dl::form.row>
@@ -85,33 +85,33 @@
             <x-dl::field.checkbox name="material_source" label="Material Source" text="Customer supplies its own raw material" :value="($doc['material_source'] ?? 'OWN') === 'CUSTOMER'"
                 hint="Unticked → material from the company, the order is PRODUCT." :source="Src::of('tm2sdi.iqp_inquiry.material_source', 'tm2sdi.iqp_inquiry.job_nature', 'tm2sdi.iqp_inquiry.pph_applicable')" />
         </x-dl::form.row>
-        <div data-inq-custmat hidden>
+        <x-dl::box data-inq-custmat hidden>
             <x-dl::divider label="Customer Material Specification (required when the customer supplies material)" />
             <x-dl::form.row cols="2">
                 <x-dl::field.text name="cust_material_spec" label="Customer material description" required placeholder="e.g. Art Carton 260gsm, 65×100cm, brand APP, 50 rim" :source="$i('cust_material_spec')" />
                 <x-dl::field.date name="cust_material_eta" label="Material ETA" :source="$i('cust_material_eta')" />
             </x-dl::form.row>
             <x-dl::alert tone="info">@t('Customer material → material COGS = 0; it comes in through non-costed Receiving (consignment).') @t('Handling & spoilage are calculated by Costing.')</x-dl::alert>
-        </div>
+        </x-dl::box>
     </x-slot:header>
 
     <x-dl::card title="Tiered Order Qty" description="Costing calculates COGS per tier — exactly 1 MAIN">
         <x-dl::alert tone="warn" data-inq-tier-err />
-        <div class="mp-narrow">
+        <x-dl::box class="mp-narrow">
             <x-dl::lines name="tiers" title="Tier" add-label="+ Add Tier" :rows="$tiers" :source="Src::of('tm2sdi.iqp_tier')"
                 :columns="[
                     ['key' => 'qty', 'label' => 'Qty (pcs)', 'type' => 'number', 'required' => true, 'placeholder' => t('e.g. 10000'), 'src' => Src::of('tm2sdi.iqp_tier.qty')],
                     ['key' => 'is_primary', 'label' => 'Main', 'type' => 'primary', 'width' => '100px', 'src' => Src::of('tm2sdi.iqp_tier.is_primary')],
                 ]" />
-        </div>
+        </x-dl::box>
     </x-dl::card>
 
     <x-dl::card title="Part & Dieline" description="product dimensions & live dieline preview">
-        <div data-inq-parts>
+        <x-dl::box data-inq-parts>
             @foreach ($parts as $n => $part)
                 <x-mp::sales.inquiry-part :index="(string) $n" :part="$part + ['saved' => (bool) $doc]" :types="$types" :type-code="$typeCode" :finishing-types="$finishing" :material-chains="$chains" />
             @endforeach
-        </div>
+        </x-dl::box>
         <template data-inq-part-tpl><x-mp::sales.inquiry-part index="__I__" :part="$blankPart" :types="$types" :type-code="$typeCode" :finishing-types="$finishing" :material-chains="$chains" /></template>
         <script type="application/json" data-inq-matchains>@json($chains)</script>
         <div><x-dl::button variant="secondary" icon="＋" :label="t('Add Part')" data-inq-add-part /></div>

@@ -20,14 +20,14 @@ Status       : Aktif.
         \App\Support\V2\Crumb::status(null);
         $screenBody = $built ? view($screen['view'] ?? 'v2.screens.'.$screen['slug'], ['screen' => $screen])->render() : null;
     @endphp
-    <div class="dl-cat">
-        <div @class(['dl-cat__nav', 'has-actions' => \App\Support\V2\Crumb::actionsHtml() !== null])>
+    <x-dl::box class="dl-cat">
+        <x-dl::box @class(['dl-cat__nav', 'has-actions' => \App\Support\V2\Crumb::actionsHtml() !== null])>
             {{-- Modul/Grup = buka Layer Menu di cabang itu; nama layar = kembali ke grid (DevLib Breadcrumb menu + current). --}}
             <x-dl::breadcrumb menu :items="[t($screen['module']) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]"
                 :current="\App\Support\V2\Crumb::current()" />
-            @if (\App\Support\V2\Crumb::statusHtml() !== null)<div class="dl-cat__status">{!! \App\Support\V2\Crumb::statusHtml() !!}</div>@endif
-            @if (\App\Support\V2\Crumb::actionsHtml() !== null)<div class="dl-cat__actions">{!! \App\Support\V2\Crumb::actionsHtml() !!}</div>@endif
-        </div>
+            @if (\App\Support\V2\Crumb::statusHtml() !== null)<x-dl::box class="dl-cat__status">{!! \App\Support\V2\Crumb::statusHtml() !!}</x-dl::box>@endif
+            @if (\App\Support\V2\Crumb::actionsHtml() !== null)<x-dl::box class="dl-cat__actions">{!! \App\Support\V2\Crumb::actionsHtml() !!}</x-dl::box>@endif
+        </x-dl::box>
         @if ($built)
             {!! $screenBody !!}
         @else
@@ -42,7 +42,7 @@ Status       : Aktif.
                 @endif
             </x-dl::card>
         @endif
-    </div>
+    </x-dl::box>
     @endif
     @if ($built && ! ($screen['side'] ?? false))
         <x-dl::code-button :code="$code" :file="isset($screen['grid']) ? str_replace(base_path().DIRECTORY_SEPARATOR, '', (new ReflectionClass($screen['grid']))->getFileName()) : 'resources/views/screens/'.$screen['slug'].'.blade.php'" :mockup-url="$screen['mockup'] ? route('v2.mockup.file', $screen['mockup']) : null" />

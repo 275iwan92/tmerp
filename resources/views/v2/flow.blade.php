@@ -9,8 +9,8 @@
 --}}
 @extends('v2.layout', ['title' => $flow['title'], 'bodyClass' => 'dl-page-body'])
 @section('body')
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         <x-dl::flow :title="$flow['title']" :steps="$flow['steps']" source="app/Support/Flows.php" />
-        <p class="dl-note">@t('Point the mouse at a block to see its short rule; click a block to open its screen. Block status = the mockup status of that screen.')</p>
-    </div>
+        <x-dl::box as="p" class="dl-note">@t('Point the mouse at a block to see its short rule; click a block to open its screen. Block status = the mockup status of that screen.')</x-dl::box>
+    </x-dl::box>
 @endsection

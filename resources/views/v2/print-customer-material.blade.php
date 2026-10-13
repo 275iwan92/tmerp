@@ -9,12 +9,12 @@
 --}}
 @extends('v2.layout', ['title' => t('Customer Material Receipt').' '.$pv->doc_no, 'bodyClass' => 'dl-page-body'])
 @section('body')
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         <x-dl::action-bar>
             <x-dl::button variant="secondary" icon="back" label="Back" :href="route('v2.screen', 'purchase-receive').'?id='.$pv->pv_id" />
             <x-dl::doc-share target="#cm-print" type="customer-material" :doc-id="$pv->pv_id" :number="$pv->doc_no" title="Customer Material Receipt" :email-to="$customer->email ?? null" />
         </x-dl::action-bar>
-        <div id="cm-print">
+        <x-dl::box id="cm-print">
             <x-dl::print-out title="Customer Material Receipt" subtitle="Receipt of Customer-Owned Material" :number="$pv->doc_no" :date="$pv->i_doc_date?->toDateString()"
                 :status="$pv->status" :company="$company" :printed-by="auth()->user()->login" :prices="false" :source="\App\Support\V2\Src::of('tm2pur.pv_receipt (CUSTOMER)', 'tm2pur.pv_line')"
                 :parties="array_filter([
@@ -36,6 +36,6 @@
                 :signatures="[['Handed Over By', 'Customer / Courier'], ['Received By', 'Warehouse'], ['Acknowledged By', 'PPIC / Sales']]">
                 <x-slot:notes><b>{{ t('Notes') }}:</b> {{ $pv->i_notes ?: t('Customer-owned material for the Customer Order above; not company stock.') }}</x-slot:notes>
             </x-dl::print-out>
-        </div>
-    </div>
+        </x-dl::box>
+    </x-dl::box>
 @endsection

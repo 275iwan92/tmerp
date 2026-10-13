@@ -11,7 +11,7 @@
     use App\Models\Master\ProdProductAcc;
     use App\Support\V2\Src;
 @endphp
-<div class="mp-noprint">
+<x-dl::box class="mp-noprint">
         <x-dl::card title="Digital Proof entry" description="Designer & design date are printed in the DRAWING BY / DATE block.">
             <x-dl::action-form action="{{ route('v2.product.proof', $doc['id']) }}">
                 <x-dl::form.row cols="3">
@@ -40,4 +40,4 @@
                 :rows="array_map(fn ($a) => ['type' => isset(ProdProductAcc::TYPES[$a['type']]) ? t(ProdProductAcc::TYPES[$a['type']]) : $a['type'], 'at' => $a['at'], 'by' => $a['by'], 'channel' => $a['channel'], 'note' => $a['note'] ?? '—', 'evidence' => $a['evidence_name'] ?? '—'], $doc['accs'])"
                 empty="No ACC recorded yet." source="{{ Src::of('tm2mst.prod_product_acc') }}" />
         </x-dl::card>
-    </div>
+    </x-dl::box>

@@ -66,7 +66,7 @@
             <x-dl::strip-kv kind="doc" label="PR No." :value="$pr->doc_no ?: t('(on Confirm)')" />
             <x-dl::field.date name="i_doc_date" label="PR Date" :value="$pr->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pr_requisition.i_doc_date')" />
             <x-dl::field.select name="i_department_id" label="Department" required :options="PurchaseRequisition::departments()" :value="$pr->i_department_id" :source="Src::of('tm2mst.org_department')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Est. Total')</span><b data-l-val="lines:grand">{{ $money($pr->c_est_total) }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Est. Total" :value="$money($pr->c_est_total)" :value-attrs="['data-l-val' => 'lines:grand']" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

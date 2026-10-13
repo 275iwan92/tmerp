@@ -61,7 +61,7 @@
             <x-dl::strip-kv kind="doc" label="DO No." :value="$do->do_no ?: t('(on Confirm)')" />
             <x-dl::field.date name="do_date" label="DO Date" :value="$do->do_date?->toDateString()" :source="Src::of('tm2sdi.do_delivery.do_date')" />
             <x-dl::field.display label="Customer" :value="($do->customer?->customer_name ?? '—').' ('.($do->customer?->customer_code ?? '—').')'" :source="Src::of('tm2mst.cust_customer')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Shipment Value')</span><b data-l-val="lines:grand">{{ $money($value) }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Shipment Value" :value="$money($value)" :value-attrs="['data-l-val' => 'lines:grand']" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

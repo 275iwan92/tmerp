@@ -9,10 +9,10 @@
 --}}
 @extends('v2.layout', ['title' => t('Engine Catalog'), 'bodyClass' => 'dl-page-body'])
 @section('body')
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         <x-dl::card title="Engine Catalog" icon="fa-gears"
             description="Every engine of the application: what it is for, how to call it, its input and output, how it works, and the tables it reads and writes. Method signatures are read from the code.">
             <x-dl::engine-catalog :engines="$engines" source="App\Support\Engines\EngineRegistry" />
         </x-dl::card>
-    </div>
+    </x-dl::box>
 @endsection

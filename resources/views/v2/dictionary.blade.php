@@ -12,7 +12,7 @@
     @php
         $colDefs = [['key' => 'col', 'label' => t('Columns')], ['key' => 'type', 'label' => 'Type'], ['key' => 'null', 'label' => 'Null'], ['key' => 'key', 'label' => 'Key'], ['key' => 'fk', 'label' => t('FK to')], ['key' => 'comment', 'label' => t('Description')]];
     @endphp
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         <x-dl::card title="Data Dictionary — MySQL tmerp (developers only)" icon="fa-database"
             :description="'Struktur saja (information_schema), diperbarui otomatis setelah php artisan migrate / rollback di tmerp (manual: php artisan schema:dictionary). Terakhir: '.raw($stats['generated'].'.')">
             <x-dl::kpi-row>
@@ -32,7 +32,7 @@
                     source="information_schema.COLUMNS (tm2*)" />
             </x-slot:cols>
             <x-slot:dup>
-                <p class="dl-note"><b>Nama tidak baku</b> = melanggar nama kolom yang dikunci CLAUDE.md §3. <b>Sinonim</b> = nama beda, arti sama. <b>Tipe beda</b> = nama sama tapi tipe/presisi tidak seragam. <b>Nama sama</b> = kolom sama di banyak tabel (cek apakah data yang sama disimpan dua kali). PK, FK, kolom audit baku & DB legacy tm2old tidak dihitung. Buka baris untuk melihat letaknya.</p>
+                <x-dl::box as="p" class="dl-note"><x-dl::box as="b">Nama tidak baku</x-dl::box> = melanggar nama kolom yang dikunci CLAUDE.md §3. <x-dl::box as="b">Sinonim</x-dl::box> = nama beda, arti sama. <x-dl::box as="b">Tipe beda</x-dl::box> = nama sama tapi tipe/presisi tidak seragam. <x-dl::box as="b">Nama sama</x-dl::box> = kolom sama di banyak tabel (cek apakah data yang sama disimpan dua kali). PK, FK, kolom audit baku & DB legacy tm2old tidak dihitung. Buka baris untuk melihat letaknya.</x-dl::box>
                 <x-dl::grid id="dd-dup" :rows="$duplicates" row-key="id" :active-key="null" actions="none" :new-record="false" :per-page="50" search="Search column name..."
                     :filters="['flag' => 'Indikasi']"
                     :columns="[['key' => 'flag', 'label' => 'Indication', 'type' => 'badge', 'tones' => ['Nama tidak baku' => 'danger', 'Sinonim' => 'violet', 'Tipe beda' => 'warn', 'Nama sama' => 'neutral']], ['key' => 'name', 'label' => t('Column (normalised)')], ['key' => 'count', 'label' => t('Amount'), 'type' => 'number'], ['key' => 'names', 'label' => t('Names used')], ['key' => 'types', 'label' => t('Types used')]]"
@@ -40,7 +40,7 @@
                     source="analisis App\Support\V2\Schema::duplicates()" />
             </x-slot:dup>
             <x-slot:copy>
-                <p class="dl-note">Kolom <code>&lt;x&gt;_name / _code / _label</code> yang berdampingan dengan <code>&lt;x&gt;_id</code>: nilai master disalin ke tabel ini. Bisa <b>disengaja</b> (prinsip snapshot: transaksi membekukan nilai master) atau <b>redundan</b> — perlu keputusan per baris.</p>
+                <x-dl::box as="p" class="dl-note">Kolom <x-dl::box as="code">&lt;x&gt;_name / _code / _label</x-dl::box> yang berdampingan dengan <x-dl::box as="code">&lt;x&gt;_id</x-dl::box>: nilai master disalin ke tabel ini. Bisa <x-dl::box as="b">disengaja</x-dl::box> (prinsip snapshot: transaksi membekukan nilai master) atau <x-dl::box as="b">redundan</x-dl::box> — perlu keputusan per baris.</x-dl::box>
                 <x-dl::grid id="dd-copy" :rows="$copies" row-key="id" :active-key="null" actions="none" :new-record="false" search="Search table/column..." :filters="['db' => 'Database']"
                     :columns="[['key' => 'db', 'label' => 'Database'], ['key' => 'table', 'label' => 'Table'], ['key' => 'col', 'label' => t('Copied column')], ['key' => 'ref', 'label' => t('Referenced column')], ['key' => 'fk', 'label' => 'FK / master']]"
                     source="analisis App\Support\V2\Schema::copies()" />
@@ -62,5 +62,5 @@
                 @endif
             </x-slot:changes>
         </x-dl::tabs>
-    </div>
+    </x-dl::box>
 @endsection

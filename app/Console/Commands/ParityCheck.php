@@ -52,7 +52,7 @@ class ParityCheck extends Command
     private function menu(): int
     {
         $load = fn (string $db) => collect(DB::connection('tm2sys')->select(
-            "SELECT m.code, m.label, m.sort_order, m.activate, m.hide_in_menu, m.target, p.code AS parent FROM `$db`.sys_app_menu m LEFT JOIN `$db`.sys_app_menu p ON p.id = m.parent_id"
+            "SELECT m.code, m.label, m.sort_order, m.activate, m.hide_in_menu, m.target, m.menu_type, m.object_type, m.required_object, m.status_code, p.code AS parent FROM `$db`.sys_app_menu m LEFT JOIN `$db`.sys_app_menu p ON p.id = m.parent_id"
         ))->keyBy('code');
         $d = $load('ddtsys');
         $t = $load('tm2sys');
@@ -63,7 +63,7 @@ class ParityCheck extends Command
 
                 continue;
             }
-            foreach (['label', 'sort_order', 'activate', 'hide_in_menu', 'target', 'parent'] as $f) {
+            foreach (['label', 'sort_order', 'activate', 'hide_in_menu', 'target', 'menu_type', 'object_type', 'required_object', 'status_code', 'parent'] as $f) {
                 if ((string) $d[$code]->$f !== (string) $t[$code]->$f) {
                     $bad[] = "$code.$f: ddt={$d[$code]->$f} tm2={$t[$code]->$f}";
                 }

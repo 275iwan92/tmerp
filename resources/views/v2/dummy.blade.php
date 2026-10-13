@@ -9,7 +9,7 @@
 --}}
 @extends('v2.layout', ['title' => t('Dummy Data'), 'bodyClass' => 'dl-page-body'])
 @section('body')
-    <div class="dl-cat">
+    <x-dl::box class="dl-cat">
         @if (session('v2_flash'))
             <x-dl::alert tone="success" :message="raw(session('v2_flash'))" />
         @endif
@@ -75,7 +75,7 @@
                     <x-dl::stat-box label="Database" :value="count($manifest['databases'])" />
                     <x-dl::stat-box label="File upload" :value="$manifest['files']" />
                 </x-dl::kpi-row>
-                <p class="dl-note">{{ implode(' · ', $manifest['databases']) }}</p>
+                <x-dl::box as="p" class="dl-note">{{ implode(' · ', $manifest['databases']) }}</x-dl::box>
             @else
                 <x-dl::alert tone="warn" message="No baseline yet. Save the current dummy data as the baseline first." />
             @endif
@@ -104,5 +104,5 @@
                     source="storage/app/ddt-baseline/*.sql vs information_schema.COLUMNS (ddt*)" />
             </x-dl::card>
         @endif
-    </div>
+    </x-dl::box>
 @endsection
