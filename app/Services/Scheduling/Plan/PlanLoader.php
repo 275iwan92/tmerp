@@ -75,7 +75,7 @@ final class PlanLoader
     }
 
     /** Minutes to wait after a process (drying, curing), by process-name keyword: the Wait Rules master wins over the start values in config. @return array<string, int> */
-    private function waitRules(): array
+    public function waitRules(): array
     {
         if ($this->waitRules === null) {
             $this->waitRules = (array) config('ppic.wait_after', []);

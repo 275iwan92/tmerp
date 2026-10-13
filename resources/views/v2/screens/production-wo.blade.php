@@ -347,7 +347,7 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
         <x-dl::queue-board :processes="$queue['processes']" :machines="$queue['machines']" :rows="$queue['rows']" :process="$queue['process']" :machine="$queue['machine']" empty="Nothing is queued on this machine." />
     @php $woHtml['que'] = new \Illuminate\Support\HtmlString(ob_get_clean()); @endphp
     @php
-        $queueNow = array_values(array_filter($queue['rows'], fn ($r) => $r['process'] === $queue['process'] && ($queue['machine'] === '' || $r['machine'] === $queue['machine'])));
+        $queueNow = array_values(array_filter($queue['rows'], fn ($r) => ($queue['process'] === '' || $r['process'] === $queue['process']) && ($queue['machine'] === '' || $r['machine'] === $queue['machine'])));
         $secOrder = ['card', 'bop', 'bom', 'sim', 'que'];
         $openKeys = request()->filled('open') ? array_values(array_intersect($secOrder, explode(',', (string) request('open'))))
             : (request()->filled('tab') ? array_values(array_intersect($secOrder, [request('tab')])) : null);
@@ -363,7 +363,7 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
             'bop' => count($ops).' '.t('operations').($firstStart ? ' · '.$when($firstStart).' → '.$when($lastFinish) : ''),
             'bom' => count($bomRows ?? []).' '.t('materials').' · '.t('Purchase').' '.Locale::decimal($buyTotal, 2),
             'sim' => ! empty($sim['shown']['n']) ? $sim['shown']['n'].' '.$sim['shown']['process'].' '.t('operations on').' '.$sim['shown']['machine'].': '.$sim['shown']['draft'].' '.t('Draft').', '.$sim['shown']['live'].' '.t('Live').' · '.(int) ($sim['clashes'] ?? 0).' '.t('clash') : t('No operations on the board'),
-            'que' => $queueNow ? (($queue['processes'][$queue['process']] ?? '').' · '.($queue['machines'][$queue['process']][$queue['machine']] ?? t('All machines')).' · '.count($queueNow).' '.t('in queue').' · '.count(array_filter($queueNow, fn ($r) => $r['status'] === 'Running')).' '.t('running')) : t('Nothing is queued'),
+            'que' => $queueNow ? (($queue['process'] === '' ? t('All processes') : ($queue['processes'][$queue['process']] ?? '')).' · '.($queue['machines'][$queue['process']][$queue['machine']] ?? ($queue['machine'] !== '' ? $queueNow[0]['machine_name'] : t('All machines'))).' · '.count($queueNow).' '.t('in queue').' · '.count(array_filter($queueNow, fn ($r) => $r['status'] === 'Running')).' '.t('running')) : t('Nothing is queued'),
         ];
         $secTitle = ['card' => 'Master Card', 'bop' => 'Bill of Process', 'bom' => 'Bill of Material', 'sim' => 'Simulation', 'que' => 'QUE every process every machine'];
         $secIcon = ['card' => 'fa-id-card', 'bop' => 'fa-list-ol', 'bom' => 'fa-boxes-stacked', 'sim' => 'fa-vial', 'que' => 'fa-list-check'];

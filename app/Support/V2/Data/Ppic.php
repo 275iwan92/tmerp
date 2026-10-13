@@ -5,7 +5,7 @@
  * Tujuan       : Sumber data baca untuk layar PPIC: operasi, Gantt, simulasi per Process per Machine, Master Card otomatis, Bill of Material per WO.
  * Sumber hulu  : prd_wo, prd_wo_operation, prd_wo_material, prod_part*, iqp_part, prod_layout_group, prod_process_machine, v_rm_available.
  * Input        : Id WO atau daftar operasi; cache per request (Ppic::forget() bila data berubah).
- * Output       : Array siap tampil: operations(), gantt(), simulation()/linkedBoard(), live() (monitor Live Schedule), rowKey() (baris Gantt: mesin, atau SUBCON per proses; tanpa konsep crew), queue() (antrean per proses per mesin), masterCard(), bomSheet(), bopSheet(), stockOf().
+ * Output       : Array siap tampil: operations(), gantt(), simulation()/linkedBoard(), live() (monitor Live Schedule), rowKey() (baris Gantt: mesin, atau SUBCON per proses; tanpa konsep crew), queue() (antrean per proses per mesin, dengan jeda "Idle before" dan alasannya dari MachineIdle), masterCard(), bomSheet(), bopSheet(), stockOf().
  * Dipakai oleh : PpicController, layar production-wo, ppic-color-sequence, production-scheduling.
  * Status       : Aktif di mockup (ddt*). Hanya membaca; tidak menulis database.
  */
@@ -1111,6 +1111,10 @@ final class Ppic
         $ops = array_values(array_filter(self::operations(), fn ($r) => $r['start'] && $r['finish']
             && ! in_array($r['task_status'], self::DONE, true)));
         usort($ops, fn ($a, $b) => $a['start'] <=> $b['start']);
+        // Idle time before each job on its machine, with the reason (the machine should run continuously; a gap needs a stated cause).
+        $loader = app(PlanLoader::class);
+        $all = self::operations();
+        $idle = MachineIdle::explain($all, $loader->calendar(self::now(), array_values(array_unique(array_filter(array_column($all, 'machine_id'))))), $loader->waitRules(), self::now());
 
         $processes = [];
         $pid = [];
@@ -1129,7 +1133,8 @@ final class Ppic
                 // No machine = SUBCON: progress only when output was recorded for it, otherwise null (shown as a dash).
                 'progress' => $r['machine_id'] ? ($running || $r['progress'] > 0 ? $r['progress'] : 0) : ($r['good'] > 0 || $running ? $r['progress'] : null),
                 'start' => Locale::dt($running && $r['actual_start'] ? $r['actual_start'] : $r['start']), 'end' => Locale::dt($r['finish']),
-                'mine' => $currentWoId !== null && $r['wo_id'] === $currentWoId, 'wo_id' => $r['wo_id'],
+                'mine' => $currentWoId !== null && $r['wo_id'] === $currentWoId, 'wo_id' => $r['wo_id'], 'seq' => $r['seq'],
+                'idle' => isset($idle[$r['op_id']]) ? MachineIdle::duration($idle[$r['op_id']]['minutes']).' · '.$idle[$r['op_id']]['reason'] : '',
             ];
         }
         ksort($processes);
@@ -1152,9 +1157,12 @@ final class Ppic
                 }
             }
         }
-        $first = collect($rows)->firstWhere('status', 'Running') ?? ($rows[0] ?? null);
+        // Opens on the machine of the Work Order that is open (the same one the Simulation shows), else on the running job.
+        $mine = $currentWoId !== null ? collect($rows)->where('wo_id', $currentWoId)->sortBy('seq')->first() : null;
+        $first = $mine ?? collect($rows)->firstWhere('status', 'Running') ?? ($rows[0] ?? null);
 
-        return ['processes' => $processes, 'machines' => $machines, 'rows' => $rows, 'process' => $first['process'] ?? array_key_first($processes),
+        // Open WO: every process on its machine (what the Simulation row shows); otherwise the process and machine of the running job.
+        return ['processes' => $processes, 'machines' => $machines, 'rows' => $rows, 'process' => $mine ? '' : ($first['process'] ?? array_key_first($processes)),
             'machine' => $first['machine'] ?? '', 'running' => count(array_filter($rows, fn ($r) => $r['status'] === 'Running')), 'queued' => count($rows)];
     }
 

@@ -2,7 +2,7 @@
 
 /*
  * REMARK
- * Tujuan       : Antrean per proses per mesin: dropdown Process bertaut dropdown Machine, daftar item hanya-baca dengan status, progres persen, start dan end.
+ * Tujuan       : Antrean per proses per mesin: dropdown Process bertaut dropdown Machine, daftar item hanya-baca dengan status, progres persen, start, end, dan jeda (idle) sebelum job beserta alasannya.
  * Sumber hulu  : Data dari layar (mis. Ppic::queue: operasi semua WO aktif, prod_process_machine).
  * Input        : processes [key => label], machines [processKey => [machineKey => label]], rows [process, machine, status, cells...], process, machine, mine.
  * Output       : Tabel yang disaring di browser (queue-board.js); tanpa panggilan server. Progres null tampil sebagai garis (mis. langkah SUBCON tanpa data hasil).
@@ -14,7 +14,7 @@ namespace Devlib\Components;
 
 use Devlib\Lang;
 
-// rows: [['process' => key, 'machine' => key, 'status' => 'Running|Confirmed|Draft', 'wo' => ..., 'item' => ..., 'qty' => ..., 'progress' => 0-100 or null (shown as a dash), 'start' => ..., 'end' => ..., 'mine' => bool]]
+// rows: [['process' => key, 'machine' => key, 'status' => 'Running|Confirmed|Draft', 'wo' => ..., 'item' => ..., 'qty' => ..., 'progress' => 0-100 or null (shown as a dash), 'start' => ..., 'end' => ..., 'idle' => 'idle time before this job and why' (optional), 'mine' => bool]]
 class QueueBoard extends DevlibComponent
 {
     public function __construct(
@@ -58,7 +58,7 @@ class QueueBoard extends DevlibComponent
                     <table class="dl-table">
                         <thead><tr>
                             <th>{{ \Devlib\Lang::text('Status') }}</th><th>{{ \Devlib\Lang::text('Work Order') }}</th><th>{{ \Devlib\Lang::text('Item') }}</th><th class="num">{{ \Devlib\Lang::text('Quantity') }}</th>
-                            <th>{{ \Devlib\Lang::text('Progress') }}</th><th>{{ \Devlib\Lang::text('Start') }}</th><th>{{ \Devlib\Lang::text('End') }}</th>
+                            <th>{{ \Devlib\Lang::text('Progress') }}</th><th>{{ \Devlib\Lang::text('Start') }}</th><th>{{ \Devlib\Lang::text('End') }}</th><th>{{ \Devlib\Lang::text('Idle before') }}</th>
                         </tr></thead>
                         <tbody>
                             @foreach ($rows as $r)
@@ -66,10 +66,10 @@ class QueueBoard extends DevlibComponent
                                     <td><span class="dl-queue__st dl-queue__st--{{ strtolower($r['status']) }}">{{ \Devlib\Lang::text($r['status']) }}</span></td>
                                     <td>{{ $r['wo'] }}</td><td>{{ $r['item'] }}</td><td class="num">{{ $r['qty'] }}</td>
                                     <td>@if ($r['progress'] === null)—@else<span class="dl-queue__pct"><i style="width:{{ (int) $r['progress'] }}%"></i></span> {{ (int) $r['progress'] }}%@endif</td>
-                                    <td>{{ $r['start'] }}</td><td>{{ $r['end'] }}</td>
+                                    <td>{{ $r['start'] }}</td><td>{{ $r['end'] }}</td><td>{{ $r['idle'] ?? '' }}</td>
                                 </tr>
                             @endforeach
-                            <tr data-q-empty hidden><td colspan="7" class="dl-table__empty">{{ \Devlib\Lang::text($empty) }}</td></tr>
+                            <tr data-q-empty hidden><td colspan="8" class="dl-table__empty">{{ \Devlib\Lang::text($empty) }}</td></tr>
                         </tbody>
                     </table>
                 </div>
