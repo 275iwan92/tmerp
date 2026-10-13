@@ -54,7 +54,7 @@ class V2ShellTest extends TestCase
 
     public function test_menu_item_resolves_to_v1_screen_when_no_v2_target(): void
     {
-        $this->actingAs($this->admin())->get('/v2/item/PROC_PO')->assertRedirect(route('pur.po.list'));
+        $this->actingAs($this->admin())->get('/v2/item/MGMT_SALES')->assertRedirect(route('report.sales'));
     }
 
     public function test_dictionary_is_admin_only(): void

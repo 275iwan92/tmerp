@@ -59,10 +59,10 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Request')</span><b>{{ $req->doc_no }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Priority')</span><b>{{ $req->priority }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Kind')</span><b>{{ t(MntRequest::KINDS[$req->request_kind] ?? $req->request_kind) }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Order')</span><b>{{ $order?->doc_no ?: '—' }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Request" :value="$req->doc_no" />
+            <x-dl::strip-kv label="Priority" :value="$req->priority" />
+            <x-dl::strip-kv label="Kind" :value="t(MntRequest::KINDS[$req->request_kind] ?? $req->request_kind)" />
+            <x-dl::strip-kv kind="grand" label="Order" :value="$order?->doc_no ?: '—'" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

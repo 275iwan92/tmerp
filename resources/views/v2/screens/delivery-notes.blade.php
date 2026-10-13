@@ -33,10 +33,10 @@
             @if ($do->status === 'CONFIRMED')<x-dl::button size="sm" variant="success" icon="fa-truck" :label="t('Shipped')" type="submit" name="action" value="ship" formnovalidate :onclick="'return confirm('.json_encode(t('Mark the goods as shipped?')).')'" />@endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Delivery Note No.')</span><b>{{ $do->do_no }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Delivery Note No." :value="$do->do_no" />
             <x-dl::field.display label="Customer" :value="$do->customer?->customer_name ?? '—'" :source="Src::of('tm2mst.cust_customer')" />
             <x-dl::field.display label="Destination" :value="trim(($do->ship_address_detail ? $do->ship_address_detail.', ' : '').($do->ship_address_label ?? ''), ', ') ?: '—'" :source="Src::of('tm2sdi.do_delivery.ship_address_label')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Total Qty')</span><b>{{ \Devlib\Locale::number((float) $do->lines->sum('qty_do'), 0) }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Total Qty" :value="\Devlib\Locale::number((float) $do->lines->sum('qty_do'), 0)" />
         </x-slot:strip>
         <x-slot:delivery>
             <x-dl::form.row :cols="4">

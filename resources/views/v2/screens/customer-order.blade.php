@@ -96,10 +96,10 @@
             @unless ($draft)<x-dl::button size="sm" variant="secondary" icon="fa-truck" label="Customer Plan Delivery" :href="route('v2.screen', 'cpdel')" />@endunless
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('CO No.')</span><b>{{ $o->co_no }}</b></div>
+            <x-dl::strip-kv kind="doc" label="CO No." :value="$o->co_no" />
             <x-dl::field.date name="co_date" label="CO Date" :value="old('co_date', $o->co_date?->toDateString())" :source="Src::of('tm2sdi.co_order.co_date')" />
             <x-dl::field.display label="Customer" :value="($o->customer?->customer_name ?? '—').' ('.($o->customer?->customer_code ?? '—').')'" :source="Src::of('tm2mst.cust_customer')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Net Receivable')</span><b>{{ $money($totals['net_receivable']) }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Net Receivable" :value="$money($totals['net_receivable'])" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

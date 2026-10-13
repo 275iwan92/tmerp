@@ -98,11 +98,11 @@
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Order No.')</span><b>{{ $order->doc_no ?: t('(on Confirm)') }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Type')</span><b>{{ t(MntOrder::TYPES[$order->order_type] ?? $order->order_type) }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Priority')</span><b>{{ t(MntOrder::PRIORITIES[$order->priority] ?? $order->priority) }}</b></div>
-            <div class="dl-strip__kv"><span>@t('From')</span><b>{{ $source }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Cost (live)')</span><b>{{ Maintenance::money($order->totalCost()) }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Order No." :value="$order->doc_no ?: t('(on Confirm)')" />
+            <x-dl::strip-kv label="Type" :value="t(MntOrder::TYPES[$order->order_type] ?? $order->order_type)" />
+            <x-dl::strip-kv label="Priority" :value="t(MntOrder::PRIORITIES[$order->priority] ?? $order->priority)" />
+            <x-dl::strip-kv label="From" :value="$source" />
+            <x-dl::strip-kv kind="grand" label="Cost (live)" :value="Maintenance::money($order->totalCost())" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

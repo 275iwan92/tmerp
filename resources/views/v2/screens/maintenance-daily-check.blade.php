@@ -53,10 +53,10 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Sheet')</span><b>{{ $sheet->doc_no }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Date')</span><b>{{ Locale::date($sheet->check_date) }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Shift')</span><b>{{ t(MntDailyCheck::SHIFTS[$sheet->shift_code] ?? $sheet->shift_code) }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Not OK')</span><b>{{ $notOk }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Sheet" :value="$sheet->doc_no" />
+            <x-dl::strip-kv label="Date" :value="Locale::date($sheet->check_date)" />
+            <x-dl::strip-kv label="Shift" :value="t(MntDailyCheck::SHIFTS[$sheet->shift_code] ?? $sheet->shift_code)" />
+            <x-dl::strip-kv kind="grand" label="Not OK" :value="$notOk" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

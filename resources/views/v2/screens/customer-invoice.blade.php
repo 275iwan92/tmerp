@@ -126,11 +126,11 @@
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Invoice No.')</span><b>{{ $inv->invoice_number ?: t('(on Confirm)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Invoice No." :value="$inv->invoice_number ?: t('(on Confirm)')" />
             <x-dl::field.date name="invoice_date" label="Invoice Date" :value="$inv->invoice_date?->toDateString()" :readonly="! $draft" :source="Src::of('tm2acc.fin_invoice.invoice_date')" />
             <x-dl::field.display label="Customer" :value="$customer?->customer_name ?? '—'" :source="Src::of('tm2mst.cust_customer')" />
             <x-dl::field.display label="Customer Order" :value="$coNo ?? '—'" :source="Src::of('tm2sdi.co_order.co_no')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>{{ t($isDp ? 'Bill Amount' : 'Balance Due') }}</span><b>{{ $num($isDp ? $t['total'] : $t['balance']) }}</b></div>
+            <x-dl::strip-kv kind="grand" :label="$isDp ? 'Bill Amount' : 'Balance Due'" :value="$num($isDp ? $t['total'] : $t['balance'])" />
         </x-slot:strip>
 
         <x-slot:general>

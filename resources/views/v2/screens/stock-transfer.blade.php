@@ -60,7 +60,7 @@
         <x-slot:special>
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Transfer No.')</span><b>{{ $doc->transfer_no ?: t('(on Confirm)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Transfer No." :value="$doc->transfer_no ?: t('(on Confirm)')" />
             <x-dl::field.date name="transfer_date" label="Date" :value="$doc->transfer_date?->toDateString()" :readonly="! $draft" :source="Src::of('tm2inv.inv_transfer.transfer_date')" />
             <x-dl::field.display label="From warehouse" :value="($doc->fromWarehouse?->warehouse_code ?? '—').' · '.($doc->fromWarehouse?->warehouse_name ?? '')" :source="Src::of('tm2mst.wh_warehouse')" />
             <x-dl::field.select name="to_warehouse_id" label="To warehouse" :options="Warehouse::options()" :value="$doc->to_warehouse_id" :disabled="! $draft" :source="Src::of('tm2mst.wh_warehouse')"

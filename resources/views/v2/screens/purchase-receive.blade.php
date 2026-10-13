@@ -121,7 +121,7 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('No.')</span><b>{{ $pv->doc_no ?: t('(on Post)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="No." :value="$pv->doc_no ?: t('(on Post)')" />
             <x-dl::field.date name="i_doc_date" label="Received Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
             <x-dl::field.display :label="$isCust ? 'Customer' : 'Subcontractor'" :value="$party" :source="Src::of($isCust ? 'tm2mst.cust_customer' : 'tm2mst.sup_supplier')" />
             <x-dl::field.display :label="$isCust ? 'Customer Order' : 'Subcon PO'" :value="$isCust ? $co : ($pv->c_po_doc_list ?: '—')" :source="Src::of($isCust ? 'tm2pur.pv_receipt.i_co_id' : 'tm2pur.pv_receipt.c_po_doc_list')" />
@@ -209,10 +209,10 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('SPB No.')</span><b>{{ $pv->doc_no ?: t('(on Post)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="SPB No." :value="$pv->doc_no ?: t('(on Post)')" />
             <x-dl::field.date name="i_doc_date" label="Receipt Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
             <x-dl::field.display label="Receiving Warehouse" :value="$pv->i_warehouse_code" :source="Src::of('tm2pur.pv_receipt.i_warehouse_code')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Received Value')</span><b>{{ $money($value) }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Received Value" :value="$money($value)" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

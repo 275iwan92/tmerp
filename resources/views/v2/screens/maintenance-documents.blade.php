@@ -41,10 +41,10 @@
         :tabs="['general' => 'Document']"
         :created-by="$m->created_by" :created-at="$m->created_at?->toDateTimeString()" :updated-by="$m->updated_by" :updated-at="$m->updated_at?->toDateTimeString()">
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Document')</span><b>{{ $m->doc_no ?: t('(new)') }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Revision')</span><b>{{ $m->revision }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Status')</span><b>{{ t(Maintenance::STATUS_LABELS[$m->status] ?? $m->status) }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Used by')</span><b>{{ $used->count() }} {{ t('assets') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Document" :value="$m->doc_no ?: t('(new)')" />
+            <x-dl::strip-kv label="Revision" :value="$m->revision" />
+            <x-dl::strip-kv label="Status" :value="t(Maintenance::STATUS_LABELS[$m->status] ?? $m->status)" />
+            <x-dl::strip-kv kind="grand" label="Used by" :value="$used->count().' '.t('assets')" />
         </x-slot:strip>
         @if ($document && $head)
             <x-slot:special>

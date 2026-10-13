@@ -67,7 +67,7 @@
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Pick List')</span><b>{{ $list->pick_no }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Pick List" :value="$list->pick_no" />
             <x-dl::field.display label="Work Order" :value="$list->wo_no ?: '—'" :source="Src::of('tm2prd.prd_wo')" />
             <x-dl::field.display label="Booking" :value="trim(($meta['booking'] ?? '—').' · '.($meta['co'] ?? ''), ' ·')" :source="Src::of('tm2inv.rm_booking')" />
             <x-dl::field.display label="Need Date" :value="Locale::d($list->need_date) ?? '—'" :source="Src::of('tm2inv.wh_pick_list.need_date')" />

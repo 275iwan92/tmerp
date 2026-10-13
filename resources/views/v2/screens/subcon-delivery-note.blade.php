@@ -46,7 +46,7 @@
         <x-slot:special>
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Note No.')</span><b>{{ $do->do_no ?: t('(on Confirm)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Note No." :value="$do->do_no ?: t('(on Confirm)')" />
             <x-dl::field.date name="do_date" label="Date" :value="$do->do_date?->toDateString()" :source="Src::of('tm2sdi.do_delivery.do_date')" />
             <x-dl::field.select name="supplier_id" label="Subcontractor" required :options="SubconDelivery::supplierOptions() + ($do->supplier ? [$do->supplier_id => $do->supplier->supplier_name] : [])" :value="$do->supplier_id" :source="Src::of('tm2mst.sup_supplier')" />
         </x-slot:strip>

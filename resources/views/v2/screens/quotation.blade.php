@@ -102,10 +102,10 @@
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Quotation No.')</span><b>{{ $q->quotation_no }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Quotation No." :value="$q->quotation_no" />
             <x-dl::field.date name="issued_date" label="Document date" required :value="old('issued_date', $q->issued_date?->toDateString())" :source="Src::of('tm2sdi.quo_quotation.issued_date')" />
             <x-dl::field.display label="Customer" :value="$q->customer?->customer_name ?? '—'" hint="Follows the inquiry; a different customer = a new quotation." :source="Src::of('tm2mst.cust_customer')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Grand Total')</span><b>{{ $money($totals['grand']) }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Grand Total" :value="$money($totals['grand'])" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">

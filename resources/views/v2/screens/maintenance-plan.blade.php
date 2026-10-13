@@ -52,11 +52,11 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Plan')</span><b>{{ $p->plan_code ?: t('(new)') }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Last done')</span><b>{{ $p->last_done_date ? Locale::date($p->last_done_date) : '—' }}{{ $p->last_done_meter !== null ? ' · '.$num($p->last_done_meter) : '' }}</b></div>
-            <div class="dl-strip__kv"><span>@t('By time')</span><b>{{ $p->next_due_date ? Locale::date($p->next_due_date) : '—' }}</b></div>
-            <div class="dl-strip__kv"><span>@t('By meter')</span><b>{{ $p->next_due_meter !== null ? $num($p->next_due_meter).' ('.t('now').' '.$num($cur).')' : '—' }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('PM compliance (12 m)')</span><b>{{ $cmp && $cmp['pct'] !== null ? $cmp['pct'].'% · '.$cmp['on_time'].' '.t('on time').' / '.$cmp['late'].' '.t('late') : '—' }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Plan" :value="$p->plan_code ?: t('(new)')" />
+            <x-dl::strip-kv label="Last done" :value="($p->last_done_date ? Locale::date($p->last_done_date) : '—').($p->last_done_meter !== null ? ' · '.$num($p->last_done_meter) : '')" />
+            <x-dl::strip-kv label="By time" :value="$p->next_due_date ? Locale::date($p->next_due_date) : '—'" />
+            <x-dl::strip-kv label="By meter" :value="$p->next_due_meter !== null ? $num($p->next_due_meter).' ('.t('now').' '.$num($cur).')' : '—'" />
+            <x-dl::strip-kv kind="grand" label="PM compliance (12 m)" :value="$cmp && $cmp['pct'] !== null ? $cmp['pct'].'% · '.$cmp['on_time'].' '.t('on time').' / '.$cmp['late'].' '.t('late') : '—'" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">

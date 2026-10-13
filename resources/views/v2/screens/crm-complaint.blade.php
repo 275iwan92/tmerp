@@ -58,7 +58,7 @@
             @if ($status === 'CONFIRMED')<x-dl::button size="sm" variant="success" icon="fa-circle-check" label="Close" data-f-act="close" />@endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Complaint No.')</span><b>{{ $doc->complaint_no ?: t('(on Confirm)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Complaint No." :value="$doc->complaint_no ?: t('(on Confirm)')" />
             <x-dl::field.date name="complaint_date" label="Date" :value="$doc->complaint_date?->toDateString()" :readonly="! $draft" :source="Src::of('tm2sdi.crm_complaint.complaint_date')" />
             <x-dl::field.display label="Customer" :value="$doc->customer?->customer_name ?? '—'" :source="Src::of('tm2mst.cust_customer')" />
             <x-dl::field.select name="complaint_type" label="Type" :options="$labels(CrmComplaint::TYPES)" :value="$doc->complaint_type" :disabled="! $draft" :source="Src::of('tm2sdi.crm_complaint.complaint_type')" />

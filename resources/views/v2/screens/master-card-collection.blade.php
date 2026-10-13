@@ -83,10 +83,10 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Item Code')</span><b>{{ $c->card_code ?: '—' }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Item Code" :value="$c->card_code ?: '—'" />
             <x-dl::field.display label="Design No." :value="$c->design_no ?: '—'" :source="Src::of('tm2mst.prod_master_card.design_no')" />
             <x-dl::field.display label="Customer" :value="$c->customer?->customer_name ?? ($c->customer_text ? $c->customer_text.' ('.t('not matched to master yet').')' : '—')" :source="Src::of('tm2mst.prod_master_card.customer_id', 'tm2mst.cust_customer.customer_name')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Status')</span><b>{{ ProdMasterCard::STATUS[$c->status] }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Status" :value="ProdMasterCard::STATUS[$c->status]" />
         </x-slot:strip>
 
         <x-slot:main>

@@ -70,10 +70,10 @@
             @if ($po->status === 'APPROVED' && ! $cash)<x-dl::button size="sm" variant="success" icon="fa-paper-plane" :label="t('Send to Supplier')" type="submit" name="action" value="send" formnovalidate :onclick="'return confirm('.json_encode(t('Mark this PO as sent to the supplier?')).')'" />@endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('PO No.')</span><b>{{ $po->doc_no ?: t('(on Confirm)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="PO No." :value="$po->doc_no ?: t('(on Confirm)')" />
             <x-dl::field.date name="i_doc_date" label="PO Date" :value="$po->i_doc_date?->toDateString()" :source="Src::of('tm2pur.po_order.i_doc_date')" />
             <x-dl::field.display label="Supplier" :value="($sup->supplier_name ?? '—').' ('.($sup->supplier_code ?? '—').')'" :source="Src::of('tm2mst.sup_supplier')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Net Payable')</span><b>{{ $money($po->c_net_payable) }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Net Payable" :value="$money($po->c_net_payable)" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

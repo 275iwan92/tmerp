@@ -42,9 +42,9 @@
         :tabs="['general' => 'General']"
         :created-by="$cfg->created_by" :created-at="$cfg->created_at?->toDateTimeString()" :updated-by="$cfg->updated_by" :updated-at="$cfg->updated_at?->toDateTimeString()">
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Code')</span><b>{{ $cfg->module_code }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Document')</span><b>{{ $name }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Number of Levels')</span><b>{{ count($levels) }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Code" :value="$cfg->module_code" />
+            <x-dl::strip-kv label="Document" :value="$name" />
+            <x-dl::strip-kv kind="grand" label="Number of Levels" :value="count($levels)" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">

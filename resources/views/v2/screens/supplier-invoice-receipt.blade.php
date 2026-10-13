@@ -45,7 +45,7 @@
         <x-slot:special>
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Receipt No.')</span><b>{{ $doc->receipt_no ?: t('(on Confirm)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Receipt No." :value="$doc->receipt_no ?: t('(on Confirm)')" />
             <x-dl::field.date name="receipt_date" label="Date" :value="$doc->receipt_date?->toDateString()" :readonly="! $draft" :source="Src::of('tm2acc.fin_invoice_receipt.receipt_date')" />
             <x-dl::field.display label="Supplier" :value="$doc->supplier?->supplier_name ?? '—'" :source="Src::of('tm2mst.sup_supplier')" />
         </x-slot:strip>

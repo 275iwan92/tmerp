@@ -32,7 +32,7 @@
         :hide="['delete', 'new', 'duplicate', 'cancel', 'email', 'print']" :tabs="['review' => ['QA Review', 'fa-magnifying-glass-chart'], 'complaint' => ['Complaint', 'fa-triangle-exclamation']]"
         :created-by="$rv->created_by" :created-at="$rv->created_at?->toDateTimeString()" :updated-by="$rv->updated_by" :updated-at="$rv->updated_at?->toDateTimeString()">
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Complaint No.')</span><b>{{ $doc->complaint_no }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Complaint No." :value="$doc->complaint_no" />
             <x-dl::field.display label="Date" format="date" :value="$doc->complaint_date?->toDateString()" :source="Src::of('tm2sdi.crm_complaint.complaint_date')" />
             <x-dl::field.display label="Customer" :value="$doc->customer?->customer_name ?? '—'" :source="Src::of('tm2mst.cust_customer')" />
             <x-dl::field.display label="Category" :value="t(CrmComplaint::CATEGORIES[$doc->category] ?? $doc->category)" :source="Src::of('tm2sdi.crm_complaint.category')" />

@@ -96,10 +96,10 @@
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('PQ No.')</span><b>{{ $pq->doc_no ?: t('(on Confirm)') }}</b></div>
+            <x-dl::strip-kv kind="doc" label="PQ No." :value="$pq->doc_no ?: t('(on Confirm)')" />
             <x-dl::field.select name="i_supplier_id" label="Supplier" required placeholder="— choose supplier —" :options="PurchaseOrder::suppliers()" :value="$pq->i_supplier_id" :source="Src::of('tm2mst.sup_supplier')" />
             <x-dl::field.date name="i_doc_date" label="Quotation Date" :value="$pq->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pq_quotation.i_doc_date')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Total (IDR)')</span><b>{{ $money($pq->c_total_idr) }}</b></div>
+            <x-dl::strip-kv kind="grand" label="Total (IDR)" :value="$money($pq->c_total_idr)" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">

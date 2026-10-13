@@ -43,10 +43,10 @@
         :tabs="['general' => 'Profile', 'notes' => 'Notes']"
         :created-by="$a->created_by" :created-at="$a->created_at?->toDateTimeString()" :updated-by="$a->updated_by" :updated-at="$a->updated_at?->toDateTimeString()">
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Asset')</span><b>{{ $a->asset_code ?: t('(new)') }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Class')</span><b>{{ t(MntAsset::CLASSES[$a->asset_class] ?? $a->asset_class) }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Criticality')</span><b>{{ $crit ? t(MntAsset::CRITICALITY[$crit] ?? $crit) : '—' }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Complete')</span><b>{{ $done ? $done['done'].' / '.$done['total'] : '—' }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Asset" :value="$a->asset_code ?: t('(new)')" />
+            <x-dl::strip-kv label="Class" :value="t(MntAsset::CLASSES[$a->asset_class] ?? $a->asset_class)" />
+            <x-dl::strip-kv label="Criticality" :value="$crit ? t(MntAsset::CRITICALITY[$crit] ?? $crit) : '—'" />
+            <x-dl::strip-kv kind="grand" label="Complete" :value="$done ? $done['done'].' / '.$done['total'] : '—'" />
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">

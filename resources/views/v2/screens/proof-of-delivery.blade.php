@@ -49,10 +49,10 @@
             <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('proof-of-delivery', $do->id_delivery)" target="_blank" />
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>@t('Delivery Note')</span><b>{{ $do->do_no }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Promised')</span><b>{{ Locale::d($promise['date']) ?? '—' }}{{ $promise['time'] ? ' '.substr($promise['time'], 0, 5) : '' }}</b></div>
-            <div class="dl-strip__kv"><span>@t('Customer receives')</span><b>{{ $promise['date'] ? Promise::receivingText($hours) : '—' }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>@t('Promise')</span><b>{{ t(ProofOfDelivery::state($last)) }}</b></div>
+            <x-dl::strip-kv kind="doc" label="Delivery Note" :value="$do->do_no" />
+            <x-dl::strip-kv label="Promised" :value="(Locale::d($promise['date']) ?? '—').($promise['time'] ? ' '.substr($promise['time'], 0, 5) : '')" />
+            <x-dl::strip-kv label="Customer receives" :value="$promise['date'] ? Promise::receivingText($hours) : '—'" />
+            <x-dl::strip-kv kind="grand" label="Promise" :value="t(ProofOfDelivery::state($last))" />
         </x-slot:strip>
         @if ($done)
             <x-dl::alert tone="info" message="Delivery finished. The result is locked as the KPI record." />
