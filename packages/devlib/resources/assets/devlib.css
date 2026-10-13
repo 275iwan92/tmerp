@@ -1,11 +1,14 @@
 /* =====================================================================
- * DevLib — CSS library. SATU-SATUNYA tempat nilai warna/ukuran (token di
- * :root). Ubah token = semua komponen & semua aplikasi pemakai ikut.
- * Nilai awal disalin dari mockup user (login.html, main_menu_v2.html).
- * Semua class berawalan dl- agar tidak bentrok dengan CSS lama tmerp.
- * ATURAN TEKS (user 2026-10-13): teks HITAM (di atas latar terang) atau TERANG
- * (di atas latar gelap). Tanpa abu-abu. Abu-abu HANYA untuk yang disabled
- * (--dl-disabled); read-only dibedakan lewat latar, bukan warna teks.
+ * REMARK
+ * Tujuan       : Pustaka CSS DevLib: SATU-SATUNYA tempat nilai warna / ukuran (token di :root) dan gaya semua objek x-dl::*;
+ *                ubah token atau objek induk = semua komponen dan semua layar turunan ikut. Semua class berawalan dl-.
+ * Sumber hulu  : Mockup user (login.html, main_menu_v2.html) dan keputusan user per objek.
+ * Input        : -
+ * Output       : Kelas dl-* dan token --dl-*. ATURAN TEKS (user 2026-10-13): teks HITAM (di atas latar terang) atau TERANG
+ *                (di atas latar gelap), tanpa abu-abu; abu-abu HANYA --dl-disabled; read-only dibedakan lewat latar.
+ *                Sheet: judul kolom, nomor baris, sel baca-saja = token --dl-sheet-head / --dl-sheet-ro (satu tempat, semua layar).
+ * Dipakai oleh : Semua layar v2 (devlib.test, mockup.test, tmerp.test) lewat _devlib/devlib.css.
+ * Status       : Aktif.
  * ===================================================================== */
 :root{
   /* warna */
@@ -17,6 +20,8 @@
   --dl-border:#e3e7f0; --dl-border-hover:#cdd4e4; --dl-grip:#aeb6ce;
   --dl-ink:#111827; --dl-ink-strong:#0b1020; --dl-muted:#1f2937; --dl-disabled:#9aa3bd;
   --dl-surface:#fff; --dl-surface-alt:#fafbfd; --dl-hover:#f2f5fb; --dl-field-ro:#f2f4f8; --dl-chip:#eef1f6;
+  /* sheet (grid sel): judul kolom + nomor baris, dan sel baca-saja dibedakan lewat LATAR; teks tetap hitam */
+  --dl-sheet-head:#e6ebf5; --dl-sheet-ro:#dde3f0;
   --dl-danger:#d0453f; --dl-danger-soft:#fdeceb; --dl-danger-line:#f6cfcd; --dl-badge:#e5484d;
   --dl-violet:#7a52d0; --dl-violet-soft:#faf7ff; --dl-violet-line:#d7c3ff; --dl-violet-ink:#6b4bb0; --dl-violet-msg:#f4f1fb;
   --dl-amber:#b6852a; --dl-amber-2:#e5a324; --dl-green:#22b07d; --dl-orange:#d85a30; --dl-pink:#d4537e; --dl-lime:#639922;
@@ -933,6 +938,9 @@ body.dl-page-body{overflow:auto;height:auto;min-height:100vh}
 /* Layar aplikasi (body.dl-page-wide): isi selebar panel, tepi kiri-kanan hanya 6px (~1,5 mm). Katalog DevLib tetap 1100px. */
 body.dl-page-wide .dl-cat{max-width:none;padding-left:6px;padding-right:6px}
 .dl-cat__nav{position:sticky;top:0;z-index:50;background:var(--dl-bg);padding:10px 0;border-bottom:1px solid var(--dl-border);margin-bottom:14px}
+.dl-cat__nav.has-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.dl-cat__actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.dl-cat__actions form{display:inline-flex;margin:0}
 .dl-cat__chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .dl-cat__item{scroll-margin-top:110px;margin-bottom:26px}
 .dl-cat__item > h2{display:flex;align-items:center;gap:8px;font-size:calc(14px * var(--dl-font-scale));color:var(--dl-ink-strong);margin:0 0 8px}
@@ -1166,6 +1174,14 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-accordion__head:hover{background:var(--dl-hover)}
 .dl-accordion__icon{color:var(--dl-accent);width:16px;text-align:center}
 .dl-accordion__title{flex:1}
+.dl-accordion.has-summary > .dl-accordion__head .dl-accordion__title{flex:0 0 auto}
+.dl-accordion__summary{flex:1;min-width:0;text-align:right;color:var(--dl-muted);font-weight:500;font-size:calc(12.5px * var(--dl-font-scale));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-accordion{transition:box-shadow .2s ease,border-color .2s ease}
+.dl-accordion.is-open{border-color:color-mix(in srgb,var(--dl-accent) 35%,var(--dl-border));box-shadow:inset 3px 0 0 var(--dl-accent)}
+.dl-accordion.is-open > .dl-accordion__head{background:var(--dl-accent-soft)}
+.dl-accordion__head:focus-visible{outline:2px solid var(--dl-accent);outline-offset:-2px}
+.dl-accordion__badge--ok{background:#dcfce7;color:#166534}.dl-accordion__badge--warn{background:#fef3c7;color:#92400e}.dl-accordion__badge--danger{background:#fee2e2;color:#991b1b}
+.dl-accordion__head .dl-accordion__badge{font-weight:700;padding:1px 9px}
 .dl-accordion__badge{background:var(--dl-accent-soft);color:var(--dl-accent);border-radius:10px;padding:0 7px;font-size:calc(11px * var(--dl-font-scale))}
 .dl-accordion__chev{color:var(--dl-muted);transition:transform .2s}
 .dl-accordion.is-open > .dl-accordion__head .dl-accordion__chev{transform:rotate(180deg)}
@@ -1639,6 +1655,8 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-gantt__blk.is-conflict{outline:2px solid var(--dl-danger);outline-offset:1px}
 .dl-gantt__blk.is-conflict::after{content:"bentrok";position:absolute;right:4px;top:3px;font-size:9px;font-weight:700;color:var(--dl-white);background:var(--dl-danger);border-radius:3px;padding:0 4px}
 .dl-gantt__blk.is-changed{border-style:solid;border-width:1px 1px 1px 4px}
+.dl-gantt__blk.is-clash{outline:2px solid #dc2626;outline-offset:-1px;box-shadow:0 0 0 2px rgba(220,38,38,.25)}
+.dl-gantt__blk.is-clash::after{content:'\26A0';position:absolute;right:3px;top:1px;color:#dc2626;font-size:11px;font-weight:700}
 .dl-gantt__blk.is-dim{opacity:.25}
 .dl-gantt__blk.is-match{box-shadow:0 0 0 3px var(--dl-amber-2)}
 .dl-gantt__rz{position:absolute;right:0;top:0;bottom:0;width:8px;cursor:ew-resize}
@@ -2141,11 +2159,13 @@ td.dl-print__no{text-align:center}
 .dl-sheet__wrap{overflow:auto;max-height:520px;outline:none}
 .dl-sheet__wrap:focus-visible{box-shadow:inset 0 0 0 2px var(--dl-accent-ring)}
 .dl-sheet__table{border-collapse:collapse;width:100%;font-size:calc(12.5px * var(--dl-font-scale));user-select:none}
-.dl-sheet__table th{position:sticky;top:0;z-index:2;background:var(--dl-surface-alt);border:1px solid var(--dl-border);padding:6px 8px;text-align:left;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted);white-space:nowrap}
+.dl-sheet__table th{position:sticky;top:0;z-index:2;background:var(--dl-sheet-head);border:1px solid var(--dl-border);padding:6px 8px;text-align:left;font-size:calc(11.5px * var(--dl-font-scale));font-weight:700;color:var(--dl-ink-strong);white-space:nowrap}
 .dl-sheet__table td{position:relative;border:1px solid var(--dl-border-soft);padding:5px 8px;height:30px;color:var(--dl-ink);white-space:nowrap;cursor:cell}
 .dl-sheet__table .num{text-align:right;font-variant-numeric:tabular-nums}
-.dl-sheet__no{width:40px;text-align:center!important;background:var(--dl-surface-alt);color:var(--dl-muted);font-size:calc(11px * var(--dl-font-scale));cursor:pointer!important;position:sticky;left:0;z-index:1}
-.dl-sheet__table td.is-ro{background:var(--dl-field-ro);color:var(--dl-muted)}
+.dl-sheet__no{width:40px;text-align:center!important;background:var(--dl-sheet-head);color:var(--dl-ink);font-weight:600;font-size:calc(11px * var(--dl-font-scale));cursor:pointer!important;position:sticky;left:0;z-index:1}
+.dl-sheet__table td.is-ro{background:var(--dl-sheet-ro);color:var(--dl-ink);cursor:default}
+.dl-sheet ::placeholder{color:var(--dl-ink);opacity:1;font-style:italic}
+.dl-sheet__bar .dl-btn{font-weight:700}
 .dl-sheet__table td.is-sel{background:var(--dl-accent-soft)}
 .dl-sheet__table td.is-cur{outline:2px solid var(--dl-accent);outline-offset:-2px;background:var(--dl-surface)}
 .dl-sheet__table td.is-dirty::before{content:"";position:absolute;left:0;top:0;border-top:7px solid var(--dl-amber-2);border-right:7px solid transparent}
@@ -3635,6 +3655,88 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-timer__l{font-size:calc(13px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted)}
 .dl-timer--warn{color:var(--dl-amber-2)}.dl-timer--success{color:var(--dl-success)}.dl-timer--danger{color:var(--dl-danger)}.dl-timer--muted{color:var(--dl-muted)}
 .dl-gantt__reason{width:100%;box-sizing:border-box;margin:8px 0 0;padding:6px 8px;border:1px solid var(--dl-border);border-radius:6px;font:inherit}
+
+/* Queue board (x-dl::queue-board): Process -> Machine dropdowns and a read-only list of what is queued there */
+.dl-queue__bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.dl-queue__count{margin-left:auto;color:var(--dl-muted);font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-queue tbody tr[hidden]{display:none}
+.dl-queue tr.is-mine td{background:var(--dl-accent-soft)}
+.dl-queue__pct{display:inline-block;width:84px;height:8px;border-radius:4px;background:var(--dl-surface-muted);vertical-align:middle;overflow:hidden;margin-right:6px}
+.dl-queue__pct i{display:block;height:100%;background:var(--dl-accent)}
+.dl-queue__st{display:inline-block;padding:1px 9px;border-radius:10px;font-weight:700;font-size:calc(11.5px * var(--dl-font-scale));background:var(--dl-surface-muted);color:var(--dl-muted)}
+.dl-queue__st--running{background:#dcfce7;color:#166534}.dl-queue__st--confirmed{background:var(--dl-accent-soft);color:var(--dl-accent)}.dl-queue__st--draft{background:#fef3c7;color:#92400e}
+
+/* Gantt connected preview: operations that would move are outlined; their old place stays as a dashed ghost */
+.dl-gantt__blk.is-previewed{outline:2px dashed var(--dl-accent);outline-offset:-1px;opacity:1;z-index:5}
+.dl-gantt__ghost{position:absolute;top:6px;bottom:6px;border:1.5px dashed var(--dl-disabled);border-radius:6px;opacity:.55;pointer-events:none}
+
+/* Gantt hierarchy: every not-confirmed bar in full colour; the open Work Order is outlined (is-mine); confirmed / live bars are a firm locked backdrop (is-live) */
+.dl-gantt__blk.is-mine{box-shadow:0 0 0 2px var(--dl-ink-strong)}
+.dl-gantt__blk.is-live{border:2px solid #475569;background-image:repeating-linear-gradient(135deg,rgba(71,85,105,.12) 0 6px,transparent 6px 12px)}
+
+/* Gantt: an officer drag waiting for PROCESS (queued) */
+.dl-gantt__blk.is-queued{outline:2px dotted var(--dl-amber-2);outline-offset:-1px}
+
+/* HelpMap: tree + guide detail with filters (x-dl::help-map) */
+.dl-hm{display:flex;flex-direction:column;gap:10px;height:100%;min-height:420px}
+.dl-hm__top{display:flex;flex-direction:column;gap:8px}
+.dl-hm__search{display:flex;align-items:center;gap:8px;border:1px solid var(--dl-border);border-radius:var(--dl-radius);padding:7px 12px;background:var(--dl-surface);color:var(--dl-muted)}
+.dl-hm__search:focus-within{border-color:var(--dl-accent);box-shadow:0 0 0 3px var(--dl-accent-ring)}
+.dl-hm__search input{flex:1;min-width:0;border:0;background:none;outline:none;font:inherit;color:var(--dl-ink)}
+.dl-hm kbd{font:inherit;font-size:.8em;border:1px solid var(--dl-border);border-radius:4px;padding:0 5px;background:var(--dl-surface-alt);color:var(--dl-muted)}
+.dl-hm__filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dl-hm__sel{display:flex;align-items:center;gap:6px;color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale))}
+.dl-hm__sel select{border:1px solid var(--dl-border);border-radius:var(--dl-radius);background:var(--dl-surface);color:var(--dl-ink);padding:5px 8px;font:inherit}
+.dl-hm__chips{display:inline-flex;gap:4px}
+.dl-hm__chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--dl-border);background:var(--dl-surface);color:var(--dl-ink);border-radius:16px;padding:4px 11px;font:inherit;font-size:calc(12px * var(--dl-font-scale));cursor:pointer}
+.dl-hm__chip b{font-weight:700;color:var(--dl-muted)}
+.dl-hm__chip.is-on{background:var(--dl-accent);border-color:var(--dl-accent);color:var(--dl-white)}
+.dl-hm__chip.is-on b{color:inherit}
+.dl-hm__sum{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-hm__reset,.dl-hm__btn{border:1px solid var(--dl-border);background:var(--dl-surface);color:var(--dl-ink);border-radius:var(--dl-radius);padding:5px 11px;font:inherit;font-size:calc(12px * var(--dl-font-scale));cursor:pointer}
+.dl-hm__btn.is-primary{background:var(--dl-accent);border-color:var(--dl-accent);color:var(--dl-white)}
+.dl-hm__main{display:grid;grid-template-columns:minmax(240px,34%) 1fr;gap:12px;flex:1;min-height:0}
+.dl-hm__tree,.dl-hm__detail{border:1px solid var(--dl-border);border-radius:var(--dl-radius);background:var(--dl-surface);overflow:auto;padding:8px}
+.dl-hm__detail{padding:16px 20px}
+.dl-hm__bh,.dl-hm__leaf{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;border-left:3px solid transparent;background:none;color:var(--dl-ink);font:inherit;padding:6px 8px;border-radius:4px;cursor:pointer}
+.dl-hm__bh{font-weight:600}
+.dl-hm__bh i{font-size:.7em;color:var(--dl-muted);transition:transform .15s}
+.dl-hm__br.is-open>.dl-hm__bh i{transform:rotate(90deg)}
+.dl-hm__bh b{margin-left:auto;font-weight:600;color:var(--dl-muted);font-size:.85em}
+.dl-hm__bb{margin-left:12px;border-left:1px solid var(--dl-border);padding-left:4px}
+.dl-hm__lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-hm__leaf:hover,.dl-hm__bh:hover{background:var(--dl-surface-alt)}
+.dl-hm__leaf.is-sel{background:var(--dl-accent-soft,var(--dl-surface-alt));border-left-color:var(--dl-accent);font-weight:600}
+.dl-hm__leaf:focus-visible,.dl-hm__bh:focus-visible,.dl-hm__btn:focus-visible,.dl-hm__chip:focus-visible,.dl-hm__reset:focus-visible{outline:2px solid var(--dl-accent);outline-offset:1px}
+.dl-hm__dot{width:7px;height:7px;border-radius:50%;background:transparent;flex:none}
+.dl-hm__dot.is-warn,.dl-hm__leaf.is-missing .dl-hm__dot{background:var(--dl-amber-2,#d99a00)}
+.dl-hm__here{font-style:normal;font-size:.75em;border-radius:10px;padding:1px 7px;background:var(--dl-accent);color:var(--dl-white)}
+.dl-hm__type{font-size:.72em;font-weight:700;border-radius:4px;padding:1px 6px;background:var(--dl-surface-alt);color:var(--dl-muted)}
+.dl-hm__type.is-input{color:var(--dl-accent)}
+.dl-hm__crumb{font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-hm__title{margin:2px 0 4px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dl-hm__route{font-size:.8em;color:var(--dl-muted)}
+.dl-hm__detail h4{margin:16px 0 4px;color:var(--dl-muted);text-transform:uppercase;letter-spacing:.04em;font-size:.75em}
+.dl-hm__steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.dl-hm__fields{display:grid;grid-template-columns:minmax(120px,28%) 1fr;gap:6px 14px;margin:0}
+.dl-hm__fields dt{font-weight:600}.dl-hm__fields dd{margin:0}
+.dl-hm__acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;padding-top:12px;border-top:1px solid var(--dl-border)}
+.dl-hm__spacer{flex:1}
+.dl-hm__here-card{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 12px;margin-bottom:12px;border:1px solid var(--dl-accent);border-radius:var(--dl-radius);background:var(--dl-surface-alt)}
+.dl-hm__empty,.dl-hm__none{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:16px;color:var(--dl-muted)}
+.dl-hm__empty.is-warn{border:1px dashed var(--dl-amber-2,#d99a00);border-radius:var(--dl-radius);margin-top:12px}
+.dl-hm__keys{display:flex;flex-wrap:wrap;gap:14px;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted)}
+@media (max-width:760px){.dl-hm__main{grid-template-columns:1fr}}
+
+/* Document status in the middle of the breadcrumb bar (Form WO) */
+.dl-cat__status{flex:1;display:flex;justify-content:center;align-items:center;min-width:0}
+
+/* Roomy sheet: large, wrapping rows for reading/reviewing long text (Quotes); caps tab labels */
+.dl-sheet.dl-sheet--roomy{--dl-font-scale:1.45}
+.dl-sheet.dl-sheet--roomy .dl-sheet__wrap{max-height:72vh}
+.dl-sheet.dl-sheet--roomy .dl-sheet__table td{height:46px;padding:8px 12px;white-space:normal;line-height:1.35}
+.dl-sheet.dl-sheet--roomy .dl-sheet__table th{padding:8px 12px}
+.dl-tabs--caps .dl-tabs__tab{text-transform:uppercase;letter-spacing:.06em}
 
 /* Review Feed (x-dl::review-feed): review = membaca lalu memutuskan. Satu kolom, huruf besar ala blog WordPress, teks HITAM,
    tombol keputusan besar. Tanpa abu-abu: warna teks selalu --dl-ink / --dl-ink-strong (abu-abu hanya --dl-disabled). */
