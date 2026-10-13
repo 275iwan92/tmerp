@@ -20,6 +20,7 @@
 - Setiap file yang diubah memuat blok REMARK di atas: **Tujuan, Sumber hulu, Input, Output, Dipakai oleh, Status**; baris layarnya di `docs/SCREEN-INDEX.md` diperbarui. PHP `/* REMARK ... */` (jangan `*/` di dalam teks), Blade `{{-- REMARK ... --}}`, JS/CSS `/* REMARK ... */`; hindari pola `label="..."`/`title="..."` di teks remark. "Ini untuk apa?" dijawab dari REMARK dan SCREEN-INDEX.
 - Periksa dan HAPUS dead code pada file yang disentuh (fungsi/rute/prop/CSS/JS tak dirujuk, variabel tak terbaca, duplikasi): buktikan dulu lewat grep rute/view/JS/tes, hapus (bukan komentar), perilaku tidak berubah. Yang meragukan (flag URL seperti `?layout=tabs`, `?extras=1`) jangan dihapus, daftarkan di laporan.
 - Kode minimal yang menyelesaikan masalah; tanpa fitur spekulatif. Komentar hanya untuk yang tidak lazim.
+- **Teks HITAM (latar terang) atau TERANG (latar gelap), tanpa abu-abu**; abu-abu hanya token `--dl-disabled` untuk yang disabled. Ditulis di token / objek DevLib, bukan per layar (ubah satu, semua turunan ikut). Layar review = blog (`x-dl::review-feed`), huruf besar, tombol keputusan besar.
 - Dasar: OO + komponen modular + library; **DevLib membuat, tmerp mewarisi** (skill `devlib-oo`, `devlib-inheritance`). Layar v2 = objek `x-dl::*` / `x-mp::*`, tanpa HTML mentah.
 
 ## 4. Stack dan perintah

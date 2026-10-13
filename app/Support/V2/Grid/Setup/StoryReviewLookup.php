@@ -2,9 +2,9 @@
 
 /*
  * REMARK
- * Tujuan       : Layar Setup > Others > Old Stories Review: Jo memutuskan tiap pesan lamanya tentang ERP (Adopt / Later / Ignore); tab kedua membaca pesan utuh.
+ * Tujuan       : Layar Setup > Others > Old Stories Review: Jo membaca tiap pesan lamanya tentang ERP utuh (kartu blog) lalu memutuskan Adopt / Later / Ignore.
  * Sumber hulu  : tm2sys.sys_story_review (diisi php artisan review:import dari docs/ringkas/cerita_lama_penuh.md).
- * Input        : Pilihan Decision per pesan; tombol Process with Claude di header layar.
+ * Input        : Pilihan Decision per pesan (tombol besar di kartu); tombol Process with Claude di header layar.
  * Output       : decision, decided_by, decided_at; antrean sys_review_request (scope STORY); pesan yang Adopt ditulis Claude ke dokumen yang benar setelah Jo menyetujui.
  * Dipakai oleh : Menu SET_STORY_REVIEW (v2:setup-story-review).
  * Status       : Aktif (ddt*).
@@ -13,13 +13,13 @@
 namespace App\Support\V2\Grid\Setup;
 
 use App\Models\Sys\SysStoryReview;
+use Devlib\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class StoryReviewLookup extends ReviewLookup
 {
-    private const PREVIEW = 450;
+    private const TONES = ['ADOPT' => 'success', 'LATER' => 'warn', 'IGNORE' => 'neutral'];
 
     public function slug(): string
     {
@@ -56,10 +56,24 @@ class StoryReviewLookup extends ReviewLookup
         return SysStoryReview::query()->orderBy('msg_date')->orderBy('id_story_review');
     }
 
+    // Isi pesan ada di kartu (posts); baris ini hanya yang dibutuhkan balasan Save.
     protected function row(Model $m): array
     {
-        return ['msg_date' => $m->msg_date, 'session_ref' => $m->session_ref, 'char_count' => (int) $m->char_count,
-            'preview' => Str::limit(Str::squish($m->full_text), self::PREVIEW, '...'), 'full_text' => $m->full_text, 'decision' => (string) $m->decision];
+        return ['msg_date' => $m->msg_date, 'decision' => (string) $m->decision];
+    }
+
+    public function choiceTones(): array
+    {
+        return self::TONES;
+    }
+
+    // Kartu blog: tanggal pesan sebagai judul, pesan utuh apa adanya, lalu tombol keputusan.
+    public function posts(): array
+    {
+        return $this->query()->limit($this->limit)->get()->map(fn (SysStoryReview $m) => [
+            'id' => $m->getKey(), 'title' => Locale::date($m->msg_date), 'meta' => tf('Session :ref · :n characters', ['ref' => $m->session_ref, 'n' => $m->char_count]),
+            'text' => $m->full_text, 'decision' => (string) $m->decision, 'state' => $this->decidedState($m), 'data' => ['decision' => (string) $m->decision],
+        ])->all();
     }
 
     public function stats(): array
@@ -76,20 +90,8 @@ class StoryReviewLookup extends ReviewLookup
     public function columns(): array
     {
         return [
-            ['key' => 'msg_date', 'label' => 'Message date', 'type' => 'date', 'readonly' => true, 'width' => '115px'],
+            ['key' => 'msg_date', 'label' => 'Message date', 'type' => 'date', 'readonly' => true],
             $this->decisionColumn(),
-            ['key' => 'preview', 'label' => 'Message', 'readonly' => true, 'width' => '760px'],
-            ['key' => 'session_ref', 'label' => 'Session', 'readonly' => true, 'width' => '90px'],
-            ['key' => 'char_count', 'label' => 'Characters', 'type' => 'number', 'readonly' => true, 'width' => '90px'],
-        ];
-    }
-
-    // Tab "Full text": tanggal + isi pesan utuh, hanya baca.
-    public function fullColumns(): array
-    {
-        return [
-            ['key' => 'msg_date', 'label' => 'Message date', 'type' => 'date', 'readonly' => true, 'width' => '130px'],
-            ['key' => 'full_text', 'label' => 'Full message', 'readonly' => true, 'width' => '1100px'],
         ];
     }
 }

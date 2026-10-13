@@ -2,9 +2,9 @@
 
 /*
  * REMARK
- * Tujuan       : Layar Setup > Others > MD Review: Jo memutuskan tiap berkas .md (Keep / Condense / Discard) di samping usulan Claude.
- * Sumber hulu  : tm2sys.sys_md_review (diisi php artisan review:import dari docs/ringkas/md_review_tabel.md).
- * Input        : Pilihan Decision per berkas; tombol Process with Claude di header layar.
+ * Tujuan       : Layar Setup > Others > MD Review: Jo membaca ringkasan tiap berkas .md (kartu blog) lalu memutuskan Keep / Condense / Discard di samping usulan Claude.
+ * Sumber hulu  : tm2sys.sys_md_review (diisi php artisan review:import dari docs/ringkas/md_review_tabel.md); ringkasan kartu dari MdDigest.
+ * Input        : Pilihan Decision per berkas (tombol besar di kartu); tombol Process with Claude di header layar.
  * Output       : decision, decided_by, decided_at; antrean sys_review_request (scope MD) untuk php artisan review:requests.
  * Dipakai oleh : Menu SET_MD_REVIEW (v2:setup-md-review).
  * Status       : Aktif (ddt*). Tidak ada berkas yang dihapus dari layar ini.
@@ -13,12 +13,16 @@
 namespace App\Support\V2\Grid\Setup;
 
 use App\Models\Sys\SysMdReview;
+use App\Services\Sys\MdDigest;
+use Devlib\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class MdReviewLookup extends ReviewLookup
 {
     private const PROPOSALS = ['KEEP' => 'Keep', 'CONDENSE' => 'Condense', 'UNSURE' => 'Unsure', 'DISCARD' => 'Discard'];
+
+    private const PROPOSAL_TONES = ['KEEP' => 'success', 'CONDENSE' => 'warn', 'UNSURE' => 'accent', 'DISCARD' => 'danger'];
 
     public function slug(): string
     {
@@ -48,6 +52,27 @@ class MdReviewLookup extends ReviewLookup
     protected function decisionLabels(): array
     {
         return array_diff_key(self::PROPOSALS, ['UNSURE' => 1]);
+    }
+
+    public function choiceTones(): array
+    {
+        return self::PROPOSAL_TONES;
+    }
+
+    // Kartu blog: judul dari H1 berkas, 2-3 kalimat pembuka, usulan + alasan Claude, lalu tombol keputusan.
+    public function posts(): array
+    {
+        return $this->query()->limit($this->limit)->get()->map(function (SysMdReview $m) {
+            $digest = MdDigest::of($m->file_path);
+            $facts = $m->line_count ? tf($m->line_count === 1 ? ':lines line' : ':lines lines', ['lines' => $m->line_count]) : t('File no longer exists');
+            $facts .= $m->last_changed ? ' · '.tf('changed :date', ['date' => Locale::date($m->last_changed)]) : '';
+            $facts .= $m->ref_count !== null ? ' · '.tf($m->ref_count === 1 ? ':n reference' : ':n references', ['n' => $m->ref_count]) : '';
+
+            return ['id' => $m->getKey(), 'title' => $digest['title'] ?: basename($m->file_path), 'meta' => $m->file_path.' · '.$facts,
+                'badge' => t(self::PROPOSALS[$m->proposal] ?? $m->proposal), 'tone' => self::PROPOSAL_TONES[$m->proposal] ?? 'neutral',
+                'summary' => $digest['summary'] !== '' ? $digest['summary'] : t('No introduction text in this file.'), 'note' => $m->reason,
+                'decision' => (string) $m->decision, 'state' => $this->decidedState($m), 'data' => ['proposal' => $m->proposal, 'decision' => (string) $m->decision]];
+        })->all();
     }
 
     protected function query(): Builder

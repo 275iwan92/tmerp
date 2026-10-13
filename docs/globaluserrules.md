@@ -620,6 +620,15 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
       `docs/md_for_systems/openingboard_review.md`. **Terpasang di ddt dan tm2** (user 2026-10-02: "pasang saja di tmerp");
       asisten di tm2 belum dipasang, jadi perintah widget lewat asisten baru jalan di mockup.test.
 
+34. **Teks hitam atau terang, tanpa abu-abu; layar review = blog — user 2026-10-13.**
+
+    > User: "JANGAN GREY!!!! TIDAK TERBACA", "TULIS DI OBJECT mu JANGAN PAKAI GREY kalau TIDAK DISABLE", "UBAH SATU HARUSNYA BERUBAH SEMUA KALAU PAKAI OBJECT INHERITATE".
+
+    - Teks di atas latar terang = hitam (`--dl-ink`, `--dl-ink-strong`, `--dl-muted` yang sudah gelap); di atas latar gelap = terang (`--dl-side-*`, `--dl-on-dark*`). Abu-abu hanya `--dl-disabled`, untuk yang disabled.
+    - Read-only dibedakan lewat latar (`--dl-field-ro`); placeholder, header kolom, badge netral, dan alert memakai teks gelap, nada = warna latar / garis. Tidak ada `opacity` pada teks dan tidak ada hex abu-abu.
+    - Aturan hidup di token dan objek induk DevLib; layar tidak menulis warna sendiri, sehingga satu perubahan menurunkan ke semua turunan.
+    - Layar review (membaca lalu memutuskan) = blog: objek `x-dl::review-feed`, satu kolom, judul 30px, isi 21px, kartu per butir, tombol keputusan besar yang langsung tersimpan, saringan + cari di atas. Dipakai MD Review dan Old Stories Review (Setup > Others).
+
 ## D. Cara kerja developer / agen
 
 1. **Peran:** system analyst, developer, dan database designer. Aktif menilai desain; audit integritas data
@@ -840,3 +849,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-08 | A.26: **Stock Card tanpa perubahan** dan **aturan area = tiga isian** (user) — preview Stock Card diganti replika tanpa perubahan. |
 | 2026-10-08 | A.26: **preview layar yang sudah ada memakai tangkapan layar asli**, angka contoh harus bersambung; replika salah dibuang. Rencana teknis Inventory & Warehouse v2.01 dibangun ulang dengan mockup preview. |
 | 2026-10-08 | A.26: **Stock Card bersambung** (BB berikutnya = EB sebelumnya, saldo item) menggantikan BB / EB per lokasi; **koreksi salah input lewat Pembalik** diusulkan. Dua preview dibuat. |
+| 2026-10-13 | C.34: **teks hitam atau terang, tanpa abu-abu; review = blog** (user) — abu-abu hanya untuk disabled (`--dl-disabled`), read-only dibedakan lewat latar; aturan ditulis di token / objek DevLib supaya satu perubahan menurunkan ke semua layar. Layar review memakai objek `x-dl::review-feed` (huruf besar ala WordPress, tombol keputusan besar). MD Review dan Old Stories Review dibangun ulang dengan objek itu. |

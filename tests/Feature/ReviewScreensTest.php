@@ -54,15 +54,18 @@ class ReviewScreensTest extends TestCase
         }
     }
 
-    public function test_screens_render_with_data_and_process_button(): void
+    public function test_screens_render_as_blog_cards_with_decision_buttons_and_process_button(): void
     {
         $file = SysMdReview::query()->orderBy('file_path')->value('file_path');
-        $md = $this->actingAs($this->admin)->get(route('v2.screen', 'setup-md-review'))->assertOk()->assertSee($file);
+        $md = $this->actingAs($this->admin)->get(route('v2.screen', 'setup-md-review'))->assertOk()->assertSee($file)
+            ->assertSee('data-dl-review-feed', false)->assertSee('data-rf-choice="DISCARD"', false);
         $this->assertSeeEither($md->getContent(), 'Process with Claude', 'Proses dengan Claude');
+        $this->assertSame(SysMdReview::query()->count(), substr_count($md->getContent(), 'data-rf-post'));
 
-        $story = $this->actingAs($this->admin)->get(route('v2.screen', 'setup-story-review'))->assertOk();
+        $story = $this->actingAs($this->admin)->get(route('v2.screen', 'setup-story-review'))->assertOk()
+            ->assertSee('data-dl-review-feed', false)->assertSee('data-rf-choice="ADOPT"', false);
         $this->assertSeeEither($story->getContent(), 'Process with Claude', 'Proses dengan Claude');
-        $this->assertSeeEither($story->getContent(), 'Full text', 'Teks utuh');
+        $this->assertSame(SysStoryReview::query()->count(), substr_count($story->getContent(), 'data-rf-post'));
     }
 
     // Layar mengikuti bahasa akun: label English atau pasangan Indonesia di kamus sama-sama sah.

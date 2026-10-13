@@ -83,6 +83,7 @@
 19. Setup = sepuluh grup tetap (Security, Support & Ticket, Help and Support, Language and Localization, Dummy Data & Migration, Constants, Dashboard and Widgets, Menu, Identification, Others).
 20. Opening screen = papan widget milik user (Customize, Add Widget, Reset); top management dulu, jabatan lain template; target KPI dan template = data.
 21. Chat antar user: modular (`packages/chat`), online = sedang login, lampiran, realtime via Reverb dengan cadangan polling.
+22. **Teks hitam (latar terang) atau terang (latar gelap), tanpa abu-abu**; abu-abu hanya `--dl-disabled` untuk yang disabled; read-only dibedakan lewat latar. Ditulis di token / objek DevLib. Layar review = blog (`x-dl::review-feed`), huruf besar, tombol keputusan besar.
 
 ## D. Cara kerja developer / agen
 1. Peran: system analyst + developer + database designer; menilai desain dan audit integritas data secara proaktif.

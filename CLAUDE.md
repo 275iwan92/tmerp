@@ -4,6 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Konteks Proyek ERP CV. Telasih Makmur (Versi 2)
 
+## TEKS HITAM ATAU TERANG, TANPA ABU-ABU; REVIEW = BLOG (user 2026-10-13, WAJIB)
+
+> User: *"JANGAN GREY!!!! TIDAK TERBACA"*, *"TULIS DI OBJECT mu JANGAN PAKAI GREY kalau TIDAK DISABLE"*, *"INI ITU MAU DIBACA PAKAI WARNA HITAM ATAU WARNA CERAH"*, *"UBAH SATU HARUSNYA BERUBAH SEMUA KALAU PAKAI OBJECT INHERITATE"*.
+- Teks di atas latar terang = **HITAM** (token `--dl-ink`, `--dl-ink-strong`; `--dl-muted` juga sudah gelap). Di atas latar gelap = **TERANG** (`--dl-side-*`, `--dl-on-dark*`). Abu-abu pucat, `opacity` pada teks, dan hex abu-abu (`#6b7280`, `#9ca3af`, `#94a3b8`, ...) DILARANG; satu-satunya abu-abu = token `--dl-disabled`, hanya untuk yang benar-benar disabled.
+- Read-only dibedakan lewat LATAR (`--dl-field-ro`), bukan warna teks. Placeholder, header kolom, badge netral, alert: teks tetap gelap (nada = warna latar/garis).
+- Tulis di OBJEK / TOKEN DevLib (`packages/devlib/resources/assets/devlib.css`), bukan per layar: ubah satu token atau satu objek induk, semua turunan ikut (warisan objek). Objek baru wajib memakai token itu; jangan menambah warna teks sendiri.
+- Layar REVIEW (membaca lalu memutuskan, bukan mengisi sel) = bentuk **BLOG**: objek `x-dl::review-feed`, satu kolom, huruf besar ala WordPress (judul 30px, isi 21px, teks hitam), satu kartu per butir dengan tombol keputusan besar yang langsung tersimpan. Bukan grid / sheet.
+
 ## 0. PERINTAH UMUM
 
 > **WAJIB DIBACA PERTAMA: `docs/globaluserrules.md`** — Pedoman Aturan User (RELEASE 1 Oktober 2026).

@@ -297,6 +297,7 @@ final class Catalog
                 'badge' => ['Badge', $c('Badge'), 'ro'], 'stat-box' => ['Stat Box', $c('StatBox'), 'ro'], 'status-card' => ['Status Card', $c('StatusCard'), 'ro'],
                 'avatar-progress' => ['Avatar · Progress', $c('Avatar', 'Progress'), 'ro'], 'tooltip' => ['Tooltip', $c('Tooltip'), 'ro'], 'misc' => ['Alert · Divider · Brand · Language', $c('Alert', 'Divider', 'Brand', 'LangSwitch'), 'ro'],
                     'feed' => ['Feed (blog / news: narratives read in one page)', $c('Feed', 'Badge'), 'ro'],
+                    'review-feed' => ['Review Feed (blog-style review: read a card, decide with big buttons)', $c('ReviewFeed', 'Feed'), 'rw'],
             ]],
             'p2-containers' => ['Container', 'fa-solid fa-table-cells-large', [
                 'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar'), 'wide'], 'split' => ['Split (isi + panel samping kanan / kiri)', $c('Split'), 'wide'], 'table' => ['Table', $c('Table'), 'wide'], 'accordion' => ['Accordion (vertical · horizontal)', $c('Accordion', 'AccordionGroup'), 'wide'],
