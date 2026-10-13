@@ -238,35 +238,6 @@ class ProductionWorklistWoTest extends TestCase
         $rule->delete();
     }
 
-    public function test_mts_forecast_entry_computes_accuracy(): void
-    {
-        $this->actingAs($this->admin());
-
-        $product = ProdProduct::firstOrFail();
-
-        Livewire::test('pages::production.mts-forecast')
-            ->call('openNew')
-            ->call('selectProduct', $product->id_product)
-            ->set('periodStart', '2026-09-01')
-            ->set('periodEnd', '2026-09-07')
-            ->set('forecastQty', 1000)
-            ->call('save');
-
-        $forecast = PrdMtsForecast::where('product_id', $product->id_product)
-            ->where('period_start', '2026-09-01')->latest('forecast_id')->firstOrFail();
-        $this->assertNull($forecast->accuracy_pct);
-
-        Livewire::test('pages::production.mts-forecast')
-            ->call('openActualEntry', $forecast->forecast_id)
-            ->set('actualQty', 900)
-            ->call('saveActual');
-
-        $forecast->refresh();
-        $this->assertEqualsWithDelta(0.9, (float) $forecast->accuracy_pct, 0.0001);
-
-        $forecast->delete();
-    }
-
     // F15 Production Output Recording -- tanpa spec Tier2/3/4 (didesain dari
     // nol 2026-08-28), tautan ke Scheduling Board diverifikasi lewat progress
     // blok (operationVm() pakai outputProgressPercent() begitu ada catatan).

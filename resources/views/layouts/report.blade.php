@@ -149,31 +149,23 @@
                     ['route' => 'report.hr', 'icon' => 'fa-solid fa-users', 'label' => 'HR & Payroll'],
                 ],
                 'Control Towers' => [
-                    ['slug' => 'qms', 'icon' => 'fa-solid fa-circle-check', 'label' => 'QMS'],
-                    ['slug' => 'cmms', 'icon' => 'fa-solid fa-screwdriver-wrench', 'label' => 'CMMS Maintenance'],
                     ['route' => 'report.warehouse', 'icon' => 'fa-solid fa-warehouse', 'label' => 'Warehouse'],
-                    ['route' => 'report.costing', 'icon' => 'fa-solid fa-calculator', 'label' => 'Estimating & Costing'],
-                    ['slug' => 'ehs', 'icon' => 'fa-solid fa-leaf', 'label' => 'EHS'],
-                    ['slug' => 'assets', 'icon' => 'fa-solid fa-building-columns', 'label' => 'Assets & Capital'],
                 ],
             ];
-            // 4 item "Control Tower" tanpa modul nyata berbagi 1 route
-            // (report.control-tower/{slug}) -- item lain pakai route sendiri.
-            $__href = fn (array $i) => isset($i['slug']) ? route('report.control-tower', $i['slug']) : route($i['route']);
-            $__isActive = fn (array $i) => isset($i['slug'])
-                ? request()->route()?->getName() === 'report.control-tower' && request()->route('slug') === $i['slug']
-                : request()->route()?->getName() === $i['route'];
+            // Item placeholder QMS / CMMS / EHS / Assets / Costing dibuang (Jo 2026-10-13): hanya laporan yang punya data nyata.
+            $__href = fn (array $i) => route($i['route']);
+            $__isActive = fn (array $i) => request()->route()?->getName() === $i['route'];
             $__activeLabel = collect($__navGroups)->flatten(1)->first($__isActive)['label'] ?? ($title ?? 'Laporan');
             $__aiKeywords = [
                 'report.executive' => 'ringkasan eksekutif overview', 'report.purchase' => 'pembelian purchase',
                 'report.sales' => 'penjualan customer crm', 'report.accounting' => 'akuntansi keuangan finance',
                 'report.production' => 'produksi manufacturing', 'report.hr' => 'karyawan gaji payroll sdm',
-                'report.warehouse' => 'gudang stok inventory', 'report.costing' => 'biaya hpp costing estimasi',
+                'report.warehouse' => 'gudang stok inventory',
             ];
             $__aiNav = collect($__navGroups)->flatten(1)->map(fn ($i) => [
                 'label' => $i['label'],
                 'href' => $__href($i),
-                'keywords' => $__aiKeywords[$i['route'] ?? ''] ?? ($i['slug'] ?? ''),
+                'keywords' => $__aiKeywords[$i['route']] ?? '',
             ])->values();
         @endphp
 

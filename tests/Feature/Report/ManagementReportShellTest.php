@@ -8,8 +8,7 @@ use Tests\TestCase;
 
 // Verifikasi shell layout baru (layouts::report -- sidebar navy meniru
 // persis printflow_erp_complete_dashboard_mockup.html) tidak error render
-// utk 8 layar existing + costing baru + 4 coming-soon (keputusan user
-// 2026-09-13 "TIRU PERSIS mockup").
+// utk layar laporan yang punya data nyata (placeholder costing / QMS / CMMS / EHS / Assets dibuang 2026-10-13).
 class ManagementReportShellTest extends TestCase
 {
     public function test_all_management_report_pages_render_with_new_sidebar_layout(): void
@@ -24,25 +23,6 @@ class ManagementReportShellTest extends TestCase
         Livewire::test('pages::report.production')->assertOk();
         Livewire::test('pages::report.hr')->assertOk();
         Livewire::test('pages::report.warehouse')->assertOk();
-        Livewire::test('pages::report.costing')->assertOk();
-    }
-
-    // Keputusan awal (jujur "belum tersedia" tanpa angka) DIBATALKAN user
-    // 2026-09-13: "KALAU TIDAK ADA TETAP DIBUAT DUMMY DATA NYA, DENGAN
-    // TULISAN INI DUMMY DATA" -- sekarang tampil dashboard KPI+grafik+tabel
-    // penuh gaya mockup dgn angka contoh dari mockup asli, ditandai jelas
-    // "DATA DUMMY" (bukan disamarkan sbg data produksi).
-    public function test_control_tower_pages_render_dummy_dashboard_clearly_labeled(): void
-    {
-        $direksi = SecUser::where('login', 'johiwan')->firstOrFail();
-        $this->actingAs($direksi);
-
-        foreach (['qms', 'cmms', 'ehs', 'assets'] as $slug) {
-            Livewire::test('pages::report.coming-soon', ['slug' => $slug])
-                ->assertOk()
-                ->assertSee('DATA DUMMY')
-                ->assertSee('DUMMY');
-        }
     }
 
     // Tombol Logout terpisah di shell ini DIHAPUS (keluhan user 2026-09-14:
@@ -58,6 +38,6 @@ class ManagementReportShellTest extends TestCase
 
         $response->assertOk();
         $response->assertSee(route('menu'), false);
-        $response->assertSee(route('report.control-tower', 'qms'), false);
+        $response->assertSee(route('report.warehouse'), false);
     }
 }

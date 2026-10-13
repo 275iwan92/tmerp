@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
-Route::get('/', fn () => redirect(config('app.ui') === 'v2' ? '/v2' : '/menu'));
+Route::get('/', fn () => redirect('/v2'));
 
 // PWA manifest -- dibuat dinamis (bukan public/manifest.json statis) supaya
 // nama aplikasi ikut Brand::name() (tm2sys.sys_constant APP_NAME, bisa
@@ -201,20 +201,13 @@ Route::middleware(['auth', 'locale'])->group(function () {
         // module: gate), tapi personal & hanya milik akun sendiri. Guard
         // "linked employee" ditangani di dalam komponen (masteremployee_tier1.md §5.1).
         Route::livewire('/self-service', 'pages::self-service.index')->name('self-service.index');
-        Route::livewire('/self-service/clock-in', 'pages::self-service.clock-in')->name('self-service.clock-in');
 
         // Personal, bukan modul administratif -- sama pola dgn self-service (tanpa module: gate).
         Route::livewire('/notifications', 'pages::notification.index')->name('notifications.index');
 
         Route::middleware('module:MDATA')->group(function () {
-            Route::livewire('/master/produk', 'pages::master.produk')->name('master.produk');
             Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
             Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');
-            Route::livewire('/master/supplier-category', 'pages::master.supplier-category')->name('master.supplier-category');
-            Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
-            Route::livewire('/master/currency', 'pages::master.currency')->name('master.currency');
-            Route::livewire('/master/exchange-rate', 'pages::master.exchange-rate')->name('master.exchange-rate');
-            Route::livewire('/master/holiday', 'pages::master.holiday')->name('master.holiday');
             Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
             Route::livewire('/master/shift', 'pages::master.shift')->name('master.shift');
 
@@ -233,52 +226,29 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/finance/cash-bank', 'pages::finance.cash-bank')->name('finance.cash-bank');
 
             // Accounting Process Engine (mockup MODULE_accounting-*-blueprint.html, 2026-09-19)
-            Route::livewire('/finance/engine', 'pages::finance.engine')->name('finance.engine');
-            Route::livewire('/finance/dashboard', 'pages::finance.dashboard')->name('finance.dashboard');
             Route::livewire('/finance/payables', 'pages::finance.payables')->name('finance.payables');
-            Route::livewire('/finance/bank', 'pages::finance.bank')->name('finance.bank');
             Route::livewire('/finance/journals', 'pages::finance.journals')->name('finance.journals');
-            Route::livewire('/finance/ledger', 'pages::finance.ledger')->name('finance.ledger');
             Route::livewire('/finance/assets', 'pages::finance.assets')->name('finance.assets');
             Route::livewire('/finance/amortization', 'pages::finance.amortization')->name('finance.amortization');
-            Route::livewire('/finance/closing', 'pages::finance.closing')->name('finance.closing');
-            Route::livewire('/finance/tax', 'pages::finance.tax')->name('finance.tax');
-            Route::livewire('/finance/statements', 'pages::finance.statements')->name('finance.statements');
-            Route::livewire('/finance/trial-balance', 'pages::finance.trial-balance')->name('finance.trial-balance');
-            Route::livewire('/finance/balance-sheet', 'pages::finance.balance-sheet')->name('finance.balance-sheet');
-            Route::livewire('/finance/income-statement', 'pages::finance.income-statement')->name('finance.income-statement');
-            Route::livewire('/finance/cash-flow', 'pages::finance.cash-flow')->name('finance.cash-flow');
         });
 
         Route::middleware('module:PROC')->group(function () {
             Route::livewire('/purchasing/pr', 'pages::pur.pr.index')->name('pur.pr.list');
             Route::livewire('/purchasing/pr/{pr}/edit', 'pages::pur.pr.entry')->name('pur.pr.entry');
             Route::livewire('/purchasing/pr/{pr}/print', 'pages::pur.pr.print')->name('pur.pr.print');
-            Route::livewire('/purchasing/pr-approval', 'pages::pur.pr.approval')->name('pur.pr.approval');
             Route::livewire('/purchasing/po', 'pages::pur.po.index')->name('pur.po.list');
             Route::livewire('/purchasing/po/{po}/edit', 'pages::pur.po.entry')->name('pur.po.entry');
             Route::livewire('/purchasing/po/{po}/print', 'pages::pur.po.print')->name('pur.po.print');
-            Route::livewire('/purchasing/po-approval', 'pages::pur.po.approval')->name('pur.po.approval');
             Route::livewire('/purchasing/pv', 'pages::pur.pv.index')->name('pur.pv.list');
             Route::livewire('/purchasing/pv/{pv}/edit', 'pages::pur.pv.entry')->name('pur.pv.entry');
-            Route::livewire('/purchasing/pq', 'pages::pur.pq.index')->name('pur.pq.list');
-            Route::livewire('/purchasing/pq/{pq}/edit', 'pages::pur.pq.entry')->name('pur.pq.entry');
-            Route::livewire('/purchasing/pq/{pq}/print', 'pages::pur.pq.print')->name('pur.pq.print');
             Route::livewire('/purchasing/prt', 'pages::pur.prt.index')->name('pur.prt.list');
             Route::livewire('/purchasing/prt/{prt}/edit', 'pages::pur.prt.entry')->name('pur.prt.entry');
-            Route::livewire('/purchasing/prt-approval', 'pages::pur.prt.approval')->name('pur.prt.approval');
-            Route::livewire('/purchasing/report/outstanding-pr', 'pages::pur.report.outstanding-pr')->name('pur.report.outstanding-pr');
-            Route::livewire('/purchasing/report/outstanding-po', 'pages::pur.report.outstanding-po')->name('pur.report.outstanding-po');
-            Route::livewire('/purchasing/report/outstanding-pv', 'pages::pur.report.outstanding-pv')->name('pur.report.outstanding-pv');
         });
 
         Route::middleware('module:INV')->group(function () {
             // {category} = RM|FG|SFG, wajib di URL -- menu sidebar sekarang
             // 3 entri terpisah per kelas (bukan toggle dalam halaman), lihat
             // sidebarmenustandard.md §5. {material?} tetap opsional utk deep-link.
-            Route::livewire('/inventory/print/stock-card/{category}/{material?}', 'pages::inventory.print.stock-card')->name('inv.print.stock-card');
-            Route::livewire('/inventory/print/master-stock/{category}', 'pages::inventory.print.master-stock')->name('inv.print.master-stock');
-            Route::livewire('/inventory/print/slow-moving/{category}', 'pages::inventory.print.slow-moving')->name('inv.print.slow-moving');
 
             // inventory_tier4.md #1.1 -- {category} = RM|FG|SFG, pola sama seperti Laporan.
             Route::livewire('/inventory/stock-in/{category}', 'pages::inventory.stock-in')->name('inv.stock-in.index');
@@ -292,7 +262,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // {doc?} opsional -- dipakai layar Persetujuan (approval) utk deep-link
             // langsung ke form dokumen tertentu (grid<->form tetap 1 komponen).
             Route::livewire('/inventory/stock-adjustment/{category}/{doc?}', 'pages::inventory.stock-adjustment')->name('inv.stock-adj.index');
-            Route::livewire('/inventory/stock-adjustment-approval/{category}', 'pages::inventory.stock-adjustment-approval')->name('inv.stock-adj.approval');
         });
 
         Route::middleware('module:HRM')->group(function () {
@@ -300,12 +269,9 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/sop', 'pages::hrm.sop-documents')->name('hrm.sop-documents');
             Route::livewire('/hrm/org-chart', 'pages::hrm.org-chart')->name('hrm.org-chart');
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
-            Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
             Route::livewire('/hrm/shift-roster/print', 'pages::hrm.shift-roster-print')->name('hrm.shift-roster.print');
-            Route::livewire('/hrm/employee-contact-gap', 'pages::hrm.employee-contact-gap')->name('hrm.employee-contact-gap');
             Route::livewire('/hrm/correction-requests', 'pages::hrm.correction-requests')->name('hrm.correction-requests');
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
-            Route::livewire('/hrm/attendance-upload', 'pages::hrm.attendance-upload')->name('hrm.attendance-upload');
             Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
             Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary')->middleware('payroll:process');
             Route::livewire('/hrm/payroll/employee-bank', 'pages::hrm.payroll-employee-bank')->name('hrm.payroll.employee-bank')->middleware('payroll:process');
@@ -315,8 +281,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/payroll/payslip/print-all/{run}', 'pages::hrm.payroll-payslip-print-all')->name('hrm.payroll.payslip-print-all')->middleware('payroll:payslip')->where('run', '[0-9]+');
             Route::livewire('/hrm/payroll/payslip/{payslip}/print', 'pages::hrm.payroll-payslip-print')->name('hrm.payroll.payslip-print')->middleware('payroll:payslip')->where('payslip', '[0-9]+');
             Route::livewire('/hrm/payroll/bank-transfer', 'pages::hrm.payroll-bank-transfer')->name('hrm.payroll.bank-transfer')->middleware('payroll:process');
-            Route::livewire('/hrm/payroll/cash-roster', 'pages::hrm.payroll-cash-roster')->name('hrm.payroll.cash-roster')->middleware('payroll:process');
-            Route::livewire('/hrm/discipline-report', 'pages::hrm.discipline-report')->name('hrm.discipline-report');
 
             // Recruitment (L1-L9 minus L8, lihat docs/recruitment_state.yaml) --
             // portal simulasi (Portal Candidate) sengaja di bawah middleware
@@ -340,20 +304,16 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/recruitment/assessment-result', 'pages::recruitment.assessment-result')->name('hrm.recruitment.assessment-result');
             Route::livewire('/hrm/recruitment/offer', 'pages::recruitment.offer.list')->name('hrm.recruitment.offer.list');
             Route::livewire('/hrm/recruitment/offer/{application}', 'pages::recruitment.offer.entry')->name('hrm.recruitment.offer.entry')->where('application', '[0-9]+');
-            Route::livewire('/hrm/recruitment/sync-log', 'pages::recruitment.sync-log')->name('hrm.recruitment.sync-log');
             Route::livewire('/hrm/recruitment/hire-provision', 'pages::recruitment.hire-provision')->name('hrm.recruitment.hire-provision');
         });
 
         Route::middleware('module:PROD')->group(function () {
             Route::livewire('/production/scheduling-board', 'pages::production.scheduling-board')->name('production.scheduling-board');
-            Route::livewire('/production/monitoring', 'pages::production.monitoring-dashboard')->name('production.monitoring');
-            Route::livewire('/production/mps-spreadsheet', 'pages::production.mps-spreadsheet')->name('production.mps-spreadsheet');
             Route::livewire('/production/wo', 'pages::production.wo-list')->name('production.wo.list');
             Route::livewire('/production/wo/new', 'pages::production.wo-entry')->name('production.wo.new');
             Route::livewire('/production/wo/{wo}/print', 'pages::production.wo-print')->name('production.wo.print')->where('wo', '[0-9]+');
             Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
             Route::livewire('/production/rule-library', 'pages::production.rule-library')->name('production.rule-library');
-            Route::livewire('/production/mts-forecast', 'pages::production.mts-forecast')->name('production.mts-forecast');
             Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
@@ -396,16 +356,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/produksi', 'pages::report.production')->name('report.production');
             Route::livewire('/sdm', 'pages::report.hr')->name('report.hr');
             Route::livewire('/gudang', 'pages::report.warehouse')->name('report.warehouse');
-            Route::livewire('/estimasi-costing', 'pages::report.costing')->name('report.costing');
-
-            // 4 menu di mockup (QMS/CMMS/EHS/Aset & Modal) TANPA modul sumber
-            // data nyata di ERP ini -- 1 komponen coming-soon.blade.php dipakai
-            // ulang, isi section/reason di-map dari {slug} URI (Route::livewire
-            // macro Livewire TIDAK mendukung passing data tambahan lewat array
-            // ke-3, jadi lewat parameter URI, bukan lewat closure param).
-            Route::livewire('/kontrol/{slug}', 'pages::report.coming-soon')
-                ->name('report.control-tower')
-                ->where('slug', 'qms|cmms|ehs|assets');
         });
     });
 });
