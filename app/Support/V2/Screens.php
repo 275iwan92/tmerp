@@ -151,8 +151,11 @@ final class Screens
                     $it('ppic-settings', ['PPIC Settings', 'fa-solid fa-sliders', 'v2 baru: satu pintu untuk semua pengaturan PPIC dalam 8 kategori, dengan kotak cari', null]),
                     $it('production-scheduling', ['PPIC Workspace', 'fa-solid fa-chart-gantt', 'v2 baru: PPIC (engine Draft + Confirm officer) -- Gantt, Kanban, Calendar, Grid, Monitoring', 'ppic_sched_gantt.jpg']),
                     $it('production-wo', ['Work Order (PPIC)', 'fa-solid fa-clipboard-list', 'v2 baru: Work Order dari ProDev (BOP, routing, BOM, mesin yang bisa antre)', 'ppic_wo_detail.jpg']),
-                    $it('production-operator', ['Production Output', 'fa-solid fa-stopwatch', 'v2 baru: entry hasil produksi di mesin untuk crew yang login: timer SETUP dan PRODUCTION, LIST OF JOBS dari PPIC Planning, input GOOD / BAD', null]),
+                    $it('production-live', ['Live Schedule', 'fa-solid fa-chart-gantt', 'v2 baru: pemantauan read-only jadwal yang berlaku (operasi CONFIRMED / berjalan) per proses dan mesin, plus rincian good, bad, status, operator', null]),
                     $it('production-learning', ['Learning Changes', 'fa-solid fa-graduation-cap', 'v2 baru: nilai changeover Assumed dikoreksi dari waktu setup nyata, tiap perubahan tercatat dan bisa dikembalikan', null]),
+                ]],
+                ['label' => 'Entry OUTPUT', 'items' => [
+                    $it('production-operator', ['Production Output', 'fa-solid fa-stopwatch', 'v2 baru: entry hasil produksi di mesin untuk crew yang login: timer SETUP dan PRODUCTION, LIST OF JOBS dari PPIC Planning, input GOOD / BAD', null]),
                 ]],
                 ['label' => 'Quality', 'items' => [
                     $it('qc-complaint-review', ['Complaint Review (QA)', 'fa-solid fa-magnifying-glass-chart', 'v2 baru: tm2prd.qc_complaint_review (jawaban QA atas tm2sdi.crm_complaint)', null]),
