@@ -6,7 +6,7 @@
  * Sumber hulu  : Login -> sec_user.employee_id -> prd_crew_assignment -> operasi (mesin + proses); antrean = operasi CONFIRMED PPIC Planning (Ppic::operations);
  *                Master Card = prod_master_card + prod_master_card_file (storage/app/public/master-card/{id}); timer dari OperatorTimerService.
  * Input        : Pengguna login, ?op= (job aktif), ?machine= & ?process= (hanya administrator / pilihan di antara crew sendiri).
- * Output       : Array untuk objek x-mp::production.output-desk, atau ['empty' => alasan].
+ * Output       : Array untuk objek x-mp::production.output-desk, ['picker' => pilihan "Masuk sebagai"] (administrator tanpa crew), atau ['empty' => alasan].
  * Dipakai oleh : resources/views/v2/screens/production-operator.blade.php.
  * Status       : Aktif di mockup (ddt*). Penugasan crew ke operasi belum punya layar di PPIC Planning (hanya baris prd_crew_assignment yang ada).
  */
@@ -17,7 +17,6 @@ namespace App\Support\V2\Data;
 
 use App\Services\Scheduling\Operator\OperatorTimerService;
 use Devlib\Locale;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -35,14 +34,22 @@ final class ProductionOutput
         $confirmed = collect(Ppic::operations())->filter(fn ($o) => $o['plan_status'] === 'CONFIRMED' && $o['machine_id'])->values();
         $pairs = self::crewPairs($user->employee_id ?? null);
 
-        // Crew -> machine + process. An administrator without a crew sees the front of the confirmed queue (review fallback);
-        // ?machine=&process= picks among the crew's own pairs (or any pair for an administrator).
+        // Crew -> machine + process, straight from the login. An administrator without a crew first chooses "Enter as" (process + machine);
+        // ?machine=&process= picks among the crew's own pairs (or any confirmed pair for an administrator).
         $admin = (bool) ($user->is_admin ?? false);
         $mine = $admin && $pairs === [] ? $confirmed->map(fn ($o) => [(int) $o['machine_id'], strtoupper($o['process'])])->unique(fn ($p) => implode('|', $p))->values()->all() : $pairs;
         if ($mine === []) {
             return ['empty' => 'No job of your crew is confirmed yet. Jobs appear here when PPIC Planning applies a plan to the live schedule for your machine.'];
         }
         $pick = isset($req['machine'], $req['process']) ? [(int) $req['machine'], strtoupper((string) $req['process'])] : null;
+        if ($admin && $pairs === [] && ! ($pick && in_array($pick, $mine, true))) {
+            $machines = $confirmed->pluck('machine', 'machine_id');
+
+            return ['picker' => array_map(fn ($p) => [
+                'label' => $p[1].' · '.($machines[$p[0]] ?? '#'.$p[0]),
+                'url' => route('v2.screen', 'production-operator').'?'.http_build_query(['machine' => $p[0], 'process' => $p[1]]),
+            ], $mine)];
+        }
         $pair = $pick && in_array($pick, $mine, true) ? $pick : self::frontPair($confirmed, $mine);
         [$machineId, $processKey] = $pair;
 
@@ -85,14 +92,18 @@ final class ProductionOutput
         ];
     }
 
-    /** Machine + process pairs of a crew member: where the employee was assigned (prd_crew_assignment), by operation. @return list<array{int, string}> */
+    /** Machine + process pairs of a crew member (by name in prd_crew_assignment, or by the crew chosen in the BOP). @return list<array{int, string}> */
     private static function crewPairs(?int $employeeId): array
     {
         if (! $employeeId) {
             return [];
         }
-        $rows = DB::connection('tm2prd')->table('prd_crew_assignment as a')->join('prd_wo_operation as o', 'o.operation_id', '=', 'a.operation_id')
-            ->where('a.employee_id', $employeeId)->whereNotNull('o.machine_id')->get(['o.machine_id', 'o.process_name']);
+        // Where the employee was assigned by name (prd_crew_assignment) plus where the crew (work center) of the employee was chosen in the BOP.
+        $centers = DB::connection('tm2mst')->table('emp_employee_work_center_skill')->where('employee_id', $employeeId)->where('activate', 1)->pluck('work_center_id');
+        $rows = DB::connection('tm2prd')->table('prd_wo_operation as o')->whereNotNull('o.machine_id')
+            ->where(fn ($q) => $q->whereIn('o.operation_id', DB::connection('tm2prd')->table('prd_crew_assignment')->where('employee_id', $employeeId)->select('operation_id'))
+                ->orWhereIn('o.crew_work_center_id', $centers))
+            ->get(['o.machine_id', 'o.process_name']);
 
         return $rows->map(fn ($r) => [(int) $r->machine_id, strtoupper((string) $r->process_name)])->unique(fn ($p) => implode('|', $p))->values()->all();
     }

@@ -33,7 +33,6 @@ Route::prefix('v2/ppic')->name('v2.ppic.')->middleware('module:PROD')->group(fun
     Route::post('/wo/create', [PpicController::class, 'createWo'])->name('wo.create');
     Route::post('/output/{op}/timer', [PpicController::class, 'outputTimer'])->name('output.timer');
     Route::post('/output/{op}/result', [PpicController::class, 'outputResult'])->name('output.result');
-    Route::get('/operator/{op}/problem', [PpicController::class, 'opProblem'])->name('op.problem');
     Route::post('/learn/run', [PpicController::class, 'learnRun'])->name('learn.run');
     Route::post('/learn/revert', [PpicController::class, 'learnRevert'])->name('learn.revert');
     Route::post('/wo/{wo}/delete', [PpicController::class, 'deleteWo'])->name('wo.delete');

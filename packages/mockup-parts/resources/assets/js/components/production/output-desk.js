@@ -71,7 +71,7 @@
         const est = k === 'prod' ? `<span class="mp-od__est">${Devlib.h.esc(T('Estimated output'))} : <b>${num(this.estimate())}</b> ${Devlib.h.esc(u)}</span>` : '';
         $(box, '[data-od="times"]').innerHTML = `<span>Start : ${x.first ? stamp(x.first) : '—'}  ·  Stop : ${x.stop ? stamp(x.stop) : '—'}</span>` + est;
         const [play, pause, stop] = $$(box, '[data-od-act]');
-        play.disabled = x.state === 'run' || x.state === 'stop'; pause.disabled = x.state !== 'run'; stop.disabled = x.state === 'stop';
+        play.disabled = x.state === 'run' || x.state === 'stop'; pause.disabled = x.state !== 'run'; stop.disabled = x.state === 'stop' || x.state === 'idle';
       });
       const cur = $(this.el, '.mp-od__row.is-sel');
       if (cur) {

@@ -109,8 +109,32 @@ class ProductionOutputTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $jobs->count());
         $this->assertSame((float) $this->op['qty'], $desk['target']['qty']);
 
-        // a user without a crew sees nothing (an administrator without a crew sees the front of the queue)
+        // a user without a crew sees nothing; an administrator without a crew first gets the "Enter as" picker, then the form of the pick
         $this->assertArrayHasKey('empty', ProductionOutput::desk((object) ['employee_id' => 123456789, 'is_admin' => false]));
-        $this->assertArrayNotHasKey('empty', ProductionOutput::desk((object) ['employee_id' => null, 'is_admin' => true]));
+        $picker = ProductionOutput::desk((object) ['employee_id' => null, 'is_admin' => true]);
+        $this->assertNotEmpty($picker['picker'] ?? []);
+        $picked = ProductionOutput::desk((object) ['employee_id' => null, 'is_admin' => true], ['machine' => $this->op['machine_id'], 'process' => $this->op['process']]);
+        $this->assertArrayNotHasKey('picker', $picked);
+        $this->assertArrayNotHasKey('empty', $picked);
+    }
+
+    public function test_stop_before_start_is_refused(): void
+    {
+        $this->expectException(\DomainException::class);
+        $this->svc->act($this->op['op_id'], 'prod', 'stop', 'tester');
+    }
+
+    public function test_a_paused_job_does_not_block_the_next_job_on_the_machine(): void
+    {
+        $other = collect(Ppic::operations())->first(fn ($o) => $o['plan_status'] === 'CONFIRMED' && (int) $o['machine_id'] === (int) $this->op['machine_id'] && $o['op_id'] !== $this->op['op_id']);
+        if (! $other) {
+            $this->markTestSkipped('Needs a second confirmed job on the same machine.');
+        }
+        $this->svc->act($this->op['op_id'], 'prod', 'play', 'tester');
+        $this->svc->act($this->op['op_id'], 'prod', 'pause', 'tester');
+        $t = $this->svc->act($other['op_id'], 'prod', 'play', 'tester');   // job A is paused, so job B may start
+        $this->assertSame('run', $t['prod']['state']);
+        $this->expectException(\DomainException::class);                  // job B runs, so job A may not start now
+        $this->svc->act($this->op['op_id'], 'prod', 'play', 'tester');
     }
 }

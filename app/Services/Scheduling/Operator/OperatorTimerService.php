@@ -136,11 +136,16 @@ final class OperatorTimerService
                 throw new \DomainException(t('This timer is stopped and locked.'));
             }
             $open = $this->open((int) $op->machine_id);
-            if ($open && (int) $open->operation_id !== (int) $op->operation_id) {
+            // Only a SETUP / RUN segment of another job blocks the machine; a paused job (open PAUSE segment) lets the next job start.
+            if ($open && (int) $open->operation_id !== (int) $op->operation_id && in_array($open->kind, ['SETUP', 'RUN'], true)) {
                 throw new \DomainException(t('Another job has a running timer on this machine. Pause or Stop it first.'));
             }
             if ($action === 'pause' && $before !== 'run') {
                 throw new \DomainException(t('There is no running timer to pause for this job.'));
+            }
+            // Stop of a timer that never started would lock the job (finish() marks the operation DONE).
+            if ($action === 'stop' && $before === 'idle') {
+                throw new \DomainException(t('Start the timer before stopping it.'));
             }
             if ($action === 'play' && $before === 'run') {
                 return;

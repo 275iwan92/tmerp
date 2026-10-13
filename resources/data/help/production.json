@@ -754,45 +754,5 @@
       {"label": "Stock Class", "en": "Stock class of the category. Read only.", "id": "Kelas stok kategori. Hanya baca."},
       {"label": "Lead Time (working days)", "en": "Working days from ordering to goods received, a whole number from 0 to 365. Empty follows the parent category.", "id": "Hari kerja dari pemesanan sampai barang diterima, bilangan bulat 0 sampai 365. Kosong mengikuti kategori induk."}
     ]
-  },
-  {
-    "key": "prod-no-output",
-    "type": "REPORT",
-    "module": "PROD",
-    "title": "Shipped Without Production Output",
-    "purpose": {
-      "en": "Lists goods already on a Confirmed or Shipped Delivery Order, from a delivery posted to production, whose Work Order has no production output yet. Check it so the output is entered, because it is the KPI basis of all departments.",
-      "id": "Menampilkan barang yang sudah masuk Delivery Order Confirmed atau Shipped, dari pengiriman yang sudah di-Post ke produksi, tetapi Work Order-nya belum punya catatan hasil produksi. Periksa agar hasil produksi diisi, karena jadi dasar KPI semua departemen."
-    },
-    "keywords": "shipped without production output, kirim tanpa output, output produksi belum dicatat, jalan pintas, quick job, delivery order, do, kpi, laporan",
-    "steps": [
-      {
-        "en": "Open the report. Each row is a delivery order line that was shipped or confirmed but has no recorded output.",
-        "id": "Buka laporan. Tiap baris adalah baris delivery order yang sudah dikirim atau dikonfirmasi tetapi belum punya output tercatat."
-      },
-      {
-        "en": "Use the search box or the filters Customer and DO status to narrow the list.",
-        "id": "Pakai kotak cari atau filter Customer dan DO status untuk mempersempit daftar."
-      },
-      {
-        "en": "Use the Columns button to show the CO column. The total of Qty shipped is summed at the bottom.",
-        "id": "Pakai tombol Columns untuk menampilkan kolom CO. Total Qty shipped dijumlahkan di bagian bawah."
-      },
-      {
-        "en": "Note the Work Order number, open it in Work Order and record the output with Catat Output. The row leaves this report once output exists.",
-        "id": "Catat nomor Work Order, buka di Work Order dan isi hasilnya dengan Catat Output. Baris hilang dari laporan ini setelah output tercatat."
-      }
-    ],
-    "fields": [
-      {"label": "DO", "en": "Delivery order number (with its CO number as sub text).", "id": "Nomor delivery order (dengan nomor CO di bawahnya)."},
-      {"label": "Customer", "en": "Customer of the delivery order. Also a filter.", "id": "Customer pada delivery order. Juga tersedia sebagai filter."},
-      {"label": "Product", "en": "Item description of the delivery line.", "id": "Deskripsi item pada baris pengiriman."},
-      {"label": "Qty shipped", "en": "Quantity on the delivery order line. The column is summed.", "id": "Jumlah pada baris delivery order. Kolom ini dijumlahkan."},
-      {"label": "DO date", "en": "Date of the delivery order.", "id": "Tanggal delivery order."},
-      {"label": "DO status", "en": "CONFIRMED or SHIPPED. Also a filter.", "id": "CONFIRMED atau SHIPPED. Juga tersedia sebagai filter."},
-      {"label": "Work Order", "en": "Work order number(s) generated from the delivery, or a dash if none.", "id": "Nomor Work Order yang dibuat dari pengiriman, atau tanda strip bila tidak ada."},
-      {"label": "Posted to Production", "en": "Date the delivery plan was posted to production.", "id": "Tanggal rencana pengiriman di-Post ke produksi."},
-      {"label": "CO", "en": "Customer Order number. Hidden at first; show it with Columns.", "id": "Nomor Customer Order. Tersembunyi di awal; tampilkan lewat Columns."}
-    ]
   }
 ]

@@ -999,21 +999,6 @@ final class PpicController extends Controller
         return response()->json(['saved' => $saved]);
     }
 
-    /** Problem button: the Maintenance Request form with machine, Work Order and symptom filled in. */
-    public function opProblem(int $op): RedirectResponse
-    {
-        return redirect($this->problemUrl(PrdWoOperation::findOrFail($op)));
-    }
-
-    private function problemUrl(PrdWoOperation $op): string
-    {
-        $asset = DB::connection('tm2mnt')->table('mnt_asset')->where('machine_id', $op->machine_id)->value('id_asset');
-        $wo = (string) DB::connection('tm2prd')->table('prd_wo')->where('wo_id', $op->wo_id)->value('wo_no');
-
-        return route('v2.screen', 'maintenance-request').'?'.http_build_query(['new' => 1, 'asset_id' => $asset, 'asset_stopped' => 1,
-            'symptom' => 'Reported from the operator screen while running '.$wo.' ('.$op->process_name.').']);
-    }
-
     // ------------------------------------------------------------------ learning changes
 
     public function learnRun(LearningEngine $engine): RedirectResponse
