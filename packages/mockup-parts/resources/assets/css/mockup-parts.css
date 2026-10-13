@@ -486,7 +486,10 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-od__row{cursor:pointer}.mp-od__row:hover{background:var(--mp-od-panel)}.mp-od__row.is-sel{background:var(--mp-od-panel);outline:2px solid var(--mp-od-prod-b);outline-offset:-2px}
 .mp-od__dot{display:inline-block;width:34px;height:12px;border-radius:6px;vertical-align:middle;margin-right:6px;background:#a39a2a}
 .mp-od__dot--setup{background:#f2c200}.mp-od__dot--prod{background:#79c0f0}.mp-od__dot--pause{background:#7d8fb3}.mp-od__dot--done{background:#6fc069}
-.mp-od__qc{display:grid;gap:6px;align-content:start}
+.mp-od__qc{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-content:start}
+.mp-od__qc > :not(.mp-od__qb){grid-column:1/-1}
+.mp-od__qc .mp-od__qrow > span{display:none}
+.mp-od__qc .mp-od__step input{width:64px}.mp-od__qc .mp-od__step button{width:28px}
 .mp-od__qb{border:2px solid;border-radius:10px;padding:4px 8px}.mp-od__qb--good{background:var(--mp-od-good);border-color:var(--mp-od-good-b)}.mp-od__qb--bad{background:var(--mp-od-bad);border-color:var(--mp-od-bad-b)}
 .mp-od__qb b{display:block;margin-bottom:2px}.mp-od__qrow{display:flex;align-items:center;gap:8px}
 .mp-od__step{display:flex;align-items:center;gap:4px}.mp-od__step button{width:30px;height:34px;border:1px solid var(--dl-border);border-radius:8px;background:var(--dl-surface);cursor:pointer;font-size:16px}

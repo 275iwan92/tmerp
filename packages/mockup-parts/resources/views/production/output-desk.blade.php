@@ -85,7 +85,7 @@
                 </div>
             </div>
             <div class="mp-od__box mp-od__qc">
-                <h3>{{ $t('QC — Input Result Qty') }}</h3>
+                <h3>{{ $t('QC — Input Result Qty') }} ({{ $desk['target']['uom'] }})</h3>
                 @foreach (['good' => ['✔ GOOD', 100], 'bad' => ['✖ BAD', 10]] as $k => [$label, $step])
                     <div class="mp-od__qb mp-od__qb--{{ $k }}">
                         <b>{{ $label }}</b>
