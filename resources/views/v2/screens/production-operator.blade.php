@@ -6,7 +6,7 @@
  Input        : ?op= (job aktif); ?machine= & ?process= (pilihan "Masuk sebagai" administrator, atau di antara pasangan crew sendiri).
  Output       : Objek x-mp::production.output-desk, atau kartu pilihan proses + mesin (administrator tanpa crew);
                 Play/Pause/Stop dan SIMPAN HASIL menulis lewat OperatorTimerService (+ prd_output_action_log).
- Dipakai oleh : Menu Manufacture > Entry OUTPUT > Production Output, rute v2.screen production-operator.
+ Dipakai oleh : Menu Manufacture > Production > Production Output, rute v2.screen production-operator.
  Status       : Aktif di mockup (ddt*).
 --}}
 @php
