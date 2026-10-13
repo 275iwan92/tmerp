@@ -1,5 +1,12 @@
-{{-- Finance > Controls & Tax > Period Closing (v2). Data & aturan = App\Support\V2\Data\ClosingDesk (CloseService + FinPeriodGuard, spec LOCKED financeaccounting_delta_period_close.md,
-     sama dengan v1): checklist tutup buku, kontrol otomatis, Period Manager (13 periode per tahun fiskal), kunci permanen (CLOSED tidak bisa dibuka), voucher penutup tahun DRAFT. --}}
+{{--
+ REMARK
+ Tujuan       : Tutup buku periode: checklist, kontrol otomatis, Period Manager, kunci periode permanen dan voucher penutup tahun DRAFT.
+ Sumber hulu  : App\Support\V2\Data\ClosingDesk (CloseService, FinPeriodGuard); tabel tm2acc.fin_period, fin_close_task, fin_voucher.
+ Input        : Query string year, period, to; flash v2_flash dan errors.
+ Output       : x-dl::card, tabel / daftar tugas dan form DevLib; POST aksi tutup periode di routes/v2.php (kembali ke acc-closing).
+ Dipakai oleh : Menu Finance > Controls & Tax > Period Closing (slug acc-closing, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\ClosingDesk as Closing;
     use App\Support\V2\Src;

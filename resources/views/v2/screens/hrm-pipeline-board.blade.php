@@ -1,6 +1,12 @@
-{{-- HRM > Recruitment > Pipeline Board (v2). Data & aturan = App\Support\V2\Data\RecruitmentPipeline (sama dengan layar v1, docs/recruitment_tier4.md §9):
-     kolom = tahap track lowongan, kartu = lamaran aktif. Geser kartu / menu "Pindah ke" hanya maju TEPAT satu tahap; tahap Psikotes / Interview butuh hasil assessment
-     dulu; server memutuskan dan kartu kembali bila ditolak. Reject wajib beralasan; Withdraw = kandidat mundur. --}}
+{{--
+ REMARK
+ Tujuan       : Papan kanban pipeline rekrutmen per lowongan: kartu lamaran bergerak maju satu tahap, Reject / Withdraw beralasan.
+ Sumber hulu  : App\Support\V2\Data\RecruitmentPipeline (tm2hrr.app_application, app_pipeline_stage_config, vac_vacancy, app_assessment_result).
+ Input        : Query vacancy (lowongan; bawaan Pipeline::defaultVacancy()); session v2_flash dan errors.
+ Output       : x-dl::card + filter lowongan, x-dl::kanban kolom = tahap track, kartu = lamaran aktif; server memutuskan perpindahan.
+ Dipakai oleh : Rute v2.screen dengan slug 'hrm-pipeline-board' (menu v2:hrm-pipeline-board di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (sama dengan layar v1, docs/recruitment_tier4.md section 9).
+--}}
 @php
     use App\Support\V2\Data\RecruitmentPipeline as Pipeline;
     use App\Support\V2\Src;

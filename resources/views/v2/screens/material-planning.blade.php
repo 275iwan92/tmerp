@@ -1,7 +1,12 @@
-{{-- Material Planning (MRP baru) v2 (docs/materialbooking_tier1.md). Isi = MaterialPlanningEngine lewat App\Support\V2\Data\MaterialPlanning.
-     Alur layar: GRID satu baris per bahan (butuh dari CO + forecast MPS, ditutup stok / PO / PR, kurang, pesan paling lambat)
-     -> centang bahan yang kurang -> Create PR (satu PR per supplier usulan, qty dibulatkan ke satuan beli)
-     -> klik 2x bahan = proyeksi saldo per tanggal. --}}
+{{--
+ REMARK
+ Tujuan       : Material Planning (MRP baru): per bahan menghitung kebutuhan (CO + forecast MPS) terhadap stok, PO, PR, lalu membuat PR per supplier usulan.
+ Sumber hulu  : App\Support\V2\Data\MaterialPlanning (materialRows, planDesk, timeline) di atas MaterialPlanningEngine; v_rm_available, po_line, pr_line, co_order_item, prd_demand_forecast.
+ Input        : Query id (id bahan); session v2_flash dan error validasi.
+ Output       : Grid bahan (view _dbgrid) atau form x-mp::planning.material-plan plus x-dl::grid proyeksi saldo per tanggal; aksi Create PR.
+ Dipakai oleh : Layar v2 slug material-planning lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\MaterialPlanning;
     use App\Support\V2\Src;

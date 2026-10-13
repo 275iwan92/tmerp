@@ -1,3 +1,12 @@
+{{--
+ REMARK
+ Tujuan       : Pemberitahuan bahwa layar untuk sebuah menu belum ada (bukan v2, bukan v1).
+ Sumber hulu  : Baris menu sys_app_menu ($item: label, code, status_note).
+ Input        : item dari route fallback menu.
+ Output       : x-dl::empty-state dengan nama menu dan kode menu.
+ Dipakai oleh : routes/v2.php (fallback bila menu tidak punya layar v2 maupun v1).
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => $item->label, 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">

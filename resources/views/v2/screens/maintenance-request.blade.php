@@ -1,5 +1,12 @@
-{{-- Maintenance Request v2 (Fase 3). Siapa pun di modul boleh melapor masalah; kepala maintenance menilai: Accept membuat BMO Draft, Reject butuh alasan.
-     Darurat (P1: keselamatan, atau mesin berhenti pada aset kritis) langsung menjadi BMO Confirmed. Aturan = App\Services\Maintenance\RequestService. --}}
+{{--
+ REMARK
+ Tujuan       : Maintenance Request: siapa pun di modul melapor masalah; kepala maintenance Accept (membuat BMO Draft) atau Reject dengan alasan; darurat P1 langsung menjadi BMO Confirmed.
+ Sumber hulu  : Model MntRequest, MntOrder, MntLog (tm2mnt); aturan RequestService; MaintenanceAccess::canManage; daftar = grid Maint\RequestListGrid.
+ Input        : Query id (request), new (form baru); sesi v2_flash dan errors.
+ Output       : Grid atau form x-dl::action-form dan x-dl::card; posting ke route v2.mnt.request.create dan v2.mnt.request.save.
+ Dipakai oleh : Route v2.screen slug maintenance-request (App\Support\V2\Screens, menu sys_app_menu target v2:maintenance-request) di menu Maintenance
+ Status       : Aktif (Fase 3)
+--}}
 @php
     use App\Models\Mnt\MntLog;
     use App\Models\Mnt\MntOrder;

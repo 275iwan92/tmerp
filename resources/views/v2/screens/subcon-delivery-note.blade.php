@@ -1,7 +1,12 @@
-{{-- Subcontract Delivery Note v2 (backlog02 §19.1; user journey disetujui 2026-09-30) lewat App\Support\V2\Data\SubconDelivery.
-     GRID surat jalan subkon (do_delivery do_type SUBCON) -> + New Record = pilih supplier subkon + proses -> DRAFT: rujukan PR,
-     baris barang setengah jadi (baris CO asal + nama + qty) -> Confirm (nomor lahir, siap dicetak) -> Cancel wajib alasan.
-     Tanpa harga. Barang kembali dari subkon dicatat di Procurement (Goods Receipt > From Subcon), bukan di sini. --}}
+{{--
+ REMARK
+ Tujuan       : Surat Jalan Subkon: mengirim barang setengah jadi ke subkon per proses (draft, Confirm, Cancel wajib alasan), tanpa harga.
+ Sumber hulu  : App\Support\V2\Data\SubconDelivery (do_delivery do_type SUBCON, tm2sdi); grid SubconDeliveryNoteListGrid; PrintDocs.
+ Input        : Query id (dokumen), new (form baru); session v2_flash dan errors.
+ Output       : Daftar via _dbgrid, form draft baris barang; POST ke v2.subcon.create dan v2.subcon.save; x-dl::form, x-dl::card.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug subcon-delivery-note (menu Sales > Delivery).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\SubconDelivery;
     use App\Support\V2\Print\PrintDocs;

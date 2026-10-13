@@ -1,5 +1,12 @@
-{{-- Finance > Transaction Flows > Bank & Reconciliation (v2). Data & aturan = App\Support\V2\Data\BankDesk (BankReconService, sama dengan v1): Import Statement -> Auto-Match
-     -> Investigate (cocokkan manual atau jurnal penyesuaian DRAFT yang wajib disetujui di Journal Entries) -> Reconcile. Voucher kas / bank dibuat di Cashier. --}}
+{{--
+ REMARK
+ Tujuan       : Rekonsiliasi bank: impor mutasi, Auto-Match, investigasi selisih (cocok manual atau jurnal penyesuaian DRAFT) lalu Reconcile.
+ Sumber hulu  : App\Support\V2\Data\BankDesk (BankReconService); tabel tm2acc.fin_bank_statement, fin_bank_recon, fin_voucher, fin_account.
+ Input        : Query string account, type, q, stmt; flash v2_flash / v2_warn dan errors.
+ Output       : x-dl::card, x-dl::kpi-row, tabel dan form DevLib; POST ke route v2.acc.bank.* (auto-match, reconcile, impor, cocok manual).
+ Dipakai oleh : Menu Finance > Transaction Flows > Bank & Reconciliation (slug acc-bank, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Models\Acc\FinAccount;
     use App\Support\V2\Data\BankDesk as Bank;

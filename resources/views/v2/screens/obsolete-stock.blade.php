@@ -1,5 +1,12 @@
-{{-- Inventory > Valuation & Period > Obsolete Stock (v2.01, V-10). Ringkasan stok per kelas umur (Active / Slow / Non-moving / Dead) dan usulan provisi; jurnal provisi HANYA lahir saat tombol
-     Post provision diklik (selisih terhadap provisi posting sebelumnya). Rincian per item x bin = laporan Stock Aging. Aturan: App\Services\Inventory\Valuation\ObsolescenceService. --}}
+{{--
+ REMARK
+ Tujuan       : Ringkasan stok per kelas umur (Active, Slow, Non-moving, Dead) dan usulan provisi; jurnal provisi hanya lahir saat tombol Post provision diklik.
+ Sumber hulu  : App\Services\Inventory\Valuation\ObsolescenceService dan App\Support\V2\Data\ValuationDesk; persentase dan batas hari dari Settings > Constants (INV_OBSOLETE_PCT_*, INV_AGING_*_DAYS).
+ Input        : Tanpa parameter; session v2_flash dan error validasi.
+ Output       : x-dl::alert info, x-dl::card dengan x-dl::table ringkasan aging dan tombol Post provision; rincian per item x bin = laporan Stock Aging.
+ Dipakai oleh : Layar v2 slug obsolete-stock lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Services\Inventory\Valuation\ObsolescenceService;
     use App\Support\V2\Data\ValuationDesk;

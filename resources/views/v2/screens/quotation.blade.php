@@ -1,7 +1,12 @@
-{{-- Quotation v2. Flow & aturan = tmerp pages/quotation/entry.blade.php (lewat App\Support\V2\Data\Quotation).
-     Alur layar: GRID quotation -> + New Record = pilih inquiry siap ditawarkan (Ready to Quote) -> centang inquiry customer yang
-     sama -> DRAFT (header otomatis dari customer/inquiry, boleh diubah; baris = semua jenjang qty + tooling) -> Simpan / Hapus ->
-     Confirm (terbit, terkunci) -> Print / Email ke customer + catat follow-up -> WIN (Customer Order lahir) / LOST / Cancel. --}}
+{{--
+ REMARK
+ Tujuan       : Form Quotation: memilih inquiry siap ditawarkan, menyusun draft per jenjang qty + tooling, Confirm, Print/Email, catat follow-up, lalu WIN (Customer Order lahir), LOST atau Cancel.
+ Sumber hulu  : App\Support\V2\Data\Quotation; model QuoQuotation, QuoActivity, IqpInquiry, FinCurrency, FinPaymentTerm (tm2sdi, tm2mst).
+ Input        : Query id (quotation), inq (inquiry terpilih), pick (daftar inquiry siap ditawarkan); session v2_flash dan errors.
+ Output       : Daftar grid transaksional, pemilih inquiry, form draft/terbit; POST ke v2.quotation.create/save/win/lost/cancel/activity; x-dl::form, x-dl::grid, x-dl::alert.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug quotation (menu Sales > Quotation); dirujuk dari quotation-outstanding.
+ Status       : Aktif; flow mengikuti pages/quotation/entry v1.
+--}}
 @php
     use App\Models\Master\FinCurrency;
     use App\Models\Master\FinPaymentTerm;

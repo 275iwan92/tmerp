@@ -1,6 +1,12 @@
-{{-- HRM > Time Attendance > Shift Roster (v2). Data & aturan = App\Support\V2\Data\ShiftRoster (emp_shift_roster, emp_shift_roster_batch), papan = objek
-     x-mp::roster-board. Lingkup: Jadwal -> Departemen -> Unit kerja; minggu lewat panah papan (?w, ?step). 1 penempatan = 1 pegawai 1 shift 1 minggu penuh.
-     Save (di papan) = Draft; Publish & Lock mengunci minggu itu; Unlock membukanya lagi. Katalog shift = Master Shift. Cetak masih layar v1. --}}
+{{--
+ REMARK
+ Tujuan       : Menyusun roster shift mingguan per jadwal, departemen, dan unit kerja: Save draft, Publish & Lock, Unlock.
+ Sumber hulu  : App\Support\V2\Data\ShiftRoster (tm2mst.emp_shift_roster, emp_shift_roster_batch, emp_shift, emp_work_center, emp_employee).
+ Input        : Query sched, dept, wc, w, step (lingkup dan minggu); user login (shift tersembunyi).
+ Output       : Papan x-mp::roster-board dengan filter x-dl::field.*, badge status batch, aksi Publish & Lock / Unlock.
+ Dipakai oleh : Rute v2.screen dengan slug 'hrm-roster' (menu v2:hrm-roster di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (1 penempatan = 1 pegawai 1 shift 1 minggu penuh; cetak masih layar v1).
+--}}
 @php
     use App\Support\V2\Data\ShiftRoster;
     use App\Support\V2\Src;

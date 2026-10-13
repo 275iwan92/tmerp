@@ -1,6 +1,12 @@
-{{-- Daily Check v2 (Fase 2, mockup maintenance_v2_flow.jpg bagian 3). Lembar cek operator per aset per shift dari watch point operator yang aktif
-     (Every shift, Daily). Operator menandai tiap titik OK / Not OK / N/A dan boleh mengetik nilai ukur; nilai di luar batas normal disarankan Not OK.
-     Submit mengunci lembar dan membuka satu Maintenance Request per titik Not OK. Aturan = App\Services\Maintenance\DailyCheckService. --}}
+{{--
+ REMARK
+ Tujuan       : Lembar Daily Check operator per aset per shift: tandai tiap watch point OK / Not OK / N/A, Submit mengunci lembar dan membuka Maintenance Request per titik Not OK.
+ Sumber hulu  : Model MntDailyCheck dan MntDailyCheckLine (tm2mnt), watch point operator aktif; Maintenance::*; aturan DailyCheckService; daftar = grid Maint\DailyCheckListGrid.
+ Input        : Query id (lembar), new (buka lembar); sesi v2_flash dan errors.
+ Output       : Grid atau form x-dl::action-form dan x-dl::card; posting ke route v2.mnt.daily.open dan v2.mnt.daily.save.
+ Dipakai oleh : Route v2.screen slug maintenance-daily-check (App\Support\V2\Screens, menu sys_app_menu target v2:maintenance-daily-check) di menu Maintenance
+ Status       : Aktif (mockup maintenance_v2_flow.jpg bagian 3)
+--}}
 @php
     use App\Models\Mnt\MntDailyCheck;
     use App\Models\Mnt\MntDailyCheckLine;

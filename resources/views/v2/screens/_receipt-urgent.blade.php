@@ -1,6 +1,12 @@
-{{-- Bagian Goods Receipt (SPB jenis PO): tanda URGENT, sertifikasi batch, dan rencana sampling per baris (v2.01, Q-01, Q-03, Q-11).
-     URGENT = diposting walau QC mutu belum selesai, langsung dipakai produksi, batchnya Conditional dan sampling menyusul di Conditional Stock.
-     Aturan di App\Services\Pur\UrgentReceiptService; hak menandai / menyetujui di QcAuthority; data di App\Support\V2\Data\BatchQuality. --}}
+{{--
+ REMARK
+ Tujuan       : Bagian Goods Receipt: tanda URGENT, sertifikasi batch dan rencana sampling per baris barang stok.
+ Sumber hulu  : App\Support\V2\Data\BatchQuality::receiptRows ($pv), aturan App\Services\Pur\UrgentReceiptService, hak di App\Services\Inventory\QcAuthority; tabel tm2pur.pv_line dan tm2inv.inv_qc_sampling_plan.
+ Input        : $pv (penerimaan / SPB jenis PO), $draft (status draft); isian pv_line_id, wo_id, reason, note, certification, food_grade, step.
+ Output       : x-dl::card dengan x-dl::table dan, untuk draft + berwenang, x-dl::action-form post ke route v2.iq.urgent (Clear, Save, URGENT, Approve).
+ Dipakai oleh : Di-include purchase-receive.
+ Status       : Aktif.
+--}}
 @php
     use App\Services\Inventory\QcAuthority;
     use App\Support\V2\Data\BatchQuality;

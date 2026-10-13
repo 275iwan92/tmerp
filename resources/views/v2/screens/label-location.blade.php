@@ -1,6 +1,12 @@
-{{-- Print Location Label (user 2026-10-02: "Facility for QR Code, Labelling") lewat App\Support\V2\Data\Labels: pilih gedung ->
-     pilih bin (kosong = tidak ada yang dicetak; tombol "all bins of an area" lewat pilihan area) -> ukuran + jumlah lembar
-     -> Print: riwayat dicatat (Label Print History) lalu lembar label terbuka. Label = kode bin, area, kapasitas, QR + barcode. --}}
+{{--
+ REMARK
+ Tujuan       : Cetak label lokasi: pilih gedung, bin (atau seluruh bin satu area), ukuran dan jumlah lembar; Print mencatat riwayat lalu membuka lembar label (kode bin, area, kapasitas, QR dan barcode).
+ Sumber hulu  : App\Support\V2\Data\Labels::locationForm (master gudang dan bin tm2mst.wh_*).
+ Input        : Sesi v2_flash dan errors; pilihan dibuat di form objek.
+ Output       : Objek x-mp::inv.label-print (MockupParts) dengan form dari Labels::locationForm.
+ Dipakai oleh : Route v2.screen slug label-location (App\Support\V2\Screens, menu sys_app_menu target v2:label-location)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\Labels;
 @endphp

@@ -1,5 +1,12 @@
-{{-- Inventory > Batch & Quality > First Article (v2.01, Q-05). GRID hasil first article -> + New Record = pilih WO dan batch bahan yang dipakai di mesin, hasil Pass / Fail
-     (Fail wajib catatan) -> Pass melepas batch, Fail menolaknya dan menahan WO yang memakainya. Aturan di App\Services\Inventory\QcDecisionService::firstArticle. --}}
+{{--
+ REMARK
+ Tujuan       : First Article: catat hasil Pass atau Fail untuk WO dan batch bahan di mesin; Pass melepas batch, Fail menolak batch dan menahan WO yang memakainya.
+ Sumber hulu  : App\Services\Inventory\QcDecisionService::firstArticle dan QcAuthority; App\Support\V2\Data\BatchQuality; tabel prd_wo.
+ Input        : Query new, wo, batch; session v2_flash dan error validasi.
+ Output       : Daftar FirstArticleListGrid lewat _dbgrid, atau form baru x-dl::* yang memposting ke rute v2.iq.first-article; hanya QA atau manajer operasi.
+ Dipakai oleh : Layar v2 slug qc-first-article lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Services\Inventory\QcAuthority;
     use App\Support\V2\Data\BatchQuality;

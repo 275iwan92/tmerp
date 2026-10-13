@@ -1,5 +1,12 @@
-{{-- Engine Catalog (user 2026-10-02): semua engine tmerp dengan input, output dan cara kerjanya. Isi = App\Support\Engines\EngineRegistry,
-     tanda tangan method dibaca dari kode. Objek DevLib x-dl::engine-catalog; halaman yang sama ada di devlib.test > Engines. --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan katalog engine aplikasi: kegunaan, input, output, cara kerja, dan tabel yang dibaca / ditulis.
+ Sumber hulu  : App\Support\Engines\EngineRegistry::catalog(); halaman yang sama ada di devlib.test > Engines.
+ Input        : engines dari route; khusus Administrator / grup DEVELOPER.
+ Output       : x-dl::card berisi x-dl::engine-catalog.
+ Dipakai oleh : route v2.engines (routes/v2.php); menu Engines (App\Support\V2\AppMenu).
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => t('Engine Catalog'), 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">

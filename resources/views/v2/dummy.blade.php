@@ -1,3 +1,12 @@
+{{--
+ REMARK
+ Tujuan       : Mengelola data dummy UAT: set per stage (Restore / Delete / Save) dan baseline plus reset, termasuk daftar drift struktur.
+ Sumber hulu  : App\Console\Commands\DdtStage (set), DdtBaseline (manifest, drift) lewat route.
+ Input        : manifest, drift, stages dari route; flash v2_flash / v2_error; khusus developer.
+ Output       : x-dl::card, x-dl::stat-box, x-dl::action-form, x-dl::button (konfirmasi) yang mengirim ke route v2.dummy.reset, v2.dummy.save, v2.dummy.stage.do, v2.dummy.stage.save.
+ Dipakai oleh : route v2.dummy.index (routes/v2.php, grup dummy).
+ Status       : Aktif (hanya database ddt*).
+--}}
 @extends('v2.layout', ['title' => t('Dummy Data'), 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">

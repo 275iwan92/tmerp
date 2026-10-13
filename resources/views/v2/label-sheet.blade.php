@@ -1,6 +1,12 @@
-{{-- Lembar cetak label gudang (route v2.wh.labels.sheet): deretan x-dl::label di dalam x-dl::label-sheet. Tombol Print hanya
-     mencetak labelnya. Isi label = App\Support\V2\Data\Labels::sheet (bin, posisi stok, atau palet -- dari database).
-     Kertas: gulungan label (satu label per halaman) atau A4 (label rapat, dipotong); tombol di bilah menggantinya. --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan lembar cetak label gudang (item, palet, lokasi) pada gulungan atau A4, tombol Print hanya mencetak labelnya.
+ Sumber hulu  : App\Support\V2\Data\Labels::sheet (bin, posisi stok, palet dari database), Labels::colorLegend.
+ Input        : labels, size, type, paper, back dari route; query keys, copies, size, paper, rid.
+ Output       : x-dl::label-sheet berisi x-dl::label lewat partial v2.partials.label, x-dl::label-guide, atau x-dl::empty-state bila kosong.
+ Dipakai oleh : route v2.wh.labels.sheet (routes/v2_warehouse.php).
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => t('Labels'), 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">

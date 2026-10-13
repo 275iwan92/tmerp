@@ -1,8 +1,12 @@
-{{-- Customer Order v2. Flow & aturan = tmerp pages/co/list + entry.blade.php (lewat App\Support\V2\Data\CustomerOrder).
-     Alur layar: GRID CO -> + New Record = pilih jalur: INTEGRATED (dari Quotation terbit, baris = snapshot quotation) atau
-     INSTANT (pilih customer, baris PRODUCT dari Master Product) -> DRAFT: header, baris + due date, jadwal kirim, biaya luar
-     -> Simpan / Hapus (draft INSTANT) -> Confirm (wajib due date tiap baris PRODUCT; INSTANT + Master Product) -> engine CPDEL
-     membuat jadwal kirim default -> Print / Email. Confirmed -> Cancel beralasan (ditolak bila sudah ada WO / DO). --}}
+{{--
+ REMARK
+ Tujuan       : Membuat dan mengelola Customer Order jalur INTEGRATED (dari Quotation) atau INSTANT (Master Product): Draft, Confirm, Cancel, jadwal kirim.
+ Sumber hulu  : App\Support\V2\Data\CustomerOrder; model Sdi\CoOrder (customer, quotation, items, deliveries, externalCosts), Master\FinPaymentTerm, SalesPerson; engine CPDEL.
+ Input        : Query id, new; session v2_flash dan errors.
+ Output       : Daftar lewat _dbgrid; form header, baris + due date, jadwal kirim, biaya luar; Confirm membuat jadwal kirim default; Print / Email.
+ Dipakai oleh : Rute v2.screen dengan slug 'customer-order' (menu v2:customer-order di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (Confirm wajib due date tiap baris PRODUCT; Cancel ditolak bila sudah ada WO / DO).
+--}}
 @php
     use App\Models\Master\FinPaymentTerm;
     use App\Models\Master\SalesPerson;

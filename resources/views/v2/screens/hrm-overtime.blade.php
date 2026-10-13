@@ -1,6 +1,12 @@
-{{-- HRM > Time Attendance > Overtime (v2) lewat App\Support\V2\Data\Overtime (tm2mst.emp_overtime_request).
-     GRID pengajuan lembur -> + New Record / Open = form: pegawai, tanggal, jenis, durasi (menit) -> Save (draft) -> Submit -> Approve / Reject.
-     Hanya yang APPROVED dibaca perhitungan presensi hari itu. Ubah isian hanya saat draft. --}}
+{{--
+ REMARK
+ Tujuan       : Mengajukan dan memutuskan lembur pegawai: Save (draft), Submit, Approve / Reject.
+ Sumber hulu  : App\Support\V2\Data\Overtime (tm2mst.emp_overtime_request); grid App\Support\V2\Grid\Hrm\OvertimeListGrid.
+ Input        : Query id, new; session v2_flash dan errors; user login untuk hak memutuskan.
+ Output       : Daftar lewat _dbgrid; x-dl::form dengan pegawai, tanggal, jenis, durasi (menit) dan tombol keputusan.
+ Dipakai oleh : Rute v2.screen dengan slug 'hrm-overtime' (menu v2:hrm-overtime di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (hanya lembur APPROVED dibaca perhitungan presensi; ubah isian hanya saat draft).
+--}}
 @php
     use App\Support\V2\Data\Overtime;
     use App\Support\V2\Grid\Hrm\OvertimeListGrid;

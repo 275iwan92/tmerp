@@ -1,5 +1,12 @@
-{{-- Cetak SPB (user 2026-10-01): Penerimaan Barang jenis PO dan Subkon. Objek DevLib x-dl::print-out (kop + pihak + tabel +
-     tanda tangan) + x-dl::doc-share (PDF / JPEG / online + QR / Email). Dokumen gudang: tanpa harga. Label English. --}}
+{{--
+ REMARK
+ Tujuan       : Cetak SPB: Goods Receipt Note (PO) atau Subcon Return Receipt, tanpa harga.
+ Sumber hulu  : tm2pur.pv_receipt dan pv_line, supplier, tm2mst.wh_warehouse.
+ Input        : pv, supplier, parties, columns, rows, title, subtitle, company, signatures dari route.
+ Output       : x-dl::print-out dibungkus x-dl::doc-share (PDF / JPEG / online + QR / Email), Back ke purchase-receive.
+ Dipakai oleh : route v2.pv.print (routes/v2.php, grup pv).
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => t($title).' '.$pv->doc_no, 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">

@@ -1,6 +1,12 @@
-{{-- Delivery Order v2. Flow & aturan = tmerp pages/dispatch/do (list + entry) lewat App\Support\V2\Data\DeliveryOrder.
-     Alur: GRID DO -> + New Record = pilih customer -> DRAFT: tarik baris dari jadwal kirim CO (CPDEL) yang CONFIRMED, atur qty & harga,
-     alamat kirim -> Confirm (nomor DO lahir, Surat Jalan siap dicetak) -> Shipped (barang keluar = Closed). Cancel wajib alasan. --}}
+{{--
+ REMARK
+ Tujuan       : Menyusun Delivery Order dari jadwal kirim CO yang Confirmed: Draft, Confirm, Shipped, Cancel beralasan.
+ Sumber hulu  : App\Support\V2\Data\DeliveryOrder; model Sdi\DoDelivery; grid DeliveryOrderListGrid; jadwal kirim CPDEL.
+ Input        : Query id, new; session v2_flash dan errors.
+ Output       : Daftar lewat _dbgrid; form pilih customer (route v2.do.create), tarik baris jadwal kirim, qty, harga, alamat kirim; Confirm melahirkan nomor DO dan Surat Jalan.
+ Dipakai oleh : Rute v2.screen dengan slug 'delivery-order' (menu v2:delivery-order di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (Shipped = barang keluar = Closed).
+--}}
 @php
     use App\Models\Sdi\DoDelivery;
     use App\Support\V2\Data\DeliveryOrder;

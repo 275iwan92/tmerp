@@ -1,6 +1,12 @@
-{{-- Warehouse > In Transit (v2.01, I-31, I-53): transfer dua langkah. Daftar = objek Grid App\Support\V2\Grid\Inv\InTransitGrid (DocListGrid). Open (?id=) =
-     Receive (isi qty yang tiba per baris; kurang = Discrepancy) atau, bila ada selisih, selesaikan per baris: Loss (dibukukan ke bin Loss) / Return (kembali ke bin asal).
-     Ship dilakukan dari form Stock Transfer (pilihan Two-step, tombol Confirm = Ship). Logika: App\Services\Inventory\StockTransferService (ship / receive / resolveDiscrepancy). --}}
+{{--
+ REMARK
+ Tujuan       : In Transit: transfer dua langkah; Receive qty tiba per baris, selisih (Discrepancy) diselesaikan per baris sebagai Loss atau Return.
+ Sumber hulu  : App\Support\V2\Data\InTransit; App\Services\Inventory\StockTransferService; grid InTransitGrid (tm2inv.inv_transfer).
+ Input        : Query id (dokumen); session v2_flash dan errors.
+ Output       : Daftar via _dbgrid, kartu rincian dan tabel baris; aksi receive / resolve lewat x-dl::action-form.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug wh-in-transit (menu Warehouse); Ship dilakukan dari Stock Transfer.
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\InTransit;
     use App\Support\V2\Src;

@@ -1,6 +1,12 @@
-{{-- Inventory > Valuation & Period > Landed Cost (v2.01, D17, V-04). Biaya angkut / bea / asuransi yang datang SETELAH penerimaan: GRID dokumen -> + New Record (tanggal, jenis biaya, jumlah,
-     dasar bagi) -> tambah penerimaan barang -> Confirm membagi biaya ke baris penerimaan dan memposting jurnal (bagian yang masih di gudang menaikkan persediaan, bagian yang sudah keluar
-     ke Selisih Landed Cost). Dokumen Confirmed: Revise (jurnal koreksi bertumpuk) atau Cancel (jurnal pembalik). Aturan: App\Services\Inventory\Valuation\LandedCostService. --}}
+{{--
+ REMARK
+ Tujuan       : Dokumen Landed Cost: biaya angkut, bea, asuransi yang datang setelah penerimaan; pilih penerimaan barang, Confirm membagi biaya ke baris penerimaan dan memposting jurnal, lalu Revise atau Cancel.
+ Sumber hulu  : ValuationDesk::landed dan ValuationDesk::typeOptions; model InvLandedCost (tm2inv.inv_landed_cost); aturan LandedCostService; daftar = grid Inv\LandedCostListGrid.
+ Input        : Query id (dokumen), new (form baru); sesi v2_flash dan errors.
+ Output       : Grid atau form x-dl::action-form dan x-dl::card; posting ke route v2.val.landed.create, save, receipt, remove, confirm, revise, cancel.
+ Dipakai oleh : Route v2.screen slug landed-cost (App\Support\V2\Screens, menu sys_app_menu target v2:landed-cost) di menu Inventory > Valuation & Period; tautan dari inv-valuation
+ Status       : Aktif (v2.01, D17 dan V-04)
+--}}
 @php
     use App\Models\Inventory\InvLandedCost;
     use App\Support\V2\Data\ValuationDesk;

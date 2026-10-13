@@ -1,3 +1,12 @@
+{{--
+ REMARK
+ Tujuan       : Menampilkan kamus struktur database tm2* (kolom, indikasi duplikat, salinan data master, tabel, riwayat perubahan) untuk developer.
+ Sumber hulu  : App\Support\V2\Schema (information_schema + resources/data/schema-changes.json) lewat route.
+ Input        : stats, columns, tables, duplicates, copies, changes dari route; khusus Administrator / grup DEVELOPER.
+ Output       : x-dl::card, x-dl::stat-box, x-dl::tabs dan beberapa x-dl::grid read-only.
+ Dipakai oleh : route v2.dictionary (routes/v2.php); menu Database (App\Support\V2\AppMenu, Screens).
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => 'Data Dictionary', 'bodyClass' => 'dl-page-body'])
 @section('body')
     @php

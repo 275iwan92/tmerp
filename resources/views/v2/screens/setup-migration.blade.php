@@ -1,5 +1,12 @@
-{{-- Setup > Migration (v2). Runner & laporan = App\Support\V2\Data\MigrationDesk (App\Services\Migration\*). Satu kartu per runner; aman diulang.
-     Administrator saja. Laporan hasil hanya tampil sekali setelah runner dijalankan. --}}
+{{--
+ REMARK
+ Tujuan       : Setup > Migration: menjalankan runner tarik data lama (ScriptCase V1, tm2old) ke master dan arsip V2; aman diulang.
+ Sumber hulu  : App\Support\V2\Data\MigrationDesk (App\Services\Migration\*), staging tm2old.
+ Input        : Session migration_report (laporan hasil sekali tampil); runner dikelompokkan per group.
+ Output       : x-dl::card per grup, x-dl::action-form tombol Run Migration ke route v2.migration.run, x-dl::table laporan hasil.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug setup-migration (menu Setup > Dummy Data & Migration).
+ Status       : Aktif; hanya Administrator.
+--}}
 @php
     use App\Support\V2\Data\MigrationDesk;
     use App\Support\V2\Src;

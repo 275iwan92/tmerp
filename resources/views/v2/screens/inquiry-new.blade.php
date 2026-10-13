@@ -1,4 +1,12 @@
-{{-- Inquiry Baru (NEW). Flow & field: tmerp pages/inquiry/form.blade.php (JANGAN diubah); ditulis ulang dari objek DevLib + x-mp::sales.*. --}}
+{{--
+ REMARK
+ Tujuan       : Form Inquiry Baru (NEW) untuk Sales: isi header, customer, part, bahan, proses, tier qty; Save menyimpan DRAFT, Confirm mengunci lalu lanjut ke ProDev. Flow dan field sama dengan v1 pages/inquiry/form (tidak diubah).
+ Sumber hulu  : Sales::inquiryDoc, Sales::masters, Sales::materialChains, Sales::dielineTypes, Sales::productMarkets; tabel tm2sdi.iqp_inquiry (+ part, tier) dan tm2mst.prod_market.
+ Input        : Query id (dokumen tersimpan), view (paksa baca-saja); readonly otomatis bila stat_confirm_sales.
+ Output       : Objek x-mp::sales.inquiry-form (slot header, part, tier) + x-dl::action-bar; posting ke route v2.inquiry.save, v2.inquiry.end, v2.inquiry.artwork, v2.inquiry.customer; tombol Print lewat PrintDocs inquiry.
+ Dipakai oleh : Route v2.screen slug inquiry-new (App\Support\V2\Screens, menu sys_app_menu target v2:inquiry-new); grid InquiryNewGrid dan worklist Inquiry membuka layar ini
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\Sales;
     use App\Support\V2\Src;

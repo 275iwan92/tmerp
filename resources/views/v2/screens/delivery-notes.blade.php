@@ -1,6 +1,12 @@
-{{-- Delivery Notes / Surat Jalan v2 = DO yang sudah CONFIRMED / SHIPPED, dokumen yang dibawa kurir. Sisi B: TANPA harga
-     (dispatch_tier2 §F -- kolom harga tidak dibaca sama sekali). Aksi: cetak Surat Jalan (dispatch.do.print-surat-jalan) dan
-     Shipped (barang keluar). Data & aturan = App\Support\V2\Data\DeliveryOrder (rute simpan DO yang sama). --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan dan mencetak Surat Jalan (DO CONFIRMED / SHIPPED) tanpa harga, serta menandai Shipped.
+ Sumber hulu  : App\Support\V2\Data\DeliveryOrder; model Sdi\DoDelivery; grid DeliveryNoteListGrid.
+ Input        : Query id (DO).
+ Output       : Daftar lewat _dbgrid; detail baris tanpa kolom harga, aksi cetak Surat Jalan (dispatch.do.print-surat-jalan) dan Shipped.
+ Dipakai oleh : Rute v2.screen dengan slug 'delivery-notes' (menu v2:delivery-notes di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (Sisi B, tanpa harga).
+--}}
 @php
     use App\Models\Sdi\DoDelivery;
     use App\Support\V2\Data\DeliveryOrder;

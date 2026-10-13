@@ -1,8 +1,12 @@
-{{-- Print Item Label (user 2026-10-02: "Facility for QR Code, Labelling", "cetak label item saat penerimaan barang") lewat
-     App\Support\V2\Data\Labels: pilih gedung -> pilih posisi stok (item di satu bin, saldo sekarang) -> ukuran, kertas,
-     jumlah lembar -> Print: riwayat dicatat lalu lembar label terbuka. Dibuka dari form Penerimaan Barang (?receipt=):
-     item penerimaan itu sudah tercentang. Label item = pita warna kelas stok, kode + nama item, qty, bin, tanggal datang,
-     lot + kedaluwarsa (dari palet), QR + barcode; garis merah = dead stock / kedaluwarsa. Beda dari label palet. --}}
+{{--
+ REMARK
+ Tujuan       : Cetak label item (penerimaan barang): pilih gedung dan posisi stok, ukuran, kertas, jumlah lembar, lalu Print mencatat riwayat dan membuka lembar label (QR dan barcode).
+ Sumber hulu  : App\Support\V2\Data\Labels::itemForm (posisi stok per bin dari kartu stok, lot dan kedaluwarsa dari palet).
+ Input        : Query receipt (item penerimaan sudah tercentang); sesi v2_flash dan errors.
+ Output       : Objek x-mp::inv.label-print (MockupParts) dengan form dari Labels::itemForm; posting dan Print ditangani objek itu.
+ Dipakai oleh : Route v2.screen slug label-item (App\Support\V2\Screens, menu sys_app_menu target v2:label-item); dibuka juga dari form Penerimaan Barang
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\Labels;
 @endphp

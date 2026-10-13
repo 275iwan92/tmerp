@@ -1,5 +1,12 @@
-{{-- HRM > Payroll > Attendance Upload (v2). Data & aturan = App\Support\V2\Data\AttendanceUpload (att_finger_import / att_finger_raw +
-     AttendanceCalculationService), sama dengan layar v1: unggah file mesin finger -> pratinjau -> Simpan & Eksekusi Matching Shift. --}}
+{{--
+ REMARK
+ Tujuan       : Mengunggah file absensi mesin finger, pratinjau, lalu menyimpan dan menjalankan pencocokan shift.
+ Sumber hulu  : App\Support\V2\Data\AttendanceUpload (tm2mst.att_finger_import, att_finger_raw, emp_employee); AttendanceCalculationService.
+ Input        : File .csv / .txt / .xlsx (kolom device_pin, tanggal, jam_masuk, jam_keluar); session att_done, v2_flash, errors.
+ Output       : x-dl::card + x-dl::action-form (posting ke v2.attendance-upload.parse dan rute simpan), pratinjau maksimal 500 baris, tombol ke Attendance Log.
+ Dipakai oleh : Rute v2.screen dengan slug 'hrm-attendance-upload' (menu v2:hrm-attendance-upload di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (sama dengan layar v1).
+--}}
 @php
     use App\Support\V2\Data\AttendanceUpload;
     use App\Support\V2\Src;

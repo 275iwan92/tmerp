@@ -1,7 +1,12 @@
-{{-- Material Booking v2 (docs/materialbooking_tier1.md). Isi = App\Services\Planning\MaterialPlanningEngine lewat App\Support\V2\Data\MaterialPlanning.
-     Alur layar: GRID semua CO aktif + forecast (kebutuhan sudah tampil sejak CO Draft, tanpa memesan stok) -> klik 2x CO ->
-     baris bahan dengan rumus & sumber penutup -> Recalculate / Pick Item (item belum dipilih) / Confirm (kunci stok) / Back to Draft.
-     Booking hanya menulis transaksi (rm_booking*); Master Product tidak diubah. --}}
+{{--
+ REMARK
+ Tujuan       : Booking bahan per Customer Order: daftar CO aktif beserta forecast, lalu rincian bahan, sumber penutup, Recalculate, Pick Item, Confirm (kunci stok) dan Back to Draft.
+ Sumber hulu  : App\Support\V2\Data\MaterialPlanning (bookingDesk, lineRows) di atas App\Services\Planning\MaterialPlanningEngine; tabel rm_booking_d, rm_booking_alloc, v_rm_available, po_line, pr_line, mat_usage_standard.
+ Input        : Query id (id_order CO); session v2_flash dan error validasi.
+ Output       : Grid CO (view _dbgrid) tanpa id, atau form x-mp::planning.material-booking plus x-dl::grid baris bahan; booking hanya menulis transaksi rm_booking, Master Product tidak diubah.
+ Dipakai oleh : Layar v2 slug material-booking lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Sdi\CoOrder;
     use App\Support\V2\Data\MaterialPlanning;

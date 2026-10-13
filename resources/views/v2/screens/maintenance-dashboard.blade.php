@@ -1,5 +1,12 @@
-{{-- Maintenance Dashboard v2 (mockup maintenance_v2_dashboard.jpg). Hanya membaca: angka dari App\Services\Maintenance\KpiService, yang memakai OEE / MTBF / MTTR milik
-     Production (MachineOeeService) dan data Maintenance Order. Target diatur di Settings > Constants (MNT_TARGET_*). --}}
+{{--
+ REMARK
+ Tujuan       : Dashboard Maintenance (hanya baca): indikator OEE, MTBF, MTTR, kepatuhan preventive, top downtime, kegagalan per komponen dan biaya per rentang hari dan mesin.
+ Sumber hulu  : App\Services\Maintenance\KpiService (memakai MachineOeeService milik Production dan data MntOrder); target dari Settings > Constants (MNT_TARGET_*); ProdMachine, MntAsset.
+ Input        : Query days (30, 90, 180, 365; default 90) dan machine.
+ Output       : Kartu, tabel dan grafik x-dl::*; tidak ada posting.
+ Dipakai oleh : Route v2.screen slug maintenance-dashboard (App\Support\V2\Screens, menu sys_app_menu target v2:maintenance-dashboard) di menu Maintenance
+ Status       : Aktif (mockup maintenance_v2_dashboard.jpg)
+--}}
 @php
     use App\Models\Master\ProdMachine;
     use App\Models\Master\ProdMachineDowntime;

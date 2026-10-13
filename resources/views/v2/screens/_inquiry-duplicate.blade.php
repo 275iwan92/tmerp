@@ -1,6 +1,12 @@
-{{-- Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru (routes/v2.php v2.inquiry.duplicate).
-     Dipakai tombol Duplicate di form Inquiry New / Recalc / Revise (user 2026-10-01: pindah dari baris grid ke form).
-     Di luar form dokumen: form HTML tidak boleh bersarang. Parameter: $source (id inquiry), $label (keterangan asal). --}}
+{{--
+ REMARK
+ Tujuan       : Modal Duplicate Inquiry: menyalin spesifikasi inquiry ke customer lain sebagai NEW DRAFT baru.
+ Sumber hulu  : Data\CustomerOrder::customerOptions() (tm2mst.cust_customer); inquiry sumber dari $source.
+ Input        : $source (id inquiry sumber), $label (keterangan asal); isian customer_id target.
+ Output       : POST ke route v2.inquiry.duplicate lewat x-dl::modal, x-dl::action-form, x-dl::field.select, x-dl::alert, x-dl::button (Cancel, Duplicate).
+ Dipakai oleh : Di-include inquiry-new, inquiry-recalc dan inquiry-revise (tombol Duplicate di form, di luar form dokumen).
+ Status       : Aktif. Qty dan harga tidak disalin; hasilnya lewat ProDev dan ProCost lagi.
+--}}
 <x-dl::modal id="dup-modal" title="Duplicate Inquiry" size="md" icon="copy">
     <x-dl::action-form action="{{ route('v2.inquiry.duplicate') }}" id="dup-form" class="mp-dup">
         <input type="hidden" name="source_id" value="{{ $source }}">

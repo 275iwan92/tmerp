@@ -1,7 +1,12 @@
-{{-- Purchase Order v2. Flow & aturan = tmerp pages/pur/po (index + entry) lewat App\Support\V2\Data\PurchaseOrder.
-     Alur: GRID PO -> + New Record = pilih supplier (draft per supplier) -> DRAFT: tarik baris dari PR APPROVED (alokasi),
-     isi harga & diskon -> Confirm (Submit: nomor PO + antrian approval) -> Approve / Reject / Hold -> Approved ->
-     Kirim ke Supplier (SENT) -> Penerimaan Barang -> Closed otomatis saat seluruh barang diterima (RECEIVED / CLOSED). --}}
+{{--
+ REMARK
+ Tujuan       : Purchase Order: GRID PO, buat draft per supplier, tarik baris dari PR Approved, Confirm (nomor PO dan antrian approval), Approve/Reject/Hold, kirim ke supplier, Closed saat semua barang diterima.
+ Sumber hulu  : App\Support\V2\Data\PurchaseOrder (flow dan aturan pages/pur/po v1); model Pur\PoOrder; grid App\Support\V2\Grid\Pur\PurchaseOrderGrid.
+ Input        : Query id (PO), new (PO baru); session v2_flash dan error validasi.
+ Output       : Daftar lewat _dbgrid, form pilih supplier (rute v2.po.create) atau form PO x-dl::* dengan aksi approval dan kirim.
+ Dipakai oleh : Layar v2 slug purchase-order lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Pur\PoOrder;
     use App\Support\V2\Data\PurchaseOrder;

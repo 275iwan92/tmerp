@@ -1,7 +1,12 @@
-{{-- Inventory > Batch & Quality > Conditional Stock (v2.01, Q-05..Q-09). GRID batch yang menunggu keputusan mutu (Conditional / Quarantine) -> buka satu batch ->
-     rencana sampling untuk lotnya, keputusan (Release / Reject / Block / Conditional use + alasan), riwayat keputusan, pemakaian batch (telusur maju),
-     WO yang ditahan, dan klaim supplier. Aturan di App\Services\Inventory\QcDecisionService / QcTraceService, data lewat App\Support\V2\Data\BatchQuality.
-     Batch Rejected tetap bisa dibuka dari Supplier Claims atau Stock in Inspection. --}}
+{{--
+ REMARK
+ Tujuan       : Memutuskan mutu batch Conditional / Quarantine (Release, Reject, Block, Conditional use) beserta jejak pemakaian dan klaim supplier.
+ Sumber hulu  : App\Support\V2\Data\BatchQuality; model InvBatch; App\Services\Inventory\QcDecisionService, QcTraceService, QcAuthority; grid ConditionalStockListGrid.
+ Input        : Query id (batch); session v2_flash dan errors.
+ Output       : Daftar lewat _dbgrid; detail batch: rencana sampling, keputusan + alasan, riwayat, pemakaian batch, WO tertahan, klaim supplier (objek x-dl::*).
+ Dipakai oleh : Rute v2.screen dengan slug 'conditional-stock' (menu v2:conditional-stock di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (Inventory > Batch & Quality, v2.01 Q-05..Q-09).
+--}}
 @php
     use App\Models\Inventory\InvBatch;
     use App\Services\Inventory\QcAuthority;

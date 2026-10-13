@@ -1,5 +1,12 @@
-{{-- Finance > Financial Reports > Financial Statements (v2): ringkasan Neraca, Laba Rugi (tahun berjalan) dan Arus Kas dalam satu halaman, semuanya dari voucher POSTED
-     (App\Support\V2\Data\FinancialStatements). Tautan membuka laporan rinci masing-masing. --}}
+{{--
+ REMARK
+ Tujuan       : Ringkasan Neraca, Laba Rugi (tahun berjalan) dan Arus Kas dalam satu halaman dengan tautan ke laporan rinci.
+ Sumber hulu  : App\Support\V2\Data\FinancialStatements (LedgerService, voucher POSTED); tabel tm2acc.fin_voucher, fin_voucher_line, fin_account.
+ Input        : Query string as_of (default hari ini).
+ Output       : x-dl::card dengan filter, x-dl::kpi-row dan tiga tabel ringkasan; tombol ke Trial Balance dan laporan rinci.
+ Dipakai oleh : Menu Finance > Financial Reports > Financial Statements (slug acc-statements, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\FinancialStatements as FS;
     use App\Support\V2\Src;

@@ -1,5 +1,12 @@
-{{-- Finance > Control Center > Dashboard (v2). Data = App\Support\V2\Data\FinanceDesk (App\Services\Acc\FinanceMetrics, sama dengan v1): likuiditas, piutang / hutang,
-     profitabilitas, tren arus kas operasi 12 bulan, Compliance Center dan Finance Action Center. Tidak menulis data. --}}
+{{--
+ REMARK
+ Tujuan       : Dashboard akuntansi: likuiditas, piutang / hutang, profitabilitas, tren arus kas 12 bulan, Compliance dan Action Center (hanya baca).
+ Sumber hulu  : App\Support\V2\Data\FinanceDesk (App\Services\Acc\FinanceMetrics); tabel tm2acc.fin_voucher, fin_invoice, fin_tax_register, fin_period.
+ Input        : Query string as_of (default hari ini).
+ Output       : x-dl::card dengan filter tanggal, x-dl::kpi-row / x-dl::kpi, x-dl::chart area dan daftar tindakan; tombol ke acc-statements dan acc-journal.
+ Dipakai oleh : Menu Finance > Control Center > Dashboard (slug acc-dashboard, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\FinanceDesk as Desk;
     use App\Support\V2\Src;

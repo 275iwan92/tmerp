@@ -1,6 +1,12 @@
-{{-- Cetakan dokumen transaksi (user 2026-10-01): satu halaman untuk semua dokumen. Tata letak = objek DevLib x-dl::print-doc
-     (A5 landscape 1-5 baris / A4 portrait); Print, PDF, JPEG, online + QR, dan Email = x-dl::doc-share yang menunjuk lembarnya.
-     Isi dokumen = kelas di App\Support\V2\Print (route v2.print). --}}
+{{--
+ REMARK
+ Tujuan       : Halaman cetak satu dokumen transaksi (A5 landscape 1-5 baris atau A4 portrait) dengan pilihan format dan harga.
+ Sumber hulu  : App\Support\V2\Print\PrintDocs (kelas dokumen per type).
+ Input        : doc, type, id, prices, back, query from; hak canViewSalesPrice untuk customer-order.
+ Output       : x-dl::action-bar, x-dl::print-doc, x-dl::doc-share.
+ Dipakai oleh : route v2.print (routes/v2.php); tombol Print dari grid (DbGrid) dan form dokumen.
+ Status       : Aktif.
+--}}
 @php
     $number = $doc->data['number'] ?? null;
     $twoFormats = $type === 'customer-order' && auth()->user()->canViewSalesPrice();

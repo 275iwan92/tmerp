@@ -1,7 +1,12 @@
-{{-- Purchase Requisition v2. Flow & aturan = tmerp pages/pur/pr (index + entry) lewat App\Support\V2\Data\PurchaseRequisition.
-     Alur: GRID PR -> + New Record = pilih departemen -> DRAFT (tambah item master / bebas, qty, harga estimasi, tgl butuh) ->
-     Confirm (= Submit v1: nomor PR lahir, masuk antrian approval flow engine) -> Approval (Approve / Reject / Hold oleh
-     approver tahap berjalan) -> Approved -> Closed otomatis saat seluruh baris sudah menjadi PO (FULLY_ORDERED). --}}
+{{--
+ REMARK
+ Tujuan       : Purchase Requisition: GRID PR, pilih departemen, DRAFT item master atau bebas, Confirm (nomor PR dan approval), Approved, Closed otomatis saat semua baris jadi PO.
+ Sumber hulu  : App\Support\V2\Data\PurchaseRequisition (flow pages/pur/pr v1); model Pur\PrRequisition; grid PurchaseRequisitionGrid; master org_department.
+ Input        : Query id (PR), new (PR baru); session v2_flash dan error validasi.
+ Output       : Daftar lewat _dbgrid, form pilih departemen (rute v2.pr.create) atau form PR x-dl::* dengan aksi Confirm dan approval.
+ Dipakai oleh : Layar v2 slug purchase-requisition lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Pur\PrRequisition;
     use App\Support\V2\Data\PurchaseRequisition;

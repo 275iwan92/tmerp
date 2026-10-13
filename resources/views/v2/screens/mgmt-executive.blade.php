@@ -1,5 +1,12 @@
-{{-- Management Reports > Executive Summary (v2). Data = App\Support\V2\Data\ExecutiveSummary (App\Services\Report\ManagementReportService,
-     sama dengan layar v1 report.executive): penjualan, pembelian, invoice dan utang usaha terintegrasi. Rincian: tautan ke laporan v1 per bidang. --}}
+{{--
+ REMARK
+ Tujuan       : Ringkasan eksekutif manajemen: penjualan, pembelian, invoice dan utang usaha terintegrasi untuk seluruh perusahaan, per tahun dan basis pendapatan.
+ Sumber hulu  : App\Support\V2\Data\ExecutiveSummary (App\Services\Report\ManagementReportService, sama dengan layar v1 report.executive); co_order_legacy, co_delivery_legacy, po_order_legacy, po_invoice_legacy.
+ Input        : Query th (tahun), basis (basis pendapatan), confirmed (hanya CO Confirmed).
+ Output       : Kartu filter x-dl::card + x-dl::action-form (GET), lalu tren bulanan, bauran customer, kuartal, tren pembelian dan perhatian; rincian lewat tautan ke laporan v1.
+ Dipakai oleh : Layar v2 slug mgmt-executive lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\ExecutiveSummary;
     use App\Support\V2\Src;

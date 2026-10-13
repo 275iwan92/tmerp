@@ -1,4 +1,12 @@
-{{-- Laporan: Quotation terbit yang masih menunggu keputusan customer (belum WIN/LOST/Cancel). Grid for Reporting. --}}
+{{--
+ REMARK
+ Tujuan       : Laporan Quotation terbit yang masih menunggu keputusan customer (belum WIN, LOST, Cancel), dikelompokkan per Sales PIC.
+ Sumber hulu  : App\Support\V2\Data\Quotation::outstandingRows(); tm2sdi.quo_quotation (PUBLISHED), quo_activity, iqp_inquiry.sub_state.
+ Input        : Tidak ada parameter; pencarian dan saringan statistik ditangani objek grid.
+ Output       : x-dl::grid mode report (kolom customer, sales, umur, validitas, grand total, follow-up); baris membuka layar quotation ?id=.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug quotation-outstanding (menu Sales, laporan Open Quotations).
+ Status       : Aktif (laporan baca-saja).
+--}}
 @php
     use App\Support\V2\Data\Quotation;
     use App\Support\V2\Src;

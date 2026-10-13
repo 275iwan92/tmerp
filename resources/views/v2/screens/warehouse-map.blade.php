@@ -1,9 +1,12 @@
-{{-- Warehouse Map v2 (user 2026-10-02: "warehouse mapping") lewat App\Support\V2\Data\Warehouse: pilih gedung -> denah per
-     lantai (garis luar gedung, area, bin) -> klik bin = isi, kapasitas, label QR, tombol Transfer / Label / Block.
-     Tumpukan (user 2026-10-03: "selain posisi X dan Y juga ada stack"): angka di kotak bin = jumlah satuan ditumpuk; panel bin
-     menggambar tumpukan dari atas ke bawah (1 = paling bawah) dengan tombol tukar urutan; saringan Remnant dan Buried.
-     Merah = bin yang memuat dead stock. Edit Layout = geser / ubah ukuran area. Generate Bins = pembuat bin per area.
-     Gedung, area, dan bin ditambah / diubah di layar Buildings, Storage Areas, Bins (tombol di kanan atas). --}}
+{{--
+ REMARK
+ Tujuan       : Warehouse Map: denah gedung per lantai (area, bin, tumpukan), klik bin untuk isi, kapasitas, label QR, Transfer, Label, Block; Edit Layout dan Generate Bins.
+ Sumber hulu  : App\Support\V2\Data\Warehouse::desk() (tm2mst wh_*, tm2inv posisi stok).
+ Input        : Url layar sendiri; pilihan gedung dan bin ditangani objek; session v2_flash dan errors.
+ Output       : x-mp::inv.warehouse-desk (objek form khusus MockupParts) dan x-dl::alert.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug warehouse-map (menu Warehouse).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\Warehouse;
 @endphp

@@ -1,7 +1,12 @@
-{{-- CRM > Activities & Follow-up (user 2026-10-02) lewat App\Support\V2\Data\CrmActivities.
-     GRID semua kontak dengan customer; baris berwarna menurut jatuh tempo follow-up (pola CPDEL) -> + New Record = pilih customer
-     -> form: jenis, topik, kontak, hasil, catatan, tindak lanjut -> Save. Follow-up selesai lewat Follow-up Done atau
-     Log Result (mencatat aktivitas baru dari follow-up itu, follow-up asalnya ditutup). Ubah / hapus = pembuatnya. --}}
+{{--
+ REMARK
+ Tujuan       : Mencatat aktivitas kontak customer dan tindak lanjut (follow-up) beserta hasilnya.
+ Sumber hulu  : App\Support\V2\Data\CrmActivities; model Sdi\CrmActivity dan Master\CustCustomer; grid CrmActivityListGrid.
+ Input        : Query id, new, from (follow-up asal), customer_id; session v2_flash dan errors.
+ Output       : Daftar lewat _dbgrid; form aktivitas (jenis, topik, kontak, hasil, catatan, tindak lanjut), aksi Follow-up Done / Log Result.
+ Dipakai oleh : Rute v2.screen dengan slug 'crm-activity' (menu v2:crm-activity di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (CRM > Activities & Follow-up; ubah / hapus oleh pembuatnya).
+--}}
 @php
     use App\Models\Master\CustCustomer;
     use App\Models\Sdi\CrmActivity;

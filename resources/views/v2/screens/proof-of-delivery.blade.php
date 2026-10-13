@@ -1,6 +1,12 @@
-{{-- Proof of Delivery v2 (KPI janji kirim semua departemen, user 2026-10-01). Officer pengiriman (Ms. Winda) mencatat tiap
-     kedatangan di customer: jam tiba + hasil terima. Tepat = tiba di hari janji, tidak lewat jam slot, dan diterima.
-     Aturan = App\Services\Sales\DeliveryPromiseService; data = App\Support\V2\Data\ProofOfDelivery. Versi HP + foto GPS menyusul. --}}
+{{--
+ REMARK
+ Tujuan       : Proof of Delivery: officer pengiriman mencatat jam tiba dan hasil terima per DO sebagai KPI janji kirim semua departemen; tepat = hari janji, tidak lewat jam slot, diterima.
+ Sumber hulu  : App\Services\Sales\DeliveryPromiseService (aturan) dan App\Support\V2\Data\ProofOfDelivery; model DoDelivery (CONFIRMED atau SHIPPED), DoDeliveryPod.
+ Input        : Query id (DO); session v2_flash dan error validasi.
+ Output       : Tanpa id: KPI x-dl::kpi (bulan ini dan sebelumnya) plus daftar DO; dengan id: form catat kedatangan. Versi HP dan foto GPS menyusul.
+ Dipakai oleh : Layar v2 slug proof-of-delivery lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Sdi\DoDelivery;
     use App\Models\Sdi\DoDeliveryPod;

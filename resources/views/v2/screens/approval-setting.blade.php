@@ -1,6 +1,12 @@
-{{-- Setting Approval (user 2026-09-30, pengganti m_authorize/_detail lama). Data & aturan = App\Support\V2\Data\ApprovalSetting
-     (tm2mst.flow_config + flow_config_step). GRID modul -> form: header (keterangan, status akhir, aktif) + Level 1..n
-     (jabatan, batas nilai, label cetak). Approver = jabatan: officer pengganti diatur di layar Officer Pengganti (PLT). --}}
+{{--
+ REMARK
+ Tujuan       : Mengatur level approval per kode dokumen (jabatan, batas nilai, label cetak) beserta status akhir dan aktif.
+ Sumber hulu  : App\Support\V2\Data\ApprovalSetting; model FlowConfig (tm2mst.flow_config + flow_config_step); grid ApprovalSettingListGrid.
+ Input        : Query id (buka konfigurasi), new (konfigurasi baru); session v2_flash dan errors.
+ Output       : Daftar lewat _dbgrid; form header + Level 1..n (x-dl::form, lines, strip-kv, field.*); posting ke route v2.approval-setting.create dan rute simpan setting.
+ Dipakai oleh : Rute v2.screen dengan slug 'approval-setting' (menu v2:approval-setting di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (approver = jabatan; pengganti diatur di layar Officer Pengganti).
+--}}
 @php
     use App\Models\Master\FlowConfig;
     use App\Support\V2\Data\ApprovalSetting;

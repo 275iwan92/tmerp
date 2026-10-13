@@ -1,7 +1,12 @@
-{{-- Pick List v2 (W-05, B-12; mockup docs/mockups/wh_v201_pick_allocation.jpg). Daftar = objek Grid PickListGrid (DocListGrid).
-     + New Record = pilih Work Order yang bookingnya sudah Confirm -> mesin PickAllocator mengalokasikan palet / batch / bin menurut aturan
-     area (FIFO / FEFO), batch yang boleh, syarat serat / sertifikasi, dan pemilik stok; yang tidak tertutup = SHORT.
-     Petugas memindai palet lalu bin di satu kotak pindai; Confirm Pick = Stock Out RM ke WO (PickListService::confirm). --}}
+{{--
+ REMARK
+ Tujuan       : Pick List: alokasi palet / batch / bin untuk Work Order dari booking bahan Confirm (FIFO / FEFO), pindai palet lalu bin, Confirm Pick = Stock Out RM ke WO.
+ Sumber hulu  : App\Support\V2\Data\PickLists; PickAllocator dan App\Services\Inventory\PickListService; model WhPickList; PrintDocs.
+ Input        : Query id (pick list), new (form baru); session v2_flash dan errors.
+ Output       : Daftar via _dbgrid (PickListGrid), form pilih WO, rincian dan kotak pindai; POST ke v2.wh.pick.create, .scan, .act.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug wh-pick-list (menu Warehouse).
+ Status       : Aktif.
+--}}
 @php
     use App\Models\Inventory\WhPickList;
     use App\Support\V2\Data\PickLists;

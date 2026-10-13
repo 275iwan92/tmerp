@@ -1,8 +1,12 @@
-{{-- Warehouse > Receiving & Putaway (v2.01, docs/mockups/wh_v201_receiving_putaway.jpg): daftar tugas putaway = objek Grid
-     App\Support\V2\Grid\Inv\ReceivingPutawayGrid (kotak statistik = saringan). Open satu baris (?task=) -> usulan bin berurutan dari aturan
-     area + pindai palet, lalu pindai bin (bin lain dari usulan wajib alasan) -> stok pindah lewat dokumen Stock Transfer asli
-     (App\Services\Inventory\WarehouseTaskService). Palet Conditional / URGENT = "Send to line" (dock-to-line ke area WIP / Staging).
-     Tugas dibuat otomatis (sync) dari palet yang masih di area Receiving / QC Hold. --}}
+{{--
+ REMARK
+ Tujuan       : Receiving & Putaway: tugas putaway palet dari area Receiving / QC Hold ke bin usulan, termasuk Send to line untuk palet Conditional / URGENT.
+ Sumber hulu  : App\Support\V2\Data\ReceivingPutaway; App\Services\Inventory\WarehouseTaskService (sync tugas); grid ReceivingPutawayGrid.
+ Input        : Query task (tugas terbuka); user login (sync tugas); session v2_flash dan errors.
+ Output       : Daftar tugas dengan kotak statistik, panel pindai palet dan bin; POST ke v2.wh.task.confirm.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug wh-receiving-putaway (menu Warehouse); ditautkan dari Task Board.
+ Status       : Aktif.
+--}}
 @php
     use App\Services\Inventory\WarehouseTaskService;
     use App\Support\V2\Data\ReceivingPutaway;

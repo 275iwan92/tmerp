@@ -1,5 +1,12 @@
-{{-- Finance > Controls & Tax > Indonesian Tax (v2). Data & aturan = App\Support\V2\Data\TaxDesk (TaxEngine + fin_tax_register + tm2mst.fin_tax_scheme, sama dengan v1):
-     PPN, PPh withholding, provisi PPh Badan, rekonsiliasi pajak dan workpaper pelaporan. Nilai diambil dari mutasi GL periode terkait, bukan input manual. --}}
+{{--
+ REMARK
+ Tujuan       : Pajak Indonesia: PPN, PPh withholding, provisi PPh Badan, rekonsiliasi pajak dan workpaper pelaporan dari mutasi GL.
+ Sumber hulu  : App\Support\V2\Data\TaxDesk (TaxEngine); tabel tm2acc.fin_tax_register, tm2mst.fin_tax_scheme, tm2acc.fin_voucher.
+ Input        : Query string period (YYYY-MM), type, q, reg; flash v2_flash dan errors.
+ Output       : x-dl::card, x-dl::kpi-row, tabel register dan form DevLib; POST aksi pajak di routes/v2.php (kembali ke acc-tax).
+ Dipakai oleh : Menu Finance > Controls & Tax > Indonesian Tax (slug acc-tax, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Models\Acc\FinTaxRegister;
     use App\Support\V2\Data\TaxDesk as Tax;

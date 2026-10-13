@@ -1,6 +1,12 @@
-{{-- Colour Sequence v2 (PPIC): the print process as the press sees it. Per press machine the jobs in planned order with their inks, and the wash before each job.
-     Inks come from Product Development; jobs are in the Draft when there is one, else in the confirmed schedule. The order is changed on the PPIC Workspace
-     (drag on the Gantt, or die grouping): this screen shows the result and what it costs. Data = App\Support\V2\Data\Ppic::colorSequence(). --}}
+{{--
+ REMARK
+ Tujuan       : Urutan proses cetak seperti dilihat mesin: per mesin cetak, job berurutan beserta tinta dan pencucian sebelum tiap job; urutan diubah di PPIC Workspace.
+ Sumber hulu  : App\Support\V2\Data\Ppic::colorSequence dan draftRun; prd_wo_operation, prod_part_ink (tinta dari Product Development), prod_machine_changeover, prd_plan_decision.
+ Input        : Tanpa parameter; hak jadwal dari PpicAccess::canSchedule; session v2_flash.
+ Output       : x-dl::card per mesin dengan urutan job, tinta dan menit cuci; tombol Back ke production-scheduling dan Setup and Changeover (prod-changeover).
+ Dipakai oleh : Layar v2 slug ppic-color-sequence lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\Ppic;
     use App\Support\V2\Src;

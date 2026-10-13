@@ -1,5 +1,12 @@
-{{-- Translation Dictionary dua panel ala ScriptCase (user 2026-10-03): pohon kelompok pesan (x-dl::side-menu) di kiri, grid lookup
-     satu kolom per bahasa aktif di kanan. Semua isi dari App\Support\V2\Grid\Setup\TranslationDictionaryLookup (sys_dictionary). --}}
+{{--
+ REMARK
+ Tujuan       : Translation Dictionary dua panel: pohon kelompok pesan di kiri, grid satu kolom per bahasa aktif di kanan untuk mengisi terjemahan.
+ Sumber hulu  : App\Support\V2\Grid\Setup\TranslationDictionaryLookup (tm2sys.sys_dictionary, sys_dictionary_lang, sys_dictionary_group).
+ Input        : Variabel screen[grid] dari layar generik; node kelompok terpilih lewat grid (query g).
+ Output       : x-dl::split + x-dl::side-menu (pohon) + x-dl::lookup-grid; simpan ke saveUrl grid.
+ Dipakai oleh : Layar generik route v2.screen lewat Screens::grid (menu Setup > Translation Dictionary).
+ Status       : Aktif.
+--}}
 @php
     $grid = $screen['grid'];
     $p = $grid->props();

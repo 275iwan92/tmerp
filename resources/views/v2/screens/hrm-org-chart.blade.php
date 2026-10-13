@@ -1,5 +1,12 @@
-{{-- HRM > Organization > Organization Chart (v2). Data = App\Support\V2\Data\OrgStructure (org_position.reports_to_position_id + pemegang jabatan aktif), tampil
-     read-only lewat x-dl::org-chart: cari nama / jabatan, sorot departemen, lipat / buka cabang, zoom, unduh HTML. Relasi atasan diatur di Master Position. --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan bagan organisasi (jabatan dan pemegangnya) hanya baca dengan cari, sorot departemen, lipat / buka, zoom, unduh.
+ Sumber hulu  : App\Support\V2\Data\OrgStructure (org_position.reports_to_position_id, org_department, emp_employee).
+ Input        : -
+ Output       : x-dl::org-chart (read-only), alert bila belum ada jabatan atau semua jabatan berdiri sendiri, tombol ke Master Position.
+ Dipakai oleh : Rute v2.screen dengan slug 'hrm-org-chart' (menu v2:hrm-org-chart di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (relasi atasan diatur di Master Position).
+--}}
 @php
     use App\Support\V2\Data\OrgStructure;
     use App\Support\V2\Src;

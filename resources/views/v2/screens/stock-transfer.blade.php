@@ -1,10 +1,12 @@
-{{-- Stock Transfer v2 (user 2026-10-02: "input moving item antar warehouse") lewat App\Support\V2\Data\StockTransfer.
-     GRID transfer -> + New Record = pilih gudang asal + tujuan -> DRAFT: baris = posisi stok asal (item di satu bin) + bin
-     tujuan + qty -> Confirm (stok pindah di kartu stok, nomor lahir, siap dicetak) -> Cancel wajib alasan (stok kembali).
-     Di bawah baris: pemeriksaan per baris (kapasitas bin tujuan sesudah pindah, DEAD STOCK merah) dan label tiap bin
-     (kode, kapasitas, QR + barcode). Lebih dari kapasitas = peringatan, bukan larangan. Tanpa jurnal (nilai & pemilik sama).
-     Approval (Setup > Setting Approval, modul TF) bawaan TIDAK aktif; bila diaktifkan Confirm = diajukan dan stok baru
-     pindah saat level terakhir Approve (tombol Approve / Reject / Hold muncul untuk pemeriksa level berjalan). --}}
+{{--
+ REMARK
+ Tujuan       : Stock Transfer: memindahkan stok antar gudang / bin (draft, Confirm memindah stok di kartu stok, Cancel wajib alasan), dengan cek kapasitas bin tujuan dan label bin.
+ Sumber hulu  : App\Support\V2\Data\StockTransfer dan Warehouse; model InvTransfer (tm2inv); PrintDocs; approval modul TF bila aktif.
+ Input        : Query id (dokumen), new (form baru); session v2_flash dan errors.
+ Output       : Grid daftar, form draft dengan baris posisi stok, pemeriksaan per baris, label QR + barcode; POST ke v2.wh.transfer.create/save, v2.wh.labels.print.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug stock-transfer (menu Warehouse); ditautkan dari Warehouse Map, In Transit.
+ Status       : Aktif.
+--}}
 @php
     use App\Models\Inventory\InvTransfer;
     use App\Support\V2\Data\StockTransfer;

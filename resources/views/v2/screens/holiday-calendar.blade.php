@@ -1,5 +1,12 @@
-{{-- Holiday Calendar v2 (App\Support\V2\Grid\Master\HolidayCalendarGrid): kalender setahun berwarna (klik tanggal libur = buka,
-     klik tanggal kosong = libur baru di tanggal itu) + grid per tahun + form master. Libur nasional & cuti bersama = SKB 3 Menteri. --}}
+{{--
+ REMARK
+ Tujuan       : Mengelola kalender libur setahun (libur nasional dan cuti bersama) lewat kalender berwarna, grid, dan form.
+ Sumber hulu  : App\Support\V2\Grid\Master\HolidayCalendarGrid; App\Support\V2\Data\WorkCalendar; model Master\SysHoliday.
+ Input        : Query year, id, new (tanggal awal libur baru); session v2_flash dan errors.
+ Output       : x-dl::year-calendar + x-dl::action-bar (pindah tahun, Office Hours), grid per tahun, form master libur.
+ Dipakai oleh : Rute v2.screen dengan slug 'holiday-calendar' (menu v2:holiday-calendar di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (libur nasional dan cuti bersama = SKB 3 Menteri).
+--}}
 @php
     use App\Models\Master\SysHoliday;
     use App\Support\V2\Data\WorkCalendar;

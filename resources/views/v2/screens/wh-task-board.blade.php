@@ -1,6 +1,12 @@
-{{-- Warehouse > Task Board (v2.01, gambar docs/mockups/menu_v201_split.jpg): papan BACA-SAJA pekerjaan gudang gabungan -- tugas gudang (Receive / Putaway / Pick / Move / Count),
-     pick list terbuka, transfer In Transit yang berjalan, dan area yang hitung stoknya jatuh tempo -- dalam kolom Open / In progress / Done (7 hari terakhir).
-     Kartu tidak digeser atau diubah; tombol Buka di kartu pergi ke layar asalnya. Data: App\Support\V2\Data\WarehouseTaskBoard. Daftar tugas tetap di Receiving & Putaway. --}}
+{{--
+ REMARK
+ Tujuan       : Task Board: papan baca-saja pekerjaan gudang gabungan (Receive, Putaway, Pick, Move, Count, In Transit) dalam kolom Open / In progress / Done.
+ Sumber hulu  : App\Support\V2\Data\WarehouseTaskBoard (tm2inv.wh_task, wh_pick_list, inv_transfer; tm2mst.wh_zone).
+ Input        : Tidak ada parameter.
+ Output       : x-dl::kanban readonly; tombol Buka di kartu ke layar asal; tombol ke Receiving & Putaway.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug wh-task-board (menu Warehouse).
+ Status       : Aktif (baca-saja).
+--}}
 @php
     use App\Support\V2\Data\WarehouseTaskBoard;
     use App\Support\V2\Src;

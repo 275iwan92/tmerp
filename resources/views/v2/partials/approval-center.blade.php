@@ -1,6 +1,12 @@
-{{-- Approval Center v2 = DevLib Form Approval (x-dl::approval, disetujui user 2026-09-30): hanya-baca, tampil Level n of N,
-     Approve/Reject final, Hold sementara, setiap keputusan tercatat di tm2mst.flow_log (siapa, kapan, alasan).
-     Data & aturan = App\Support\V2\Data\ApprovalCenter ($screen = pr | po | co | stock | prt). --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan Approval Center (hanya-baca, Level n of N, Approve / Reject / Hold) untuk satu jenis dokumen.
+ Sumber hulu  : App\Support\V2\Data\ApprovalCenter (docs, lineColumns, myLog); log keputusan tm2mst.flow_log dan flow_config_step.
+ Input        : $screen (pr, po, co, stock, prt, tf); flash v2_flash dan error validasi.
+ Output       : x-dl::approval yang mengirim keputusan ke route v2.approval.decide.
+ Dipakai oleh : @include dari screens/approval-pr, approval-po, approval-co, approval-stock, approval-prt, approval-tf.
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\ApprovalCenter;
     use App\Support\V2\Src;

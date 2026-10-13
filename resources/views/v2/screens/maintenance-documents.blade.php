@@ -1,5 +1,12 @@
-{{-- SOP and Work Instructions v2 (Fase 1 Master Data). Teks SOP / WI bernomor, revisi, status Draft atau Approved. Dokumen yang disetujui
-     terkunci; Back to Draft membuat revisi baru. Satu dokumen bisa dipakai banyak aset (dihubungkan di Asset Maintenance Profile). --}}
+{{--
+ REMARK
+ Tujuan       : Master SOP dan Work Instruction maintenance: dokumen bernomor, revisi, status Draft atau Approved; dokumen disetujui terkunci, Back to Draft membuat revisi baru; satu dokumen dipakai banyak aset.
+ Sumber hulu  : Model MntDocument (tm2mnt), Maintenance::coverageRows, MaintenanceAccess::canManage; daftar = grid Maint\DocumentListGrid.
+ Input        : Query id (dokumen), new (form baru); sesi v2_flash dan errors.
+ Output       : x-dl::tabs (Coverage dan All list), x-dl::coverage, grid atau form; posting ke route v2.mnt.document.save.
+ Dipakai oleh : Route v2.screen slug maintenance-documents (App\Support\V2\Screens, menu sys_app_menu target v2:maintenance-documents) di menu Maintenance > Master Data
+ Status       : Aktif (Fase 1 Master Data)
+--}}
 @php
     use App\Models\Mnt\MntDocument;
     use App\Models\Mnt\MntLog;

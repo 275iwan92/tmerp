@@ -1,7 +1,12 @@
-{{-- Track via QR / Barcode (user 2026-10-02: "Facility for QR Code, Labelling") lewat App\Support\V2\Data\Labels::track.
-     Pindai (scanner / kamera HP) atau ketik kode -> hasil: BIN = label + isi + tombol peta / transfer; ITEM = di bin mana
-     saja stoknya + palet + 15 pergerakan terakhir; PALET = label + riwayat (datang, label ulang, pindah, ditutup);
-     nomor Stock Transfer = buka dokumennya. Isi QR label = alamat halaman ini. --}}
+{{--
+ REMARK
+ Tujuan       : Pelacakan lewat pindai QR / barcode: hasil untuk bin, item, palet, atau nomor Stock Transfer.
+ Sumber hulu  : App\Support\V2\Data\Labels::trackDesk() (tm2inv: stok per bin, palet, kartu stok, transfer).
+ Input        : Kode hasil pindai atau ketikan (dibaca objek form); url layar ini sebagai isi QR label.
+ Output       : x-mp::inv.scan-track menampilkan label, isi bin, palet, riwayat, dan tombol peta / transfer.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug scan-track (menu Warehouse); alamat isi QR pada label.
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\Labels;
 @endphp

@@ -1,5 +1,12 @@
-{{-- PM Calendar v2 (Fase 2, mockup maintenance_v2_flow.jpg bagian 4). Kalender bulanan Preventive Maintenance Order (Draft dan Confirmed) per aset.
-     Hanya baca: jadwal diubah di form PMO. Daftar di bawah kalender memuat tautan ke tiap order. --}}
+{{--
+ REMARK
+ Tujuan       : Kalender bulanan Preventive Maintenance Order (Draft dan Confirmed) per aset, hanya baca, dengan daftar order berikutnya dan tautan Open ke PMO.
+ Sumber hulu  : Maintenance::calendarEvents dan Maintenance::assetOptions; model MntOrder (tm2mnt.mnt_order, jenis PMO, belum cancel / close).
+ Input        : Tanpa parameter; membaca 15 order terdekat yang punya planned_start.
+ Output       : x-dl::calendar tampilan bulan dan x-dl::table; tidak ada posting (jadwal diubah di form PMO).
+ Dipakai oleh : Route v2.screen slug maintenance-pm-calendar (App\Support\V2\Screens, menu sys_app_menu target v2:maintenance-pm-calendar) di menu Maintenance
+ Status       : Aktif (mockup maintenance_v2_flow.jpg bagian 4)
+--}}
 @php
     use App\Models\Mnt\MntOrder;
     use App\Support\V2\Data\Maintenance;

@@ -1,7 +1,12 @@
-{{-- Material Category v2 = PEMBENTUK KODE ITEM (user 2026-10-03, docs/globaluserrules.md B.16; rinci docs/md_for_systems/matcategory_delta.md §5).
-     Dropdown saling terkait Category 1 -> 5 (objek DevLib x-dl::code-chain): tiap memilih, form baris itu terbuka dan grid di
-     bawahnya berisi tingkat berikutnya; Add = entri baru di bawah rantai yang sedang dipilih. Aturan rantai dan kode ada di
-     App\Services\Master\MaterialCategoryService; layar ini hanya menampilkan. --}}
+{{--
+ REMARK
+ Tujuan       : Master Material Category sebagai pembentuk kode item: dropdown berantai Category 1 sampai 5, form baris terbuka dan grid tingkat berikutnya; Add membuat entri di bawah rantai terpilih.
+ Sumber hulu  : App\Services\Master\MaterialCategoryService (aturan rantai dan kode) lewat grid screen; model Master\MatCategory, Acc\FinAccount.
+ Input        : Query id (node kategori), new (tingkat 1-5), parent; session v2_flash.
+ Output       : Alert rantai rusak, x-dl::code-chain, form dan grid tingkat berikutnya; layar hanya menampilkan, aturan ada di service. Spec docs/md_for_systems/matcategory_delta.md bagian 5.
+ Dipakai oleh : Layar v2 slug md-matcat lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Acc\FinAccount;
     use App\Models\Master\MatCategory;

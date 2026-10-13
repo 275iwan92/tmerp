@@ -1,6 +1,12 @@
-{{-- Asset Maintenance Profile v2 (Fase 1 Master Data, mockup maintenance_v2_master.jpg). Satu profil per aset: apa yang dicek (Watch Points),
-     spare part, dokumen (SOP / WI), riwayat. Aset = mesin produksi, alat penunjang, kendaraan, fasilitas. Mesin tertaut Master Mesin:
-     kode, nama, kelas dan kritikalitas dibaca dari sana. Mengubah profil = hak approve modul MAINT. --}}
+{{--
+ REMARK
+ Tujuan       : Asset Maintenance Profile: satu profil per aset (watch point, spare part, dokumen SOP / WI, riwayat); mesin tertaut Master Mesin dibaca dari sana; mengubah profil = hak approve modul MAINT.
+ Sumber hulu  : Model MntAsset, MntWatchPoint, MntLog (tm2mnt), FinAsset (tm2acc); AssetProfileService; MaintenanceAccess::canManage; Maintenance::*.
+ Input        : Query id (aset), new (form baru); sesi v2_flash dan errors.
+ Output       : Grid atau form x-dl::*; posting ke route v2.mnt.asset.save dan v2.mnt.asset.sync (tambah mesin dari Master Mesin).
+ Dipakai oleh : Route v2.screen slug maintenance-profile (App\Support\V2\Screens, menu sys_app_menu target v2:maintenance-profile) di menu Maintenance > Master Data
+ Status       : Aktif (Fase 1, mockup maintenance_v2_master.jpg)
+--}}
 @php
     use App\Models\Mnt\MntAsset;
     use App\Models\Mnt\MntLog;

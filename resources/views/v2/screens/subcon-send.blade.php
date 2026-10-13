@@ -1,7 +1,12 @@
-{{-- Warehouse > Send to Subcontractor (v2.01, I-23, D2, D22): kirim bahan ke subkon dengan PO Subkon sebagai induk. Stok pindah dari bin gudang ke bin SUBCON vendor
-     (lokasi virtual milik perusahaan, tetap bernilai) lewat dokumen Stock Transfer. Open (?id=) = rincian: bahan kembali ke gudang atau tercatat terpakai di vendor
-     (penerimaan hasil subkon di Procurement mengurangi saldo vendor sebanding qty yang diterima). Laporan: Stock at Vendor.
-     Daftar = objek Grid App\Support\V2\Grid\Inv\SubconSendGrid. Logika: App\Services\Inventory\SubconStockService. --}}
+{{--
+ REMARK
+ Tujuan       : Send to Subcontractor: mengirim bahan ke subkon dengan PO Subkon sebagai induk; stok pindah ke bin SUBCON vendor, bahan bisa kembali atau tercatat terpakai di vendor.
+ Sumber hulu  : App\Support\V2\Data\SubconSends dan Warehouse; model InvSubconIssue, WhLoc; App\Services\Inventory\SubconStockService; grid SubconSendGrid.
+ Input        : Query id (rincian), new (form baru); session v2_flash dan errors.
+ Output       : Daftar via _dbgrid, form kirim, rincian; POST ke v2.wh.subcon.create dan v2.wh.subcon.act.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug subcon-send (menu Warehouse).
+ Status       : Aktif.
+--}}
 @php
     use App\Models\Inventory\InvSubconIssue;
     use App\Models\Master\WhLoc;

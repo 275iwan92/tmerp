@@ -1,5 +1,12 @@
-{{-- PPIC Settings v2: everything an officer changes now and then, in eight categories with a search box. Each line says what exists, what needs tidying
-     and what is not built, from the code audit of 10 Oct 2026. The screens themselves are the existing lookups and masters. --}}
+{{--
+ REMARK
+ Tujuan       : Satu pintu semua pengaturan PPIC dalam delapan kategori dengan kotak cari; tiap baris menyatakan apa yang ada, perlu dirapikan atau belum dibangun.
+ Sumber hulu  : Daftar kategori ditulis di view ini dari audit kode 10 Okt 2026; tiap baris menunjuk layar master atau lookup yang sudah ada.
+ Input        : Query q (kata kunci pencarian).
+ Output       : Kartu per kategori berisi tautan ke layar slug (prod-machine, prod-process, md-shift, dan seterusnya) beserta status ADA, RAPIKAN atau BELUM.
+ Dipakai oleh : Layar v2 slug ppic-settings lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Src;
 

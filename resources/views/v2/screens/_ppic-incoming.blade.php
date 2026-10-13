@@ -1,4 +1,12 @@
-{{-- Production Scheduling > Incoming Purchases: open PO / PR lines for the materials of active Work Orders against the date the job needs them. --}}
+{{--
+ REMARK
+ Tujuan       : Production Scheduling > Incoming Purchases: baris PO / PR terbuka untuk bahan Work Order aktif terhadap tanggal dibutuhkan.
+ Sumber hulu  : App\Support\V2\Data\Ppic::incoming() (PR / PO terbuka dan jadwal Work Order).
+ Input        : $src (sumber data layar induk).
+ Output       : x-dl::card berisi x-dl::table (Document, Material, Qty, Arrives, Needed by, Work Order, Effect) dan tombol ke Purchase Requisition serta Purchase Order.
+ Dipakai oleh : Di-include production-scheduling (tab Incoming).
+ Status       : Aktif.
+--}}
 @php
     $rows = array_map(fn ($r) => ['doc' => raw($r['type'].' '.$r['doc']), 'material' => raw($r['material']), 'qty' => \Devlib\Locale::decimal($r['qty'], 2), 'arrives' => raw($r['arrives'] ?? '—'),
         'needed' => raw($r['needed'] ?? '—'), 'effect' => t($r['effect']), 'wo' => raw($r['wo'])], \App\Support\V2\Data\Ppic::incoming());

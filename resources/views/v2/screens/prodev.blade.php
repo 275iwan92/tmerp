@@ -1,5 +1,12 @@
-{{-- Pro-Dev. Flow & data: tmerp pages/production/prodev-list.blade.php (daftar part) -> prodev.blade.php (workbench per part).
-     Tanpa ?part = daftar; ?part=<id> = tab Imposition (Imposition Plano Optimizer part itu) + tab Part & Dieline. Confirm -> Product Costing. --}}
+{{--
+ REMARK
+ Tujuan       : Workbench Pro-Dev: daftar part lalu per part tab Imposition (Imposition Plano Optimizer) dan Part dan Dieline; Confirm meneruskan ke Product Costing.
+ Sumber hulu  : App\Support\V2\Data\Prodev (ImpositionEngine); tabel iqp_revise_change, prod_part, iqp_part; flow asal pages/production/prodev-list dan prodev di tmerp.
+ Input        : Query part (id part atau kode); session v2_flash dan error validasi.
+ Output       : Tanpa part = daftar; dengan part = kartu revisi dari produk induk, tab Imposition dan Part dan Dieline (x-dl::*). Zona beku: jangan ubah flow tanpa izin Jo.
+ Dipakai oleh : Layar v2 slug prodev lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\Prodev;
     use App\Support\V2\Src;

@@ -1,5 +1,12 @@
-{{-- Inventory > Valuation & Period (v2.01, V-05, V-06). Status periode inventory (inv_period) dengan Close / Open, nilai stok per kelas dengan hasil rekonsiliasi terakhir, penutupan selisih landed cost
-     ke HPP, dan jalan pintas ke laporan valuasi. Aturan periode: App\Services\Inventory\Valuation\InvPeriodService. --}}
+{{--
+ REMARK
+ Tujuan       : Meja Valuation & Period inventory: status periode (Close / Open), nilai stok per kelas dengan hasil rekonsiliasi terakhir, penutupan selisih landed cost ke HPP, dan pintasan ke laporan valuasi.
+ Sumber hulu  : ValuationDesk::classRows; view tm2inv.v_rm_onhand, v_sfg_onhand, v_fg_onhand dan tabel inv_reconcile_log; aturan periode InvPeriodService (inv_period).
+ Input        : Sesi v2_flash dan errors; tanpa parameter query.
+ Output       : x-dl::card, x-dl::table dan x-dl::button; posting ke route v2.val.period dan v2.val.landed.close-variance; tautan ke Landed Cost, Obsolete Stock, GR/IR Aging, Reconciliation, Repost, Stock Aging.
+ Dipakai oleh : Route v2.screen slug inv-valuation (App\Support\V2\Screens, menu sys_app_menu target v2:inv-valuation) di menu Inventory > Valuation & Period
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\ValuationDesk;
     use App\Support\V2\Src;

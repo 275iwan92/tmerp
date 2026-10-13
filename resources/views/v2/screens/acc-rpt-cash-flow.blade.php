@@ -1,5 +1,12 @@
-{{-- Finance > Financial Reports > Cash Flow (v2). Data & aturan = App\Support\V2\Data\FinancialStatements (LedgerService::cashFlow, metode tidak langsung, voucher POSTED,
-     sama dengan v1): total arus kas selalu sama dengan perubahan saldo akun kas / bank; selisih berarti ada akun tanpa klasifikasi arus kas (fin_account.cf_line). --}}
+{{--
+ REMARK
+ Tujuan       : Laporan Arus Kas metode tidak langsung per periode dari voucher POSTED, dengan KPI dan tren arus kas operasi.
+ Sumber hulu  : App\Support\V2\Data\FinancialStatements (LedgerService::cashFlow, operatingCashTrend); tabel tm2acc.fin_voucher, fin_voucher_line, fin_account (cf_line).
+ Input        : Query string from, to (default awal tahun sampai hari ini).
+ Output       : x-dl::card dengan filter, x-dl::kpi-row, grafik dan tabel arus kas; Export ke route v2.acc.statement.csv (cash-flow).
+ Dipakai oleh : Menu Finance > Financial Reports > Cash Flow (slug acc-rpt-cash-flow, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\FinancialStatements as FS;
     use App\Support\V2\Src;

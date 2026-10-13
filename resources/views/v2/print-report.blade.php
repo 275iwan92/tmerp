@@ -1,6 +1,12 @@
-{{-- Cetakan laporan grid (user 2026-10-02: laporan stok). Objek DevLib x-dl::report (kop, kriteria, ringkasan, kelompok +
-     subtotal, halaman otomatis, A4 landscape, tombol Print sendiri). Kolom, baris, dan periode datang dari kelas laporannya
-     (App\Support\V2\Grid\DbGrid::printData) -- isi yang sama dengan grid di layar. Laporan internal: tanpa salinan online. --}}
+{{--
+ REMARK
+ Tujuan       : Cetak laporan grid (A4 landscape) dengan kop, kriteria, ringkasan, kelompok, subtotal, dan tanda tangan.
+ Sumber hulu  : Kelas grid turunan App\Support\V2\Grid\DbGrid (printData, printSummary, groups, printSignatures); isi sama dengan grid di layar.
+ Input        : grid, company dari route; query grid diteruskan ke tombol Back.
+ Output       : x-dl::action-bar dan x-dl::report.
+ Dipakai oleh : route v2.report.print (routes/v2.php, /report/{slug}/print).
+ Status       : Aktif (laporan internal, tanpa salinan online).
+--}}
 @php $data = $grid->printData(); @endphp
 @extends('v2.layout', ['title' => $grid->title(), 'bodyClass' => 'dl-page-body'])
 @section('body')

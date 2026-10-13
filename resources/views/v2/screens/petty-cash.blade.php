@@ -1,8 +1,12 @@
-{{-- Kas Kecil v2 (user 2026-10-01) lewat App\Support\V2\Data\PettyCash + App\Services\Acc\PettyCashService.
-     Sistem imprest: PO Kontan (approval Direktur F&A) -> Cash Advance (mode Kasbon) -> belanja -> Settlement nota
-     (harga PO diganti nilai nota, kembalian / kurang bayar otomatis) -> SPB mencatat barang masuk. Mode Beli dulu:
-     langsung Reimburse dari nota. Top Up dari bank mengembalikan saldo ke plafon. Semua langkah menjurnal otomatis.
-     Label English (diterjemahkan lewat sys_dictionary, aturan multi-bahasa 2026-10-01). --}}
+{{--
+ REMARK
+ Tujuan       : Kas Kecil sistem imprest: PO Kontan, Cash Advance (Kasbon), Settlement nota, Reimburse (Beli dulu), Top Up dari bank; setiap langkah menjurnal otomatis.
+ Sumber hulu  : App\Support\V2\Data\PettyCash dan App\Services\Acc\PettyCashService; PettyCash::fund, desk, waiting; model Pur\PoOrder.
+ Input        : Dana kas kecil aktif (404 bila tidak ada); session v2_flash dan error validasi.
+ Output       : Form khusus x-mp::acc.petty-cash dengan slot daftar: PettyCashWaitingListGrid dan PettyCashTxListGrid lewat view _dbgrid.
+ Dipakai oleh : Layar v2 slug petty-cash lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Pur\PoOrder;
     use App\Services\Acc\PettyCashService;

@@ -1,5 +1,12 @@
-{{-- Setup > Identification (v2). Data & aturan = App\Support\V2\Data\Identification. Identitas aplikasi (menu, topbar, login) dan
-     identitas perusahaan (kop semua cetakan). Logo aplikasi TIDAK sama dengan logo perusahaan. Administrator saja. --}}
+{{--
+ REMARK
+ Tujuan       : Setup > Identification: identitas aplikasi (menu, topbar, login) dan identitas perusahaan (kop cetakan); logo aplikasi tidak sama dengan logo perusahaan.
+ Sumber hulu  : App\Support\V2\Data\Identification (tm2sys.sys_constant APP_NAME dst), App\Support\Branding\CompanyLogo.
+ Input        : Nilai tersimpan dari constant; old() input dan session v2_flash, errors.
+ Output       : x-dl::card, x-dl::brand, x-dl::action-form dengan field teks dan unggah logo; POST ke route v2.identification.app dan route identitas perusahaan.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug setup-identification (menu Setup > Identification).
+ Status       : Aktif; hanya Administrator.
+--}}
 @php
     use App\Support\Branding\CompanyLogo;
     use App\Support\V2\Data\Identification;

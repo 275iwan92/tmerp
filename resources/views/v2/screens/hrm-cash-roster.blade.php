@@ -1,5 +1,12 @@
-{{-- HRM > Payroll > Cash Roster & Denominations (v2). Data & aturan = App\Support\V2\Data\PayrollDisbursement, sama dengan layar v1: pegawai TANPA rekening bank
-     utama aktif, rincian amplop per pecahan uang, jumlah lembar per pecahan, dan cetakan serah terima (x-dl::print-doc, jenis cash-roster). --}}
+{{--
+ REMARK
+ Tujuan       : Daftar pegawai bergaji tunai per periode dengan rincian pecahan uang per amplop dan cetak serah terima.
+ Sumber hulu  : App\Support\V2\Data\PayrollDisbursement (tm2pyr.pyr_payslip, pyr_payroll_run; tm2mst.emp_bank_account, emp_employee); PrintDocs.
+ Input        : Query run (periode payroll; bawaan Pay::defaultRun()).
+ Output       : x-dl::card + filter periode, rincian pecahan per pegawai dan total lembar, tombol cetak lewat PrintDocs::url cash-roster.
+ Dipakai oleh : Rute v2.screen dengan slug 'hrm-cash-roster' (menu v2:hrm-cash-roster di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (pegawai tanpa rekening bank utama aktif).
+--}}
 @php
     use App\Support\V2\Data\PayrollDisbursement as Pay;
     use App\Support\V2\Print\PrintDocs;

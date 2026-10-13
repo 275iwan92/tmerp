@@ -1,5 +1,12 @@
-{{-- HRM > Time Attendance > GPS Clock-In (v2, ponsel). Objek x-dl::geo-clock; jarak & keputusan dihitung server (App\Support\V2\Data\GpsClock):
-     dalam radius = langsung menjadi presensi, di luar radius = menunggu approval HR (GPS Location Approval). Milik sendiri, semua karyawan. --}}
+{{--
+ REMARK
+ Tujuan       : Clock-in / clock-out presensi berbasis GPS (geofencing) dari ponsel untuk karyawan sendiri.
+ Sumber hulu  : App\Support\V2\Data\GpsClock; tm2mst.att_mobile_gps_log, att_finger_raw, sys_geofence_location; auth()->user()->employee_id.
+ Input        : Akun login (harus terhubung ke record karyawan).
+ Output       : x-dl::geo-clock dengan check-url v2.clock.check dan clock-url v2.clock.store; alert bila akun belum terhubung ke karyawan.
+ Dipakai oleh : Rute v2.screen dengan slug 'hrm-clockin' (menu v2:hrm-clockin di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (dalam radius = presensi langsung, di luar radius = menunggu approval HR).
+--}}
 @php
     use App\Support\V2\Data\GpsClock;
     use App\Support\V2\Src;

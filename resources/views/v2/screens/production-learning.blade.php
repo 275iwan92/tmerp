@@ -1,5 +1,12 @@
-{{-- Learning Changes v2 (PPIC): the changeover values the learning engine adjusted from real setup times, with the log and a revert (which freezes the value).
-     Rules and limits: App\Services\Scheduling\Learning\LearningEngine, Settings > Constants PPIC_LEARN_*. Values are edited by users on Setup and Changeover. --}}
+{{--
+ REMARK
+ Tujuan       : Learning Changes: nilai changeover yang dikoreksi engine dari waktu setup nyata, lengkap dengan log dan Revert (yang membekukan nilai).
+ Sumber hulu  : App\Services\Scheduling\Learning\LearningEngine (batas dari Settings > Constants PPIC_LEARN_*); prd_plan_decision (event LEARN dan LEARN_REVERT), prod_machine_changeover, prod_machine.
+ Input        : Tanpa parameter; session v2_flash dan error validasi.
+ Output       : x-dl::card dengan tombol jalankan (rute v2.ppic.learn.run), tabel perubahan terbuka dan log 60 terakhir; nilai diedit manual di Setup and Changeover.
+ Dipakai oleh : Layar v2 slug production-learning lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Master\ProdMachine;
     use App\Models\Master\ProdMachineChangeover;

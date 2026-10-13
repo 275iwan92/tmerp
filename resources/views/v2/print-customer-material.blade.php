@@ -1,6 +1,12 @@
-{{-- Tanda Terima Bahan Customer (user 2026-10-01): cetak penerimaan jenis CUSTOMER dari SPB v2 (pv_receipt).
-     Objek DevLib x-dl::print-out (kop + pihak + tabel + tanda tangan) + x-dl::doc-share (PDF / JPEG / online + QR / Email).
-     Dokumen gudang: tanpa harga. Label English (diterjemahkan lewat sys_dictionary / bahasa cetak). --}}
+{{--
+ REMARK
+ Tujuan       : Cetak Tanda Terima Bahan Customer (penerimaan jenis CUSTOMER dari SPB), tanpa harga.
+ Sumber hulu  : tm2pur.pv_receipt dan pv_line, tm2sdi.co_order / co_order_item, tm2mst.cust_customer dan mat_raw, wh_warehouse.
+ Input        : pv, customer, coNo, warehouse, company, rows dari route.
+ Output       : x-dl::print-out dibungkus x-dl::doc-share (PDF / JPEG / online + QR / Email), Back ke purchase-receive.
+ Dipakai oleh : route v2.pv.print-customer (routes/v2.php, grup pv).
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => t('Customer Material Receipt').' '.$pv->doc_no, 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">

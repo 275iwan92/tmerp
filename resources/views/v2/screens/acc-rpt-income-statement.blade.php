@@ -1,5 +1,12 @@
-{{-- Finance > Financial Reports > Income Statement (v2). Data & aturan = App\Support\V2\Data\FinancialStatements (LedgerService, voucher POSTED saja, tanpa voucher penutup,
-     sama dengan v1): laba rugi per periode, kartu KPI dengan margin, perbandingan bulanan, unduh CSV. Pendapatan positif, beban negatif. --}}
+{{--
+ REMARK
+ Tujuan       : Laporan Laba Rugi per periode dari voucher POSTED, dengan KPI margin, perbandingan bulanan dan unduh CSV.
+ Sumber hulu  : App\Support\V2\Data\FinancialStatements (LedgerService::incomeStatement); tabel tm2acc.fin_voucher, fin_voucher_line, fin_account.
+ Input        : Query string from, to, monthly.
+ Output       : x-dl::card dengan filter, x-dl::kpi-row dan tabel laba rugi; Export ke route v2.acc.statement.csv (income-statement).
+ Dipakai oleh : Menu Finance > Financial Reports > Income Statement (slug acc-rpt-income-statement, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\FinancialStatements as FS;
     use App\Support\V2\Src;

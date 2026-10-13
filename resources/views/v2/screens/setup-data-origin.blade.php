@@ -1,5 +1,12 @@
-{{-- Setup > Dummy & Legacy Data (v2). Data & aturan = App\Support\V2\Data\DataOriginDesk (+ DataOriginService). Fitur sama dengan layar v1:
-     tampilan data, kelengkapan data legacy, snapshot & reset dummy, aturan klasifikasi, ringkasan per tabel. Administrator saja. --}}
+{{--
+ REMARK
+ Tujuan       : Setup > Dummy & Legacy Data: tampilan data, kelengkapan data legacy, snapshot dan reset dummy, aturan klasifikasi asal data, ringkasan per tabel.
+ Sumber hulu  : App\Support\V2\Data\DataOriginDesk dan App\Services\Data\DataOriginService (aturan, snapshot, readiness per database).
+ Input        : Query db (saringan database), rule (id aturan atau new); session dorigin_preview.
+ Output       : Kartu, tabel, dan form x-dl::*; aksi POST ke route v2.data-origin/{op}.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug setup-data-origin (menu Setup > Dummy & Legacy Data).
+ Status       : Aktif; hanya Administrator.
+--}}
 @php
     use App\Services\Data\DataOriginService;
     use App\Support\V2\Data\DataOriginDesk;

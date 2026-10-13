@@ -1,6 +1,12 @@
-{{-- Peringatan kekurangan bahan di layar pembuka (keputusan user 2026-10-01 B5): popup berwarna mencolok saat login untuk
-     Direksi / Ops Manager / PPIC / Warehouse / Finance (tanpa email). Popup muncul sekali per login atau saat jumlahnya berubah;
-     kartu ringkas tetap tampil selama masih ada kekurangan. Data = App\Support\V2\Data\MaterialPlanning::alerts(). --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan peringatan kekurangan bahan di layar pembuka: kartu ringkas dan popup sekali per login atau saat jumlah berubah.
+ Sumber hulu  : App\Support\V2\Data\MaterialPlanning::alerts() (tm2inv.rm_booking_d, v_rm_available, tm2pur.po_line, pr_line).
+ Input        : Sesi material_alert_seen; tanpa prop.
+ Output       : x-dl::alert, x-dl::modal, x-dl::table, x-dl::button menuju route v2.screen material-planning.
+ Dipakai oleh : @include dari v2.home (dua tempat: slot dashboard dan tanpa papan).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\MaterialPlanning;
     use Devlib\Locale;

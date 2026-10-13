@@ -1,7 +1,12 @@
-{{-- Master Card Collection v2 (mockup docs/mockups/master_card_collection_v2.jpg, user 2026-10-01; menu Pro-Dev).
-     Tanpa ?id = grid + upload banyak file (Excel sheet "MC" dibaca otomatis, foto = isian manual). ?id = form kartu:
-     koreksi hasil baca, Tipe Produk & ukuran dieline (SVG disimpan tiap Save), lalu Make Master Product / Make Inquiry
-     lewat dialog yang hanya menanyakan field kunci yang kosong. Logika = App\Services\MasterCard\MasterCardService. --}}
+{{--
+ REMARK
+ Tujuan       : Master Card Collection (menu Pro-Dev): upload banyak berkas master card (Excel sheet MC dibaca otomatis, foto = isian manual), koreksi hasil baca, tentukan tipe produk dan ukuran dieline, lalu Make Master Product atau Make Inquiry.
+ Sumber hulu  : App\Services\MasterCard\MasterCardService dan MasterCardShape; App\Support\V2\Data\MasterCardCollection dan Sales; model ProdMasterCard dan ProdMasterCardFile (tm2mst).
+ Input        : Query id (kartu), new (kartu manual); sesi v2_flash dan errors.
+ Output       : x-dl::card, x-mp::dieline-v dan x-mp::image-thumb; posting ke route v2.mcard.upload, v2.mcard.new, v2.mcard.save, v2.mcard.convert (SVG dieline disimpan tiap Save).
+ Dipakai oleh : Route v2.screen slug master-card-collection (App\Support\V2\Screens, menu sys_app_menu target v2:master-card-collection); konversi menuju inquiry-new atau inquiry-recalc
+ Status       : Aktif (mockup master_card_collection_v2.jpg)
+--}}
 @php
     use App\Models\Master\ProdMasterCard;
     use App\Models\Master\ProdMasterCardFile;

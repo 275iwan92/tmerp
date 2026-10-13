@@ -1,7 +1,12 @@
-{{-- Inquiry Revisi (REVISE) dari Master Product (docs/flow_product_master.md §4, mockup disetujui user 2026-09-29).
-     Alur layar: GRID dokumen REVISE -> + New Record = pilih product (grid) -> form -> Simpan (DRAFT) -> Confirm (terkunci, lanjut
-     ProDev -> ProCost; product turunan baru lahir saat dikirim ke ProDev). Titik berat: PERBEDAAN sebelum -> sesudah per field
-     (iqp_revise_change) yang ikut tampil di ProDev & ProCost. Hanya blok scope terpilih yang bisa diubah. --}}
+{{--
+ REMARK
+ Tujuan       : Form Inquiry Revisi (REVISE) dari Master Product: Sales memilih scope blok yang berubah dan mengisi perbedaan sebelum-sesudah per field (iqp_revise_change) yang ikut tampil di ProDev dan ProCost.
+ Sumber hulu  : ProductMaster::doc, ProductMaster::inquiryParts, ProductMaster::materialOptions, InquiryDerivedWriter::sourceOf; model IqpInquiry (jenis REVISE), MatJoinType.
+ Input        : Query id (dokumen), product, source_id; old input revise_scope.
+ Output       : x-mp::sales.part-visual dan komponen x-dl::*; posting ke route v2.derived.save, v2.derived.delete, v2.derived.cancel; hanya blok scope terpilih yang bisa diubah, terkunci setelah Confirm.
+ Dipakai oleh : Route v2.screen slug inquiry-revise (App\Support\V2\Screens, menu sys_app_menu target v2:inquiry-revise); grid InquiryReviseGrid, wizard worklist Inquiry
+ Status       : Aktif
+--}}
 @php
     use App\Models\Master\MatJoinType;
     use App\Models\Sdi\IqpInquiry;

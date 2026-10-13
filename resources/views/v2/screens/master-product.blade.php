@@ -1,6 +1,12 @@
-{{-- Master Product (docs/flow_product_master.md, mockup disetujui user 2026-09-29).
-     Tanpa ?id = Grid for Master (entry): product lahir dari Quotation WIN, jadi tidak ada + New Record.
-     ?id = detail: identitas (nama diubah Sales), rantai dokumen, pohon rakitan + panel part, ACC, riwayat order & harga, cabang revisi. --}}
+{{--
+ REMARK
+ Tujuan       : Master Product: tanpa id = daftar produk (lahir otomatis dari Quotation WIN, tidak ada New Record manual); dengan id = halaman satu produk (identitas, rantai dokumen, pohon rakitan, ACC, riwayat order dan harga, cabang revisi).
+ Sumber hulu  : App\Support\V2\Data\ProductMaster::doc dan ProductMaster::orders, Sales::dielineTypes; model ProdProductAcc; daftar = grid Sales\ProductMasterListGrid (tm2mst.prod_product).
+ Input        : Query id (produk); sesi v2_flash dan errors.
+ Output       : Grid lewat _dbgrid atau objek x-mp::sales.product-master; posting nama produk ke route v2.product.name.
+ Dipakai oleh : Route v2.screen slug master-product (App\Support\V2\Screens, menu sys_app_menu target v2:master-product) di menu Master Data dan Pro-Dev; tautan dari inquiry-revise dan inquiry-recalc
+ Status       : Aktif (flow docs/flow_product_master.md)
+--}}
 @php
     use App\Models\Master\ProdProductAcc;
     use App\Support\V2\Data\ProductMaster;

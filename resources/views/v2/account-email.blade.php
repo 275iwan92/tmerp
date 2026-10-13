@@ -1,4 +1,12 @@
-{{-- E-mail saya: status verifikasi sec_user.email + kirim link verifikasi. Alamatnya diubah admin di Security. --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan status e-mail milik user yang login dan mengirim link verifikasi.
+ Sumber hulu  : tm2sys.sec_user (email, email_verified_at), App\Support\Mail\MailSettings (tm2sys.sys_mail_setting).
+ Input        : Sesi login; flash v2_flash dan error validasi.
+ Output       : Kartu My E-mail (x-dl::card, x-dl::field.display, x-dl::action-form) dengan tombol kirim link ke route v2.account.email.send dan Back ke v2.home.
+ Dipakai oleh : route v2.account.email (routes/v2.php, grup account/email), extends v2.layout.
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => t('My E-mail'), 'bodyClass' => 'dl-page-body'])
 @section('body')
     @php

@@ -1,4 +1,12 @@
-{{-- Production Scheduling > Material Control: material readiness per Work Order as the engines see it (gate = Material Planning engine result). --}}
+{{--
+ REMARK
+ Tujuan       : Production Scheduling > Material Control: kesiapan bahan dan tooling per Work Order menurut hasil engine Material Planning.
+ Sumber hulu  : Daftar operasi $ops dari layar production-scheduling (gate material, material_ready_at, gate_note) yang dihitung engine PPIC.
+ Input        : $ops (array operasi), $src.
+ Output       : x-dl::card berisi x-dl::table (Work Order, Customer, Material, Ready at, Tooling, Note) dan tombol ke Material Planning serta Material Booking.
+ Dipakai oleh : Di-include production-scheduling (tab Material).
+ Status       : Aktif.
+--}}
 @php
     $collection = collect($ops);
     $state = ['READY' => 'Ready', 'WAIT' => 'Waiting', 'BLOCK' => 'Blocked'];

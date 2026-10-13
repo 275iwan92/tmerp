@@ -1,8 +1,12 @@
-{{-- Purchase Quotation v2 (user 2026-10-01) lewat App\Support\V2\Data\PurchaseQuotation. Officer tidak mengetik penawaran:
-     GRID PQ -> + New Record = pilih PR acuan (opsional) + upload file dari email supplier (PDF / Excel / foto, boleh banyak) ->
-     tiap file jadi PQ Draft yang sudah terbaca & dicocokkan (supplier, baris PR, Master Bahan) -> officer cek baris kuning ->
-     Confirm (nomor PQ lahir) -> Bandingkan per PR: pilih pemenang per baris (default termurah) -> Buat PO (1 PO per supplier,
-     lewat alokasi PR -> PR ikut ter-update). PQ Closed saat semua barisnya sudah jadi PO; PQ yang kalah dibiarkan. --}}
+{{--
+ REMARK
+ Tujuan       : Purchase Quotation: file penawaran dari email supplier diunggah, dibaca dan dicocokkan otomatis jadi PQ Draft; officer cek, Confirm, bandingkan per PR, pilih pemenang dan Buat PO.
+ Sumber hulu  : App\Support\V2\Data\PurchaseQuotation dan PurchaseOrder; App\Services\Pur\PqFileReader, PqMatcher; model Pur\PqQuotation.
+ Input        : Query id (PQ), compare (id PR); file unggahan; session v2_flash.
+ Output       : Daftar PQ, form unggah, form PQ Draft dan layar Compare x-dl::* yang memposting ke rute v2.pq.po (1 PO per supplier lewat alokasi PR).
+ Dipakai oleh : Layar v2 slug purchase-quotation lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Pur\PqQuotation;
     use App\Services\Pur\PqFileReader;

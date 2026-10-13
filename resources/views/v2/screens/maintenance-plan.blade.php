@@ -1,6 +1,12 @@
-{{-- Preventive Plan v2 (Fase 2, mockup maintenance_v2_work.jpg bagian 3). Template Preventive Maintenance Order per aset: pemicu waktu dan/atau meter
-     (mana yang lebih dulu), Floating (dari selesai terakhir) atau Fixed (tanggal pasti, inspeksi wajib), checklist dan spare part standar.
-     Perintah harian maintenance:generate-pm membuat PMO Draft saat jatuh tempo. Isi plan nyata diketik kepala maintenance dari manual pabrikan. --}}
+{{--
+ REMARK
+ Tujuan       : Preventive Plan: template order preventive per aset (pemicu waktu dan atau meter, Floating atau Fixed, checklist, spare part standar); tombol Generate due orders membuat PMO Draft yang jatuh tempo.
+ Sumber hulu  : Model MntPlan, MntPlanTask, MntMeterReading, MntOrder (tm2mnt); ComplianceService; MaintenanceAccess::canManage; Maintenance::*.
+ Input        : Query id (plan), new (form baru); sesi v2_flash dan errors.
+ Output       : Grid atau form x-dl::card; posting ke route v2.mnt.plan.save dan v2.mnt.plan.generate-due (perintah harian maintenance:generate-pm sama aturannya).
+ Dipakai oleh : Route v2.screen slug maintenance-plan (App\Support\V2\Screens, menu sys_app_menu target v2:maintenance-plan) di menu Maintenance
+ Status       : Aktif (mockup maintenance_v2_work.jpg bagian 3)
+--}}
 @php
     use App\Models\Mnt\MntLog;
     use App\Models\Mnt\MntMeterReading;

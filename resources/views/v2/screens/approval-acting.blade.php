@@ -1,6 +1,12 @@
-{{-- Officer Pengganti / PLT (user 2026-09-30): selama officer asli berhalangan, antrian approval jabatannya pindah ke user
-     pengganti pada rentang tanggal ini (tm2mst.flow_position_acting, dibaca FlowEngineService::pendingForUser). Keputusan
-     PLT tercatat di log dengan tanda PLT. Data & simpan = App\Support\V2\Data\ApprovalSetting::actingRows/saveActing. --}}
+{{--
+ REMARK
+ Tujuan       : Mengelola daftar officer pengganti (PLT): siapa menggantikan jabatan approver selama pemegangnya berhalangan, pada rentang tanggal tertentu.
+ Sumber hulu  : App\Support\V2\Data\ApprovalSetting::actingRows / saveActing; tabel tm2mst.flow_position_acting, tm2mst.org_position, tm2sys.sec_user; dibaca FlowEngineService::pendingForUser.
+ Input        : Flash v2_flash dan errors; baris acting dari ApprovalSetting::actingRows().
+ Output       : x-dl::form (kind master) dengan x-dl::alert dan x-dl::lines daftar PLT; simpan ke route v2.approval-acting.save, Back ke approval-setting.
+ Dipakai oleh : Menu Setup > Approval Setting > Temporary Acting Officer (slug approval-acting, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\ApprovalSetting;
     use App\Support\V2\Src;

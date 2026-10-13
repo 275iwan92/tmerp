@@ -1,8 +1,12 @@
-{{-- Customer Plan Delivery v2 = buku janji (user 2026-10-01). Satu baris jadwal kirim memegang DUA janji yang harus cocok TEPAT:
-     slot ke customer (tanggal + jam, dipegang Sales) dan siap produksi (PPIC). Produksi tidak sanggup -> PPIC mengisi siap + alasan ->
-     Sales nego ke customer (WhatsApp / telepon) lalu mengubah slot (boleh Split) dengan log -> customer menolak = eskalasi ke
-     Operational Manager. Janji awal tidak pernah berubah (patokan KPI). Aturan = App\Services\Sales\CpdelPromiseService.
-     Post to Production (aturan A.3) = WO dibuat; sesudah itu tanggal & qty terkunci (hanya jam slot yang bisa diubah). --}}
+{{--
+ REMARK
+ Tujuan       : Buku janji pengiriman: tiap jadwal kirim memegang janji slot customer (Sales) dan siap produksi (PPIC), sampai Post to Production.
+ Sumber hulu  : App\Support\V2\Data\Cpdel; App\Services\Sales\CpdelPromiseService; grid CpdelListGrid.
+ Input        : Query id (jadwal kirim); session v2_flash dan errors.
+ Output       : Daftar lewat _dbgrid (baris berwarna menurut jatuh tempo); detail lewat x-mp::sales.promise-book (slot, siap, alasan, Split, eskalasi, Post to Production).
+ Dipakai oleh : Rute v2.screen dengan slug 'cpdel' (menu v2:cpdel di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (janji awal tidak berubah sebagai patokan KPI; setelah Post tanggal dan qty terkunci).
+--}}
 @php
     use App\Services\Sales\CpdelPromiseService as Promise;
     use App\Support\V2\Data\Cpdel;

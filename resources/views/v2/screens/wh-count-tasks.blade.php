@@ -1,7 +1,12 @@
-{{-- Warehouse > Count Tasks (v2.01, W-08): hitung stok per area. Start Count (atau php artisan inv:count-due untuk area yang jatuh tempo menurut wh_zone.count_every_days)
-     membuat tugas COUNT per posisi stok dan MENGUNCI bin-nya: transfer ke / dari bin terkunci ditolak, putaway dan pick melewatinya. Open (?id=) = isi qty hasil hitung;
-     selisih terhadap saldo kartu stok menjadi dokumen Stock Opname yang diposting seperti Adjustment lain, bin dibuka lagi bila semua tugasnya selesai.
-     Daftar = objek Grid App\Support\V2\Grid\Inv\CountTaskGrid. Logika: App\Services\Inventory\CountTaskService. --}}
+{{--
+ REMARK
+ Tujuan       : Count Tasks: hitung stok per area; Start Count membuat tugas per posisi stok dan mengunci bin, hasil hitung menjadi Stock Opname.
+ Sumber hulu  : App\Support\V2\Data\CountTasks; App\Services\Inventory\CountTaskService; grid CountTaskGrid; tm2inv.wh_task, kartu stok.
+ Input        : Query id (tugas); session v2_flash dan errors.
+ Output       : Daftar via grid, form isi qty hasil hitung; POST ke v2.wh.count.start, .confirm, .cancel; x-dl::card, x-dl::action-form.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug wh-count-tasks (menu Warehouse).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\CountTasks;
     use App\Support\V2\Src;

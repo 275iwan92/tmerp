@@ -1,5 +1,12 @@
-{{-- Finance > Financial Reports > Balance Sheet (v2). Data & aturan = App\Support\V2\Data\FinancialStatements (LedgerService, voucher POSTED saja, sama dengan v1):
-     posisi keuangan per tanggal, kartu KPI (dibanding akhir tahun lalu), perbandingan dua tanggal, unduh CSV. Laba tahun berjalan masuk Laba Ditahan selama belum ada voucher penutup. --}}
+{{--
+ REMARK
+ Tujuan       : Laporan Neraca per tanggal dari voucher POSTED, dengan KPI, perbandingan dua tanggal dan unduh CSV.
+ Sumber hulu  : App\Support\V2\Data\FinancialStatements (LedgerService::balanceSheet); tabel tm2acc.fin_voucher, fin_voucher_line, fin_account.
+ Input        : Query string as_of, compare, compare_to.
+ Output       : x-dl::card dengan filter, x-dl::kpi-row dan tabel Neraca; Export ke route v2.acc.statement.csv.
+ Dipakai oleh : Menu Finance > Financial Reports > Balance Sheet (slug acc-rpt-balance-sheet, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\FinancialStatements as FS;
     use App\Support\V2\Src;

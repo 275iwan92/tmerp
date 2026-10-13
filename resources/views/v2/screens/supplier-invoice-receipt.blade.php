@@ -1,7 +1,12 @@
-{{-- Supplier Invoice Receipt v2 (Tanda Terima Tagihan Supplier, user 2026-10-02) lewat App\Support\V2\Data\SupplierInvoiceReceipt.
-     GRID tanda terima -> + New Record = pilih supplier -> DRAFT: siapa yang menyerahkan, rencana bayar, lampiran, baris invoice
-     (pilih tagihan yang sudah dicatat ATAU ketik nomor invoice) -> Confirm (nomor lahir, siap dicetak) -> Cancel wajib alasan.
-     Bukan bukti bayar; tidak membuat jurnal. --}}
+{{--
+ REMARK
+ Tujuan       : Tanda Terima Tagihan Supplier: mencatat penyerahan invoice supplier (draft, Confirm, Cancel wajib alasan); bukan bukti bayar dan tidak membuat jurnal.
+ Sumber hulu  : App\Support\V2\Data\SupplierInvoiceReceipt; model FinInvoiceReceipt (tm2acc); grid SupplierInvoiceReceiptListGrid; PrintDocs.
+ Input        : Query id (dokumen), new (form baru); session v2_flash dan errors.
+ Output       : Daftar via _dbgrid, form draft baris invoice (pilih tagihan atau ketik nomor); POST ke route v2.invoice-receipt.*; x-dl::form.
+ Dipakai oleh : route v2.screen (routes/v2.php), slug supplier-invoice-receipt (menu Finance / Procurement).
+ Status       : Aktif.
+--}}
 @php
     use App\Models\Acc\FinInvoiceReceipt;
     use App\Support\V2\Data\SupplierInvoiceReceipt;

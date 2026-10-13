@@ -1,4 +1,12 @@
-{{-- Setting E-mail sistem (tm2sys.sys_mail_setting) — admin. SMTP diisi di sini, bukan hanya .env (backlog09 §18). --}}
+{{--
+ REMARK
+ Tujuan       : Form admin untuk Setting E-mail sistem (mode kirim, SMTP, pengirim, wajib verifikasi) dan kirim e-mail uji.
+ Sumber hulu  : tm2sys.sys_mail_setting lewat App\Support\Mail\MailSettings::current().
+ Input        : Flash v2_flash, error validasi, old input; khusus admin.
+ Output       : x-dl::action-form berisi x-dl::card dan field.select / field.text / field.checkbox; post ke route v2.settings.mail.save, tombol Save dan Save & Send Test Email.
+ Dipakai oleh : route v2.settings.mail (routes/v2.php, grup settings/mail).
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => t('E-mail Setting'), 'bodyClass' => 'dl-page-body'])
 @section('body')
     @php

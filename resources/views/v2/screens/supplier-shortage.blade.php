@@ -1,7 +1,12 @@
-{{-- Inventory > Batch & Quality > Shortage Request (v2.01, Q-13..Q-16, D14, D19). Bahan yang kurang sejak awal (output + waste standar < bahan yang dikeluarkan ke WO):
-     GRID permintaan -> + New Record (WO + bahan, baris penerimaan asal, output baik dan waste standar dalam satuan bahan) -> Kepala Gudang menghitung ulang ->
-     PPIC Confirm (qty terima, PO, jurnal GR/IR, stok dikoreksi; baris PO dibuka lagi) -> Pembelian Send ke pemasok (jendela INV_SHORTAGE_WINDOW_DAYS) -> Received / Refused -> Closed.
-     Aturan di App\Services\Pur\ShortageRequestService, hak tiap langkah di QcAuthority. --}}
+{{--
+ REMARK
+ Tujuan       : Shortage Request: bahan yang kurang sejak awal (output + waste standar kurang dari bahan keluar ke WO), dari permintaan, hitung ulang, Confirm PPIC, kirim ke pemasok, sampai Received / Refused / Closed.
+ Sumber hulu  : App\Support\V2\Data\ShortagePage; App\Services\Pur\ShortageRequestService; hak langkah di App\Services\Inventory\QcAuthority.
+ Input        : Query id (permintaan), new (form baru); user login; session v2_flash dan errors.
+ Output       : Daftar, form permintaan, rincian dengan tombol langkah; POST ke v2.iq.shortage.create, .step, .lapsed (Close Lapsed).
+ Dipakai oleh : route v2.screen (routes/v2.php), slug supplier-shortage (menu Inventory > Batch & Quality).
+ Status       : Aktif.
+--}}
 @php
     use App\Services\Inventory\QcAuthority;
     use App\Support\V2\Data\ShortagePage;

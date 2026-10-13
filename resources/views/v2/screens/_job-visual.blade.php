@@ -1,5 +1,12 @@
-{{-- Dieline and artwork preview of the part a Work Order makes (Product Development): the reference every worker sees on a production screen,
-     also used to check the work before it (die-cut, glue). Props: $woId, $height (optional). --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan dieline dan artwork bagian yang dikerjakan sebuah Work Order sebagai acuan di layar produksi.
+ Sumber hulu  : App\Support\V2\Data\Ppic::jobVisual (Master Card hasil Product Development) dan Data\Sales::dielineTypes().
+ Input        : $woId (id Work Order), $height opsional.
+ Output       : x-mp::sales.part-visual; bila tidak ada dieline / artwork tampil x-dl::alert info.
+ Dipakai oleh : Di-include production-scheduling dan ppic-color-sequence.
+ Status       : Aktif.
+--}}
 @php
     $visual = \App\Support\V2\Data\Ppic::jobVisual((int) $woId);
 @endphp

@@ -1,5 +1,12 @@
-{{-- Finance > Control Center > Process Engine (v2). Data = App\Support\V2\Data\FinanceDesk (FinanceMetrics + fin_approval_rule), sama dengan v1: volume dokumen, antrian approval,
-     kesiapan tutup buku, alur posting baku, peta integrasi modul, kontrol yang perlu perhatian, dan aturan workflow (ambang nominal + grup penyetuju + pemisahan tugas). --}}
+{{--
+ REMARK
+ Tujuan       : Process Engine akuntansi: volume dokumen, antrian approval, kesiapan tutup buku, alur posting baku, peta integrasi dan aturan workflow.
+ Sumber hulu  : App\Support\V2\Data\FinanceDesk (FinanceMetrics + tm2acc.fin_approval_rule); tabel fin_voucher dan fin_period.
+ Input        : Flash v2_flash dan errors; tanpa parameter lain.
+ Output       : x-dl::card, x-dl::kpi-row, x-dl::flow, daftar integrasi dan aturan; tombol Export Rules ke route v2.acc.engine.rules-csv.
+ Dipakai oleh : Menu Finance > Control Center > Process Engine (slug acc-engine, route v2.screen).
+ Status       : Aktif.
+--}}
 @php
     use App\Support\V2\Data\FinanceDesk as Desk;
     use App\Support\V2\Src;

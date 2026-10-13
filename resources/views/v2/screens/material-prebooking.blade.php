@@ -1,6 +1,12 @@
-{{-- Pre-Booking v2 (B-01..B-04; docs/md_for_systems/inventorywarehouse_v201_scope.md bagian 6). Kebutuhan kertas sejak ProCost terbit,
-     sebelum ada Customer Order: B0 (tanpa quotation) -> B1 (quotation terbit) -> B2 (CO draft) -> CO Confirmed mengambil alih header yang sama.
-     Lunak: tidak mengurangi Available. Hold menahan stok beberapa hari kerja lalu habis sendiri. Isi = App\Support\V2\Data\PreBookings. --}}
+{{--
+ REMARK
+ Tujuan       : Pre-Booking kebutuhan kertas sejak ProCost terbit sebelum ada Customer Order (B0 sampai B2), bersifat lunak: tidak mengurangi Available; Hold menahan stok beberapa hari kerja.
+ Sumber hulu  : App\Support\V2\Data\PreBookings dan MaterialPlanning (spec docs/md_for_systems/inventorywarehouse_v201_scope.md bagian 6).
+ Input        : Query id (pre-booking); session v2_flash dan error validasi.
+ Output       : Grid pre-booking (view _dbgrid) dengan tombol Recalculate All (rute v2.planning.prebooking.run), atau kartu rincian x-dl::card per pre-booking.
+ Dipakai oleh : Layar v2 slug material-prebooking lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\MaterialPlanning;
     use App\Support\V2\Data\PreBookings;

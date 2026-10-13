@@ -1,4 +1,12 @@
-{{-- Grid DB generik: semua isi dari objek App\Support\V2\Grid\DbGrid (data dari database, keluarga grid DevLib). --}}
+{{--
+ REMARK
+ Tujuan       : Menampilkan satu daftar / grid database generik (keluarga grid DevLib) lengkap dengan bar periode, saringan, Print dan Excel bila grid menyediakannya.
+ Sumber hulu  : Objek turunan App\Support\V2\Grid\DbGrid / DocListGrid ($screen[grid]: props(), period(), params(), printUrlOf(), excelUrl(), actionUrls()), data dari tabel yang dideklarasikan grid itu.
+ Input        : Parameter $screen[grid]; query string from, to dan saringan teks dari params() grid.
+ Output       : x-dl::grid atau x-dl::lookup-grid, x-dl::alert, x-dl::action-form dengan x-dl::field.date-range, x-dl::button; script kecil untuk tombol aksi baris (buka alamat dokumen di tab baru).
+ Dipakai oleh : App\Support\V2\Grid\DbGrid::screen() (view v2.screens._dbgrid), dan di-include layar daftar (customer-order, cpdel, crm-*, inv-batch, approval-setting, maintenance-*, dst).
+ Status       : Aktif.
+--}}
 @php $p = $screen['grid']->props(); @endphp
 @if ($guide = $screen['grid']->guide())
     <x-dl::alert tone="info" :message="$guide" />

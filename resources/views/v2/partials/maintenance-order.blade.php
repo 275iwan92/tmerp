@@ -1,7 +1,12 @@
-{{-- Maintenance Order v2 (Fase 2, mockup maintenance_v2_work.jpg bagian 2). Satu form untuk semua seri nomor; layar pemanggil memberi $series
-     (PMO = Preventive + Inspection, BMO = Breakdown + Corrective). Aturan = App\Services\Maintenance\OrderService.
-     Alur: grid -> + New Record (manual) / dari Preventive Plan (Generate) -> DRAFT -> Confirm (kepala maintenance: nomor lahir, Scheduled) ->
-     Start (downtime + status mesin untuk aset mesin) -> Hold (Waiting Part) <-> Resume -> Done (checklist wajib terisi) -> Close (kepala maintenance). --}}
+{{--
+ REMARK
+ Tujuan       : Form Maintenance Order satu pintu untuk seri PMO dan BMO: grid, buat / generate, Confirm, Start, Hold / Resume, Done, Close.
+ Sumber hulu  : App\Services\Maintenance\OrderService, MaintenanceAccess, model Mnt* (tm2mnt), App\Support\V2\Data\Maintenance, ProdMachineDowntime.
+ Input        : $series (PMO | BMO), query id dan new; user login (hak kepala maintenance).
+ Output       : x-dl::action-form dan form dokumen x-dl::* yang mengirim ke route v2.mnt.order.create, v2.mnt.order.save, v2.mnt.plan.generate-due.
+ Dipakai oleh : @include dari screens/maintenance-pmo dan screens/maintenance-bmo.
+ Status       : Aktif.
+--}}
 @php
     use App\Models\Master\ProdMachine;
     use App\Models\Master\ProdMachineDowntime;

@@ -1,7 +1,12 @@
-{{-- Inquiry Rekalkulasi (RECALC) dari Master Product (docs/flow_product_master.md §4, mockup disetujui user 2026-09-29).
-     Alur layar: GRID dokumen RECALC -> + New Record = pilih product (grid) -> form -> Simpan (DRAFT, bisa diedit/dihapus) -> Confirm
-     (terkunci, lanjut ProDev -> ProCost); sesudah Confirm hanya Cancel. Urutan isi (fokus Sales): nama product, riwayat order &
-     harga JUAL, customer & order baru, dieline + 3D, bahan baku + proses khusus. Harga beli bahan & ukuran plano hanya di ProCost. --}}
+{{--
+ REMARK
+ Tujuan       : Form Inquiry Rekalkulasi (RECALC) dari Master Product: Sales melihat riwayat order dan harga jual, mengisi order baru, lalu Save (DRAFT) dan Confirm untuk lanjut ProDev dan ProCost.
+ Sumber hulu  : ProductMaster::doc, ProductMaster::orders, Sales::masters; model IqpInquiry (jenis RECALC, tm2sdi), QuoQuotation dan QuoQuotationItem, tm2mst.prod_product.
+ Input        : Query id (dokumen), product, source_id (inquiry asal dari wizard worklist).
+ Output       : x-mp::sales.part-visual dan x-mp::box, kartu dan tabel x-dl::*; posting ke route v2.derived.save, v2.derived.delete, v2.derived.cancel; terkunci setelah Confirm.
+ Dipakai oleh : Route v2.screen slug inquiry-recalc (App\Support\V2\Screens, menu sys_app_menu target v2:inquiry-recalc); grid InquiryRecalcGrid, wizard worklist Inquiry, MasterCardService (tautan ?product=)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Master\ProdProduct;
     use App\Models\Sdi\IqpInquiry;

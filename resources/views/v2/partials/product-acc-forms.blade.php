@@ -1,4 +1,12 @@
-{{-- Catat ACC customer + isian Proof Digital untuk 1 product (dipakai di layar ProDev, user 2026-09-29). $doc = ProductMaster::doc(). --}}
+{{--
+ REMARK
+ Tujuan       : Form Digital Proof dan pencatatan ACC customer untuk satu product di layar ProDev.
+ Sumber hulu  : tm2mst.prod_product (drawing_by, design_date) dan prod_product_acc lewat App\Support\V2\Data\ProductMaster::doc().
+ Input        : $doc (ProductMaster::doc), old input.
+ Output       : x-dl::card dan x-dl::action-form yang mengirim ke route v2.product.proof dan v2.product.acc.
+ Dipakai oleh : @include dari screens/prodev.
+ Status       : Aktif.
+--}}
 @php
     use App\Models\Master\ProdProductAcc;
     use App\Support\V2\Src;

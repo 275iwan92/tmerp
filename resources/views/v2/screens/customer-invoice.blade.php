@@ -1,8 +1,12 @@
-{{-- Customer Invoice v2 (user 2026-10-02) lewat App\Support\V2\Data\CustomerInvoice -> App\Services\Acc\CustomerInvoiceService.
-     Satu layar untuk dua jenis dokumen: Invoice (dari baris Surat Jalan yang sudah diterima customer) dan Down Payment (dari
-     nilai Customer Order). GRID -> + New Record (pilih jenis + order, lalu centang baris Surat Jalan) -> DRAFT -> Confirm
-     (nomor dari seri, jurnal, potongan uang muka) -> Cancel wajib alasan. Tagihan uang muka tidak menjurnal; jurnal lahir
-     saat Record Receipt. Ketentuan: docs/md_for_systems/customerinvoice_accounting.md. --}}
+{{--
+ REMARK
+ Tujuan       : Membuat dan mengelola Customer Invoice (dari Surat Jalan diterima) dan Down Payment (dari Customer Order): Draft, Confirm, penerimaan, Cancel.
+ Sumber hulu  : App\Support\V2\Data\CustomerInvoice; App\Services\Acc\CustomerInvoiceService; PrintDocs; grid daftar invoice.
+ Input        : Query id, new; session v2_flash dan errors.
+ Output       : Daftar lewat _dbgrid; form dokumen + pilih baris Surat Jalan; posting ke v2.customer-invoice.create / save / payment / receipt; cetak lewat PrintDocs.
+ Dipakai oleh : Rute v2.screen dengan slug 'customer-invoice' (menu v2:customer-invoice di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (jurnal lahir saat Confirm; tagihan uang muka menjurnal saat Record Receipt; ketentuan docs/md_for_systems/customerinvoice_accounting.md).
+--}}
 @php
     use App\Services\Acc\CustomerInvoiceService as Service;
     use App\Support\V2\Data\CustomerInvoice;

@@ -1,5 +1,12 @@
-{{-- HRM > Payroll > Bank Transfer Generator (v2). Data & aturan = App\Support\V2\Data\PayrollDisbursement, sama dengan layar v1: slip periode CONFIRMED / PAID /
-     CLOSED tanpa anomali, hanya pegawai dengan rekening bank utama aktif; batch diunduh sebagai CSV generik (format kliring resmi tiap bank = butir terbuka). --}}
+{{--
+ REMARK
+ Tujuan       : Membuat batch transfer gaji ke rekening bank pegawai per periode payroll dan mengunduhnya sebagai CSV.
+ Sumber hulu  : App\Support\V2\Data\PayrollDisbursement (tm2pyr.pyr_payslip, pyr_payroll_run; tm2mst.emp_bank_account, emp_employee).
+ Input        : Query run (periode payroll; bawaan Pay::defaultRun()).
+ Output       : x-dl::card + filter periode (field.select), tabel pegawai berekening aktif, tombol unduh ke route v2.payroll.bank-csv.
+ Dipakai oleh : Rute v2.screen dengan slug 'hrm-bank-transfer' (menu v2:hrm-bank-transfer di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (CSV generik; format kliring resmi tiap bank = butir terbuka).
+--}}
 @php
     use App\Support\V2\Data\PayrollDisbursement as Pay;
     use App\Support\V2\Src;

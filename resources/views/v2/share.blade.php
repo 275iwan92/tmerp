@@ -1,6 +1,13 @@
+{{--
+ REMARK
+ Tujuan       : Halaman publik salinan online dokumen hasil Print/Email (tujuan QR serah terima): menampilkan snapshot HTML saat dicetak, dengan QR dan tombol cetak.
+ Sumber hulu  : Model SysDocShare (token, title, doc_no, html, expires_at, view_count); merek dari App\Support\Branding\Brand.
+ Input        : Variabel share (SysDocShare) dan nonce CSP dari route; tanpa login, token 32 hex.
+ Output       : Dokumen penuh statis (devlib.js tidak dimuat, field dinonaktifkan), QR tautan, tombol Print; hanya skrip ber-nonce yang jalan.
+ Dipakai oleh : route doc.share (GET /d/{token}, routes/web.php); dibuat oleh x-dl::doc-share lewat docshare.* di routes/v2.php.
+ Status       : Aktif.
+--}}
 <!DOCTYPE html>
-{{-- Dokumen online hasil Print/Email (route doc.share, publik). Isi = snapshot saat dicetak; devlib.js SENGAJA tidak dimuat
-     (snapshot statis, perilaku komponen tidak dijalankan ulang). Hanya skrip ber-nonce di bawah yang boleh jalan (CSP di route). --}}
 <html lang="{{ \Devlib\Locale::lang() }}" data-dl-theme="{{ \Devlib\Theme::DEFAULT }}">
 <head>
     <meta charset="UTF-8">

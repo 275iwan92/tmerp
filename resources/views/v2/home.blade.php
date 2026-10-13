@@ -1,3 +1,12 @@
+{{--
+ REMARK
+ Tujuan       : Layar utama ERP v2: Layer Menu (modul, menu, tab layar terbuka), papan widget pembuka, laci Edit profile dan Help & support.
+ Sumber hulu  : App\Support\V2\AppMenu (sys_app_menu), App\Support\V2\Board\Board, App\Support\Branding\Brand, partial v2.partials.material-alert.
+ Input        : modules, user, board, chat, open, fresh, profilePage, assistant, account dari route; query open dan fresh.
+ Output       : x-dl::layer-shell dengan slot dashboard berisi x-dl::dashboard (bila ada papan) dan peringatan bahan.
+ Dipakai oleh : route v2.home (routes/v2.php, URL /); tujuan redirect login.
+ Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => t('Home')])
 @section('body')
     {{-- Situs ERP v2 = Layer Menu saja (user 2026-09-29); Menu Classic hanya di katalog DevLib. --}}

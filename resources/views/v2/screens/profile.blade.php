@@ -1,7 +1,12 @@
-{{-- Edit profile (full screen) v2 -- Profile > Edit profile > "Personal data, leave, documents, shifts" / "Account security".
-     Port layar self-service v1 (pages/self-service/index.blade.php) ke objek DevLib: alur, aturan dan tabel sama,
-     hanya kulit yang diganti (user 2026-10-03). Data pribadi read-only; perubahan = pengajuan + approval HR
-     (App\Support\V2\Data\SelfService). Akun login dan pertanyaan pemulihan diubah langsung. --}}
+{{--
+ REMARK
+ Tujuan       : Edit profile layar penuh: data pribadi, cuti, dokumen, shift dan keamanan akun; perubahan data pribadi = pengajuan dengan approval HR, akun login dan pertanyaan pemulihan diubah langsung.
+ Sumber hulu  : App\Support\V2\Data\SelfService::desk (port layar self-service v1 pages/self-service/index); data user dari Auth::user.
+ Input        : User login (Auth::user), variabel crumbs dari layout.
+ Output       : Objek form khusus x-mp::hrm.self-service; layar hanya satu baris deklarasi.
+ Dipakai oleh : Rute v2.profile (menu Profile > Edit profile)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\SelfService;
     use Illuminate\Support\Facades\Auth;

@@ -1,4 +1,12 @@
-{{-- Laporan: log follow-up Sales atas quotation (telepon/kunjungan/WA/email) + tindak lanjut yang jatuh tempo. Grid for Reporting. --}}
+{{--
+ REMARK
+ Tujuan       : Laporan log follow-up Sales atas quotation (telepon, kunjungan, WA, email) beserta tindak lanjut yang jatuh tempo.
+ Sumber hulu  : App\Support\V2\Data\Quotation::followupRows; tabel quo_activity dan quo_quotation (tm2sdi).
+ Input        : -
+ Output       : x-dl::grid mode report dengan stat Overdue dan Today, filter Type, Result, By, Due; klik baris membuka layar quotation.
+ Dipakai oleh : Layar v2 slug quotation-followup lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\Quotation;
     use App\Support\V2\Src;

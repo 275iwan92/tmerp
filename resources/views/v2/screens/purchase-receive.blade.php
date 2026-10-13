@@ -1,10 +1,12 @@
-{{-- Penerimaan Barang (SPB / PV) v2. Flow & aturan = tmerp pages/pur/pv (index + entry) lewat App\Support\V2\Data\PurchaseReceive.
-     Alur: GRID penerimaan -> + New Record = pilih supplier (yang punya PO SENT / sebagian diterima) -> pilih gudang + baris PO ->
-     DRAFT: qty diterima (satuan beli & stok), lot, lokasi, QC qty selesai, QC kualitas PASS / FAIL / PARTIAL, override toleransi ->
-     Confirm (= Post v1: stok masuk + jurnal pembelian, PO ikut ter-update) -> Closed saat sudah diserahkan / ditagih.
-     Jenis lain (user 2026-10-01, App\Services\Pur\SpecialReceiptService): From Customer = bahan customer utk CO tertentu
-     (wajib No. CO, tanpa stok & jurnal); From Subcon = barang kembali dari subkon atas PO Subkon, langsung ke proses
-     berikutnya; kekurangan yang ketahuan belakangan dicatat lewat Report Shortage (PO & jurnal ikut koreksi). --}}
+{{--
+ REMARK
+ Tujuan       : Penerimaan Barang (SPB / PV): terima barang atas PO SENT, isi qty, lot, lokasi, QC; Confirm memasukkan stok dan jurnal; juga From Customer, From Subcon dan Report Shortage.
+ Sumber hulu  : App\Support\V2\Data\PurchaseReceive dan PurchaseOrder; App\Services\Pur\PvPostingService dan SpecialReceiptService; model Pur\PvReceipt; grid PurchaseReceiveGrid.
+ Input        : Query id (penerimaan), new (penerimaan baru); session v2_flash dan error validasi.
+ Output       : Daftar lewat _dbgrid, form pilih supplier dan gudang, form penerimaan x-dl::* dengan aksi Confirm.
+ Dipakai oleh : Layar v2 slug purchase-receive lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Pur\PvReceipt;
     use App\Services\Pur\PvPostingService;

@@ -1,5 +1,12 @@
-{{-- Setup > Security > Groups on Modules (v2). Data & aturan = App\Support\V2\Data\GroupPermissions (sec_group_permission):
-     pilih grup, lalu beri tiap modul tingkat akses. Administrator melewati pengecekan ini. Save mengirim satu grup per klik. --}}
+{{--
+ REMARK
+ Tujuan       : Setup > Security > Groups on Modules: memberi tiap grup tingkat akses pada tiap modul.
+ Sumber hulu  : App\Support\V2\Data\GroupPermissions (tm2sys.sec_group_permission, sec_module, sec_group).
+ Input        : Pilihan grup dan matriks level akses di objek matriks; default level 0.
+ Output       : x-dl::card + x-dl::permission-matrix; simpan ke route v2.security.permissions.save (satu grup per klik).
+ Dipakai oleh : route v2.screen (routes/v2.php), slug security-permissions (menu Setup > Security).
+ Status       : Aktif; Administrator melewati pengecekan ini.
+--}}
 @php
     use App\Support\V2\Data\GroupPermissions;
     use App\Support\V2\Src;

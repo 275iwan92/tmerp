@@ -1,4 +1,12 @@
-{{-- Production Scheduling > Monitoring: planned against actual for operations that started in the last 14 days. --}}
+{{--
+ REMARK
+ Tujuan       : Production Scheduling > Monitoring: rencana lawan aktual untuk operasi yang mulai dalam 14 hari terakhir.
+ Sumber hulu  : App\Support\V2\Data\Ppic::monitoring() (Production Output dan timer operator).
+ Input        : $src.
+ Output       : x-dl::card dengan x-dl::kpi-row (x-dl::stat-box on-time, setup rencana / aktual, operasi terlacak) dan x-dl::table rencana vs aktual.
+ Dipakai oleh : Di-include production-scheduling (tab Monitoring).
+ Status       : Aktif.
+--}}
 @php
     $m = \App\Support\V2\Data\Ppic::monitoring();
     $rows = array_map(fn ($r) => ['wo' => raw($r['wo']), 'process' => raw($r['process']), 'machine' => raw($r['machine'] ?? '—'), 'planned' => \Devlib\Locale::number($r['planned_qty'], 0), 'good' => \Devlib\Locale::number($r['good'], 0),

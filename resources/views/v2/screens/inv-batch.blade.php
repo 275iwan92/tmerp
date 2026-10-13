@@ -1,6 +1,12 @@
-{{-- Inventory > Batch & Quality > Batch (v2.01, gambar docs/mockups/inv_v201_batch_grid.jpg + inv_v201_batch_form.jpg). Daftar = objek Grid BatchListGrid (DocListGrid);
-     Open / + New Record = form master batch: nomor otomatis, status HANYA dibaca (berubah oleh keputusan QC), tab Stock of this batch (saldo per bin dari kartu stok + palet),
-     Quality decisions, dan History (pergerakan kartu stok + perubahan status). Simpan = BatchLookup::save; Release / Reject = QcDecisionService lewat route v2.iq.decide. --}}
+{{--
+ REMARK
+ Tujuan       : Master batch inventory: daftar batch lalu form batch (stok per bin, keputusan QC, riwayat); status batch hanya dibaca dan berubah oleh keputusan QC.
+ Sumber hulu  : Batches::find dan Batches::stock; model InvBatch (tm2inv), kartu stok dan palet, QcAuthority; daftar = grid Inv\BatchListGrid.
+ Input        : Query id (batch), new (form baru); sesi v2_flash dan errors.
+ Output       : Grid lewat _dbgrid atau form dengan x-dl::*; posting ke route v2.iq.batch-save (BatchLookup::save) dan v2.iq.decide (Release / Reject lewat QcDecisionService).
+ Dipakai oleh : Route v2.screen slug inv-batch (App\Support\V2\Screens, menu sys_app_menu target v2:inv-batch) di menu Inventory > Batch & Quality
+ Status       : Aktif (mockup docs/mockups/inv_v201_batch_grid.jpg dan inv_v201_batch_form.jpg)
+--}}
 @php
     use App\Models\Inventory\InvBatch;
     use App\Services\Inventory\QcAuthority;

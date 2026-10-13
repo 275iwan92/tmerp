@@ -1,5 +1,12 @@
-{{-- Production Scheduling (PPIC, MPS) v2. Engines prepare a Draft plan (App\Services\Scheduling\Plan\AutoPlanRunner); the officer reviews the exceptions,
-     gives priority where needed and presses Confirm. Four views of the same operations: Gantt, Kanban, Calendar, Grid. Data = App\Support\V2\Data\Ppic. --}}
+{{--
+ REMARK
+ Tujuan       : Production Scheduling (PPIC, MPS): engine menyiapkan rencana Draft, officer meninjau pengecualian, memberi prioritas lalu Confirm; empat tampilan operasi yang sama: Gantt, Kanban, Calendar, Grid.
+ Sumber hulu  : App\Support\V2\Data\Ppic (operations, filtered, stats, exceptions) dan App\Services\Scheduling\Plan\AutoPlanRunner, PlanChangeService; prd_wo_operation, prd_wo_operation_machine, prd_plan_run, prod_process_machine, prod_machine.
+ Input        : Query tab (schedule, material, incoming, monitoring), view (gantt, kanban, calendar, grid), process, machine, q, sim (id WO simulasi).
+ Output       : Tab dan tampilan x-dl::* untuk jadwal, material, incoming dan monitoring; aksi plan memanggil rute v2.ppic.*.
+ Dipakai oleh : Layar v2 slug production-scheduling lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Support\V2\Data\Ppic;
     use App\Support\V2\Src;

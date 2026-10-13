@@ -1,5 +1,12 @@
-{{-- Satu label gudang dari isi App\Support\V2\Data\Labels::location / item / pallet ($l); $size = sm | md | lg (bawaan md).
-     Isi disesuaikan dengan ukuran (Labels::fit) supaya tidak terpotong. --}}
+{{--
+ REMARK
+ Tujuan       : Merender satu label gudang dari data label yang sudah disesuaikan ukurannya.
+ Sumber hulu  : App\Support\V2\Data\Labels (location / item / pallet, Labels::fit).
+ Input        : $l (isi label), $size sm | md | lg (bawaan md), $title opsional.
+ Output       : x-dl::label.
+ Dipakai oleh : @include dari v2.label-sheet dan screens/stock-transfer.
+ Status       : Aktif.
+--}}
 @php
     $size ??= 'md';
     $l = \App\Support\V2\Data\Labels::fit($l, $size);

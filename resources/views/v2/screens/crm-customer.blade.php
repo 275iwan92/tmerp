@@ -1,7 +1,12 @@
-{{-- CRM > Customer 360 (user 2026-10-02) lewat App\Support\V2\Data\Crm. Hanya membaca.
-     GRID customer aktif + ringkasan hubungan (order terakhir, quotation / order terbuka, kontak terakhir, follow-up, komplain)
-     -> klik 2x = halaman satu customer: angka kunci, grafik order 24 bulan, product yang sering dipesan, dan tab
-     Activities / Quotations / Orders / Deliveries / Complaints / Contacts. Order & kiriman = sistem baru + arsip sistem lama. --}}
+{{--
+ REMARK
+ Tujuan       : Customer 360: ringkasan hubungan tiap customer (order, quotation, kontak, follow-up, komplain), hanya baca.
+ Sumber hulu  : App\Support\V2\Data\Crm; grid CustomerListGrid.
+ Input        : Query id (customer).
+ Output       : Daftar lewat _dbgrid; halaman satu customer lewat x-mp::sales.customer-card (angka kunci, grafik order, tab Activities / Quotations / Orders / Deliveries / Complaints / Contacts).
+ Dipakai oleh : Rute v2.screen dengan slug 'crm-customer' (menu v2:crm-customer di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (read-only; order dan kiriman dari sistem baru + arsip lama).
+--}}
 @php
     use App\Support\V2\Data\Crm;
     use App\Support\V2\Src;

@@ -1,7 +1,12 @@
-{{-- CRM > Complaint & Return (user 2026-10-02: informasi retur / komplain ke Sales, mutu ke QA) lewat App\Support\V2\Data\CrmComplaints.
-     GRID -> + New Record = pilih customer + jenis -> DRAFT: isi keluhan, product, qty -> Confirm (nomor lahir; kategori mutu muncul
-     di Production > Complaint Review untuk QA) -> jawaban QA terbaca di tab QA Review -> Sales mengisi Resolution -> Close.
-     Cancel wajib alasan. Qty Returned hanya informasi (belum menggerakkan stok). --}}
+{{--
+ REMARK
+ Tujuan       : Mengelola komplain / retur customer: Draft, Confirm, jawaban QA, Resolution, Close atau Cancel beralasan.
+ Sumber hulu  : App\Support\V2\Data\CrmComplaints dan CrmActivities; model Sdi\CrmComplaint, Prd\QcComplaintReview, Master\ProdProduct; PrintDocs.
+ Input        : Query id, new; session v2_flash dan errors.
+ Output       : Daftar lewat _dbgrid; form dokumen dengan tab QA Review dan Riwayat, tombol Confirm / Close / Cancel, cetak lewat PrintDocs.
+ Dipakai oleh : Rute v2.screen dengan slug 'crm-complaint' (menu v2:crm-complaint di sys_app_menu), dirender view layar generik v2.
+ Status       : Aktif (qty Returned hanya informasi, belum menggerakkan stok).
+--}}
 @php
     use App\Models\Prd\QcComplaintReview;
     use App\Models\Sdi\CrmActivity;

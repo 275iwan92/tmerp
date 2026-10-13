@@ -1,7 +1,12 @@
-{{-- Production > Complaint Review (QA) (user 2026-10-02: "mutu kualitas masuk ke QA") lewat App\Support\V2\Data\CrmComplaints.
-     GRID komplain customer yang sudah Confirmed Sales dan diteruskan ke QA -> buka -> isi keputusan, akar masalah, tindakan
-     perbaikan / pencegahan, nasib barang kembali -> Save (boleh dicicil) -> Confirm = jawaban final, terbaca Sales di dokumen
-     komplainnya. Dokumen komplain sendiri hanya dibaca di sini (milik Sales). --}}
+{{--
+ REMARK
+ Tujuan       : Complaint Review oleh QA: komplain customer yang sudah Confirmed Sales dibuka, diisi keputusan, akar masalah, tindakan perbaikan dan nasib barang; Confirm = jawaban final yang terbaca Sales.
+ Sumber hulu  : App\Support\V2\Data\CrmComplaints (reviewable); model Prd\QcComplaintReview dan Sdi\CrmComplaint (dokumen komplain milik Sales, hanya dibaca).
+ Input        : Query id (komplain); session v2_flash dan error validasi.
+ Output       : Daftar QcComplaintReviewListGrid lewat _dbgrid, atau x-dl::form review dengan Save (boleh dicicil) dan Confirm.
+ Dipakai oleh : Layar v2 slug qc-complaint-review lewat rute v2.screen (view v2.screen memuat berkas ini)
+ Status       : Aktif
+--}}
 @php
     use App\Models\Prd\QcComplaintReview;
     use App\Models\Sdi\CrmComplaint;
