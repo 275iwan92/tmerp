@@ -38,17 +38,20 @@
                         <div class="mp-od__nodie">{{ $t('This job has no dieline and artwork in its Master Card yet.') }}</div>
                     @endif
                 </figure>
+                @php $f = collect($desk['card']['info'])->mapWithKeys(fn ($r) => [$r[0] => $r[1]]); @endphp
                 <div class="mp-od__rt">
                     <div class="mp-od__tgt">
-                        <div><div class="mp-od__tl">{{ $t('TARGET PER HOUR') }}</div><span class="mp-od__tv" data-od="perhour"></span> <span class="mp-od__tu" data-od="perhour-u"></span></div>
-                        <div><div class="mp-od__tl">{{ $t('TARGET QTY') }}</div><span class="mp-od__qv" data-od="qty"></span> <span class="mp-od__tu">{{ $desk['target']['uom'] }}</span></div>
-                        <div><div class="mp-od__tl">{{ $t('TARGET DURATION') }}</div><span class="mp-od__dv" data-od="duration"></span></div>
+                        <div class="mp-od__tr"><span class="mp-od__tl">{{ $t('TARGET PER HOUR') }}</span><span><span class="mp-od__tv" data-od="perhour"></span> <span class="mp-od__tu" data-od="perhour-u"></span></span></div>
+                        <div class="mp-od__tr"><span class="mp-od__tl">{{ $t('TARGET QTY') }}</span><span><span class="mp-od__qv" data-od="qty"></span> <span class="mp-od__tu">{{ $desk['target']['uom'] }}</span></span></div>
+                        <div class="mp-od__tr"><span class="mp-od__tl">{{ $t('TARGET DURATION') }}</span><span class="mp-od__dv" data-od="duration"></span></div>
                     </div>
-                    <dl class="mp-od__info">
-                        @foreach ($desk['card']['info'] as [$label, $value])
-                            <dt>{{ $t($label) }}</dt><dd>{{ $value }}</dd>
-                        @endforeach
-                    </dl>
+                    <div class="mp-od__facts">
+                        <div class="mp-od__size"><span class="mp-od__tl">{{ $t('SIZE') }}</span> <x-dl::box as="b" class="mp-od__hl">{{ $f['P × L × T'] ?? '—' }}</x-dl::box> <span>{{ $t('Flat') }} <b>{{ $f['Datar'] ?? '—' }}</b></span></div>
+                        <dl class="mp-od__info">
+                            <dt>{{ $t('Job') }}</dt><dd>{{ $f['Job'] ?? '—' }} · {{ $f['Product'] ?? '—' }}</dd>
+                            <dt>{{ $t('Qty Order') }}</dt><dd>{{ $f['Qty Order'] ?? '—' }}</dd>
+                        </dl>
+                    </div>
                 </div>
             </div>
         </section>
