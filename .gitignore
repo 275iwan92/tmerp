@@ -50,3 +50,6 @@ Thumbs.db
 
 # hasil uji render multi-bahasa (tools/multilanguage)
 /tools/multilanguage/probe/
+
+# Pesan pribadi Jo (kutipan riwayat sesi): jangan pernah di-commit
+docs/ringkas/cerita_lama_*.md
