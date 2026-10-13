@@ -314,8 +314,8 @@ class AccountingEngineTest extends TestCase
     public function test_semua_layar_finance_bisa_dirender(): void
     {
         $this->actingAs(SecUser::where('is_admin', true)->firstOrFail());
-        foreach (['engine', 'dashboard', 'payables', 'bank', 'journals', 'ledger', 'assets',
-            'amortization', 'closing', 'tax', 'statements', 'trial-balance', 'balance-sheet', 'income-statement', 'cash-flow'] as $page) {
+        // Layar finance v1 lain (engine, dashboard, bank, ledger, closing, tax, laporan) dibuang 13 Okt 2026; pengganti = layar v2 acc-*.
+        foreach (['payables', 'journals', 'assets', 'amortization'] as $page) {
             Livewire::test('pages::finance.'.$page)->assertOk();
         }
     }

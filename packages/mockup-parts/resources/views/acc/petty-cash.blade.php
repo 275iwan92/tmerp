@@ -6,11 +6,11 @@
 @endphp
 <div {{ $attributes->class('mp-flat') }} {!! $dl() !!}>
     <x-dl::card :title="Lang::raw($k['title'])" :description="Lang::raw($k['description'])">
-        <div class="dl-grid__stats">
+        <x-dl::kpi-row>
             @foreach ($k['stats'] as [$label, $value, $tone, $sub])
                 <x-dl::stat-box :label="$label" :value="$value" :tone="$tone ?? 'accent'" :sub="$sub" />
             @endforeach
-        </div>
+        </x-dl::kpi-row>
         @if ($k['showActions'])
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="fa-gear" label="Setting" :href="$k['home'].'?setup=1'" />

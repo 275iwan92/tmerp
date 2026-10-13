@@ -26,11 +26,11 @@
     {{-- ===================== My Data ===================== --}}
     <x-slot:profile>
         <x-dl::card :title="Lang::raw($p['title'])" :description="Lang::raw($p['description'])" icon="fa-id-card">
-        <div class="dl-grid__stats">
+        <x-dl::kpi-row>
             @foreach ($p['stats'] as [$label, $value, $tone, $sub])
                 <x-dl::stat-box :label="$label" :value="$value" :tone="$tone" :sub="$sub" />
             @endforeach
-        </div>
+        </x-dl::kpi-row>
         </x-dl::card>
         <x-dl::form.row :cols="2">
             <x-dl::card title="Main Profile" icon="fa-user">
@@ -132,11 +132,11 @@
     {{-- ===================== Leave / Sick / Permit (engine SOP 002/RP/TM/VII/2026) ===================== --}}
     <x-slot:leave>
         <x-dl::card :title="$lv['title']" icon="fa-calendar-days">
-            <div class="dl-grid__stats">
+            <x-dl::kpi-row>
                 <x-dl::stat-box label="Entitlement" :value="$lv['balance'][0]" tone="info" />
                 <x-dl::stat-box label="Used" :value="$lv['balance'][1]" tone="warn" />
                 <x-dl::stat-box label="Remaining" :value="$lv['balance'][2]" tone="success" />
-            </div>
+            </x-dl::kpi-row>
         </x-dl::card>
         <x-dl::action-form action="{{ $lv['action'] }}" enctype="multipart/form-data" data-dl-guard>
             <x-dl::card title="Absence Request Form" icon="fa-paper-plane">

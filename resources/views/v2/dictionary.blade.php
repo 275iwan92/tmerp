@@ -15,13 +15,13 @@
     <div class="dl-cat">
         <x-dl::card title="Data Dictionary — MySQL tmerp (developers only)" icon="fa-database"
             :description="'Struktur saja (information_schema), diperbarui otomatis setelah php artisan migrate / rollback di tmerp (manual: php artisan schema:dictionary). Terakhir: '.raw($stats['generated'].'.')">
-            <div class="dl-grid__stats">
+            <x-dl::kpi-row>
                 <x-dl::stat-box label="Database" :value="$stats['db']" />
                 <x-dl::stat-box label="Tables / views" :value="$stats['tables']" />
                 <x-dl::stat-box label="Columns" :value="\Devlib\Locale::number($stats['columns'], 0)" />
                 <x-dl::stat-box label="Possible duplicate columns" :value="$stats['dup']" tone="warn" />
                 <x-dl::stat-box label="Master data copies" :value="$stats['copies']" tone="danger" />
-            </div>
+            </x-dl::kpi-row>
         </x-dl::card>
 
         <x-dl::tabs :tabs="['cols' => ['Semua Kolom', 'columns'], 'dup' => ['Indikasi Duplikat', 'fa-clone'], 'copy' => ['Salinan Data Master', 'copy'], 'tables' => ['Tabel', 'fa-table'], 'changes' => ['Perubahan', 'fa-clock-rotate-left']]">

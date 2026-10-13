@@ -26,12 +26,12 @@
             :description="raw(t('Each set is the dummy data frozen at one step of the workflow: in stage 1 nothing is confirmed or processed yet, each next stage is one step further.').' '.t('Restore replaces the business dummy data with that set, so every step can be tested again from a known starting point.').' '.t('Accounts, menus and security (ddtsys) are not touched.'))">
             @forelse ($stages as $s)
                 <x-dl::card :title="raw($s['label'])" :description="raw($s['note'])" icon="fa-database">
-                    <div class="dl-grid__stats">
+                    <x-dl::kpi-row>
                         <x-dl::stat-box label="Set" :value="raw($s['key'])" />
                         <x-dl::stat-box label="Saved" :value="\Devlib\Locale::dt($s['created_at'])" />
                         <x-dl::stat-box label="By" :value="raw($s['by'])" />
                         <x-dl::stat-box label="Made by" :value="($s['built'] ?? false) ? t('Stage builder') : t('Saved by hand')" />
-                    </div>
+                    </x-dl::kpi-row>
                     @if ($s['blocked'])
                         <x-dl::alert tone="danger" message="This set can no longer be restored: it holds columns or tables that were removed from the database after it was saved. Build the stage sets again." />
                     @endif
@@ -69,12 +69,12 @@
         <x-dl::card title="Dummy Data (UAT) — baseline & reset" icon="fa-rotate-left"
             description="Baseline = a copy of the dummy data considered correct. Reset restores every business dummy database exactly to the baseline. Accounts, menus and security (ddtsys) are not reset.">
             @if ($manifest)
-                <div class="dl-grid__stats">
+                <x-dl::kpi-row>
                     <x-dl::stat-box label="Baseline created" :value="$manifest['created_at']" />
                     <x-dl::stat-box label="By" :value="$manifest['by']" />
                     <x-dl::stat-box label="Database" :value="count($manifest['databases'])" />
                     <x-dl::stat-box label="File upload" :value="$manifest['files']" />
-                </div>
+                </x-dl::kpi-row>
                 <p class="dl-note">{{ implode(' · ', $manifest['databases']) }}</p>
             @else
                 <x-dl::alert tone="warn" message="No baseline yet. Save the current dummy data as the baseline first." />
