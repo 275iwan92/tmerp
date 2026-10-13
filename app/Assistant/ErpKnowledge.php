@@ -34,6 +34,6 @@ final class ErpKnowledge implements Knowledge
 
     public function url(): ?string
     {
-        return route('v2.screen', 'help-center');
+        return route('v2.help');
     }
 }

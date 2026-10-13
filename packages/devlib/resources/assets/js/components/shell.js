@@ -26,7 +26,16 @@
       this.initNav();
       // F1 (core.js) dari halaman ini atau dari layar di dalam tab -> Bantuan & dukungan.
       document.addEventListener('dl:help', () => this.command('help'));
-      window.addEventListener('message', e => { if (e.origin === location.origin && e.data?.dl === 'help') this.command('help'); });
+      window.addEventListener('message', e => {
+        if (e.origin !== location.origin) return;
+        if (e.data?.dl === 'help') this.command('help');
+        // Help map "Open screen": open the item as a work tab and keep the Help window open, floating so both are visible.
+        else if (e.data?.dl === 'open-item') {
+          const w = this.wideDrawer('help')?.dlComponent, d = e.data;
+          if (w && w.state.mode !== 'float') w.toggleFloat();
+          this.findItem(d.code) ? this.openTab(d.code) : this.openUrlTab(d.code || d.url, d.label, d.url);
+        }
+      });
       // Tombol ber-data-dl-tab-url (mis. pedoman di halaman Bantuan) dibuka sebagai tab kerja.
       this.el.addEventListener('click', e => { const b = e.target.closest('[data-dl-tab-url]'); if (b) { e.preventDefault(); this.openUrlTab(b.dataset.dlTabCode || b.dataset.dlTabUrl, b.dataset.dlTabLabel || b.textContent.trim(), b.dataset.dlTabUrl, b.dataset.dlTabIcon); } });
       this.refreshCounts();
@@ -414,7 +423,22 @@
     // Side Screen (objek DevLib x-dl::side-screen, user 2026-10-04): jendela layar penuh yang bisa mengambang / diubah ukurannya.
     wideDrawer(id) { return $(this.el, `[data-dl-side-screen="${id}"]`); }
 
-    openWideDrawer(id) { this.closeDrawers(); this.wideDrawer(id).dlComponent?.open(); }
+    // F1 / Help again while the Help window is open closes it. Opening Help passes the active screen (?topic=<slug>) so its guide is selected.
+    openWideDrawer(id) {
+      const w = this.wideDrawer(id).dlComponent; if (!w) return;
+      if (id === 'help' && w.isOpen()) { w.close(); return; }
+      this.closeDrawers();
+      if (id === 'help' && w.frame) {
+        const slug = this.activeSlug(), base = this.wideDrawer(id).dataset.dlSsUrl, url = base + (slug ? (base.includes('?') ? '&' : '?') + 'topic=' + encodeURIComponent(slug) : '');
+        if (w.frame.getAttribute('src') !== url) w.frame.src = url;
+      }
+      w.open();
+    }
+
+    // Slug (/v2/s/<slug>) of the screen in the active work tab; null on Home or on a screen without one.
+    activeSlug() {
+      try { return this.openTabs.get(this.activeTab)?.pane.querySelector('iframe').contentWindow.location.pathname.match(/\/v2\/s\/([^/?#]+)/)?.[1] || null; } catch (e) { return null; }
+    }
 
     openDrawer(id) {
       $$(this.el, '.dl-drawer.is-on').forEach(d => d.classList.remove('is-on'));
