@@ -173,7 +173,7 @@
                     <x-dl::action-bar><x-dl::button preset="save" label="Create Assembly" /></x-dl::action-bar>
                 </x-dl::action-form>
             @else
-                <p class="mp-hint">@t('Save at least 2 parts first to create an assembly.')</p>
+                <x-dl::hint note>@t('Save at least 2 parts first to create an assembly.')</x-dl::hint>
             @endif
         @endif
     </x-dl::card>

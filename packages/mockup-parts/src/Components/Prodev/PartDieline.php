@@ -46,7 +46,7 @@ class PartDieline extends DevlibComponent
                     <b>{{ $p['part_name'] }}</b>
                     @if ($p['inquiry_no'])<x-dl::badge :label="$p['inquiry_no']" tone="info" />@endif
                     <span class="mp-grow"></span>
-                    @if ($p['updated_by'])<span class="mp-hint">{{ t('Last changed by') }} {{ $p['updated_by'] }} · {{ $p['updated_at'] }}</span>@endif
+                    @if ($p['updated_by'])<x-dl::hint note as="span">{{ t('Last changed by') }} {{ $p['updated_by'] }} · {{ $p['updated_at'] }}</x-dl::hint>@endif
                     <x-dl::button preset="save" />
                 </header>
                 <div class="mp-part__body">

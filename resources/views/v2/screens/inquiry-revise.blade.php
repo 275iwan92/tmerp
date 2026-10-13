@@ -63,14 +63,14 @@
         <x-dl::card>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                <span class="mp-chips">
+                <x-dl::chips as="span">
                     <x-dl::badge :label="$inq ? $inq->inquiry_no : 'Not saved yet'" />
                     <x-dl::badge :label="$inq?->sub_state ?? 'DRAFT'" :tone="Sales::STATE_TONES[$inq?->sub_state ?? 'DRAFT'] ?? 'neutral'" />
-                </span>
+                </x-dl::chips>
                 @if ($inq)<x-dl::button preset="print" :href="\App\Support\V2\Print\PrintDocs::url('inquiry', $inq->id_inquiry, ['from' => 'inquiry-revise'])" target="_blank" />@endif
             </x-dl::action-bar>
-            <h2 class="mp-bigname">{{ $doc['name'] }} <small class="mp-hint">→ Rev.{{ $doc['revision_no'] + 1 }}</small></h2>
-            <p class="mp-hint">@t('Parent'): {{ $doc['code'] }} · @t('Design No.') {{ $doc['design_no'] ?? '—' }} · {{ $doc['customer'] }} · @t('source inquiry') {{ $source?->inquiry_no }}. @t('The parent product stays intact.')</p>
+            <x-dl::headline>{{ $doc['name'] }} <x-dl::hint note as="span">→ Rev.{{ $doc['revision_no'] + 1 }}</x-dl::hint></x-dl::headline>
+            <x-dl::hint note>@t('Parent'): {{ $doc['code'] }} · @t('Design No.') {{ $doc['design_no'] ?? '—' }} · {{ $doc['customer'] }} · @t('source inquiry') {{ $source?->inquiry_no }}. @t('The parent product stays intact.')</x-dl::hint>
             <x-dl::form.row cols="3">
                 <x-dl::field.text name="revise_reason" label="Revision reason" required :value="old('revise_reason', $inq?->revise_reason)" placeholder="e.g. change the long-side artwork — customer request" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_reason')" />
                 <x-dl::field.text name="design_number" label="New Design No." :value="old('design_number', $inq?->design_number ?? $doc['design_no'])" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.design_number')" />
@@ -91,51 +91,45 @@
             @endphp
             <x-dl::card :title="raw($p['name'])" :description="$p['kind'] === 'ASSEMBLY' ? 'Assembly' : 'Component'">
                 @if ($p['kind'] === 'ASSEMBLY')
-                    <fieldset class="mp-rv" data-rv-block="JOIN" @disabled($locked || ! $on('JOIN'))>
-                        <legend>@t('Structure / Joint')</legend>
+                    <x-dl::block legend="Structure / Joint" data-rv-block="JOIN" :disabled="$locked || ! $on('JOIN')">
                         <x-dl::field.select :name="$n.'[join_type_id]'" label="Join type" :options="$joinOptions" :value="$p['join_type_id']" :source="Src::of('tm2sdi.iqp_part.join_type_id', 'tm2mst.mat_join_type')" />
-                    </fieldset>
+                    </x-dl::block>
                 @else
-                    <div class="mp-grid2">
+                    <x-dl::cols>
                         <div>
                             <x-mp::sales.part-visual :part="$master + ['artwork' => $p['artwork'], 'artwork_inner' => $p['artwork_inner']]" :types="Sales::dielineTypes()" height="300px" />
-                            <fieldset class="mp-rv" data-rv-block="ARTWORK" @disabled($locked || ! $on('ARTWORK'))>
-                                <legend>@t('Artwork')</legend>
+                            <x-dl::block legend="Artwork" data-rv-block="ARTWORK" :disabled="$locked || ! $on('ARTWORK')">
                                 <x-dl::form.row cols="2">
                                     <x-dl::field.upload :name="$n.'[artwork]'" label="New artwork (outside)" accept=".jpg,.jpeg,.png" :source="Src::of('tm2sdi.iqp_part.artwork_path')" />
                                     <x-dl::field.upload :name="$n.'[artwork_inner]'" label="New artwork (inside)" accept=".jpg,.jpeg,.png" :source="Src::of('tm2sdi.iqp_part.artwork_inner_path')" />
                                 </x-dl::form.row>
-                            </fieldset>
+                            </x-dl::block>
                         </div>
                         <div>
-                            <fieldset class="mp-rv" data-rv-block="DIMENSION" @disabled($locked || ! $on('DIMENSION'))>
-                                <legend>@t('Dimension (mm)')</legend>
+                            <x-dl::block legend="Dimension (mm)" data-rv-block="DIMENSION" :disabled="$locked || ! $on('DIMENSION')">
                                 <x-dl::form.row cols="3">
                                     <x-dl::field.decimal :name="$n.'[dims][product_length]'" label="L (length)" :value="$dim($p, 'product_length')" :source="Src::of('tm2sdi.iqp_part.dieline_spec.dims')" />
                                     <x-dl::field.decimal :name="$n.'[dims][product_width]'" label="W (width)" :value="$dim($p, 'product_width')" />
                                     <x-dl::field.decimal :name="$n.'[dims][product_height]'" label="H (height)" :value="$dim($p, 'product_height')" />
                                 </x-dl::form.row>
-                            </fieldset>
-                            <fieldset class="mp-rv" data-rv-block="MATERIAL" @disabled($locked || ! $on('MATERIAL'))>
-                                <legend>@t('Material')</legend>
+                            </x-dl::block>
+                            <x-dl::block legend="Material" data-rv-block="MATERIAL" :disabled="$locked || ! $on('MATERIAL')">
                                 @foreach ($p['materials'] as $m)
                                     <x-dl::field.select :name="$n.'[materials]['.$m['seq'].']'" :label="'Material #'.raw($m['seq'])" :options="$matOptions" :value="$m['category_id']" :hint="$m['category_id'] ? null : 'Old data: '.raw($m['label'])" :source="Src::of('tm2sdi.iqp_part_material.category_id')" />
                                 @endforeach
-                            </fieldset>
-                            <fieldset class="mp-rv" data-rv-block="COLOR" @disabled($locked || ! $on('COLOR'))>
-                                <legend>@t('Colour')</legend>
+                            </x-dl::block>
+                            <x-dl::block legend="Colour" data-rv-block="COLOR" :disabled="$locked || ! $on('COLOR')">
                                 <x-dl::form.row cols="2">
                                     <x-dl::field.select :name="$n.'[cfg_color]'" label="Colour notation" :options="$colors" :value="$p['cfg_color']" :placeholder="null" :source="Src::of('tm2sdi.iqp_part.cfg_color')" />
                                     <x-dl::field.text :name="$n.'[cfg_ink]'" label="Ink" :value="$p['cfg_ink']" placeholder="e.g. CMYK + spot Pantone 348C" :source="Src::of('tm2sdi.iqp_part.cfg_ink')" />
                                 </x-dl::form.row>
-                            </fieldset>
-                            <fieldset class="mp-rv" data-rv-block="PROCESS" @disabled($locked || ! $on('PROCESS'))>
-                                <legend>@t('Process / Finishing')</legend>
+                            </x-dl::block>
+                            <x-dl::block legend="Process / Finishing" data-rv-block="PROCESS" :disabled="$locked || ! $on('PROCESS')">
                                 <input type="hidden" name="{{ $n }}[finishings][]" value="">
                                 <x-dl::field.checkboxes :name="$n.'[finishings]'" label="Finishing" :options="$finOptions" :value="$p['finishings']" :source="Src::of('tm2sdi.iqp_part_finishing')" />
-                            </fieldset>
+                            </x-dl::block>
                         </div>
-                    </div>
+                    </x-dl::cols>
                 @endif
             </x-dl::card>
         @endforeach

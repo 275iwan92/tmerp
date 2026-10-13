@@ -27,7 +27,7 @@
 @elseif (! $o)
     @php $quotes = CustomerOrder::quotationChoices(); @endphp
     <x-dl::card title="+ New Record — choose the Customer Order path" description="Two entry paths; the document & what follows (CPDEL, production) are the same.">
-        <div class="mp-grid2">
+        <x-dl::cols>
             <x-dl::action-form action="{{ route('v2.co.create') }}">
                 <input type="hidden" name="mode" value="INTEGRATED">
                 <x-dl::card title="INTEGRATED — from Quotation" description="Customer accepts the quotation. Lines & prices = quotation snapshot (1 Quotation = 1 CO).">
@@ -46,7 +46,7 @@
                     <x-dl::action-bar><x-dl::button preset="save" label="Create Instant" /></x-dl::action-bar>
                 </x-dl::card>
             </x-dl::action-form>
-        </div>
+        </x-dl::cols>
         <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
     </x-dl::card>
 @else

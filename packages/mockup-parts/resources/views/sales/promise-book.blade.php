@@ -8,15 +8,15 @@
     <x-dl::card>
         <x-dl::action-bar>
             <x-dl::button variant="secondary" icon="back" label="Back" :href="$b['home']" />
-            <span class="mp-chips">
+            <x-dl::chips as="span">
                 <x-dl::badge :label="$b['coNo']" />
                 <x-dl::badge :label="$b['stateLabel']" :tone="$b['stateTone']" />
                 @if ($b['posted'])<x-dl::badge label="Posted to Production" tone="info" />@endif
-            </span>
+            </x-dl::chips>
             <x-dl::button variant="secondary" icon="send" label="Open Customer Order" :href="$b['orderUrl']" />
             <x-dl::button preset="print" :href="$b['printUrl']" target="_blank" />
         </x-dl::action-bar>
-        <h2 class="mp-bigname">{{ $b['product'] }}</h2>
+        <x-dl::headline>{{ $b['product'] }}</x-dl::headline>
         @foreach ($factRows() as $row)
             <x-dl::form.row cols="4">
                 @foreach ($row as [$label, $value, $sources])

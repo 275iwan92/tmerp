@@ -64,14 +64,14 @@
             </x-dl::form.row>
             <x-dl::field.text name="title" label="Title" required :readonly="! $editable" :value="$m->title" :source="Src::of('tm2mnt.mnt_document.title')" />
             @if ($locked)
-                <p class="dl-hint">@t('This document is approved and locked. Use Back to Draft to change it; that starts a new revision.')</p>
+                <x-dl::hint>@t('This document is approved and locked. Use Back to Draft to change it; that starts a new revision.')</x-dl::hint>
             @endif
         </x-slot:general>
         @if ($document)
             <x-slot:detail>
                 <x-dl::tabs :tabs="['read' => 'Read', 'content' => 'Content ('.raw($document->lines->count()).')', 'assets' => 'Assets ('.raw($used->count()).')']">
                     <x-slot:read>
-                        <p class="dl-hint">@t('The text below is shown in your language. Edit the English base text in the Content tab; translations are kept in Setup, Translation Dictionary.')</p>
+                        <x-dl::hint>@t('The text below is shown in your language. Edit the English base text in the Content tab; translations are kept in Setup, Translation Dictionary.')</x-dl::hint>
                         <x-dl::table :columns="['seq' => '#', 'section' => 'Section', 'text' => 'Text']" :rows="array_map(fn ($r) => ['seq' => $r['seq'], 'section' => raw($r['section']), 'text' => raw($r['text'])], Maintenance::readRows($document))" />
                     </x-slot:read>
                     <x-slot:content>

@@ -1,8 +1,10 @@
-{{-- Inquiry Product (worklist). Alur & field: tmerp pages/inquiry/hub.blade.php. Keputusan user 2026-09-28:
-     wizard jenis -> sumber -> pilih inquiry. Win/Lost ada di Quotation.
-     User 2026-10-01/02: Grid Transactional DevLib biasa (x-dl::grid, sama dengan Quotation / Customer Order): + New Record di toolbar
-     membuka wizard; Continue Draft / Ready to Quote = filter teks Draft / Ready to Quote di baris filter (klik = saring);
-     Duplicate = tombol di dalam form Inquiry (screens/_inquiry-duplicate), bukan ikon di baris grid. --}}
+{{-- REMARK
+     Tujuan       : Worklist Inquiry Product (Grid Transactional DevLib) + wizard Create Inquiry: jenis -> sumber (RECALC / REVISE) -> pilih inquiry -> form.
+     Sumber hulu  : Inquiry Product (tm2sdi.iqp_inquiry, iqp_part, iqp_tier, iqp_costing, tm2mst.cust_customer) lewat App\Support\V2\Data\Sales::inquiries().
+     Input        : -; filter Draft / Ready to Quote / Pro-Dev / Pro-Cost dan tab jenis memakai kolom stage / inquiry_type.
+     Output       : Daftar inquiry; baris DRAFT membuka layar jenisnya (inquiry-new / -recalc / -revise), selain DRAFT = lihat-saja (&view=1).
+     Dipakai oleh : Menu Sales > Inquiry & Quotation; modal wizard memakai x-dl::wizard-option.
+     Status       : Aktif. Duplicate = tombol di form (screens/_inquiry-duplicate); Win / Lost ada di Quotation (keputusan user 2026-09-28, 2026-10-02). --}}
 @php
     use App\Support\V2\Data\Sales;
     use App\Support\V2\Src;
@@ -57,46 +59,32 @@
 
 {{-- Wizard Create Inquiry: 1 jenis -> 2 sumber (RECALC/REVISE) -> 3 pilih inquiry -> form. --}}
 <x-dl::modal id="wiz-type" title="Create Inquiry — Step 1: choose the type" size="lg" icon="plus">
-    <div class="mp-wiz">
+    <x-dl::wizard-options>
         @foreach (InquiryTypeCard::TYPES as $type => $t)
-            <div class="mp-wiz__opt mp-typecard--{{ strtolower($type) }}">
-                <span class="mp-wiz__emoji">{{ $t[0] }}</span>
-                <div class="mp-wiz__txt">
-                    <b>{{ t($t[1]) }}</b> <x-dl::badge :label="$type" :tone="Sales::TYPE_TONES[$type]" />
-                    <p>{{ t($t[2]) }}</p>
-                    <small>@t('Needs'): {{ t($t[3]) }} · @t('Flow'): {{ t($t[4]) }}</small>
-                </div>
+            <x-dl::wizard-option :kind="'mp-typecard--'.strtolower($type)" :emoji="$t[0]" :title="$t[1]" :description="$t[2]" :badge="$type" :badge-tone="Sales::TYPE_TONES[$type]"
+                :note="raw(t('Needs').': '.t($t[3]).' · '.t('Flow').': '.t($t[4]))">
                 @if ($type === 'NEW')
                     <x-dl::button size="sm" label="Choose" :href="route('v2.screen', 'inquiry-new')" />
                 @else
                     <x-dl::button size="sm" label="Choose" data-dl-open="wiz-src-{{ strtolower($type) }}" data-dl-close-modal />
                 @endif
-            </div>
+            </x-dl::wizard-option>
         @endforeach
-    </div>
+    </x-dl::wizard-options>
     <x-slot:footer><x-dl::button preset="cancel" data-dl-close-modal /></x-slot:footer>
 </x-dl::modal>
 
 @foreach ($srcTitle as $type => $title)
     <x-dl::modal :id="'wiz-src-'.strtolower($type)" :title="raw(t($title)).' — Step 2: choose the data source'" size="lg" icon="search">
-        <div class="mp-wiz">
-            <div class="mp-wiz__opt">
-                <span class="mp-wiz__emoji">📁</span>
-                <div class="mp-wiz__txt">
-                    <b>@t('From an Existing Inquiry')</b>
-                    <p>@t('All numbered inquiries are listed, including Cancelled/Lost ones — their spec is used again.')</p>
-                </div>
+        <x-dl::wizard-options>
+            <x-dl::wizard-option emoji="📁" title="From an Existing Inquiry" description="All numbered inquiries are listed, including Cancelled/Lost ones — their spec is used again.">
                 <x-dl::button size="sm" label="Choose" data-dl-open="pick-{{ strtolower($type) }}" data-dl-close-modal />
-            </div>
-            <div class="mp-wiz__opt is-off">
-                <span class="mp-wiz__emoji">📦</span>
-                <div class="mp-wiz__txt">
-                    <b>@t('From Master Product')</b> <x-dl::badge label="Soon" tone="warn" />
-                    <p>@t('Not active yet: Master Product does not store the dieline used by the Inquiry form yet; it has to be designed separately.')</p>
-                </div>
+            </x-dl::wizard-option>
+            <x-dl::wizard-option emoji="📦" title="From Master Product" badge="Soon" badge-tone="warn" off
+                description="Not active yet: Master Product does not store the dieline used by the Inquiry form yet; it has to be designed separately.">
                 <x-dl::button size="sm" variant="secondary" label="Choose" disabled />
-            </div>
-        </div>
+            </x-dl::wizard-option>
+        </x-dl::wizard-options>
         <x-slot:footer>
             <x-dl::button variant="secondary" icon="prev" label="Back" data-dl-open="wiz-type" data-dl-close-modal />
             <x-dl::button preset="cancel" data-dl-close-modal />

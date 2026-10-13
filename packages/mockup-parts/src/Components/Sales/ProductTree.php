@@ -40,7 +40,7 @@ class ProductTree extends DevlibComponent
                             @include('mp::sales.product-tree-nodes', ['nodes' => $tree, 'active' => $active])
                         </li>
                     </ul>
-                    <p class="mp-hint">{{ \Devlib\Lang::text('Assemblies can be nested.') }} {{ \Devlib\Lang::text('Click a node to see its dieline, material, BOM and BOP.') }}</p>
+                    <x-dl::hint note>{{ \Devlib\Lang::text('Assemblies can be nested.') }} {{ \Devlib\Lang::text('Click a node to see its dieline, material, BOM and BOP.') }}</x-dl::hint>
                 </x-dl::card>
                 <div>{{ $slot }}</div>
             </div>

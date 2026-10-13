@@ -138,7 +138,7 @@
             @if ($c->type_code && isset($types[$c->type_code]))
                 <x-mp::dieline-v3 :data-artwork="$artwork?->url()" :types="$types" :type="$c->type_code" :dims="$c->dims_json ?? []" name="dieline" :picker="false" height="420px"
                     :source="Src::of('tm2mst.prod_master_card.dims_json', 'tm2mst.prod_master_card.dieline_svg', 'tm2mst.prod_type.dieline_spec')" />
-                <p class="mp-hint">{{ tf('The dieline SVG is stored on the card at every Save (:size) and is carried to Master Product / Inquiry.', ['size' => $c->dieline_svg ? \Devlib\Locale::number(strlen($c->dieline_svg)).' '.t('characters') : t('none yet')]) }}</p>
+                <x-dl::hint note>{{ tf('The dieline SVG is stored on the card at every Save (:size) and is carried to Master Product / Inquiry.', ['size' => $c->dieline_svg ? \Devlib\Locale::number(strlen($c->dieline_svg)).' '.t('characters') : t('none yet')]) }}</x-dl::hint>
             @endif
             <x-dl::form.row cols="1">
                 <x-dl::field.text :multiline="true" name="notes" label="Description (card)" :value="old('notes', $c->notes)" :source="Src::of('tm2mst.prod_master_card.notes')" />

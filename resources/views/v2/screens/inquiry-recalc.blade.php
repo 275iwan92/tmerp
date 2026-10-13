@@ -56,22 +56,22 @@
         <x-dl::card>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                <span class="mp-chips">
+                <x-dl::chips as="span">
                     <x-dl::badge :label="$inq ? $inq->inquiry_no : 'Not saved yet'" />
                     <x-dl::badge :label="$inq?->sub_state ?? 'DRAFT'" :tone="Sales::STATE_TONES[$inq?->sub_state ?? 'DRAFT'] ?? 'neutral'" />
-                </span>
+                </x-dl::chips>
                 @if ($inq)<x-dl::button preset="print" :href="\App\Support\V2\Print\PrintDocs::url('inquiry', $inq->id_inquiry, ['from' => 'inquiry-recalc'])" target="_blank" />@endif
             </x-dl::action-bar>
-            <h2 class="mp-bigname">{{ $doc['name'] }}</h2>
-            <p class="mp-hint">{{ $doc['code'] }} · @t('Design No.') {{ $doc['design_no'] ?? '—' }} · {{ collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v, 2))->implode(' × ') }} cm{{ $doc['join'] ? ' · '.$doc['join'] : '' }}</p>
+            <x-dl::headline>{{ $doc['name'] }}</x-dl::headline>
+            <x-dl::hint note>{{ $doc['code'] }} · @t('Design No.') {{ $doc['design_no'] ?? '—' }} · {{ collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v, 2))->implode(' × ') }} cm{{ $doc['join'] ? ' · '.$doc['join'] : '' }}</x-dl::hint>
             <x-dl::alert tone="info" message="Recalculation = same product, new price. Spec, dieline, artwork, material and process are locked — use Revision to change them." />
         </x-dl::card>
 
         <x-dl::card title="Order & selling price history" description="Newest on top. COGS, margin and material purchase price stay in ProCost.">
-            <div class="mp-chips">
+            <x-dl::chips>
                 <x-dl::badge tone="success" :label="'Sold '.count($won).'× · '.$num(array_sum(array_column($won, 'qty'))).' pcs'" />
                 @if ($won)<x-dl::badge :label="'Last sold price: '.$rp($won[0]['price']).' /pcs ('.$won[0]['date'].')'" />@endif
-            </div>
+            </x-dl::chips>
             <x-dl::table :columns="['date' => 'Date', 'quotation' => 'Quotation', 'co' => 'Customer Order', 'qty' => 'Qty (pcs)', 'price' => 'Selling price /pcs', 'total' => 'Total', 'result' => 'Result', 'tiers' => 'Qty tiers offered', 'ships' => 'Delivery']"
                 :rows="array_map(fn ($o) => ['date' => $o['date'], 'quotation' => $o['quotation'] ?? '—', 'co' => $o['co'] ?? '—', 'qty' => $num($o['qty']), 'price' => $rp($o['price']), 'total' => $rp($o['qty'] * $o['price']),
                     'result' => ['WIN' => 'WIN · '.t('sold'), 'LOST' => 'LOST'.($o['reason'] ? ' · '.$o['reason'] : ''), 'OPEN' => t('Still open')][$o['result']],
@@ -94,11 +94,11 @@
         </x-dl::card>
 
         <x-dl::card title="Dieline & 3D preview" description="Locked — same as the Master Product.">
-            <div class="mp-grid2">
+            <x-dl::cols>
                 @foreach ($doc['components'] as $c)
                     <div><b>{{ $c['name'] }}</b><x-mp::sales.part-visual :part="$c" :types="Sales::dielineTypes()" height="300px" /></div>
                 @endforeach
-            </div>
+            </x-dl::cols>
             @if ($doc['components'])
                 <x-mp::box3d :dims="$doc['dims']" :front="$doc['components'][0]['artwork']" :back="$doc['components'][1]['artwork'] ?? null" class="mp-mt" />
             @endif
@@ -109,7 +109,7 @@
                 :rows="collect($doc['components'])->flatMap(fn ($c) => array_map(fn ($m) => ['part' => $c['name'], 'seq' => '#'.$m['seq'], 'jenis' => $m['jenis'] ?? '—', 'brand' => $m['brand'] ?? '—'], $c['materials']))->all()"
                 empty="No material yet." source="{{ Src::of('tm2mst.prod_part_material', 'tm2mst.mat_category') }}" />
             <x-dl::divider label="Special processes (high cost)" />
-            <div class="mp-chips">@forelse (ProductMaster::specialProcesses($doc) as $s)<x-dl::badge :label="$s" tone="warn" />@empty<span class="mp-hint">@t('None.')</span>@endforelse</div>
+            <x-dl::chips>@forelse (ProductMaster::specialProcesses($doc) as $s)<x-dl::badge :label="$s" tone="warn" />@empty<x-dl::hint note as="span">@t('None.')</x-dl::hint>@endforelse</x-dl::chips>
         </x-dl::card>
 
         <x-dl::action-bar>

@@ -65,7 +65,7 @@
                 <x-dl::field.select name="fixed_asset_id" label="Fixed Asset (Finance, optional)" :options="$fixed" :value="$a->fixed_asset_id" :source="Src::of('tm2acc.fin_asset')" />
             </x-dl::form.row>
             @if ($linked)
-                <p class="dl-hint">@t('This asset is a machine from Master Machine. Its code, name and class are kept in step with the master.')</p>
+                <x-dl::hint>@t('This asset is a machine from Master Machine. Its code, name and class are kept in step with the master.')</x-dl::hint>
             @endif
         </x-slot:general>
         <x-slot:notes>
@@ -139,7 +139,7 @@
                                 </x-slot:tools>
                             @endif
                         </x-dl::lines>
-                        <p class="dl-hint">@t('Open SOP and Work Instructions to read or approve a document.')</p>
+                        <x-dl::hint>@t('Open SOP and Work Instructions to read or approve a document.')</x-dl::hint>
                     </x-slot:docs>
                 </x-dl::tabs>
             </x-slot:detail>

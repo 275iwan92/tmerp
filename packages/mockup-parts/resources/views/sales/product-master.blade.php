@@ -9,11 +9,11 @@
     <x-dl::action-bar>
         <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
         <x-dl::doc-share target="#mp-doc" type="master-product" :doc-id="$doc['id']" :number="$doc['code']" title="Master Product" />
-        <span class="mp-chips">
+        <x-dl::chips as="span">
             <x-dl::badge :label="$doc['status'] === 'ACTIVE' ? 'Official · Quotation WIN' : 'DRAFT (ProDev)'" :tone="$doc['status'] === 'ACTIVE' ? 'success' : 'neutral'" />
             @if ($doc['join'])<x-dl::badge :label="$doc['join']" tone="warn" />@endif
             <x-dl::badge :label="$doc['parent'] ? 'Derived Rev.'.$doc['revision_no'] : 'Parent product'" />
-        </span>
+        </x-dl::chips>
     </x-dl::action-bar>
     <x-dl::action-form action="{{ $nameAction }}" data-dl-guard>
         <x-dl::form.row cols="3">
@@ -59,7 +59,7 @@
                             <x-dl::table :columns="['seq' => '#', 'role' => 'Role', 'jenis' => 'Type / Grammage', 'brand' => 'Brand (reference)']" :rows="array_map(fn ($m) => $m + ['brand' => $m['brand'] ?? '—'], $n['materials'])"
                                 empty="No material yet." :source="$src('tm2mst.prod_part_material', 'tm2mst.mat_category', 'tm2mst.mat_raw.brand')" />
                             <x-dl::divider label="Ink" />
-                            <div class="mp-chips">@forelse ($n['inks'] as $k)<x-dl::badge :label="'Unit '.$k['unit'].' · '.$k['ink']" />@empty<span class="mp-hint">{{ Lang::text('No ink yet.') }}</span>@endforelse</div>
+                            <x-dl::chips>@forelse ($n['inks'] as $k)<x-dl::badge :label="'Unit '.$k['unit'].' · '.$k['ink']" />@empty<x-dl::hint note as="span">{{ Lang::text('No ink yet.') }}</x-dl::hint>@endforelse</x-dl::chips>
                         </x-slot:bom>
                         <x-slot:bop>
                             <ol class="mp-steps">@forelse ($n['bop'] as $s)<li><span><b>{{ $s['name'] }}</b><small>{{ trim(($s['machine'] ? Lang::text('Machine').' '.$s['machine'].' · ' : '').($s['note'] ?? ''), ' ·') }}</small></span></li>@empty<li><span>{{ Lang::text('No BOP yet.') }}</span></li>@endforelse</ol>
@@ -70,7 +70,7 @@
                                 <x-dl::field.display label="Ink" :value="$n['ink'] ?? '—'" :source="$src('tm2mst.prod_part.cfg_ink')" />
                                 <x-dl::field.display label="Flat size" :value="$n['flat'] ?? '—'" :source="$src('tm2mst.prod_part.flat_w', 'flat_h')" />
                             </x-dl::form.row>
-                            <div class="mp-chips">@forelse ($n['finishings'] as $f)<x-dl::badge :label="$f" tone="info" />@empty<span class="mp-hint">{{ Lang::text('No finishing.') }}</span>@endforelse</div>
+                            <x-dl::chips>@forelse ($n['finishings'] as $f)<x-dl::badge :label="$f" tone="info" />@empty<x-dl::hint note as="span">{{ Lang::text('No finishing.') }}</x-dl::hint>@endforelse</x-dl::chips>
                         </x-slot:spec>
                     </x-dl::tabs>
                 @endif
@@ -87,7 +87,7 @@
                     <x-dl::field.display :label="$label" :value="$lastAcc($t) ? $lastAcc($t)['at'].' · '.$lastAcc($t)['by'].' ('.$lastAcc($t)['channel'].')' : ($t === 'DIGITAL' ? Lang::text('NOT YET — required before the Printing process') : Lang::text('not recorded yet'))" :source="$src('tm2mst.prod_product_acc')" />
                 @endforeach
             </x-dl::form.row>
-            <p class="mp-hint">{{ Lang::text('ACC is recorded & the Digital Proof is printed from the ProDev form (special button Print ACC / Proof Digital).') }}</p>
+            <x-dl::hint note>{{ Lang::text('ACC is recorded & the Digital Proof is printed from the ProDev form (special button Print ACC / Proof Digital).') }}</x-dl::hint>
         </x-slot:acc>
         <x-slot:orders>
             <x-dl::table :columns="['date' => 'Date', 'quotation' => 'Quotation', 'co' => 'Customer Order', 'qty' => 'Qty (pcs)', 'price' => 'Selling price /pcs', 'result' => 'Result']"
@@ -99,7 +99,7 @@
                 :rows="array_merge($doc['parent'] ? [['rel' => Lang::text('Parent'), 'label' => $doc['parent']['label'], 'status' => '']] : [], [['rel' => Lang::text('This product'), 'label' => $doc['name'].' · '.$doc['design_no'], 'status' => $doc['status']]],
                     array_map(fn ($r) => ['rel' => Lang::text('Derived'), 'label' => $r['label'], 'status' => $r['status']], $doc['revisions']))"
                 :source="$src('tm2mst.prod_product.parent_product_id')" />
-            <p class="mp-hint">{{ Lang::text('Every Revision opens a new branch (derived product); the old product stays intact.') }}</p>
+            <x-dl::hint note>{{ Lang::text('Every Revision opens a new branch (derived product); the old product stays intact.') }}</x-dl::hint>
         </x-slot:branch>
     </x-dl::tabs>
 </x-dl::card>

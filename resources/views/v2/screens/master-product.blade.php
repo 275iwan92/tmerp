@@ -17,7 +17,7 @@
 @if (! $doc)
     {{-- Daftar = objek grid App\Support\V2\Grid\Sales\ProductMasterListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
     @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\ProductMasterListGrid()]])
-    <p class="mp-hint">@t('A product is born automatically when a Quotation is WIN (the CO is created) — it is not created manually.') @t('Double-click a row to open it.')</p>
+    <x-dl::hint note>@t('A product is born automatically when a Quotation is WIN (the CO is created) — it is not created manually.') @t('Double-click a row to open it.')</x-dl::hint>
 @else
     {{-- Halaman satu product = objek form khusus x-mp::sales.product-master (MockupParts). --}}
     <x-mp::sales.product-master :doc="$doc" :orders="ProductMaster::orders($doc['id'])" :types="Sales::dielineTypes()" :acc-types="ProdProductAcc::TYPES"

@@ -20,11 +20,11 @@
             <x-dl::action-form action="{{ $b['action'] }}">
                 <x-dl::action-bar>
                     <x-dl::button variant="secondary" icon="back" label="Back" :href="$b['home']" />
-                    <span class="mp-chips">
+                    <x-dl::chips as="span">
                         <x-dl::badge :label="$b['coNo']" />
                         <x-dl::badge :label="$b['coStatus']" :tone="$b['coTone']" />
                         <x-dl::badge :label="$b['booking']" :tone="$b['bookingTone']" />
-                    </span>
+                    </x-dl::chips>
                     <x-dl::button variant="secondary" icon="send" :label="Lang::text('Open Customer Order')" :href="$b['orderUrl']" />
                     <x-dl::button preset="print" :href="$b['printUrl']" target="_blank" />
                     @if ($b['canRun'])

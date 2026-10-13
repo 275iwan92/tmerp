@@ -92,7 +92,7 @@ class InquiryForm extends DevlibComponent
                 {{ $slot }}
 
                 <x-dl::modal id="inq-role" title="Choose Part Role" icon="fa-tag" size="lg">
-                    <p class="mp-hint">{{ \Devlib\Lang::text('The part name is filled in automatically: product-name-{role}') }}</p>
+                    <x-dl::hint note>{{ \Devlib\Lang::text('The part name is filled in automatically: product-name-{role}') }}</x-dl::hint>
                     <div class="mp-roles">
                         @foreach ($roles() as $key => [$label, $icon, $desc])
                             <button type="button" class="mp-role" data-inq-role-pick="{{ $key }}"><span class="mp-role__icon">{{ $icon }}</span><b>{{ $label }}</b><small>{{ \Devlib\Lang::text($desc) }}</small></button>

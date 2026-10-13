@@ -9,12 +9,12 @@
         <x-dl::card>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$p['home']" />
-                <span class="mp-chips">
+                <x-dl::chips as="span">
                     <x-dl::badge :label="$p['code']" />
                     <x-dl::badge :label="$p['status']" :tone="$p['statusTone']" />
-                </span>
+                </x-dl::chips>
             </x-dl::action-bar>
-            <h2 class="mp-bigname">{{ $p['material'] }}</h2>
+            <x-dl::headline>{{ $p['material'] }}</x-dl::headline>
             <x-dl::form.row cols="4">
                 @foreach ($p['facts'] as [$label, $value])
                     <x-dl::field.display :label="$label" :value="$value" />

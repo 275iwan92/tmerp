@@ -132,12 +132,12 @@ class InquiryPart extends DevlibComponent
                         @foreach ($p['suggestions'] as $sug)
                             <x-dl::alert :tone="$sug['tone'] ?? 'info'">{{ $sug['text'] }}<x-dl::button size="sm" variant="secondary" :label="$sug['action'] ?? 'Apply'" data-inq-suggest="{{ $sug['apply'] ?? '' }}" /></x-dl::alert>
                         @endforeach
-                        <p class="mp-hint" data-inq-dieline-name hidden></p>
+                        <x-dl::hint note data-inq-dieline-name hidden></x-dl::hint>
                         <x-mp::dieline-v3 :data-artwork="$p['artwork_url']" :data-artwork-inner="$p['artwork_inner_url']" :types="$types" :type="$typeCode ?: array_key_first($types)" :dims="$p['dims']" :name="$n('dieline')" :picker="false" height="400px"
                             :source="\MockupParts\Src::of('tm2mst.prod_type.dieline_spec', 'tm2sdi.iqp_part.dieline_spec', 'tm2sdi.iqp_part.flat_w', 'tm2sdi.iqp_part.flat_h', 'tm2sdi.iqp_part.flat_area')" />
 
                         <x-dl::divider label="Materials" />
-                        <p class="mp-hint">{{ \Devlib\Lang::text('Choose only the Type & Grammage — the brand & plano size are decided by Purchasing/ProDev.') }}</p>
+                        <x-dl::hint note>{{ \Devlib\Lang::text('Choose only the Type & Grammage — the brand & plano size are decided by Purchasing/ProDev.') }}</x-dl::hint>
                         <div data-inq-mats data-seq="{{ count($rows()) }}">
                             @foreach ($rows() as $m => $row)
                                 <x-mp::sales.inquiry-material :name="$n('materials')" :index="(string) $m" :row="$row" :chains="$materialChains" :fixed="$m < 2" />
@@ -155,7 +155,7 @@ class InquiryPart extends DevlibComponent
                         </x-dl::form.row>
 
                         <x-dl::divider label="Additional Finishing" />
-                        <p class="mp-hint">{{ \Devlib\Lang::text('Optional — additional decorative processes (hot print, UV spot, emboss, laminating, etc.), more than one is allowed.') }}</p>
+                        <x-dl::hint note>{{ \Devlib\Lang::text('Optional — additional decorative processes (hot print, UV spot, emboss, laminating, etc.), more than one is allowed.') }}</x-dl::hint>
                         <x-dl::lines :name="$n('finishings')" title="Finishing" add-label="+ Add Finishing" :min-rows="0" :rows="$p['finishings']" :source="\MockupParts\Src::of('tm2sdi.iqp_part_finishing')"
                             :columns="[
                                 ['key' => 'finishing_type_id', 'label' => 'Finishing Type', 'type' => 'select', 'options' => $finishingTypes, 'required' => true, 'src' => \MockupParts\Src::of('tm2sdi.iqp_part_finishing.finishing_type_id', 'tm2mst.ref_finishing_type.finishing_name')],
