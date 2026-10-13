@@ -125,9 +125,9 @@
             @else
                 <x-dl::action-bar><x-dl::button size="sm" variant="secondary" icon="fa-download" :label="$pq->source_name" :href="$fileUrl" target="_blank" /></x-dl::action-bar>
                 @if ($ext === 'pdf')
-                    <iframe src="{{ $fileUrl }}" title="{{ $pq->source_name }}" class="mp-file-preview"></iframe>
+                    <x-dl::media as="frame" :src="$fileUrl" :alt="$pq->source_name" class="mp-file-preview" />
                 @elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true))
-                    <img src="{{ $fileUrl }}" alt="{{ $pq->source_name }}" class="mp-file-preview">
+                    <x-dl::media :src="$fileUrl" :alt="$pq->source_name" class="mp-file-preview" />
                 @endif
             @endif
         </x-slot:file>

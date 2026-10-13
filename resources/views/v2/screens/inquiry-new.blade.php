@@ -78,7 +78,7 @@
             </x-dl::form.row>
         </x-dl::box>
         <x-dl::form.row cols="2">
-            <x-dl::alert tone="info" data-inq-template-note><span data-inq-template-text></span><x-dl::button size="sm" variant="secondary" label="Add Automatically" data-inq-template /></x-dl::alert>
+            <x-dl::alert tone="info" data-inq-template-note><x-dl::box as="span" data-inq-template-text /><x-dl::button size="sm" variant="secondary" label="Add Automatically" data-inq-template /></x-dl::alert>
         </x-dl::form.row>
         <x-dl::form.row cols="2">
             <x-dl::field.text name="sales_note" label="Sales Notes" placeholder="optional" multiline :value="$doc['sales_note'] ?? ''" :source="$i('sales_note')" />
@@ -114,7 +114,7 @@
         </x-dl::box>
         <template data-inq-part-tpl><x-mp::sales.inquiry-part index="__I__" :part="$blankPart" :types="$types" :type-code="$typeCode" :finishing-types="$finishing" :material-chains="$chains" /></template>
         <script type="application/json" data-inq-matchains>@json($chains)</script>
-        <div><x-dl::button variant="secondary" icon="＋" :label="t('Add Part')" data-inq-add-part /></div>
+        <x-dl::box><x-dl::button variant="secondary" icon="＋" :label="t('Add Part')" data-inq-add-part /></x-dl::box>
     </x-dl::card>
 
     <x-dl::card title="Tooling Status" description="plate/die/film — check wear on repeat orders">

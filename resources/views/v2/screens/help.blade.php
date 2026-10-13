@@ -124,7 +124,7 @@
             @endphp
             <x-dl::card title="Big flow map" description="From Inquiry to Customer Invoice, as drawn by Jo. Scroll sideways on a narrow screen." icon="fa-map">
                 <x-dl::alert tone="info" :message="raw($legend)" />
-                <x-dl::box class="mp-flowmap"><img src="{{ asset('images/peta-alur/flow-besar-tmerp-final.png') }}" alt="Flow besar tmerp: Inquiry, IQ PROD, PRO DEV, PRO COST, QUO, BOP, BOM, Booking, MRP, PR, PO, PV, Customer, CO, Ship Schedule, WO, Engine, Gantt, Reschedule, Master Card, QC, Warehouse Product, Delivery, Customer Invoice"></x-dl::box>
+                <x-dl::box class="mp-flowmap"><x-dl::media src="{{ asset(\'images/peta-alur/flow-besar-tmerp-final.png\') }}" alt="Flow besar tmerp: Inquiry, IQ PROD, PRO DEV, PRO COST, QUO, BOP, BOM, Booking, MRP, PR, PO, PV, Customer, CO, Ship Schedule, WO, Engine, Gantt, Reschedule, Master Card, QC, Warehouse Product, Delivery, Customer Invoice" /></x-dl::box>
             </x-dl::card>
             <x-dl::card title="Line by line" icon="fa-bezier-curve">
                 <x-dl::table :columns="['a' => 'Line', 'b' => 'From', 'c' => 'To', 'd' => 'Status']" :rows="$keys($lines)" />

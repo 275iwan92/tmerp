@@ -18,7 +18,7 @@
             <x-dl::print-out :title="$title" :subtitle="$subtitle" :number="$pv->doc_no" :date="$pv->i_doc_date?->toDateString()" :status="$pv->status"
                 :company="$company" :printed-by="auth()->user()->login" :prices="false" :source="\App\Support\V2\Src::of('tm2pur.pv_receipt', 'tm2pur.pv_line')"
                 :parties="$parties" :columns="$columns" :rows="$rows" :signatures="$signatures">
-                <x-slot:notes><b>{{ t('Notes') }}:</b> {{ $pv->i_notes ?: '—' }}</x-slot:notes>
+                <x-slot:notes><x-dl::box as="b">{{ t('Notes') }}:</x-dl::box> {{ $pv->i_notes ?: '—' }}</x-slot:notes>
             </x-dl::print-out>
         </x-dl::box>
     </x-dl::box>

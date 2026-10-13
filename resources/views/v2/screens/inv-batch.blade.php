@@ -73,7 +73,7 @@
             <x-dl::form.row :cols="2">
                 <x-dl::field.upload name="coa" label="Certificate of Analysis" accept=".pdf,.jpg,.jpeg,.png" hint="PDF or image, up to 5 MB. A new file replaces the current one." :source="Src::of('tm2inv.inv_batch.coa_path')" />
                 @if ($b->coa_path)
-                    <div><x-dl::button size="sm" variant="secondary" icon="fa-paperclip" :label="raw(basename($b->coa_path))" :href="Storage::disk('public')->url($b->coa_path)" target="_blank" /></div>
+                    <x-dl::box><x-dl::button size="sm" variant="secondary" icon="fa-paperclip" :label="raw(basename($b->coa_path))" :href="Storage::disk('public')->url($b->coa_path)" target="_blank" /></x-dl::box>
                 @endif
             </x-dl::form.row>
             <x-dl::field.text name="notes" label="Notes" multiline :value="old('notes', $b->notes)" :source="Src::of('tm2inv.inv_batch.notes')" />

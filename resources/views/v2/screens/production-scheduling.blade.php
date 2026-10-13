@@ -84,10 +84,10 @@
                 'next' => raw($f['next'] ? implode(' · ', array_map(fn ($n) => $n['wo'], $f['next'])) : '—')], $floor)" />
         <x-dl::form.row :cols="3">
             @foreach ($floor as $f)
-                <div>
+                <x-dl::box>
                     <x-dl::field.display label="Machine" :value="raw($f['machine'].' · '.$f['wo'])" :source="\App\Support\V2\Src::of('tm2prd.prd_wo_operation')" />
                     @include('v2.screens._job-visual', ['woId' => $f['wo_id'], 'height' => '170px'])
-                </div>
+                </x-dl::box>
             @endforeach
         </x-dl::form.row>
     </x-dl::card>

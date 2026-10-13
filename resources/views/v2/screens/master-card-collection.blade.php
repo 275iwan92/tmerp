@@ -187,13 +187,13 @@
                 @endforeach
             </x-dl::form.row>
             <x-dl::divider label="Image from card" />
-            <div class="mp-thumbs">
+            <x-dl::box class="mp-thumbs">
                 @forelse ($card?->files->whereIn('file_kind', ['PROOF', 'CUT_PLAN', 'PHOTO']) ?? [] as $f)
                     <x-mp::image-thumb :label="ProdMasterCardFile::KINDS[$f->file_kind]" :src="$f->url()" />
                 @empty
                     <x-dl::empty-state title="No image yet" message="Upload a master card Excel or a card photo." />
                 @endforelse
-            </div>
+            </x-dl::box>
             @if ($src = $file('SOURCE'))
                 <x-dl::action-bar><x-dl::button size="sm" variant="secondary" icon="download" :label="'Original file: '.$src->original_name" :href="$src->url()" /></x-dl::action-bar>
             @endif

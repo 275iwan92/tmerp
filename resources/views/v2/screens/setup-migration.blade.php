@@ -22,7 +22,7 @@
 @foreach ($groups as $group => $runners)
     <x-dl::card :title="$group">
         @foreach ($runners as $key => $r)
-            <div id="{{ $key }}">
+            <x-dl::box id="{{ $key }}">
                 <x-dl::field.display :label="raw($r['title'])" :value="$r['note']" :source="Src::of('tm2old')" />
                 <x-dl::action-form action="{{ route('v2.migration.run', $key) }}">
                     <x-dl::button icon="fa-play" label="Run Migration" data-dl-confirm="{{ t('Run this migration now?') }}" />
@@ -34,7 +34,7 @@
                         <x-dl::table :columns="['login' => 'Username', 'name' => 'Name', 'password' => 'Password']" :rows="array_map(fn ($s) => ['login' => raw($s['login']), 'name' => raw($s['name']), 'password' => raw($s['password'])], $done['report']['sample'])" :source="Src::of('tm2sys.sec_user')" />
                     @endif
                 @endif
-            </div>
+            </x-dl::box>
         @endforeach
     </x-dl::card>
 @endforeach

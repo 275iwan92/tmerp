@@ -115,10 +115,10 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
                         <input type="hidden" name="wo_id" value="{{ $wo->wo_id }}">
                         <input type="hidden" name="wo_form" value="1">
                         <x-dl::field.select name="kind" label="Priority" :options="['NORMAL' => t('Normal'), 'MOVE_UP' => t('Move up'), 'HOT' => t('Hot job')]" :value="$prio" :hint="isset($header['priority']) ? t('Pending until PROCESS') : null" :source="Src::of('tm2prd.prd_wo.priority')" />
-                        <div id="wo-prio-reason" hidden>
+                        <x-dl::box id="wo-prio-reason" hidden>
                             <x-dl::field.text name="reason" label="Reason" :case-toggle="false" :source="Src::of('tm2prd.prd_plan_decision.reason')" />
                             <x-dl::button size="sm" icon="fa-flag" label="Save" type="submit" />
-                        </div>
+                        </x-dl::box>
                     </x-dl::action-form>
                     @if ($editable)
                         {{-- Earliest start: the engines never start an operation of this Work Order before it. Saved here, used by PROCESS. --}}
@@ -191,7 +191,7 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
     @if ($editable)
         <x-dl::modal id="wo-delete" title="Delete Work Order" size="md" icon="fa-trash" tone="danger">
             <x-dl::action-form action="{{ route('v2.ppic.wo.delete', $wo->wo_id) }}" id="wo-delete-form">
-                <p>{{ t('Delete this Work Order from planning? It leaves the list and its line goes back to the picker. A reason is required.') }}</p>
+                <x-dl::box as="p">{{ t('Delete this Work Order from planning? It leaves the list and its line goes back to the picker. A reason is required.') }}</x-dl::box>
                 <x-dl::field.text name="reason" label="Reason" required :case-toggle="false" :source="Src::of('tm2prd.prd_wo.cancel_reason')" />
             </x-dl::action-form>
             <x-slot:footer>

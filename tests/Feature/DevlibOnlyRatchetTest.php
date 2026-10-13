@@ -37,7 +37,7 @@ class DevlibOnlyRatchetTest extends TestCase
         'style_block' => 1,       // share.blade.php: tema untuk halaman publik
         'inline_style' => 1,
         'v1_component' => 0,      // x-ui.* / x-form.* / x-grid.* / livewire di layar v2
-        'raw_tag' => 35,           // div / span / p / ul / li / h1-h6 / a / img / svg ... di layar (bukan objek DevLib)
+        'raw_tag' => 16,           // div / span / p / ul / li / h1-h6 / a / img / svg ... di layar (bukan objek DevLib)
         'color_literal' => 0,     // #hex / rgb() / hsl() di markup layar (warna = token DevLib)
         'local_class' => 13,       // class="..." selain dl-* dan ikon fa-* di layar
     ];
@@ -45,7 +45,7 @@ class DevlibOnlyRatchetTest extends TestCase
     // Warna literal di CSS lokal (di luar definisi token --x:). Berkas yang tidak terdaftar = baseline 0.
     // devlib.css tidak dihitung: itu rumah token dan objek, tempat warna memang ditulis.
     private const CSS_BASELINE = [
-        'packages/mockup-parts/resources/assets/css/mockup-parts.css' => 34,
+        'packages/mockup-parts/resources/assets/css/mockup-parts.css' => 27,
         'packages/mockup-parts/resources/assets/css/prodev.css' => 214,
         'resources/css/app.css' => 82,
         'resources/css/ledger.css' => 42,

@@ -34,7 +34,7 @@
                 ]"
                 :rows="$rows"
                 :signatures="[['Handed Over By', 'Customer / Courier'], ['Received By', 'Warehouse'], ['Acknowledged By', 'PPIC / Sales']]">
-                <x-slot:notes><b>{{ t('Notes') }}:</b> {{ $pv->i_notes ?: t('Customer-owned material for the Customer Order above; not company stock.') }}</x-slot:notes>
+                <x-slot:notes><x-dl::box as="b">{{ t('Notes') }}:</x-dl::box> {{ $pv->i_notes ?: t('Customer-owned material for the Customer Order above; not company stock.') }}</x-slot:notes>
             </x-dl::print-out>
         </x-dl::box>
     </x-dl::box>

@@ -101,7 +101,7 @@
         <x-dl::card title="Dieline & 3D preview" description="Locked — same as the Master Product.">
             <x-dl::cols>
                 @foreach ($doc['components'] as $c)
-                    <div><b>{{ $c['name'] }}</b><x-mp::sales.part-visual :part="$c" :types="Sales::dielineTypes()" height="300px" /></div>
+                    <x-dl::box><x-dl::box as="b">{{ $c['name'] }}</x-dl::box><x-mp::sales.part-visual :part="$c" :types="Sales::dielineTypes()" height="300px" /></x-dl::box>
                 @endforeach
             </x-dl::cols>
             @if ($doc['components'])

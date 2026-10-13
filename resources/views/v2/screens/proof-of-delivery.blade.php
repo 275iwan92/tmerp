@@ -29,13 +29,13 @@
         $kpi = ProofOfDelivery::kpi(CarbonImmutable::today());
         $prev = ProofOfDelivery::kpi(CarbonImmutable::today()->subMonthNoOverflow());
     @endphp
-    <div class="dl-kpis">
+    <x-dl::box class="dl-kpis">
         <x-dl::kpi label="Delivery promise kept (this month)" :value="$kpi['pct'] ?? 0" format="percent" :previous="$prev['pct']" :target="100" icon="fa-handshake" tone="success"
             :hint="raw($kpi['kept'].' / '.$kpi['total']).' shipments'" />
         @foreach ($kpi['by_dept'] as $dept => $n)
             <x-dl::kpi :label="'Missed: '.raw(t($dept))" :value="$n" good-when="down" icon="fa-triangle-exclamation" tone="danger" />
         @endforeach
-    </div>
+    </x-dl::box>
     <br>
     {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Sales\ProofOfDeliveryListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
     @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\ProofOfDeliveryListGrid]])

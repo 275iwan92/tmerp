@@ -80,7 +80,7 @@
                 <x-dl::field.text name="revise_reason" label="Revision reason" required :value="old('revise_reason', $inq?->revise_reason)" placeholder="e.g. change the long-side artwork — customer request" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_reason')" />
                 <x-dl::field.text name="design_number" label="New Design No." :value="old('design_number', $inq?->design_number ?? $doc['design_no'])" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.design_number')" />
             </x-dl::form.row>
-            <div data-rv-scope><x-dl::field.checkboxes name="revise_scope" label="Revision scope (more than one allowed) — only the selected blocks can be changed" :options="array_map(fn ($s) => t($s), InquiryDerivedWriter::SCOPES)" :value="$scope" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_scope')" /></div>
+            <x-dl::box data-rv-scope><x-dl::field.checkboxes name="revise_scope" label="Revision scope (more than one allowed) — only the selected blocks can be changed" :options="array_map(fn ($s) => t($s), InquiryDerivedWriter::SCOPES)" :value="$scope" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_scope')" /></x-dl::box>
         </x-dl::card>
 
         <x-dl::card title="Revision differences (before → after)" description="Recorded automatically on Save; also shown on the ProDev and ProCost screens so they know what must be redone.">
@@ -101,7 +101,7 @@
                     </x-dl::block>
                 @else
                     <x-dl::cols>
-                        <div>
+                        <x-dl::box>
                             <x-mp::sales.part-visual :part="$master + ['artwork' => $p['artwork'], 'artwork_inner' => $p['artwork_inner']]" :types="Sales::dielineTypes()" height="300px" />
                             <x-dl::block legend="Artwork" data-rv-block="ARTWORK" :disabled="$locked || ! $on('ARTWORK')">
                                 <x-dl::form.row cols="2">
@@ -109,8 +109,8 @@
                                     <x-dl::field.upload :name="$n.'[artwork_inner]'" label="New artwork (inside)" accept=".jpg,.jpeg,.png" :source="Src::of('tm2sdi.iqp_part.artwork_inner_path')" />
                                 </x-dl::form.row>
                             </x-dl::block>
-                        </div>
-                        <div>
+                        </x-dl::box>
+                        <x-dl::box>
                             <x-dl::block legend="Dimension (mm)" data-rv-block="DIMENSION" :disabled="$locked || ! $on('DIMENSION')">
                                 <x-dl::form.row cols="3">
                                     <x-dl::field.decimal :name="$n.'[dims][product_length]'" label="L (length)" :value="$dim($p, 'product_length')" :source="Src::of('tm2sdi.iqp_part.dieline_spec.dims')" />
@@ -133,7 +133,7 @@
                                 <input type="hidden" name="{{ $n }}[finishings][]" value="">
                                 <x-dl::field.checkboxes :name="$n.'[finishings]'" label="Finishing" :options="$finOptions" :value="$p['finishings']" :source="Src::of('tm2sdi.iqp_part_finishing')" />
                             </x-dl::block>
-                        </div>
+                        </x-dl::box>
                     </x-dl::cols>
                 @endif
             </x-dl::card>
