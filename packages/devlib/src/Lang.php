@@ -816,6 +816,16 @@ final class Lang
         'lbl.315' => ['Bagian', 'Sections'],
         'lbl.316' => ['Perbesar satu layar', 'Maximize'],
         'lbl.317' => ['Kembalikan', 'Restore'],
+        // Production Output (layar entry hasil produksi di mesin), 2026-10-13.
+        'od.perhour' => ['TARGET PER JAM', 'TARGET PER HOUR'], 'od.qty' => ['TARGET QTY', 'TARGET QTY'], 'od.duration' => ['TARGET DURASI', 'TARGET DURATION'],
+        'od.unit_h' => ['/jam', '/hour'], 'od.hours' => ['jam', 'h'], 'od.minutes' => ['mnt', 'min'],
+        'od.estimate' => ['Estimasi hasil', 'Estimated output'], 'od.running' => ['jalan', 'running'], 'od.paused' => ['jeda', 'paused'], 'od.stopped' => ['selesai', 'stopped'],
+        'od.st_idle' => ['Menunggu', 'Waiting'], 'od.st_setup' => ['Setup', 'Setup'], 'od.st_prod' => ['Produksi', 'Production'], 'od.st_pause' => ['Jeda', 'Paused'], 'od.st_done' => ['Selesai', 'Done'],
+        'od.jobs' => ['Daftar Job', 'List of Jobs'], 'od.qc' => ['QC — Input Qty Hasil', 'QC — Input Result Qty'], 'od.save' => ['SIMPAN HASIL', 'SAVE RESULT'],
+        'od.saved' => ['Tersimpan: good :g · bad :b · progres :p%', 'Saved: good :g · bad :b · progress :p%'], 'od.yield' => ['yield :y%', 'yield :y%'],
+        'od.need' => ['Isi GOOD atau BAD dulu.', 'Enter GOOD or BAD first.'], 'od.done' => ['Tersimpan: +:g good, +:b bad untuk :j.', 'Saved: +:g good, +:b bad for :j.'],
+        'od.zoom' => ['klik untuk zoom', 'click to zoom'], 'od.nopicture' => ['Dieline dan artwork belum ada di Master Card job ini.', 'This job has no dieline and artwork in its Master Card yet.'],
+        'od.empty' => ['Belum ada job crew Anda yang dikonfirmasi. Job muncul di sini saat PPIC Planning meng-APPLY rencana ke jadwal berlaku untuk mesin Anda.', 'No job of your crew is confirmed yet. Jobs appear here when PPIC Planning applies a plan to the live schedule for your machine.'],
     ];
 
     public static function extend(array $dict): void

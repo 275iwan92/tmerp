@@ -22,10 +22,8 @@ Route::prefix('v2/ppic')->name('v2.ppic.')->middleware('module:PROD')->group(fun
     Route::post('/kanban-move', [PpicController::class, 'kanbanMove'])->name('kanban-move');
     Route::post('/sheet-save', [PpicController::class, 'sheetSave'])->name('sheet-save');
     Route::post('/wo/create', [PpicController::class, 'createWo'])->name('wo.create');
-    Route::post('/operator/{op}/play', [PpicController::class, 'opPlay'])->name('op.play');
-    Route::post('/operator/{op}/pause', [PpicController::class, 'opPause'])->name('op.pause');
-    Route::post('/operator/{op}/stop', [PpicController::class, 'opStop'])->name('op.stop');
-    Route::post('/operator/{op}/quantity', [PpicController::class, 'opQuantity'])->name('op.quantity');
+    Route::post('/output/{op}/timer', [PpicController::class, 'outputTimer'])->name('output.timer');
+    Route::post('/output/{op}/result', [PpicController::class, 'outputResult'])->name('output.result');
     Route::get('/operator/{op}/problem', [PpicController::class, 'opProblem'])->name('op.problem');
     Route::post('/learn/run', [PpicController::class, 'learnRun'])->name('learn.run');
     Route::post('/learn/revert', [PpicController::class, 'learnRevert'])->name('learn.revert');

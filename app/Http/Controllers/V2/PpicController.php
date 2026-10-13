@@ -326,74 +326,40 @@ final class PpicController extends Controller
         return redirect(route('v2.screen', 'production-wo').'?id='.$wo)->with('v2_flash', t('Output recorded.'));
     }
 
-    // ------------------------------------------------------------------ operator screen (tablet at the machine)
+    // ------------------------------------------------------------------ Production Output (tablet at the machine)
 
-    private function operatorBack(int $machine, ?string $flash = null): RedirectResponse
+    /** Play / Pause / Stop of one timer (setup | prod); answers the state of both timers so the screen redraws. Every crew member may act; the action is logged. */
+    public function outputTimer(Request $r, int $op, OperatorTimerService $timer): JsonResponse
     {
-        $r = redirect(route('v2.screen', 'production-operator').'?machine='.$machine);
-
-        return $flash ? $r->with('v2_flash', $flash) : $r;
-    }
-
-    private function operatorOp(int $op): PrdWoOperation
-    {
-        return PrdWoOperation::findOrFail($op);
-    }
-
-    public function opPlay(int $op, OperatorTimerService $timer): RedirectResponse
-    {
-        $o = $this->operatorOp($op);
+        $d = $r->validate(['timer' => ['required', 'in:setup,prod'], 'action' => ['required', 'in:play,pause,stop']]);
         try {
-            $kind = $timer->play($op, $this->login());
+            $state = $timer->act($op, $d['timer'], $d['action'], $this->login());
         } catch (\DomainException $e) {
-            return $this->operatorBack((int) $o->machine_id)->withErrors(['timer' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 422);
         }
-
-        return $this->operatorBack((int) $o->machine_id, $kind === 'SETUP' ? t('Setup timer started.') : t('Run timer started.'));
-    }
-
-    public function opPause(Request $r, int $op, OperatorTimerService $timer): RedirectResponse
-    {
-        $o = $this->operatorOp($op);
-        $d = $r->validate(['reason' => ['required', 'string']], [], ['reason' => t('Reason')]);
-        try {
-            $timer->pause($op, $d['reason'], $this->login());
-        } catch (\DomainException $e) {
-            return $this->operatorBack((int) $o->machine_id)->withErrors(['timer' => $e->getMessage()]);
-        }
-        // Machine problem: go straight to a Breakdown Maintenance request filled with this machine and Work Order.
-        if ($d['reason'] === 'MACHINE') {
-            return redirect($this->problemUrl($o));
-        }
-
-        return $this->operatorBack((int) $o->machine_id, t('Timer paused.'));
-    }
-
-    public function opStop(Request $r, int $op, OperatorTimerService $timer): RedirectResponse
-    {
-        $o = $this->operatorOp($op);
-        $d = $r->validate(['good' => ['required', 'numeric', 'min:0'], 'waste' => ['nullable', 'numeric', 'min:0'], 'reject' => ['nullable', 'numeric', 'min:0'],
-            'scrap_type_id' => ['nullable', 'integer'], 'change_kind' => ['nullable', 'string']], [], ['good' => t('Good quantity')]);
-        $sum = $timer->stop($op, $d, $this->login());
         Ppic::forget();
 
-        return $this->operatorBack((int) $o->machine_id, tf('Job stopped: setup :s min, run :r min, pause :p min.', ['s' => $sum['setup'], 'r' => $sum['run'], 'p' => $sum['pause']]));
+        return response()->json(['timers' => $state]);
     }
 
-    public function opQuantity(Request $r, int $op, OperatorTimerService $timer): RedirectResponse
+    /** SIMPAN HASIL: GOOD and BAD are added to what is saved for the operation. */
+    public function outputResult(Request $r, int $op, OperatorTimerService $timer): JsonResponse
     {
-        $o = $this->operatorOp($op);
-        $d = $r->validate(['qty' => ['required', 'numeric', 'min:0.01']], [], ['qty' => t('Quantity')]);
-        $timer->addQuantity($op, (float) $d['qty'], $this->login());
+        $d = $r->validate(['good' => ['nullable', 'numeric', 'min:0'], 'bad' => ['nullable', 'numeric', 'min:0']]);
+        try {
+            $saved = $timer->saveResult($op, (float) ($d['good'] ?? 0), (float) ($d['bad'] ?? 0), $this->login());
+        } catch (\DomainException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
         Ppic::forget();
 
-        return $this->operatorBack((int) $o->machine_id, t('Quantity recorded.'));
+        return response()->json(['saved' => $saved]);
     }
 
     /** Problem button: the Maintenance Request form with machine, Work Order and symptom filled in. */
     public function opProblem(int $op): RedirectResponse
     {
-        return redirect($this->problemUrl($this->operatorOp($op)));
+        return redirect($this->problemUrl(PrdWoOperation::findOrFail($op)));
     }
 
     private function problemUrl(PrdWoOperation $op): string

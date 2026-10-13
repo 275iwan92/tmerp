@@ -1,24 +1,37 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Timer operator di mesin: dua timer per operasi (SETUP dan PRODUCTION), Play / Pause / Stop, dan simpan hasil Good / Bad.
+ * Sumber hulu  : Antrean CONFIRMED dari PPIC Planning (prd_wo_operation); durasi dari prd_operation_time_log; Stop dari prd_output_action_log.
+ * Input        : Operasi WO, timer (setup | prod), aksi (play | pause | stop), qty good / bad, login pelaku.
+ * Output       : prd_operation_time_log (segmen SETUP / RUN / PAUSE), prd_wo_operation (task_status, actual_start / actual_finish / actual_setup_min),
+ *                prd_wo_operation_output + _defect (hasil), prd_output_action_log (satu baris per aksi, lewat OutputActionLog).
+ * Dipakai oleh : PpicController::outputTimer / outputResult (layar Production Output), Ppic::shopFloor (cermin PPIC), ProductionOutput.
+ * Status       : Aktif di mockup (ddt*).
+ */
+
 declare(strict_types=1);
 
 namespace App\Services\Scheduling\Operator;
 
+use App\Models\Prd\PrdOutputActionLog;
 use App\Models\Prd\PrdWoOperation;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The operator timer at the machine: Play / Pause / Stop on the confirmed queue, written to prd_operation_time_log.
- * One timer runs per machine at a time. Play on a waiting job starts SETUP, Play again starts RUN, Pause records a reason, Stop closes the job
- * with good / waste / reject quantities. Quantities go to the same output tables the Work Order screen uses (no second output table);
- * the time log feeds Monitoring and LearningEngine.
+ * One timer runs per machine at a time. Play on one timer pauses whatever else runs on that machine; Stop locks that timer.
+ * Time is the sum of the log segments of its kind (prd_operation_time_log); quantities go to the same output tables the Work Order
+ * screen uses (no second output table). Every action also writes one row to prd_output_action_log in the same transaction.
  */
 final class OperatorTimerService
 {
     public const PAUSE_REASONS = ['MATERIAL' => 'Waiting material', 'BREAK' => 'Break', 'MACHINE' => 'Machine problem', 'QUALITY' => 'Quality hold', 'CREW' => 'Waiting crew', 'OTHER' => 'Other'];
 
-    public const CHANGE_KINDS = ['COLOR' => 'Colour change', 'INK_TYPE' => 'Ink type change', 'SUBSTRATE' => 'Substrate change', 'SIZE' => 'Size change', 'PLATE' => 'Plate change', 'DIE' => 'Die change'];
+
+    /** Timer on the screen => kind written to prd_operation_time_log (and prefix of its log actions: SETUP_PLAY, RUN_STOP, ...). */
+    public const TIMERS = ['setup' => 'SETUP', 'prod' => 'RUN'];
 
     private function log()
     {
@@ -38,105 +51,161 @@ final class OperatorTimerService
     }
 
     /**
-     * Play: waiting job -> SETUP; SETUP -> RUN; PAUSE -> back to what it was before the pause.
+     * State of both timers of several operations: state idle | run | pause | stop, seconds worked, first start, stop time.
+     * Stop is read from the action log (a stopped timer is locked); a legacy operation already DONE counts as stopped.
      *
-     * @throws \DomainException when another job already has a running timer on this machine
+     * @param  list<int>  $ids
+     * @return array<int, array<string, array{state: string, seconds: int, first: ?string, stop: ?string}>>
      */
-    public function play(int $operationId, string $operator): string
+    public function timersFor(array $ids): array
     {
-        $op = PrdWoOperation::findOrFail($operationId);
-        $machineId = (int) $op->machine_id;
-        $open = $this->open($machineId);
-        if ($open && (int) $open->operation_id !== $operationId) {
-            throw new \DomainException(t('Another job has a running timer on this machine. Pause or Stop it first.'));
+        if ($ids === []) {
+            return [];
         }
+        $segments = $this->log()->whereIn('operation_id', $ids)->orderBy('log_id')->get()->groupBy('operation_id');
+        $stops = PrdOutputActionLog::query()->whereIn('operation_id', $ids)->whereIn('action', OutputActionLog::STOPS)->get(['operation_id', 'action', 'acted_at'])
+            ->groupBy('operation_id');
+        $done = DB::connection('tm2prd')->table('prd_wo_operation')->whereIn('operation_id', $ids)->where('task_status', 'DONE')->pluck('operation_id')->flip();
+        $now = CarbonImmutable::now();
 
-        $next = 'SETUP';
-        if ($open) {
-            $prior = $this->log()->where('operation_id', $operationId)->where('kind', '!=', 'PAUSE')->orderByDesc('log_id')->value('kind');
-            $next = $open->kind === 'SETUP' ? 'RUN' : ($open->kind === 'PAUSE' ? ($prior ?: 'RUN') : $open->kind);
-            if ($open->kind === 'RUN') {
-                return 'RUN';
+        $out = [];
+        foreach ($ids as $id) {
+            foreach (self::TIMERS as $timer => $kind) {
+                $segs = ($segments[$id] ?? collect())->where('kind', $kind);
+                $stop = ($stops[$id] ?? collect())->firstWhere('action', $kind.'_STOP');
+                $seconds = (int) $segs->sum(fn ($s) => max(0, CarbonImmutable::parse($s->started_at)->diffInSeconds($s->ended_at ? CarbonImmutable::parse($s->ended_at) : $now, false)));
+                $running = $segs->contains(fn ($s) => $s->ended_at === null);
+                $locked = $stop || ($kind === 'RUN' && isset($done[$id]));
+                $out[$id][$timer] = [
+                    'state' => $locked ? 'stop' : ($running ? 'run' : ($segs->isNotEmpty() ? 'pause' : 'idle')),
+                    'seconds' => $seconds,
+                    'first' => $segs->isNotEmpty() ? CarbonImmutable::parse($segs->first()->started_at)->toIso8601String() : null,
+                    'stop' => $stop ? CarbonImmutable::parse($stop->acted_at)->toIso8601String() : null,
+                ];
             }
-            $this->close($open);
-        } elseif ($this->log()->where('operation_id', $operationId)->where('kind', 'RUN')->exists()) {
-            $next = 'RUN';
         }
 
-        $this->begin($op, $next, null, $operator);
-        $this->markRunning($op);
-
-        return $next;
+        return $out;
     }
 
-    /** @throws \DomainException when there is no running timer for this job */
-    public function pause(int $operationId, string $reason, string $operator): void
+    /** @return array<string, array{state: string, seconds: int, first: ?string, stop: ?string}> */
+    public function timers(int $operationId): array
     {
-        $op = PrdWoOperation::findOrFail($operationId);
-        $open = $this->open((int) $op->machine_id);
-        if (! $open || (int) $open->operation_id !== $operationId || $open->kind === 'PAUSE') {
-            throw new \DomainException(t('There is no running timer to pause for this job.'));
-        }
-        if (! isset(self::PAUSE_REASONS[$reason])) {
-            $reason = 'OTHER';
-        }
-        $this->close($open);
-        $this->begin($op, 'PAUSE', $reason, $operator);
+        return $this->timersFor([$operationId])[$operationId];
     }
 
     /**
-     * Stop: close the timer, record good output and the waste / reject lines, finish the operation.
+     * Job status shown in LIST OF JOBS from the two timers: setup | prod | pause | done | idle.
+     * Setup stopped but production not started yet reads as pause (the machine waits).
      *
-     * @param  array{good: float, waste?: float, reject?: float, scrap_type_id?: ?int, change_kind?: ?string}  $q
-     * @return array<string, float|int>
+     * @param  array<string, array{state: string}>  $t
      */
-    public function stop(int $operationId, array $q, string $operator): array
+    public static function statusKey(array $t): string
     {
-        $op = PrdWoOperation::findOrFail($operationId);
-        $open = $this->open((int) $op->machine_id);
-        if ($open && (int) $open->operation_id === $operationId) {
-            $this->close($open);
-        }
-        $good = max(0.0, (float) ($q['good'] ?? 0));
-        $waste = max(0.0, (float) ($q['waste'] ?? 0));
-        $reject = max(0.0, (float) ($q['reject'] ?? 0));
+        $a = $t['setup']['state'];
+        $b = $t['prod']['state'];
 
-        $prd = DB::connection('tm2prd');
-        $prd->transaction(function () use ($op, $q, $good, $waste, $reject, $operator, $prd) {
-            $outputId = $prd->table('prd_wo_operation_output')->insertGetId([
-                'operation_id' => $op->operation_id, 'qty_good' => $good, 'notes' => 'Stop (operator timer)', 'recorded_by' => $operator, 'recorded_at' => now(), 'created_at' => now(),
-            ]);
-            foreach ([['WASTE', $waste, null], ['REJECT', $reject, $q['scrap_type_id'] ?? null]] as [$category, $qty, $scrapId]) {
-                $scrap = $scrapId ?: $prd->table('prd_scrap_type')->where('category', $category)->orderBy('type_id')->value('type_id');
-                if ($qty > 0 && $scrap) {
-                    $prd->table('prd_wo_operation_output_defect')->insert(['output_id' => $outputId, 'scrap_type_id' => $scrap, 'qty' => $qty, 'created_at' => now()]);
-                }
-            }
-            if (! empty($q['change_kind']) && isset(self::CHANGE_KINDS[$q['change_kind']])) {
-                $this->log()->where('operation_id', $op->operation_id)->where('kind', 'SETUP')->update(['change_kind' => $q['change_kind']]);
-            }
-            $op->forceFill(['actual_finish' => now(), 'actual_setup_min' => (int) $this->log()->where('operation_id', $op->operation_id)->where('kind', 'SETUP')->sum('minutes'), 'updated_by' => $operator]);
-            if ($op->task_status === 'ASSIGNED' || $op->task_status === 'PENDING') {
-                $op->task_status = 'RUNNING';
-            }
-            if ($op->canTransitionTo('DONE')) {
-                $op->task_status = 'DONE';
-            }
-            $op->save();
-        });
-
-        return $this->summary($operationId) + ['good' => $good, 'waste' => $waste, 'reject' => $reject];
+        return match (true) {
+            $a === 'run' => 'setup',
+            $b === 'run' => 'prod',
+            $b === 'stop' => 'done',
+            $a === 'pause', $b === 'pause', $a === 'stop' => 'pause',
+            default => 'idle',
+        };
     }
 
-    /** A checkpoint of good quantity during the run (the Add quantity button). */
-    public function addQuantity(int $operationId, float $qty, string $operator): void
+    /**
+     * Play / Pause / Stop of one timer. Only one timer runs on a machine: Play closes whatever else is open on this machine (it
+     * becomes paused), Pause starts a PAUSE segment, Stop closes the timer for good (and Stop of production finishes the operation).
+     *
+     * @return array<string, array{state: string, seconds: int, first: ?string, stop: ?string}> both timers afterwards
+     *
+     * @throws \DomainException when the move is not allowed
+     */
+    public function act(int $operationId, string $timer, string $action, string $operator): array
     {
-        if ($qty <= 0) {
-            throw new \DomainException(t('Enter a quantity above zero.'));
+        $kind = self::TIMERS[$timer] ?? throw new \DomainException(t('Unknown timer.'));
+        if (! in_array($action, ['play', 'pause', 'stop'], true)) {
+            throw new \DomainException(t('Unknown action.'));
         }
-        DB::connection('tm2prd')->table('prd_wo_operation_output')->insert([
-            'operation_id' => $operationId, 'qty_good' => $qty, 'notes' => 'Checkpoint (operator timer)', 'recorded_by' => $operator, 'recorded_at' => now(), 'created_at' => now(),
-        ]);
+        $op = PrdWoOperation::findOrFail($operationId);
+
+        DB::connection('tm2prd')->transaction(function () use ($op, $timer, $kind, $action, $operator) {
+            $before = $this->timers((int) $op->operation_id)[$timer]['state'];
+            if ($before === 'stop') {
+                throw new \DomainException(t('This timer is stopped and locked.'));
+            }
+            $open = $this->open((int) $op->machine_id);
+            if ($open && (int) $open->operation_id !== (int) $op->operation_id) {
+                throw new \DomainException(t('Another job has a running timer on this machine. Pause or Stop it first.'));
+            }
+            if ($action === 'pause' && $before !== 'run') {
+                throw new \DomainException(t('There is no running timer to pause for this job.'));
+            }
+            if ($action === 'play' && $before === 'run') {
+                return;
+            }
+
+            if ($open) {
+                $this->close($open);
+            }
+            if ($action === 'play') {
+                $this->begin($op, $kind, null, $operator);
+                $this->markRunning($op);
+            } elseif ($action === 'pause') {
+                $this->begin($op, 'PAUSE', 'OTHER', $operator);
+            } else {
+                $this->finish($op, $kind, $operator);
+            }
+            $after = $action === 'play' ? 'run' : ($action === 'pause' ? 'pause' : 'stop');
+            OutputActionLog::record($op, $kind.'_'.strtoupper($action), ['before' => $before, 'after' => $after], $operator);
+        });
+
+        return $this->timers($operationId);
+    }
+
+    /**
+     * SIMPAN HASIL: Good and Bad are added to what is saved (accumulative). Bad is stored as a reject line (reason "Lainnya").
+     *
+     * @return array{good: float, bad: float} totals saved for the operation
+     *
+     * @throws \DomainException when both are zero or negative
+     */
+    public function saveResult(int $operationId, float $good, float $bad, string $operator): array
+    {
+        if ($good < 0 || $bad < 0 || ($good == 0.0 && $bad == 0.0)) {
+            throw new \DomainException(t('Enter GOOD or BAD first.'));
+        }
+        $op = PrdWoOperation::findOrFail($operationId);
+        $prd = DB::connection('tm2prd');
+
+        $prd->transaction(function () use ($op, $good, $bad, $operator, $prd) {
+            $before = $this->results((int) $op->operation_id);
+            $outputId = $prd->table('prd_wo_operation_output')->insertGetId([
+                'operation_id' => $op->operation_id, 'qty_good' => $good, 'notes' => 'Entry (Production Output)', 'recorded_by' => $operator, 'recorded_at' => now(), 'created_at' => now(),
+            ]);
+            if ($bad > 0) {
+                $scrap = $prd->table('prd_scrap_type')->where('category', 'REJECT')->where('activate', 1)->orderByRaw("type_name = 'Lainnya' desc")->orderBy('type_id')->value('type_id');
+                if (! $scrap) {
+                    throw new \DomainException(t('No reject reason is set up for BAD quantity.'));
+                }
+                $prd->table('prd_wo_operation_output_defect')->insert(['output_id' => $outputId, 'scrap_type_id' => $scrap, 'qty' => $bad, 'created_at' => now()]);
+            }
+            OutputActionLog::record($op, 'SAVE_RESULT', ['before' => $before, 'add' => ['good' => $good, 'bad' => $bad], 'after' => $this->results((int) $op->operation_id)], $operator);
+        });
+
+        return $this->results($operationId);
+    }
+
+    /** Good and bad quantity saved so far for one operation. @return array{good: float, bad: float} */
+    public function results(int $operationId): array
+    {
+        $prd = DB::connection('tm2prd');
+        $good = (float) $prd->table('prd_wo_operation_output')->where('operation_id', $operationId)->sum('qty_good');
+        $bad = (float) $prd->table('prd_wo_operation_output as o')->join('prd_wo_operation_output_defect as d', 'd.output_id', '=', 'o.output_id')
+            ->where('o.operation_id', $operationId)->sum('d.qty');
+
+        return ['good' => $good, 'bad' => $bad];
     }
 
     /** Minutes by kind and the good quantity so far for one operation. @return array{setup: int, run: int, pause: int, good: float} */
@@ -147,6 +216,23 @@ final class OperatorTimerService
 
         return ['setup' => $min('SETUP'), 'run' => $min('RUN'), 'pause' => $min('PAUSE'),
             'good' => (float) DB::connection('tm2prd')->table('prd_wo_operation_output')->where('operation_id', $operationId)->sum('qty_good')];
+    }
+
+    /** Stop: close the open segment; Stop of production finishes the operation, Stop of setup stores the setup minutes. */
+    private function finish(PrdWoOperation $op, string $kind, string $operator): void
+    {
+        $setupMinutes = (int) round($this->timers((int) $op->operation_id)['setup']['seconds'] / 60);
+        $op->forceFill(['actual_setup_min' => $setupMinutes, 'updated_by' => $operator]);
+        if ($kind === 'RUN') {
+            $op->actual_finish = now();
+            if ($op->task_status === 'ASSIGNED' || $op->task_status === 'PENDING') {
+                $op->task_status = 'RUNNING';
+            }
+            if ($op->canTransitionTo('DONE')) {
+                $op->task_status = 'DONE';
+            }
+        }
+        $op->save();
     }
 
     private function begin(PrdWoOperation $op, string $kind, ?string $reason, string $operator): void

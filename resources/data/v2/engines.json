@@ -8729,10 +8729,10 @@
     {
         "class": "App\\Services\\Scheduling\\Operator\\OperatorTimerService",
         "file": "app/Services/Scheduling/Operator/OperatorTimerService.php",
-        "lines": 174,
+        "lines": 260,
         "entries": [
             {
-                "method": "play",
+                "method": "act",
                 "static": false,
                 "params": [
                     {
@@ -8741,49 +8741,13 @@
                         "default": null
                     },
                     {
-                        "name": "operator",
-                        "type": "string",
-                        "default": null
-                    }
-                ],
-                "returns": "string",
-                "note": null
-            },
-            {
-                "method": "pause",
-                "static": false,
-                "params": [
-                    {
-                        "name": "operationId",
-                        "type": "int",
-                        "default": null
-                    },
-                    {
-                        "name": "reason",
+                        "name": "timer",
                         "type": "string",
                         "default": null
                     },
                     {
-                        "name": "operator",
+                        "name": "action",
                         "type": "string",
-                        "default": null
-                    }
-                ],
-                "returns": "void",
-                "note": null
-            },
-            {
-                "method": "stop",
-                "static": false,
-                "params": [
-                    {
-                        "name": "operationId",
-                        "type": "int",
-                        "default": null
-                    },
-                    {
-                        "name": "q",
-                        "type": "array",
                         "default": null
                     },
                     {
@@ -8796,7 +8760,7 @@
                 "note": null
             },
             {
-                "method": "addQuantity",
+                "method": "saveResult",
                 "static": false,
                 "params": [
                     {
@@ -8805,7 +8769,12 @@
                         "default": null
                     },
                     {
-                        "name": "qty",
+                        "name": "good",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "bad",
                         "type": "float",
                         "default": null
                     },
@@ -8815,7 +8784,33 @@
                         "default": null
                     }
                 ],
-                "returns": "void",
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "timers",
+                "static": false,
+                "params": [
+                    {
+                        "name": "operationId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "results",
+                "static": false,
+                "params": [
+                    {
+                        "name": "operationId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
                 "note": null
             },
             {
@@ -8836,35 +8831,40 @@
         "name": "Operator Timer",
         "group": "Production",
         "mode": "flow",
-        "purpose": "Play, Pause and Stop at the machine: records real setup, run and pause time and the quantities of each job.",
+        "purpose": "Play, Pause and Stop of the SETUP and PRODUCTION timers at the machine, and SAVE RESULT: records real setup, run and pause time and the good / bad quantities of each job, with a log row for every action.",
         "inputs": [
             [
                 "operationId",
-                "The job in the confirmed queue."
+                "The job in the confirmed queue of the crew machine and process."
             ],
             [
-                "reason",
-                "Why the timer is paused: waiting material, break, machine problem, quality hold, waiting crew, other."
+                "timer, action",
+                "Which timer (setup or production) and what to do: play, pause or stop."
             ],
             [
-                "good, waste, reject",
-                "Quantities at Stop, with the scrap type of the reject and what changed at setup."
+                "good, bad",
+                "Quantities of SAVE RESULT, added to what is already saved."
             ]
         ],
         "outputs": [
             [
                 "Time log",
-                "One row per segment: setup, run or pause with its reason."
+                "One row per segment: setup, run or pause."
             ],
             [
                 "Output",
-                "Good quantity and waste / reject lines in the production output tables."
+                "Good quantity and bad (reject) lines in the production output tables."
+            ],
+            [
+                "Action log",
+                "One row per action: when, who, from which host, and the value before and after."
             ]
         ],
         "steps": [
-            "One timer runs per machine at a time; Play on a waiting job starts setup, Play again starts the run.",
-            "Pause closes the segment and opens a pause with the reason; Play continues the kind it was.",
-            "Stop closes the timer, saves the quantities, adds the setup minutes to the operation and finishes it."
+            "One timer runs per machine at a time; Play on one timer pauses the other.",
+            "Pause closes the segment and opens a pause; Play continues that timer.",
+            "Stop locks that timer; Stop of production adds the setup minutes to the operation and finishes it.",
+            "SAVE RESULT adds good and bad to the saved quantities; progress = good / target qty, yield = good / (good + bad)."
         ],
         "reads": [
             "tm2prd.prd_wo_operation"
@@ -8873,10 +8873,11 @@
             "tm2prd.prd_operation_time_log",
             "tm2prd.prd_wo_operation",
             "tm2prd.prd_wo_operation_output",
-            "tm2prd.prd_wo_operation_output_defect"
+            "tm2prd.prd_wo_operation_output_defect",
+            "tm2prd.prd_output_action_log"
         ],
         "used": [
-            "Operator Queue"
+            "Production Output"
         ]
     },
     {
