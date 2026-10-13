@@ -443,6 +443,12 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-promise{display:contents}
 /* pembungkus objek form khusus tanpa kotak: isinya tetap anak langsung alur halaman */
 .mp-flat{display:contents}
+/* read-only dieline (Planning): the size / flap / hole editor is hidden, values are shown by the screen */
+.dl-dieline[data-dl-dieline-x].dl-dieline--ro .dl-dieline__side{display:none}
+
+/* Work Order form: every tab panel has the same height, longer content scrolls inside it (switching tabs does not move the page). */
+.wo-tabs > .dl-tabs__panel{height:580px;overflow:auto}
+.mp-flowmap{overflow-x:auto;border:1px solid var(--dl-border);border-radius:var(--dl-radius);background:var(--dl-surface)}.mp-flowmap img{display:block;min-width:1000px;width:100%;height:auto}
 
 /* REMARK Production Output (x-mp::production.output-desk): layar entry hasil produksi di mesin; mengikuti preview "Entry Output Produksi". */
 .mp-od{--mp-od-panel:#d6e9f9;--mp-od-panel-b:#9cc6ea;--mp-od-setup:#e2f3df;--mp-od-setup-b:#74c06b;--mp-od-prod:#dcecfa;--mp-od-prod-b:#5ba3e0;--mp-od-good:#dff2dc;--mp-od-good-b:#6fc069;--mp-od-bad:#fbe1e3;--mp-od-bad-b:#e58a92;--mp-od-play:#2fa84f;--mp-od-pause:#2a6fd6;--mp-od-stop:#e0392f;max-width:980px;margin-inline:auto}

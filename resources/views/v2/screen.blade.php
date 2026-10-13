@@ -1,3 +1,11 @@
+{{-- REMARK
+Tujuan       : Kerangka halaman layar v2: breadcrumb, flash, isi layar, panel tinjau.
+Sumber hulu  : Layar yang dipilih (resources/views/v2/screens/*), Crumb.
+Input        : Slug layar dan data dari controller.
+Output       : Halaman HTML lengkap; tombol aksi breadcrumb dari Crumb::actionsHtml.
+Dipakai oleh : routes/v2.php (v2.screen).
+Status       : Aktif.
+--}}
 @extends('v2.layout', ['title' => t($screen['label']), 'bodyClass' => 'dl-page-body'])
 @section('body')
     @if ($screen['side'] ?? false)
@@ -8,13 +16,17 @@
     @php
         // Isi layar dirender dulu supaya layar bisa menyebut identitas dokumennya lewat Crumb::set() untuk breadcrumb.
         \App\Support\V2\Crumb::set(null);
+        \App\Support\V2\Crumb::actions(null);
+        \App\Support\V2\Crumb::status(null);
         $screenBody = $built ? view($screen['view'] ?? 'v2.screens.'.$screen['slug'], ['screen' => $screen])->render() : null;
     @endphp
     <div class="dl-cat">
-        <div class="dl-cat__nav">
+        <div @class(['dl-cat__nav', 'has-actions' => \App\Support\V2\Crumb::actionsHtml() !== null])>
             {{-- Modul/Grup = buka Layer Menu di cabang itu; nama layar = kembali ke grid (DevLib Breadcrumb menu + current). --}}
             <x-dl::breadcrumb menu :items="[t($screen['module']) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]"
                 :current="\App\Support\V2\Crumb::current()" />
+            @if (\App\Support\V2\Crumb::statusHtml() !== null)<div class="dl-cat__status">{!! \App\Support\V2\Crumb::statusHtml() !!}</div>@endif
+            @if (\App\Support\V2\Crumb::actionsHtml() !== null)<div class="dl-cat__actions">{!! \App\Support\V2\Crumb::actionsHtml() !!}</div>@endif
         </div>
         @if ($built)
             {!! $screenBody !!}

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Grid sel mirip spreadsheet; mendukung links (sel terhitung), reasonOnSave, reorderUrl.
+ * Sumber hulu  : Komponen generik DevLib.
+ * Input        : columns, rows, saveUrl, reorderUrl, reasonOnSave, links; autoSave, addLabel, deleteUrl/deleteLabel, resetUrl/resetLabel, searchable, showCount; kolom lockSaved + lockFilled + emptyText.
+ * Output       : Config JSON untuk sheet.js; Save mengirim {changed, reason}.
+ * Dipakai oleh : x-dl::lookup-grid; tab Bill of Process dan Bill of Material.
+ * Status       : Aktif (DevLib).
+ */
+
 namespace Devlib\Components;
 
 // Grid spreadsheet (perilaku DataTables Editor + AutoFill + KeyTable, buatan sendiri -- Editor asli berbayar).
@@ -7,6 +17,8 @@ namespace Devlib\Components;
 // dengan Excel, pegangan isi di pojok seleksi (salin / lanjutkan deret angka), Ctrl+Z / Ctrl+Y, Delete kosongkan.
 // columns: [['key','label','type' => text|number|money|select|date|time|check,'options','required','readonly','width']]
 // 'emptyWarn' => true: sel kosong diberi warna peringatan (terjemahan yang belum diisi di Translation Dictionary).
+// 'lockFilled' => true (dengan lockSaved): baris tersimpan hanya terkunci bila selnya SUDAH berisi; sel kosong masih bisa dipilih.
+// 'emptyText' => teks sel pilihan yang masih kosong (mis. 'Process not set').
 // 'lockSaved' => true: kolom kunci (kode) hanya bisa diisi di baris BARU; di baris yang sudah tersimpan selnya terkunci
 //   (kode sudah dirujuk data lain -- baris cukup dinonaktifkan).
 // Kolom teks: badge aa/Aa/AA di sel yang diedit (seperti x-dl::field.text), diingat per kolom; 'case' => uppercase|capitalize = awal.
@@ -30,6 +42,18 @@ class Sheet extends DevlibComponent
         public bool $lookup = false,
         public ?string $saveUrl = null,
         public array $stats = [],
+        public bool $addRows = true,   // false = rows come from elsewhere (e.g. BOP from ProDev): no "+ Row"
+        public ?string $reorderUrl = null,   // set = rows can be dragged to change the order; POST {order: [ids], reason}
+        public ?string $reasonOnSave = null, // set = Save asks one required reason first (this text) and posts it with the rows
+        public array $links = [],            // [['when' => [keys], 'set' => key, 'a' => key, 'op' => '-'|'+', 'b' => key, 'min' => 0]]: cell computed from other cells
+        public bool $autoSave = false,       // true (with saveUrl) = every edited cell is saved at once; no Undo / Save buttons. A reason is asked when the server says reason_required
+        public ?string $addLabel = null,     // text of the add-row button (default "Row"); a new row is saved by autoSave when its required cells are filled
+        public ?string $deleteUrl = null,    // set = a "Delete row" button: the selected saved rows are POSTed ({ids, reason}) and removed; reason_required asks a reason
+        public bool $searchable = true,      // false = no Search box (small sheets that are always read whole)
+        public bool $showCount = true,       // false = no "N rows" counter
+        public ?string $deleteLabel = null,  // text of the delete button (default "Delete row"); with deleteUrl the button is danger and enabled only after a row number is clicked
+        public ?string $resetUrl = null,     // set = a RESET button: POST {dry:true} returns {message} for the confirmation, POST {} returns {rows, message}
+        public ?string $resetLabel = null,   // text of the reset button (default "Reset")
     ) {}
 
     // Jumlah baris yang cocok dengan satu kotak statistik: ['label', 'where' => [kolom => nilai | [nilai, ...]], 'tone'].
@@ -58,7 +82,7 @@ class Sheet extends DevlibComponent
 
             return $c;
         }, $this->columns), 'rowKey' => $this->rowKey, 'lookup' => $this->lookup,
-            'saveUrl' => $this->saveUrl, 'csrf' => $this->saveUrl ? csrf_token() : null];
+            'saveUrl' => $this->saveUrl, 'reorderUrl' => $this->reorderUrl, 'reasonOnSave' => $this->reasonOnSave, 'autoSave' => $this->autoSave && (bool) $this->saveUrl, 'deleteUrl' => $this->deleteUrl, 'resetUrl' => $this->resetUrl, 'links' => $this->links, 'csrf' => ($this->saveUrl || $this->reorderUrl) ? csrf_token() : null];
     }
 
     public function render()
@@ -74,17 +98,21 @@ class Sheet extends DevlibComponent
                 @endif
                 @if ($lookup)
                 <div class="dl-sheet__bar">
-                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search...') }}" data-s-search aria-label="{{ \Devlib\Lang::text('Search') }}"></div>
-                    <span class="dl-sheet__info" data-s-info></span>
+                    @if ($searchable)<div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search...') }}" data-s-search aria-label="{{ \Devlib\Lang::text('Search') }}"></div>@endif
+                    @if ($showCount)<span class="dl-sheet__info" data-s-info></span>@endif
                     <span class="dl-print__spacer"></span>
-                    <x-dl::button variant="secondary" size="sm" icon="new" :label="\Devlib\Lang::text('Row')" data-s-add />
+                    @if ($addRows)<x-dl::button variant="secondary" size="sm" icon="new" :label="\Devlib\Lang::text($addLabel ?: 'Row')" data-s-add />@endif
+                    @if ($deleteUrl)<x-dl::button :variant="$deleteLabel ? 'danger' : 'secondary'" size="sm" icon="delete" :label="\Devlib\Lang::text($deleteLabel ?: 'Delete row')" :disabled="(bool) $deleteLabel" data-s-del-srv />@endif
+                    @if ($resetUrl)<x-dl::button variant="secondary" size="sm" icon="undo" :label="\Devlib\Lang::text($resetLabel ?: 'Reset')" data-s-reset />@endif
+                    @unless ($autoSave && $saveUrl)
                     <x-dl::button variant="secondary" size="sm" icon="undo" label="Undo" data-s-revert />
                     <x-dl::button preset="save" size="sm" label="Save" data-s-save />
+                    @endunless
                 </div>
                 @else
                 <div class="dl-sheet__bar">
                     @if ($title)<b>{{ $title }}</b>@endif
-                    <x-dl::button variant="secondary" size="sm" icon="new" :label="\Devlib\Lang::text('Row')" data-s-add />
+                    @if ($addRows)<x-dl::button variant="secondary" size="sm" icon="new" :label="\Devlib\Lang::text('Row')" data-s-add />@endif
                     <x-dl::button variant="secondary" size="sm" icon="delete" label="Delete Row" data-s-del />
                     <x-dl::icon-button icon="undo" title="Undo (Ctrl+Z)" data-s-undo />
                     <x-dl::icon-button icon="fa-rotate-right" title="Redo (Ctrl+Y)" data-s-redo />

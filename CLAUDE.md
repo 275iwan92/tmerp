@@ -1,8 +1,35 @@
+> **ATTENTION ENGINE (Jo 2026-10-13): baca `docs/ENGINE-ATTENTION.md` sebelum menyentuh engine (ProDev / ProCost / solver PPIC); daftar butir terbuka ATTENTION-ENGINE-01..08 supaya tidak terlewat.**
+
+# INI BISNIS OFFSET PRINTING. SEMUA DATA DUMMY, MULAI DARI INQUIRY, WAJIB PUNYA MASTER CARD, ARTWORK, DAN DIELINE DENGAN UKURAN YANG JELAS (P x L x T, UKURAN DATAR, mm).
+
+> User 2026-10-12. Tidak ada produk / inquiry / CO / baris pengiriman / WO dummy tanpa Master Card lengkap. Setiap layar plan (WO, jadwal, simulasi, cek engine)
+> menampilkan Master Card (gambar dieline / artwork, ukuran, bahan, warna, proses) sebagai acuan berpikir officer, tanpa scroll. Berkas Master Card asli milik user:
+> `docs/attachments/MC-*.xlsx` dan `docs/attachments/mastercard/`. Jangan menggambar ulang dieline; pakai berkas user apa adanya.
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 # Konteks Proyek ERP CV. Telasih Makmur (Versi 2)
+
+## PRINSIP LAYAR PPIC (user 2026-10-13): SCHEDULING SECEPAT MUNGKIN, SEAKURAT MUNGKIN
+- Secepat mungkin: klik dan interaksi seminimal mungkin, pilihan awal langsung menampilkan data yang relevan, pratinjau dampak seketika, tanpa dialog yang tidak perlu.
+- Seakurat mungkin: angka dan status hanya dari data nyata (tidak mengarang), bentrok mesin/jam/crew/bahan dicek engine di server dan ditandai jelas, waktu start/end dan persen konsisten dari sumber yang sama di semua bagian layar.
+- Pemeriksa tujuan scheduling juga: tidak ada proses BOP yang tidak dikerjakan (laporkan celahnya, jangan menambal diam-diam).
+- Proses BOP tanpa mesin = SUBCON (aturan Jo 13 Okt 2026); sah, jangan ditolak di Confirm dan jangan dilaporkan sebagai celah atau proses yang tidak dikerjakan.
+
+## REMARK PER FILE + INDEKS LAYAR (user 2026-10-13, WAJIB)
+
+> User: *"HAL SEMACAM INI AGAR KAMU TETAP SMART ... KENAPA KAMU DI TIAP CODING GA BERI REMARK SUMMARY, SEHINGGA SETIAP SAYA TANYA KAMU BISA DALAM SATUAN MILLI SECOND BISA MENJAWAB"*
+- **Setiap perubahan kode memperbarui blok REMARK di bagian atas file yang diubah** DAN baris layarnya di `docs/SCREEN-INDEX.md`.
+- Blok REMARK = enam butir: **Tujuan** (satu kalimat), **Sumber hulu** (Inquiry/ProDev/ProCost atau tabel/engine asal), **Input**, **Output**, **Dipakai oleh**, **Status** (dummy/aktif).
+- Sintaks: docblock/komentar PHP `/* REMARK ... */` (jangan menulis `*/` di dalam teks), Blade `{{-- REMARK ... --}}` (tidak ter-render), JS/CSS `/* REMARK ... */`. Tulis teks remark tanpa pola `label="..."`/`title="..."` agar ratchet bahasa tidak memicu.
+- Jawaban "ini untuk apa?" dibaca dari REMARK dan SCREEN-INDEX lebih dulu, bukan dengan membaca ulang kode.
+
+## KODE SEDERHANA, TANPA DEAD CODE (user 2026-10-13, tetap)
+> User: *"Always check and eliminate dead-code every you work. Make sure make it simple code and effective."*
+- Setiap kali bekerja, periksa dan HAPUS dead code pada file yang disentuh (bukan menyisir seluruh repo): fungsi/metode/rute/prop/CSS/JS yang tak lagi dirujuk, variabel tak terbaca, duplikasi.
+- Buktikan dulu tak terpakai (grep di rute, view, JS, tes), lalu hapus (bukan dikomentari); jangan mengubah perilaku; sederhanakan kode berbelit hanya bila perilakunya sama. Yang meragukan (flag URL seperti ?layout=tabs, ?extras=1) jangan dihapus, daftarkan di laporan.
 
 ## CHECK DEVLIB DULU, PAKAI OBJEK (user 2026-10-13, WAJIB di SETIAP layar dan SETIAP prompt)
 
@@ -462,18 +489,16 @@ Lihat `docs/globalgitbranch.md`. Tidak boleh ada branch baru maupun worktree.
    dengan class Tailwind baru):** (a) selesai edit → (b) `npm run build` → (c) baru
    laporkan selesai / minta user cek browser. Kalau ragu apakah class-nya baru,
    build saja — build ini murah (~2 detik) dan tidak merusak apa pun.
-11. **WAJIB commit + push tiap selesai kerja** (keputusan user 2026-08-30,
-   dipertegas 2026-08-31) — bukan cuma saat diminta. Setiap sesi/potongan
-   pekerjaan yang selesai (1 fitur/perbaikan/checklist item) wajib: (a)
-   `git add` file relevan (bukan `-A` membabi buta — cek `git status` dulu,
-   jangan ikutkan file mencurigakan/kredensial), (b) `git commit` dengan
-   pesan jelas per potongan kerja (bukan 1 commit raksasa gado-gado — ini
-   yang jadi titik rollback kalau ada yang salah), (c) `git push` ke GitHub
-   (`origin`) sebagai backup off-machine. Tujuan: histori commit granular =
-   riwayat versi yang bisa di-rollback (`git revert`/`git reset` ke commit
-   sebelum yang bermasalah) kalau ada pekerjaan yang keliru. Tetap ikuti
-   Git Safety Protocol (jangan force-push/reset --hard tanpa izin eksplisit,
-   review diff sebelum commit).
+11. **PERUBAHAN, COMMIT, PUSH, DAN TES — aturan user 2026-10-13 (menggantikan "commit + push tiap selesai kerja")**:
+   - **Seizin pemilik proyek (Jo):** setiap perubahan FLOW dan mockup UI/UX harus seizin Jo. Persetujuan didapat lewat **PREVIEW**
+     (tangkapan layar nyata) + penjelasan singkat yang menyebut: DB dan tabel.kolom tempat menyimpan, APA yang disimpan, dan CARA
+     menyimpan (rumus/aturan). Tanpa persetujuan: jangan commit, jangan push.
+   - **Jo setuju** = commit + push ke GitHub otomatis (a: `git add` file relevan saja, bukan `-A`, cek `git status` dan pisahkan file milik
+     pekerjaan lain; b: pesan commit jelas per potongan kerja dengan baris `Agent:`; c: push ke `origin`). **Jo tidak setuju** = rollback
+     (`git revert`/`git checkout` ke keadaan sebelum perubahan; migrasi dikembalikan dengan `migrate:rollback --path=...`).
+   - **Tes dilakukan sendiri, diam-diam di latar belakang, tanpa memprompt Jo** (Sonnet 5.5 medium), metode bebas selama tidak meminta
+     prompt ke Jo; hanya pada ddt* (transaksi rollback / salinan), tidak menulis ke tm2*/ProDev, dan tidak meng-Confirm WO baru pada data nyata.
+   - Git Safety Protocol tetap: jangan force-push/reset --hard tanpa izin eksplisit; review diff sebelum commit.
 
 12. **SEMUA DATA WAJIB PUNYA INPUTAN** (keputusan user 2026-09-23, tegas:
    *"setiap ada hal yang tidak bisa di input oleh user, kamu HARUS membuatnya,

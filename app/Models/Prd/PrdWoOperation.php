@@ -1,8 +1,19 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Model operasi Work Order (prd_wo_operation): satu langkah BOP di satu mesin dengan jadwal Draft/Live.
+ * Sumber hulu  : Dibuat oleh WoGenerationService dari BOP ProDev; jadwal ditulis AutoPlanRunner / PlanConfirmService / PlanChangeService.
+ * Input        : Kolom operasi, termasuk draft_*, target_*, is_locked, planned_by, pending_move/pending_from/pending_reason.
+ * Output       : Baris operasi untuk Ppic::operations dan layanan penjadwalan.
+ * Dipakai oleh : Seluruh layanan Scheduling/Plan, PpicController, Ppic.
+ * Status       : Aktif; kolom pending_* baru hanya di ddt* sampai rilis.
+ */
+
 namespace App\Models\Prd;
 
 use App\Models\Master\ProdMachine;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -31,6 +42,7 @@ class PrdWoOperation extends Model
         'created_by', 'updated_by',
         'process_id', 'qty_uom', 'qty_out', 'setup_base_min', 'setup_change_min', 'setup_tool_min', 'run_minutes', 'plan_status',
         'draft_machine_id', 'draft_start', 'draft_finish', 'draft_run_id', 'is_locked', 'lock_reason', 'planned_by', 'priority_note',
+        'pending_move', 'pending_from', 'pending_reason', 'crew_work_center_id', 'subcon_supplier_id',
         'gate_material', 'gate_tooling', 'gate_artwork', 'gate_note', 'material_ready_at', 'actual_setup_min',
     ];
 
@@ -165,7 +177,7 @@ class PrdWoOperation extends Model
 
     // Progress kasar dari rentang waktu target (belum ada kolom qty actual per
     // Tier 3) -- DONE/QC_PASSED = 100%, RUNNING = proporsi waktu berlalu, sisanya 0.
-    public function progressPercent(\Carbon\Carbon $now): int
+    public function progressPercent(Carbon $now): int
     {
         if (in_array($this->task_status, ['DONE', 'QC_PASSED'], true)) {
             return 100;
@@ -183,5 +195,24 @@ class PrdWoOperation extends Model
         $elapsed = max(0, $this->target_start->diffInSeconds($now, false));
 
         return (int) max(0, min(100, round($elapsed / $total * 100)));
+    }
+
+    /**
+     * Who does this operation: 'C:<emp_work_center id>' (a crew), 'S:<sup_supplier id>' (a subcontract vendor) or '' (nobody chosen).
+     * Exactly one of crew_work_center_id / subcon_supplier_id is set at a time.
+     */
+    public function assignActor(string $value): void
+    {
+        $id = (int) substr($value, 2);
+        $this->forceFill([
+            'crew_work_center_id' => str_starts_with($value, 'C:') && $id ? $id : null,
+            'subcon_supplier_id' => str_starts_with($value, 'S:') && $id ? $id : null,
+        ])->save();
+    }
+
+    /** The value assignActor() takes back: 'C:12', 'S:5' or ''. */
+    public function actorValue(): string
+    {
+        return $this->crew_work_center_id ? 'C:'.$this->crew_work_center_id : ($this->subcon_supplier_id ? 'S:'.$this->subcon_supplier_id : '');
     }
 }

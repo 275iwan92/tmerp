@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Dasar grid database v2: kolom, filter, aksi baris; newLabel() memberi nama tombol baru per grid.
+ * Sumber hulu  : Model/query dari kelas turunan.
+ * Input        : Definisi kolom dan query dari kelas turunan.
+ * Output       : Data grid untuk x-dl::grid.
+ * Dipakai oleh : Semua grid v2 turunan DbGrid, mis. WorkOrderGrid.
+ * Status       : Aktif.
+ */
+
 namespace App\Support\V2\Grid;
 
 use App\Support\V2\Src;
@@ -385,6 +395,12 @@ abstract class DbGrid
         return $this->v1Route() ? route($this->v1Route()).'?open={id}' : null;
     }
 
+    // Label of the New button; a grid whose New means something specific may say so (the standard stays "+ New Record").
+    public function newLabel(): string
+    {
+        return '+ New Record';
+    }
+
     // Alamat + New Record. Bawaan: layar v1 dengan ?new=1.
     public function newUrl(): ?string
     {
@@ -425,7 +441,7 @@ abstract class DbGrid
                 default => 'none',
             },
             'activeKey' => $this->family() === self::MASTER ? 'active' : null,
-            'newRecord' => $this->newUrl() ? '+ New Record' : null,
+            'newRecord' => $this->newUrl() ? $this->newLabel() : null,
             'newUrl' => $this->newUrl(),
             'openUrl' => $this->openUrl(),
             'toggleUrl' => $this->family() === self::MASTER ? str_replace('__ID__', '{id}', route('v2.grid.toggle', [$this->slug(), '__ID__'])) : null,

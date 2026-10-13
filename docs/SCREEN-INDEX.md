@@ -1,5 +1,7 @@
 # SCREEN-INDEX: satu baris per layar (jawaban "ini untuk apa?" tanpa membaca kode)
 
+> **ATTENTION ENGINE:** butir engine yang menunggu keputusan ada di `docs/ENGINE-ATTENTION.md` (ATTENTION-ENGINE-01..08); layar membaca output engine apa adanya.
+
 > Aturan (CLAUDE.md, user 2026-10-13): setiap perubahan kode memperbarui blok REMARK di file yang diubah
 > DAN baris layarnya di sini. Format REMARK enam butir: Tujuan, Sumber hulu, Input, Output, Dipakai oleh, Status.
 > Aturan DevLib-dulu (CLAUDE.md): layar memakai objek `x-dl::*` / `x-mp::*`; gaya hanya di objek atau token DevLib. Ratchet `DevlibOnlyRatchetTest` menghitung tag mentah, warna literal, kelas lokal; angka hanya boleh turun.
@@ -7,15 +9,43 @@
 > Rute layar v2 = `/v2/s/<slug>` (nama rute `v2.screen`); aksi PPIC = `/v2/ppic/*` (`v2.ppic.*`, modul PROD).
 > Status data: mockup (database ddt*), kecuali disebut lain.
 
-## Process Entry
+## Planning (PPIC)
 
 | Jalur menu | Slug / rute | Tujuan | File utama | Engine / service yang dipakai | Menu |
 |---|---|---|---|---|---|
+| Planning > Work Order | `v2:production-wo` (`?new=1` = picker Create Work Order, `?id=` = Form WO) | Grid WO, pilih baris kirim yang diproses, lalu Form WO (accordion: Master Card, Bill of Process, Bill of Material, Simulation, QUE; Live Schedule pindah ke menu sendiri di bawah Work Order); kolom Machine/Start/Finish Bill of Process ikut berubah langsung saat bar digeser di Simulation (event `dl:plan-sync`; Cancel/Discard mengembalikan); BOM: Release = Available, Purchase = max(0, Required - Release) (aturan Jo 13 Okt); Available = On hand dikurangi SISA booking terbuka semua tahap (Draft/PRE/B2/Held/Confirmed; "bebas dari booking / reserve", keputusan Jo 06:31Z; dibaca di PPIC oleh AvailableStock, view tidak diubah), minimum 0; Gantt: operasi tanpa mesin (subcon, QC, HITUNG, PACK) digambar di grup SUBCON, satu baris per proses berlabel "<proses> · subcon" (usulan, bisa dibalik; crew tidak tampil di Gantt); Sheet BOP dan BOM (Jo 13 Okt 07:08Z, 07:09Z): toolbar hanya ADD / DELETE / RESET (tanpa Search dan "N rows"; DELETE merah, aktif setelah nomor baris diklik; RESET = ambil ulang dari output engine ProDev: baris engine yang dihapus muncul lagi, nilai ubahan (Target, Crew / Subcon, Required, Release) kembali, baris tambahan dibuang, urutan BOP kembali ke urutan ProDev; konfirmasi memuat jumlah; dicatat `prd_plan_decision` event SHEET_RESET; BOM ditolak bila engine tidak memberi baris; WO APPLIED tanpa tombol); semua teks Form WO hitam pekat (aturan dasar Sheet DevLib: teks hitam, latar head dan sel read-only lewat token); kolom Process BOM menyimpan id, tampil nama, sel kosong = "Process not set" (pilih dari proses BOP; terbawa saat PROCESS); Header: input Earliest start (lantai waktu engine, masuk sidik PROCESS); urutan BOP dan Priority dari form ini TERTUNDA sampai PROCESS (bisa di-Discard); Confirm WO = masuk jadwal utama. Kartu angka + legenda Gantt (Simulation, Live Schedule) disembunyikan; `?extras=1` mengembalikan. Bagian ke-6 "QUE every process every machine" (`?open=que`): antrean semua WO aktif per proses+mesin (`Ppic::queue`); operasi tanpa mesin = SUBCON (aturan Jo) muncul sebagai pilihan mesin "SUBCON" dan masuk "All machines"; kolom Machine di Bill of Process menulis "SUBCON". Simulation = campuran semua operasi belum-CONFIRMED (setara, bisa diseret; bar WO yang dibuka diberi kontur), CONFIRMED/Live/WO yang sudah di-Apply terkunci berstripe; panel dampak membandingkan dengan jadwal tersimpan, menyebut WO yang bergeser, bar lain berpindah sebagai pratinjau (hantu di posisi lama); seret = perubahan TERTUNDA ("Add to pending changes", Discard pending changes membatalkan); tombol PROCESS (N) di BAR ATAS Form WO menjalankan rantai penuh sekali (ENGINE BOP: operasi mengikuti BOP; ENGINE BOM: bahan + substitusi; target/setup; gate; jadwal ke Draft) dan hanya menyala bila input berubah atau ada seret tertunda; APPLY TO LIVE SCHEDULE (satu-satunya jalan confirm; tombol Confirm WO di header dihapus) menunggu PROCESS dan mengunci SEMUA operasi WO; APPLY ALL WOs to LIVE SCHEDULE di toolbar Gantt = semua WO draft pada proses+mesin terpilih | `resources/views/v2/screens/production-wo.blade.php`, `app/Http/Controllers/V2/PpicController.php`, `app/Support/V2/Data/Ppic.php`, `app/Support/V2/Grid/Prod/WorkOrderGrid.php` | WoGenerationService, SpecEngine (BOP/BOM), AutoPlanRunner, PlanConfirmService, PlanChangeService, GateService | tampil |
+| Planning > Live Schedule | `v2:production-live` | Pemantauan read-only jadwal yang berlaku: KPI (Operations/Running/Paused/Late/Scheduled), Gantt Process -> Machine (All / All), tabel rincian per operasi (WO, customer, produk, proses, mesin, target, good, bad, progres, rencana vs aktual, status, operator, gate, due). Tanpa tombol ubah; muat ulang untuk data terbaru | `resources/views/v2/screens/production-live.blade.php`, `app/Support/V2/Data/Ppic.php` (`live()`) | prd_wo_operation, prd_wo_operation_output(_defect), prd_operation_time_log | tampil |
+| Planning > PPIC Workspace | `v2:production-scheduling` | Papan jadwal utama (Gantt per mesin, Kanban, prioritas, Undo Confirm) | `resources/views/v2/screens/production-scheduling.blade.php`, `PpicController`, `Ppic` | AutoPlanRunner, PlanConfirmService, PlanChangeService | disembunyikan |
+| Planning > Colour Sequence | `v2:ppic-color-sequence` | Urutan warna cetak; officer menggeser dengan Reason, operator meminta, officer menjawab | `PpicController` (color*), `Ppic` | PlanChangeService | disembunyikan |
+| Planning > Material Planning (MRP) | `v2:material-planning` | Kebutuhan bahan dari CO/WO, stok, PO/PR terbuka | `app/Services/Planning/MaterialPlanningEngine.php` | MaterialPlanningEngine | disembunyikan |
+| Planning > Learning Changes | `v2:production-learning` | Usulan perubahan target dari hasil produksi (belajar, bisa di-revert) | `PpicController::learnRun/learnRevert` | PPIC learning (PpicLearn) | disembunyikan |
+| PPIC Settings > All PPIC Settings / Planning Parameters | `v2:ppic-settings`, `v2:setup-constants` | Parameter perencanaan (jam per shift, lock shift, ambang bottleneck) | `Ppic` (PpicSettings) | PpicSettings | disembunyikan |
 | Process Entry > Production Output | `v2:production-operator` (`?op=` = job aktif; administrator: `?machine=&process=`) | Entry hasil produksi di mesin untuk crew yang login, tanpa grid di depan: Master Card compact (dieline + artwork zoom, target per jam / qty / durasi, info job), timer SETUP dan PRODUCTION (Play/Pause/Stop, satu timer jalan sekali, Stop mengunci), LIST OF JOBS = operasi CONFIRMED mesin + proses crew, QC GOOD / BAD + SIMPAN HASIL (akumulatif); setiap aksi tercatat di `prd_output_action_log` (kapan, siapa, host, sebelum -> sesudah) | `resources/views/v2/screens/production-operator.blade.php`, `app/Support/V2/Data/ProductionOutput.php`, `packages/mockup-parts/src/Components/Production/OutputDesk.php`, `PpicController` (output*) | OperatorTimerService, OutputActionLog, Ppic::operations | disembunyikan |
+| Process Entry > Production Output | `v2:prod-work-order` | Input hasil produksi per operasi | layar prod-work-order | - | tampil |
 
-## Setup > Others (review)
+## Setup (yang sudah ada, ringkas)
 
-| Jalur menu | Slug / rute | Tujuan | File utama | Engine / service yang dipakai | Menu |
-|---|---|---|---|---|---|
-| Setup > Others > MD Review | `v2:setup-md-review` | Gaya blog (`x-dl::review-feed`, huruf besar, teks hitam): satu kartu per berkas .md dengan ringkasan otomatis (`MdDigest`), usulan + alasan Claude, tombol besar Keep / Condense / Discard yang langsung tersimpan; tombol Process with Claude mengantre ke `sys_review_request` | `MdReviewLookup` (`sys_md_review`), `resources/views/v2/screens/setup-review.blade.php` | `ReviewRequestService`, `php artisan review:import`, `review:requests` | tampil |
-| Setup > Others > Old Stories Review | `v2:setup-story-review` | Gaya blog (`x-dl::review-feed`): satu kartu per pesan lama Jo, dibaca utuh, tombol besar Adopt / Later / Ignore yang langsung tersimpan; tombol Process with Claude mengantre | `StoryReviewLookup` (`sys_story_review`), `resources/views/v2/screens/setup-review.blade.php` | `ReviewRequestService`, `php artisan review:import`, `review:requests` | tampil |
+| Jalur menu | Slug | Tujuan | Menu |
+|---|---|---|---|
+| Setup > Constants > Constants | `v2:setup-constants` | Semua `sys_constant` (aturan: setiap nilai punya inputan) | tampil |
+| Setup > Dashboard and Widgets > KPI Targets | `v2:setup-kpi-targets` | Target KPI untuk dashboard pembuka | tampil |
+| Setup > Dashboard and Widgets > Quotes / Daily Quotes | `v2:setup-quotes`, `v2:setup-daily-quotes` | Kutipan harian di layar pembuka | tampil |
+| Setup > Others > MD Review | `v2:setup-md-review` | Gaya blog (`x-dl::review-feed`, huruf besar, teks hitam): satu kartu per berkas .md dengan ringkasan otomatis (`MdDigest`), usulan + alasan Claude, tombol besar Keep / Condense / Discard yang langsung tersimpan; tombol Process with Claude mengantre ke `sys_review_request` | `MdReviewLookup` (`sys_md_review`) | tampil |
+| Setup > Others > Old Stories Review | `v2:setup-story-review` | Gaya blog (`x-dl::review-feed`): satu kartu per pesan lama Jo, dibaca utuh, tombol besar Adopt / Later / Ignore yang langsung tersimpan; tombol Process with Claude mengantre | `StoryReviewLookup` (`sys_story_review`) | tampil |
+| Setup > Help and Support > Help Topics / Help Lines | `v2:setup-help-topics`, `v2:setup-help-lines` | Isi bantuan | tampil |
+| Help & support (F1) > Help Topics | `v2.help`, `resources/views/v2/screens/help.blade.php`, objek `x-dl::help-map` (`App\Support\V2\HelpMap`) | Peta menu Modul > Grup > Layar + panduan layar terpilih; filter modul / jenis / belum ada panduan / cari; F1 membuka panduan layar aktif (`?topic=<slug>`) | tampil |
+| Help & support > Application's Flow | `v2.help?tab=flow`, `help.blade.php` | Peta Alur besar tmerp: gambar Jo + tabel bacaan, prompt, celah (TERBACA/DUGAAN), di atas Flows SALES/COSTING | tampil |
+| Setup > Menu > Menu Setup | `v2:menu-setup` | Atur menu v2 (termasuk hide_in_menu) | tampil |
+
+## Komponen DevLib yang dipakai Form WO
+
+| Komponen | File | Peran |
+|---|---|---|
+| `x-dl::accordion` / `x-dl::accordion-group` | `packages/devlib/src/Components/Accordion*.php`, `js/components/acc-group.js`, `js/core.js` | Bagian lipat dengan ringkasan di header, ingat panel terbuka |
+| `x-dl::gantt` | `packages/devlib/src/Components/Gantt.php`, `js/components/gantt.js` | Gantt; mode linked Process lalu Machine, panel dampak + Reason |
+| `x-dl::queue-board` | `packages/devlib/src/Components/QueueBoard.php`, `js/components/queue-board.js` | Antrean per proses per mesin: Process lalu Machine bertaut, daftar hanya-baca (status, progres, start, end) disaring di browser |
+| `x-dl::lookup-grid` / `x-dl::sheet` | `packages/devlib/src/Components/{LookupGrid,Sheet}.php`, `js/components/sheet.js` | Grid sel BOP/BOM; links (sel terhitung), Reason sekali saat Save |
+
+## Belum tercatat (isi bertahap saat layar disentuh)
+
+Layar v2 lain di luar daftar di atas (Sales, Inventory, HRM, Finance, Maintenance, dst.). Tambahkan baris saat file layarnya diubah.

@@ -1,19 +1,36 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Sumber data baca untuk layar PPIC: operasi, Gantt, simulasi per Process per Machine, Master Card otomatis, Bill of Material per WO.
+ * Sumber hulu  : prd_wo, prd_wo_operation, prd_wo_material, prod_part*, iqp_part, prod_layout_group, prod_process_machine, v_rm_available.
+ * Input        : Id WO atau daftar operasi; cache per request (Ppic::forget() bila data berubah).
+ * Output       : Array siap tampil: operations(), gantt(), simulation()/linkedBoard(), live() (monitor Live Schedule), rowKey() (baris Gantt: mesin, atau SUBCON per proses; tanpa konsep crew), queue() (antrean per proses per mesin), masterCard(), bomSheet(), bopSheet(), stockOf().
+ * Dipakai oleh : PpicController, layar production-wo, ppic-color-sequence, production-scheduling.
+ * Status       : Aktif di mockup (ddt*). Hanya membaca; tidak menulis database.
+ */
+
 declare(strict_types=1);
 
 namespace App\Support\V2\Data;
 
+use App\Models\Master\ProdMasterCard;
 use App\Models\Master\ProdPart;
 use App\Models\Prd\PrdPlanRun;
 use App\Models\Sdi\IqpInquiry;
+use App\Services\MasterCard\MasterCardShape;
 use App\Services\Scheduling\Operator\OperatorTimerService;
+use App\Services\Scheduling\Plan\AutoPlanRunner;
+use App\Services\Scheduling\Plan\AvailableStock;
+use App\Services\Scheduling\Plan\GateService;
 use App\Services\Scheduling\Plan\PlanLoader;
 use App\Services\Scheduling\Plan\PpicSettings;
 use App\Services\Scheduling\Plan\SetupTimeEngine;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Data of the PPIC screens (Production Scheduling with its four views, Monitoring, Work Order). Only reads and shapes data for the
@@ -281,7 +298,7 @@ final class Ppic
                 'setup_base' => $o->setup_base_min, 'setup_change' => $o->setup_change_min, 'setup_tool' => $o->setup_tool_min,
                 'setup' => (int) ($o->setup_base_min ?? 0) + (int) ($o->setup_change_min ?? 0) + (int) ($o->setup_tool_min ?? 0), 'run' => $o->run_minutes,
                 'gates' => $gates, 'gate_note' => $o->gate_note, 'material_ready_at' => $o->material_ready_at ? CarbonImmutable::parse($o->material_ready_at) : null,
-                'due' => $o->due_date ? CarbonImmutable::parse($o->due_date) : null, 'hot' => (bool) $o->is_hot_job, 'locked' => (bool) $o->is_locked, 'tier' => (int) ($o->customer_tier ?: 2),
+                'due' => $o->due_date ? CarbonImmutable::parse($o->due_date) : null, 'hot' => (bool) $o->is_hot_job, 'locked' => (bool) $o->is_locked, 'pending' => (bool) ($o->pending_move ?? false), 'tier' => (int) ($o->customer_tier ?: 2),
                 'customer' => $custId ? ($customers[$custId] ?? null) : null, 'product' => $products[$o->product_id] ?? null, 'part' => $o->part_code,
                 'good' => $done, 'progress' => $qtyOut > 0 ? (int) min(100, round($done / $qtyOut * 100)) : 0,
                 'actual_start' => $o->actual_start ? CarbonImmutable::parse($o->actual_start) : null, 'actual_finish' => $o->actual_finish ? CarbonImmutable::parse($o->actual_finish) : null,
@@ -357,6 +374,17 @@ final class Ppic
 
     // ------------------------------------------------------------------ Gantt
 
+    /**
+     * Row of the Gantt an operation sits on: 'm<machine id>' on a machine; a step without a machine (subcontract, QC, counting, packing -
+     * "no machine = SUBCON", Jo 2026-10-13) gets one row per process, 'p:<PROCESS>', in the SUBCON group (a proposal Jo can undo).
+     *
+     * @param  array<string, mixed>  $op
+     */
+    public static function rowKey(array $op): string
+    {
+        return $op['machine_id'] ? 'm'.$op['machine_id'] : 'p:'.strtoupper((string) $op['process']);
+    }
+
     /** Props for x-dl::gantt. @param list<array<string, mixed>> $ops */
     public static function gantt(array $ops): array
     {
@@ -369,13 +397,13 @@ final class Ppic
         $rowKeys = [];
         $rows = [];
         foreach ($placed as $r) {
-            $key = $r['machine_id'] ? 'm'.$r['machine_id'] : 'm0';
+            $key = self::rowKey($r);
             if (isset($rowKeys[$key])) {
                 continue;
             }
             $rowKeys[$key] = true;
             $load = $r['machine_id'] ? ($loads[$r['machine_id']]['pct'] ?? null) : null;
-            $rows[$key] = ['key' => $key, 'label' => $r['machine_id'] ? $r['machine'] : 'Crew and subcontract', 'section' => $r['machine_id'] ? strtoupper((string) $r['machine_type']) : 'NO MACHINE',
+            $rows[$key] = ['key' => $key, 'label' => $r['machine_id'] ? $r['machine'] : $r['process'].' · subcon', 'section' => $r['machine_id'] ? strtoupper((string) $r['machine_type']) : 'SUBCON',
                 'load' => $load !== null ? (int) round($load) : null, 'bottleneck' => $load !== null && $load >= $threshold];
         }
         $downs = self::downBands($nowH);
@@ -384,8 +412,8 @@ final class Ppic
                 $rows['m'.$mid]['down'] = $bands;
             }
         }
-        // Rows of the same machine type stay together; the crew row goes last.
-        uasort($rows, fn ($a, $b) => [$a['section'] === 'NO MACHINE', $a['section'], $a['label']] <=> [$b['section'] === 'NO MACHINE', $b['section'], $b['label']]);
+        // Rows of the same machine type stay together; the subcontract group goes last.
+        uasort($rows, fn ($a, $b) => [$a['section'] === 'SUBCON', $a['section'], $a['label']] <=> [$b['section'] === 'SUBCON', $b['section'], $b['label']]);
 
         $cats = [];
         $tasks = [];
@@ -398,10 +426,10 @@ final class Ppic
             $gates = array_map(fn ($g) => strtolower($g) === 'ready' ? 'ok' : (strtolower($g) === 'wait' ? 'wait' : 'block'), $r['gates']);
             $elig = array_map(fn ($m) => 'm'.$m, $r['candidates']);
             $tasks[] = array_filter([
-                'id' => $r['op_id'], 'row' => $r['machine_id'] ? 'm'.$r['machine_id'] : 'm0', 'label' => $r['wo_no'], 'process' => $key,
+                'id' => $r['op_id'], 'row' => self::rowKey($r), 'label' => $r['wo_no'], 'process' => $key,
                 'start' => self::hm($s), 'end' => self::hm($e), 'progress' => $r['progress'], 'setup' => $r['setup'] ?: null, 'gates' => $gates,
                 'state' => $r['hot'] ? 'hot' : null, 'risk' => $r['due'] && $r['finish']->greaterThan($r['due']) ? true : null,
-                'locked' => $r['locked'] ?: null, 'forecastEnd' => $forecast, 'eligible' => $r['machine_id'] ? $elig : null,
+                'locked' => $r['locked'] ?: null, 'queued' => $r['pending'] ?: null, 'forecastEnd' => $forecast, 'eligible' => $r['machine_id'] ? $elig : null,
                 'status' => $r['plan_status'] === 'DRAFT' ? 'Draft' : ($r['task_status'] === 'RUNNING' ? 'Running' : null),
             ], fn ($v) => $v !== null && $v !== [] && $v !== false);
             // Running / finished work is not draggable.
@@ -424,6 +452,242 @@ final class Ppic
             'draftLabel' => self::draftRun() ? 'DRAFT' : null, 'resourceLabel' => 'Machine',
             'unscheduled' => count(array_filter($ops, fn ($r) => ! $r['start'] && $r['bucket'] !== 'done')),
         ];
+    }
+
+    /**
+     * Simulation for the Work Order form: the whole schedule in force and Drafts, every other Work Order greyed and locked, this one
+     * as normal bars. Read only; nothing is written (the Draft the engines already prepared is what is shown).
+     *
+     * @return array<string, mixed>
+     */
+    public static function simulation(int $woId): array
+    {
+        // The Draft must reflect the schedule in force now: plan again when a plan was confirmed after the Draft was made.
+        $draft = self::draftRun();
+        $confirmed = self::lastConfirmedRun();
+        if (! $draft || ($confirmed && $confirmed->run_id > $draft->run_id)) {
+            app(AutoPlanRunner::class)->run('EVENT', 'ENGINE');
+            self::forget();
+        }
+        $all = self::operations();
+        $byOp = [];
+        $infoByOp = [];
+        foreach ($all as $r) {
+            $byOp[$r['op_id']] = $r['wo_id'];
+            $infoByOp[$r['op_id']] = $r;
+        }
+        $g = self::gantt($all);
+        $woStatus = DB::connection('tm2prd')->table('prd_wo')->whereIn('wo_id', array_unique(array_values($byOp)))->pluck('wo_status', 'wo_id');
+        foreach ($g['tasks'] as &$t) {
+            // Simulation = every operation that is not CONFIRMED yet, all treated alike (Jo 2026-10-13): full colour, draggable (the server
+            // checks again). CONFIRMED / running / finished / locked operations are a locked backdrop (marked live) so the officer knows
+            // whose job is already fixed. The bars of the Work Order that is open carry their own marker; nobody is dimmed.
+            $o = $infoByOp[$t['id']] ?? null;
+            // A Work Order that was applied to the live schedule is fixed as a whole (even its operations that are still Draft).
+            $applied = $o && ! in_array($woStatus[$o['wo_id']] ?? 'DRAFT', ['DRAFT', 'SIMULATED'], true);
+            $fixed = ! $o || $applied || $o['plan_status'] === 'CONFIRMED' || $o['locked'] || ! empty($t['locked'])
+                || in_array($o['task_status'], array_merge(['RUNNING'], self::DONE), true);
+            if ($fixed) {
+                $t['locked'] = true;
+                $t['live'] = true;
+            } else {
+                $t['movable'] = true;
+            }
+            if (($byOp[$t['id']] ?? null) === $woId) {
+                $t['mine'] = true;
+            }
+        }
+        unset($t);
+
+        return self::linkedBoard($woId, $g);
+    }
+
+    /**
+     * Adds the cascading Process -> Machine choice to the Work Order simulation Gantt: Process = the BOP processes of this Work Order,
+     * Machine = the machines able to run that process (prod_process_machine, active only), every capable machine gets a row even when
+     * idle. Default machine = the one the engine placed the operation on. Also flags this Work Order's bars that overlap another
+     * Work Order's bar on the same machine (clash). Read only.
+     *
+     * @param  array<string, mixed>  $g  result of gantt()
+     * @return array<string, mixed>
+     */
+    public static function linkedBoard(int $woId, array $g): array
+    {
+        $all = self::operations();
+        $mine = array_values(array_filter($all, fn ($r) => $r['wo_id'] === $woId));
+        usort($mine, fn ($a, $b) => $a['seq'] <=> $b['seq']);
+        $procs = [];
+        $pid = [];
+        $placedOn = [];
+        foreach ($mine as $r) {
+            $k = strtoupper($r['process']);
+            $procs[$k] ??= $r['process'];
+            if ($r['process_id']) {
+                $pid[$k] = $r['process_id'];
+            }
+            if ($r['machine_id'] && ! isset($placedOn[$k])) {
+                $placedOn[$k] = 'm'.$r['machine_id'];
+            }
+        }
+        $caps = $pid ? DB::connection('tm2mst')->table('prod_process_machine as c')->join('prod_machine as m', 'm.machine_id', '=', 'c.machine_id')
+            ->where('c.activate', 1)->where('m.activate', 1)->whereIn('c.process_id', array_values($pid))
+            ->orderBy('c.preference_rank')->get(['c.process_id', 'm.machine_id', 'm.machine_code', 'm.machine_name', 'm.machine_type']) : collect();
+        $rows = collect($g['rows'])->keyBy('key');
+        $machines = [];
+        foreach ($procs as $k => $label) {
+            $machines[$k] = [];
+            foreach ($caps->where('process_id', $pid[$k] ?? 0) as $c) {
+                $rk = 'm'.$c->machine_id;
+                if (! $rows->has($rk)) {
+                    $rows[$rk] = ['key' => $rk, 'label' => $c->machine_code.' · '.$c->machine_name, 'section' => strtoupper((string) $c->machine_type)];
+                }
+                $machines[$k][] = $rk;
+            }
+            if (isset($placedOn[$k]) && ! in_array($placedOn[$k], $machines[$k], true)) {
+                $machines[$k][] = $placedOn[$k];
+            }
+        }
+        $g['rows'] = $rows->sortBy(fn ($r) => [$r['section'] === 'SUBCON', $r['section'], $r['label']])->values()->all();
+        // Clash = this Work Order's bar overlaps another Work Order's bar on the same machine.
+        $clash = [];
+        foreach ($mine as $r) {
+            if (! $r['machine_id'] || ! $r['start'] || ! $r['finish']) {
+                continue;
+            }
+            foreach ($all as $o) {
+                if ($o['wo_id'] !== $woId && $o['machine_id'] === $r['machine_id'] && $o['start'] && $o['finish'] && $o['start'] < $r['finish'] && $r['start'] < $o['finish']) {
+                    $clash[$r['op_id']] = $clash[$o['op_id']] = true;
+                }
+            }
+        }
+        $info = [];
+        foreach ($all as $r) {
+            $info[$r['op_id']] = $r;
+        }
+        foreach ($g['tasks'] as &$t) {
+            if (isset($clash[$t['id']])) {
+                $t['clash'] = true;
+            }
+            // Every bar says which Work Order, product and quantity it is (and whether it is the live schedule or a Draft).
+            if ($o = $info[$t['id']] ?? null) {
+                $live = $o['plan_status'] === 'CONFIRMED' || $o['task_status'] === 'RUNNING';
+                // Identity of every bar: Work Order, owner (customer), product, quantity, process, machine, status, time, progress.
+                $t['label'] = $o['wo_no'].' · '.($o['product'] ?: '—').' · '.Locale::number($o['qty'], 0).' · '.($live ? 'Live' : 'Draft');
+                $t['short'] = $o['wo_no'];
+                $t['detail'] = implode(' · ', array_filter([$o['wo_no'], $o['customer'], $o['product'], trim((string) $o['part']),
+                    Locale::number($o['qty'], 0).' '.$o['uom'], $o['process'], $o['machine'] ?: 'SUBCON', $live ? 'Live' : 'Draft',
+                    Locale::dt($o['start']).' → '.Locale::dt($o['finish']), $o['progress'].'%']));
+            }
+        }
+        unset($t);
+        // The board is zoomed on what these machines do (every Work Order's bars on them), so short operations stay readable.
+        $onBoard = collect($g['tasks'])->filter(fn ($t) => collect($machines)->flatten()->contains($t['row']));
+        if ($onBoard->isNotEmpty()) {
+            $hr = fn ($hm) => (int) explode(':', (string) $hm)[0] + ((int) (explode(':', (string) $hm)[1] ?? 0)) / 60;
+            $g['start'] = (int) max(0, floor(($onBoard->map(fn ($t) => $hr($t['start']))->min() - 3) / 6) * 6);
+            $g['end'] = (int) max($g['start'] + 24, ceil(($onBoard->map(fn ($t) => $hr($t['end']))->max() + 6) / 6) * 6);
+            $g['pxPerHour'] = ($g['end'] - $g['start']) * 48 <= 6000 ? 48 : 24;
+        }
+        $first = array_key_first($procs);
+        $g['linked'] = ['processes' => $procs, 'machines' => $machines, 'defaults' => $placedOn + array_map(fn ($m) => $m[0] ?? '', $machines),
+            'process' => $first, 'machine' => $first !== null ? ($placedOn[$first] ?? ($machines[$first][0] ?? '')) : ''];
+        $g['clashes'] = count(array_filter($mine, fn ($r) => isset($clash[$r['op_id']])));
+        $dm = $g['linked']['machine'];
+        $dp = $g['linked']['process'];
+        $onDefault = array_filter($g['tasks'], fn ($t) => $t['row'] === $dm && $t['process'] === $dp);
+        $g['shown'] = ['n' => count($onDefault), 'live' => count(array_filter($onDefault, fn ($t) => ! empty($t['live']))),
+            'draft' => count(array_filter($onDefault, fn ($t) => empty($t['live']))), 'process' => $dp !== null ? ($procs[$dp] ?? '') : '',
+            'machine' => (string) collect($g['rows'])->firstWhere('key', $dm)['label'] ?? ''];
+
+        return $g;
+    }
+
+    /**
+     * Live Schedule monitor (read only): every operation that is CONFIRMED or running, on a Process -> Machine Gantt (All / All by default)
+     * and as one detail table. Good = SUM of Production Output, Bad = SUM of its defect lines, operator from the time log.
+     *
+     * @return array{gantt: array<string, mixed>, rows: list<array<string, mixed>>, kpi: array<string, int>}
+     */
+    public static function live(): array
+    {
+        $prd = DB::connection('tm2prd');
+        $ops = array_values(array_filter(self::operations(), fn ($r) => $r['plan_status'] === 'CONFIRMED' || $r['task_status'] === 'RUNNING'));
+        $ids = array_column($ops, 'op_id');
+        $bad = $prd->table('prd_wo_operation_output as o')->join('prd_wo_operation_output_defect as d', 'd.output_id', '=', 'o.output_id')
+            ->whereIn('o.operation_id', $ids)->selectRaw('o.operation_id, SUM(d.qty) q')->groupBy('o.operation_id')->pluck('q', 'operation_id');
+        $logs = $prd->table('prd_operation_time_log')->whereIn('operation_id', $ids)->orderBy('log_id')->get(['operation_id', 'operator', 'kind', 'ended_at'])->groupBy('operation_id')->map->last();
+        $now = self::now();
+        $status = function (array $o) use ($logs, $now): string {
+            $seg = $logs[$o['op_id']] ?? null;
+
+            return match (true) {
+                $o['bucket'] === 'done' => 'Done',
+                $seg && $seg->ended_at === null && $seg->kind === 'PAUSE' => 'Paused',
+                $o['task_status'] === 'RUNNING' => 'Running',
+                $o['finish'] && ($o['finish']->lessThan($now) || ($o['due'] && $o['finish']->greaterThan($o['due']))) => 'Late',
+                $o['locked'] => 'Locked',
+                default => 'Scheduled',
+            };
+        };
+
+        $g = self::gantt($ops);
+        $by = [];
+        $rows = [];
+        foreach ($ops as $o) {
+            $st = $status($o);
+            $by[$o['op_id']] = $o + ['live_status' => $st];
+            $log = $logs[$o['op_id']] ?? null;
+            $rows[] = ['id' => $o['op_id'], 'wo' => $o['wo_no'], 'customer' => (string) $o['customer'], 'product' => trim((string) $o['product'].' '.(string) $o['part']),
+                'process' => $o['process'], 'machine' => $o['machine'] ?: 'SUBCON', 'target' => $o['qty_out'], 'uom' => $o['uom'], 'good' => $o['good'], 'bad' => (float) ($bad[$o['op_id']] ?? 0),
+                'progress' => $o['progress'], 'plan_start' => $o['start'], 'plan_finish' => $o['finish'], 'actual_start' => $o['actual_start'], 'actual_finish' => $o['actual_finish'],
+                'status' => $st, 'operator' => $log->operator ?? null, 'gates' => $o['gates'], 'due' => $o['due']];
+        }
+        usort($rows, fn ($a, $b) => [$a['status'] === 'Done', $a['plan_start']?->timestamp ?? PHP_INT_MAX] <=> [$b['status'] === 'Done', $b['plan_start']?->timestamp ?? PHP_INT_MAX]);
+
+        $procs = [];
+        $machines = [];
+        foreach ($ops as $o) {
+            $k = strtoupper($o['process']);
+            $procs[$k] = $o['process'];
+            $machines[$k][] = self::rowKey($o);
+        }
+        ksort($procs);
+        foreach ($g['tasks'] as &$t) {
+            $o = $by[$t['id']] ?? null;
+            $t['locked'] = true;
+            $t['live'] = true;
+            if ($o) {
+                $t['short'] = $o['wo_no'];
+                $t['label'] = $o['wo_no'].' · '.($o['product'] ?: '—').' · '.Locale::number($o['qty'], 0).' · '.$o['live_status'];
+                $t['detail'] = implode(' · ', array_filter([$o['wo_no'], $o['customer'], $o['product'], Locale::number($o['qty'], 0).' '.$o['uom'], $o['process'], $o['machine'] ?: 'SUBCON',
+                    $o['live_status'], Locale::dt($o['start']).' → '.Locale::dt($o['finish']), $o['progress'].'%']));
+            }
+        }
+        unset($t);
+        $g['linked'] = ['processes' => $procs, 'machines' => array_map(fn ($m) => array_values(array_unique($m)), $machines), 'defaults' => [], 'process' => '', 'machine' => ''];
+        $count = fn (string $st) => count(array_filter($rows, fn ($r) => $r['status'] === $st));
+
+        return ['gantt' => $g, 'rows' => $rows, 'kpi' => ['total' => count($rows), 'running' => $count('Running'), 'paused' => $count('Paused'), 'late' => $count('Late'), 'scheduled' => $count('Scheduled') + $count('Locked'), 'done' => $count('Done')]];
+    }
+
+    /**
+     * Engine check of one Work Order's operations: a blocked gate or an operation without a start (no machine slot) rejects. The same
+     * result decides APPLY TO LIVE SCHEDULE; it is not shown as a table (engines work in the background).
+     *
+     * @param  list<array<string, mixed>>  $ops
+     * @return array{ok: bool, reason: string}
+     */
+    public static function engineCheck(array $ops): array
+    {
+        $reasons = [];
+        foreach ($ops as $o) {
+            $why = in_array('BLOCK', $o['gates'], true) ? (string) ($o['gate_note'] ?: 'A gate is blocked.') : (! $o['start'] ? 'No machine slot found in the horizon.' : '');
+            if ($why !== '') {
+                $reasons[] = $o['process'].': '.$why;
+            }
+        }
+
+        return ['ok' => $reasons === [] && $ops !== [], 'reason' => $ops === [] ? 'This Work Order has no operations.' : implode(' · ', array_unique($reasons))];
     }
 
     private static function lockUntilHours(float $nowH): float
@@ -673,18 +937,440 @@ final class Ppic
         return ['wo' => $wo, 'ops' => $ops, 'materials' => $mats, 'first' => $ops[0] ?? null, 'part' => self::dielinePart($wo)];
     }
 
-    // ------------------------------------------------------------------ Create Work Order
+    /**
+     * Choices of the Crew / Subcon column of the BOP sheet: crews = HRM work centers (their members are emp_employee_work_center_skill),
+     * subcontract vendors = suppliers flagged is_subcon. Keys 'C:<id>' / 'S:<id>' (see PrdWoOperation::assignActor).
+     *
+     * @return array<string, string>
+     */
+    public static function actorOptions(): array
+    {
+        $m = DB::connection('tm2mst');
+        $o = [];   // the sheet adds its own blank choice
+        foreach ($m->table('emp_work_center')->where('activate', 1)->where('work_center_code', '!=', 'WC-LEGACY-UNMAPPED')->orderBy('work_center_code')->get(['work_center_id', 'work_center_code', 'work_center_name']) as $w) {
+            $o['C:'.$w->work_center_id] = 'Crew · '.$w->work_center_code.' · '.$w->work_center_name;
+        }
+        foreach ($m->table('sup_supplier')->where('is_subcon', 1)->where('activate', 1)->orderBy('supplier_name')->get(['id_supplier', 'supplier_name']) as $s) {
+            $o['S:'.$s->id_supplier] = 'Subcon · '.$s->supplier_name;
+        }
+
+        return $o;
+    }
 
     /**
-     * Delivery plan lines of Confirmed Customer Orders that have no Work Order yet, with how complete their Product Development data is:
-     * "full" = an inquiry with parts (BOP, routing, BOM come across), "simple" = a Work Order without operations is created.
+     * Engine rows the officer deleted from a Work Order (tombstones in prd_plan_decision, event ROW_DELETED, old_value JSON {wo, kind, key}):
+     * kind OP = process id, kind MAT = "role|name". PROCESS must not write them again. @return list<string>
+     */
+    public static function deletedRows(int $woId, string $kind): array
+    {
+        return DB::connection('tm2prd')->table('prd_plan_decision')->where('event', 'ROW_DELETED')->where('old_value', 'like', '{"wo":'.$woId.',"kind":"'.$kind.'"%')
+            ->pluck('old_value')->map(fn ($v) => (string) (json_decode((string) $v, true)['key'] ?? ''))->filter(fn ($k) => $k !== '')->values()->all();
+    }
+
+    /**
+     * Rows the officer added to a Work Order (decision event ROW_ADDED, old_value JSON {wo, kind, key}): kind OP -> operation ids,
+     * kind MAT -> material detail ids. PROCESS keeps them. @return list<int>
+     */
+    public static function addedRows(int $woId, string $kind): array
+    {
+        return DB::connection('tm2prd')->table('prd_plan_decision')->where('event', 'ROW_ADDED')->where('old_value', 'like', '{"wo":'.$woId.',"kind":"'.$kind.'"%')
+            ->pluck('old_value')->map(fn ($v) => (int) (json_decode((string) $v, true)['key'] ?? 0))->filter()->values()->all();
+    }
+
+    /** Process choices of the BOP sheet (Add row): active master processes, id => name. @return array<string, string> */
+    public static function processOptions(): array
+    {
+        return DB::connection('tm2mst')->table('prod_process')->where('activate', 1)->orderBy('routing_seq')->orderBy('process_name')->pluck('process_name', 'id_process')
+            ->mapWithKeys(fn ($n, $id) => [(string) $id => (string) $n])->all();
+    }
+
+    /** Machine labels for the BOP sheet (id => "CODE · name") plus 'subcon' = no machine. @return array<string, string> */
+    public static function machineOptions(): array
+    {
+        $o = ['subcon' => 'SUBCON'];
+        foreach (DB::connection('tm2mst')->table('prod_machine')->orderBy('machine_code')->get(['machine_id', 'machine_code', 'machine_name']) as $m) {
+            $o[(string) $m->machine_id] = $m->machine_code.' · '.$m->machine_name;
+        }
+
+        return $o;
+    }
+
+    /** Machines able to run each process (active capability and machine): process id => [machine id => label]. @return array<string, array<string, string>> */
+    public static function machinesByProcess(): array
+    {
+        $label = self::machineOptions();
+        // every process offers SUBCON (no machine) as a choice; machines follow in preference order
+        $out = array_fill_keys(array_map('strval', array_keys(self::processOptions())), ['subcon' => 'SUBCON']);
+        $rows = DB::connection('tm2mst')->table('prod_process_machine as c')->join('prod_machine as m', 'm.machine_id', '=', 'c.machine_id')
+            ->where('c.activate', 1)->where('m.activate', 1)->orderBy('c.preference_rank')->get(['c.process_id', 'c.machine_id']);
+        foreach ($rows as $r) {
+            $out[(string) $r->process_id][(string) $r->machine_id] = $label[(string) $r->machine_id] ?? '#'.$r->machine_id;
+        }
+
+        return $out;
+    }
+
+    /** Material roles offered by BOM Add row (what the engine itself uses). @return list<string> */
+    public static function materialRoles(): array
+    {
+        return ['KERTAS PLANO', 'SHEET', 'TINTA', 'PLASTIK LAMINASI', 'LEM LAMINASI', 'LEM LAMINASI BAHAN', 'VARNISH UV', 'FOIL HOT PRINT', 'TALI PACK', 'PLASTIK PACK'];
+    }
+
+    /** Rows of the BOP and schedule sheet of one Work Order. Target and Crew / Subcon are the editable cells; Source says whether the officer overrode the target. @return list<array<string, mixed>> */
+    public static function bopSheet(int $woId): array
+    {
+        $d = self::workOrder($woId);
+        if (! $d) {
+            return [];
+        }
+        $last = DB::connection('tm2prd')->table('prd_plan_decision')->where('event', 'TARGET')->whereIn('operation_id', array_column($d['ops'], 'op_id'))
+            ->orderBy('decision_id')->get(['operation_id', 'reason', 'new_value'])->keyBy('operation_id');
+        $gate = ['READY' => 'Ready', 'WAIT' => 'Waiting', 'BLOCK' => 'Blocked'];
+        $actor = DB::connection('tm2prd')->table('prd_wo_operation')->where('wo_id', $woId)->get(['operation_id', 'crew_work_center_id', 'subcon_supplier_id'])
+            ->mapWithKeys(fn ($r) => [(int) $r->operation_id => $r->crew_work_center_id ? 'C:'.$r->crew_work_center_id : ($r->subcon_supplier_id ? 'S:'.$r->subcon_supplier_id : '')]);
+
+        $ops = $d['ops'];
+        usort($ops, fn ($a, $b) => $a['seq'] <=> $b['seq']);
+        // A BOP order that waits for PROCESS is shown at once (the rows move), the schedule columns follow after PROCESS.
+        if ($pending = self::pendingHeader($woId)['order']['ids'] ?? null) {
+            $pos = array_flip(array_map('intval', $pending));
+            usort($ops, fn ($a, $b) => ($pos[$a['op_id']] ?? 9999) <=> ($pos[$b['op_id']] ?? 9999));
+        }
+
+        return array_map(fn ($o) => [
+            // process / machine hold master ids (the sheet shows their names); a name without id (unmatched BOP step) shows as text
+            'id' => $o['op_id'], 'seq' => $o['seq'], 'process' => $o['process_id'] ? (string) $o['process_id'] : (string) $o['process'],
+            'machine' => $o['machine_id'] ? (string) $o['machine_id'] : 'subcon',
+            'qty_in' => Locale::number($o['qty'], 0).' '.$o['uom'], 'qty_out' => Locale::number($o['qty_out'], 0).' '.$o['uom'],
+            'target' => $o['target'] !== null ? round((float) $o['target'], 2) : null,
+            'source' => isset($last[$o['op_id']]) ? 'Override · '.$last[$o['op_id']]->reason : 'Engine',
+            'actor' => $actor[$o['op_id']] ?? '',
+            'setup' => $o['setup'] ?: '—', 'run' => $o['run'] !== null ? Locale::decimal($o['run'] / 60, 2) : '—',
+            'start' => $o['start'] ? Locale::dt($o['start']) : '—', 'finish' => $o['finish'] ? Locale::dt($o['finish']) : '—',
+            'status' => $o['plan_status'] === 'DRAFT' ? 'Draft' : (string) $o['task_status'],
+            'gates' => implode(' / ', array_map(fn ($x) => $gate[$x] ?? $x, $o['gates'])),
+        ], $ops);
+    }
+
+    /**
+     * Bill of Material of one Work Order, ordered by the BOP operation that uses each line ("which process needs which material").
+     * ATTENTION-ENGINE-01 / 02 / 03 / 04 / 05: lihat docs/ENGINE-ATTENTION.md.
+     * Formula (Jo 2026-10-13): Release = Available (an officer value wins, 0..Available), Purchase = max(0, Required - Release).
+     * BEFORE: Release (untouched) = min(Available, Required), limited to 0..Required, Purchase = Required - Release.
+     * Source: GateService::release / purchase. Required comes from the ProDev engine (SpecEngine::figures) and may be edited.
+     * `edited` = differs from the engine defaults.
      *
      * @return list<array<string, mixed>>
      */
-    public static function pendingDeliveries(int $limit = 200): array
+    public static function bomSheet(int $woId): array
+    {
+        $prd = DB::connection('tm2prd');
+        $lines = $prd->table('prd_wo_material')->where('wo_id', $woId)->orderBy('seq_no')->get();
+        if ($lines->isEmpty()) {
+            return [];
+        }
+        $opSeq = $prd->table('prd_wo_operation')->where('wo_id', $woId)->selectRaw('process_id, MIN(seq_no) s')->groupBy('process_id')->pluck('s', 'process_id');
+        $names = DB::connection('tm2mst')->table('prod_process')->whereIn('id_process', $lines->pluck('process_id')->filter()->unique())->pluck('process_name', 'id_process');
+        $stock = self::stockOf($lines->pluck('material_id'));
+        $added = self::addedRows($woId, 'MAT');
+
+        return $lines->map(function ($m) use ($opSeq, $names, $stock, $added) {
+            $req = (float) $m->qty_required;
+            $avail = (float) ($stock[$m->material_id]['available'] ?? 0);
+            $rel = GateService::release($m->qty_release !== null ? (float) $m->qty_release : null, $avail);
+
+            return [
+                'id' => (int) $m->detail_id,
+                'order' => $m->process_id ? ($opSeq[$m->process_id] ?? 9999) : 99999,
+                'process' => $m->process_id && isset($opSeq[$m->process_id]) ? (string) $m->process_id : ($m->process_id ? (string) ($names[$m->process_id] ?? '—').' (not in this BOP)' : ''),
+                'material' => (string) $m->material_name.(in_array((int) $m->detail_id, $added, true) ? ' ✚ added' : ($m->override_reason !== null ? ' ✎ edited (engine: '.Locale::decimal((float) $m->qty_standar, 2).')' : '')),
+                'role' => (string) $m->material_role,
+                'required' => round($req, 2),
+                'uom' => (string) $m->uom,
+                'onhand' => isset($stock[$m->material_id]) ? Locale::decimal($stock[$m->material_id]['onhand'], 2) : '—',
+                'available' => isset($stock[$m->material_id]) ? Locale::decimal($stock[$m->material_id]['available'], 2) : '—',
+                'release' => round($rel, 2),
+                'purchase' => round(GateService::purchase($req, $rel), 2),
+                'avail_qty' => $avail,
+                'edited' => $m->override_reason !== null,
+            ];
+        })->sortBy([['order', 'asc'], ['id', 'asc']])->values()->all();
+    }
+
+    /**
+     * Queue of every process on every machine: what is being worked on or waits there, from all active Work Orders (Running, Confirmed,
+     * Draft; cancelled ones are not loaded). Progress = good quantity recorded for the operation (prd_wo_operation_output, the table
+     * OperatorTimerService::addQuantity writes) against the operation's output quantity. Start = actual start for a Running operation,
+     * else the scheduled start; End = scheduled finish.
+     *
+     * @return array{processes: array<string, string>, machines: array<string, array<string, string>>, rows: list<array<string, mixed>>, process: ?string, machine: string, running: int, queued: int}
+     */
+    public static function queue(?int $currentWoId = null): array
+    {
+        // An operation without a machine is SUBCON (Jo's rule); it is queued under the machine "SUBCON" of its process.
+        $ops = array_values(array_filter(self::operations(), fn ($r) => $r['start'] && $r['finish']
+            && ! in_array($r['task_status'], self::DONE, true)));
+        usort($ops, fn ($a, $b) => $a['start'] <=> $b['start']);
+
+        $processes = [];
+        $pid = [];
+        $rows = [];
+        foreach ($ops as $r) {
+            $k = strtoupper($r['process']);
+            $processes[$k] ??= $r['process'];
+            if ($r['process_id']) {
+                $pid[$k] = $r['process_id'];
+            }
+            $running = $r['task_status'] === 'RUNNING';
+            $rows[] = [
+                'process' => $k, 'machine' => $r['machine_id'] ? 'm'.$r['machine_id'] : 'subcon', 'machine_name' => $r['machine'] ?: 'SUBCON',
+                'status' => $running ? 'Running' : ($r['plan_status'] === 'CONFIRMED' ? 'Confirmed' : 'Draft'),
+                'wo' => $r['wo_no'], 'item' => trim(($r['product'] ?: '—').' · '.($r['part'] ?: '')), 'qty' => Locale::number($r['qty_out'], 0).' '.$r['uom'],
+                // No machine = SUBCON: progress only when output was recorded for it, otherwise null (shown as a dash).
+                'progress' => $r['machine_id'] ? ($running || $r['progress'] > 0 ? $r['progress'] : 0) : ($r['good'] > 0 || $running ? $r['progress'] : null),
+                'start' => Locale::dt($running && $r['actual_start'] ? $r['actual_start'] : $r['start']), 'end' => Locale::dt($r['finish']),
+                'mine' => $currentWoId !== null && $r['wo_id'] === $currentWoId, 'wo_id' => $r['wo_id'],
+            ];
+        }
+        ksort($processes);
+        $machines = [];
+        $label = [];
+        foreach ($rows as $r) {
+            $label[$r['machine']] = $r['machine_name'];
+        }
+        $caps = $pid ? DB::connection('tm2mst')->table('prod_process_machine as c')->join('prod_machine as m', 'm.machine_id', '=', 'c.machine_id')
+            ->where('c.activate', 1)->where('m.activate', 1)->whereIn('c.process_id', array_values($pid))->orderBy('m.machine_code')
+            ->get(['c.process_id', 'm.machine_id', 'm.machine_code', 'm.machine_name']) : collect();
+        foreach ($processes as $k => $name) {
+            $machines[$k] = [];
+            foreach ($caps->where('process_id', $pid[$k] ?? 0) as $c) {
+                $machines[$k]['m'.$c->machine_id] = $c->machine_code.' · '.$c->machine_name;
+            }
+            foreach ($rows as $r) {
+                if ($r['process'] === $k && ! isset($machines[$k][$r['machine']])) {
+                    $machines[$k][$r['machine']] = (string) $r['machine_name'];
+                }
+            }
+        }
+        $first = collect($rows)->firstWhere('status', 'Running') ?? ($rows[0] ?? null);
+
+        return ['processes' => $processes, 'machines' => $machines, 'rows' => $rows, 'process' => $first['process'] ?? array_key_first($processes),
+            'machine' => $first['machine'] ?? '', 'running' => count(array_filter($rows, fn ($r) => $r['status'] === 'Running')), 'queued' => count($rows)];
+    }
+
+    /**
+     * Fingerprint of everything PROCESS depends on for one Work Order: the Work Order (qty, due), its operations (process, order, target,
+     * quantities), its material lines (material, Required, Release, Purchase, substitute), the priority (Hot job / Move up) and the
+     * Inquiry / ProDev part it came from (updated stamps of
+     * the Inquiry part, the ProDev part and its BOP / BOM / ink / finishing rows). A moved bar is NOT part of it (a move is a pending change).
+     */
+    public static function fingerprint(int $woId): string
+    {
+        $prd = DB::connection('tm2prd');
+        $wo = $prd->table('prd_wo')->where('wo_id', $woId)->first(['qty', 'due_date', 'earliest_start', 'source_iqp_part_id', 'is_hot_job', 'priority']);
+        if (! $wo) {
+            return '';
+        }
+        $ops = $prd->table('prd_wo_operation')->where('wo_id', $woId)->orderBy('seq_no')->get(['process_id', 'seq_no', 'rate_band_value', 'qty', 'waste_qty'])->map(fn ($o) => (array) $o)->all();
+        $mats = $prd->table('prd_wo_material')->where('wo_id', $woId)->orderBy('detail_id')->get(['material_id', 'qty_required', 'qty_release', 'qty_purchase', 'is_substituted', 'substitute_material_id'])->map(fn ($o) => (array) $o)->all();
+        $subs = $prd->table('prd_wo_material_substitution')->where('wo_id', $woId)->where('is_active', 1)->orderBy('id')
+            ->get(['original_rawmat_id', 'substitute_rawmat_id', 'approval_status'])->map(fn ($o) => (array) $o)->all();
+        $src = [];
+        if ($wo->source_iqp_part_id) {
+            $iqp = DB::connection('tm2sdi')->table('iqp_part')->where('id_part', $wo->source_iqp_part_id)->first(['updated_at', 'prod_part_id']);
+            $src[] = $iqp?->updated_at;
+            if ($iqp?->prod_part_id) {
+                $m = DB::connection('tm2mst');
+                $src[] = $m->table('prod_part')->where('id_part', $iqp->prod_part_id)->value('updated_at');
+                foreach (['prod_part_process', 'prod_part_material', 'prod_part_ink', 'prod_part_finishing'] as $t) {
+                    // tables without an updated stamp are fingerprinted by their row count
+                    $src[] = Schema::connection('tm2mst')->hasColumn($t, 'updated_at')
+                        ? $m->table($t)->where('part_id', $iqp->prod_part_id)->max('updated_at') : $m->table($t)->where('part_id', $iqp->prod_part_id)->count();
+                }
+            }
+        }
+
+        return sha1(json_encode([(string) $wo->qty, (string) $wo->due_date, (string) $wo->earliest_start, (int) $wo->is_hot_job, (string) $wo->priority, $ops, $mats, $subs, $src]));
+    }
+
+    /** PROCESS is needed: the inputs changed since the last PROCESS (or it never ran), or officer drags are waiting. */
+    public static function processState(int $woId): array
+    {
+        $stored = DB::connection('tm2prd')->table('prd_wo')->where('wo_id', $woId)->value('process_hash');
+        // pending = dragged bars (all) + this Work Order's new BOP order / priority waiting for PROCESS
+        $pending = (int) DB::connection('tm2prd')->table('prd_wo_operation')->where('pending_move', 1)->count() + count(self::pendingHeader($woId));
+        $changed = $stored !== self::fingerprint($woId);
+
+        return ['pending' => $pending, 'changed' => $changed, 'n' => $pending + ($changed ? 1 : 0), 'needed' => $pending > 0 || $changed];
+    }
+
+    /**
+     * Work Orders that APPLY ALL would apply: every Work Order that still has a Draft (not confirmed) operation on this process and
+     * machine. $processKey '' = all processes; $machine '' = all machines; 'subcon' = operations without a machine.
+     *
+     * @return list<array{wo_id: int, wo_no: string}>
+     */
+    public static function applyCandidates(string $processKey, string $machine = ''): array
+    {
+        $out = [];
+        foreach (self::operations() as $r) {
+            $mk = $r['machine_id'] ? 'm'.$r['machine_id'] : 'subcon';
+            if (($processKey !== '' && strtoupper($r['process']) !== strtoupper($processKey)) || ($machine !== '' && $mk !== $machine)) {
+                continue;
+            }
+            if ($r['plan_status'] === 'CONFIRMED' || in_array($r['task_status'], array_merge(['RUNNING'], self::DONE), true)) {
+                continue;
+            }
+            $out[$r['wo_id']] = ['wo_id' => $r['wo_id'], 'wo_no' => $r['wo_no']];
+        }
+        $status = DB::connection('tm2prd')->table('prd_wo')->whereIn('wo_id', array_keys($out))->pluck('wo_status', 'wo_id');
+
+        return array_values(array_filter($out, fn ($x) => in_array($status[$x['wo_id']] ?? '', ['DRAFT', 'SIMULATED'], true)));
+    }
+
+    /** The order / priority change of a Work Order that waits for PROCESS: ['order' => ['ids', 'reason'], 'priority' => ['kind', 'reason']]. @return array<string, array<string, mixed>> */
+    public static function pendingHeader(int $woId): array
+    {
+        $raw = DB::connection('tm2prd')->table('prd_wo')->where('wo_id', $woId)->value('pending_header');
+
+        return (array) json_decode((string) $raw, true);
+    }
+
+    /** True when an officer changed the order of this Work Order's operations away from the ProDev order. */
+    public static function bopOrderChanged(int $woId): bool
+    {
+        $ids = DB::connection('tm2prd')->table('prd_wo_operation')->where('wo_id', $woId)->pluck('operation_id')->all();
+        $last = DB::connection('tm2prd')->table('prd_plan_decision')->where('event', 'RESEQUENCE')->whereIn('operation_id', $ids)->orderByDesc('decision_id')->first();
+        $first = DB::connection('tm2prd')->table('prd_plan_decision')->where('event', 'RESEQUENCE')->whereIn('operation_id', $ids)->orderBy('decision_id')->first();
+
+        return $last && $first && json_decode((string) $last->new_value, true) !== json_decode((string) $first->old_value, true);
+    }
+
+    /**
+     * Usable stock per material straight from the available-stock view (one light query, no MRP run).
+     * Available (Jo 2026-10-13: "bebas dari BOOKING atau RESERVE"; 06:31Z: Draft / PRE bookings count too) = On hand minus the open
+     * bookings of EVERY stage (qty_book - qty_issued, not cancelled / closed; an expired hold does not count), computed in PPIC by
+     * AvailableStock (the view v_rm_available and the booking tables are not changed). Reserve = booking in this schema. A BOM Release
+     * does not book stock, so it does not lower Available. SEBELUM: v_rm_available.qty_available (confirmed bookings only).
+     *
+     * @return array<int, array{onhand: float, available: float}>
+     */
+    public static function stockOf(iterable $materialIds): array
+    {
+        return AvailableStock::of($materialIds);
+    }
+
+    /**
+     * The Master Card of a Work Order, ASSEMBLED automatically from what the upstream modules hold (Inquiry part, ProDev part,
+     * ProDev layout group). Nothing is typed here and nothing is read from a hand-imported card row. Read only.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function masterCard(object $wo): ?array
+    {
+        $pid = (int) ($wo->product_id ?? 0);
+        $m = DB::connection('tm2mst');
+        $product = $pid ? $m->table('prod_product')->where('id_product', $pid)->first() : null;
+        $iqp = ! empty($wo->source_iqp_part_id) ? DB::connection('tm2sdi')->table('iqp_part')->where('id_part', $wo->source_iqp_part_id)->first() : null;
+        $part = $iqp?->prod_part_id ? $m->table('prod_part')->where('id_part', $iqp->prod_part_id)->first() : null;
+        if (! $product && ! $part) {
+            return null;
+        }
+        $mm = fn ($v) => $v ? rtrim(rtrim(number_format((float) $v, 1, '.', ''), '0'), '.') : null;
+        $dims = (array) (json_decode((string) ($iqp->dieline_spec ?? ''), true)['dims'] ?? []);
+        $l = $dims['product_length'] ?? ($product?->cm_length ? $product->cm_length * 10 : null);
+        $w = $dims['product_width'] ?? ($product?->cm_width ? $product->cm_width * 10 : null);
+        $h = $dims['product_height'] ?? ($product?->cm_height ? $product->cm_height * 10 : null);
+        $flatW = $part->flat_w ?? $iqp->flat_w ?? null;
+        $flatH = $part->flat_h ?? $iqp->flat_h ?? null;
+        $layout = $pid ? $m->table('prod_layout_group')->where('product_id', $pid)->orderByDesc('id_layout_group')->first() : null;
+
+        $mats = $part ? $m->table('prod_part_material as pm')->leftJoin('mat_category as c', 'c.id_category', '=', 'pm.category_id')->leftJoin('mat_raw as r', 'r.material_id', '=', 'pm.material_id')
+            ->where('pm.part_id', $part->id_part)->orderBy('pm.layer_seq')->get(['c.category_name', 'r.material_name', 'pm.gram_weight', 'pm.size_p', 'pm.size_l']) : collect();
+        $fin = $part ? $m->table('prod_part_finishing as f')->leftJoin('ref_finishing_type as t', 't.id_finishing_type', '=', 'f.finishing_type_id')->where('f.part_id', $part->id_part)->orderBy('f.seq')->get(['t.finishing_name', 'f.attribute']) : collect();
+        $inks = $part ? $m->table('prod_part_ink')->where('part_id', $part->id_part)->orderBy('pass_seq')->pluck('ink_name')->unique()->all() : [];
+        $proc = $part ? $m->table('prod_part_process')->where('part_id', $part->id_part)->orderBy('step_seq')->pluck('process_name')->all() : [];
+        $art = $part ? $m->table('prod_part_artwork')->where('part_id', $part->id_part)->where('activate', 1)->orderByDesc('version_no')->value('artwork_path') : null;
+        $art = $art ?: ($iqp->artwork_path ?? null);
+        $url = fn (?string $path) => $path && Storage::disk('public')->exists($path) ? asset('storage/'.$path) : null;
+        $customer = $product?->customer_id ? $m->table('cust_customer')->where('id_customer', $product->customer_id)->value('customer_name') : null;
+        $legacy = $pid ? ProdMasterCard::where('product_id', $pid)->orderByDesc('id_master_card')->first() : null;
+        $missing = [];
+        foreach (['dieline' => ! ($iqp?->dieline_spec), 'artwork' => ! $art, 'size (L x W x H)' => ! $l, 'flat size' => ! $flatW, 'material' => $mats->isEmpty(), 'process (BOP)' => $proc === []] as $what => $absent) {
+            if ($absent) {
+                $missing[] = $what;
+            }
+        }
+
+        return [
+            'id' => $legacy?->id_master_card, 'name' => (string) ($product->product_name ?? ''), 'code' => trim(($product->design_no ?? '—').' · '.($product->product_code ?? '—')),
+            'status' => $missing ? 'Incomplete' : 'Complete', 'missing' => $missing, 'customer' => (string) $customer,
+            'dims' => $l ? $mm($l).' × '.$mm($w).' × '.$mm($h).' mm' : '—',
+            'knife' => $layout && $layout->knife_w_cm ? $mm($layout->knife_w_cm * 10).' × '.$mm($layout->knife_h_cm * 10).' mm · '.$layout->up_count.' UP' : 'Layout not generated yet (ProDev)',
+            'print' => $layout && $layout->plano_w_mm ? $mm($layout->plano_w_mm).' × '.$mm($layout->plano_h_mm).' mm' : '—',
+            'flat' => $flatW ? $mm($flatW).' × '.$mm($flatH).' mm' : '—',
+            'area' => $flatW && $flatH ? Locale::number((float) $flatW * (float) $flatH / 100, 0).' cm²' : '—',
+            'flaps' => self::flapsText($dims),
+            'hole' => self::holeText($dims),
+            'join' => '—', 'pack' => $iqp?->pack_qty ? number_format((float) $iqp->pack_qty, 0) : '—',
+            'materials' => $mats->isNotEmpty() ? $mats->map(fn ($x) => trim(($x->material_name ?: $x->category_name ?: '?').($x->gram_weight ? ' '.$mm($x->gram_weight).' gsm' : '').($x->size_p ? ' · '.$mm($x->size_p).' × '.$mm($x->size_l) : '')))->implode(' + ') : '—',
+            'finishing' => $fin->isNotEmpty() ? $fin->map(fn ($x) => trim(($x->finishing_name ?: '?').($x->attribute ? ' ('.$x->attribute.')' : '')))->implode(', ') : '—',
+            'process' => $proc ? implode(' → ', $proc) : '—', 'colours' => $inks ? implode(' ', $inks) : '—',
+            'photo' => null, 'artwork' => $url($art), 'proof' => null, 'mockup' => null,
+            'svg' => self::compactDieline((string) ($iqp->dieline_spec ?? '')),
+        ];
+    }
+
+    /** @param array<string, mixed> $d dims of the Inquiry dieline_spec */
+    private static function flapsText(array $d): string
+    {
+        $v = fn ($k) => isset($d[$k]) && $d[$k] !== '' ? rtrim(rtrim(number_format((float) $d[$k], 1, '.', ''), '0'), '.') : '0';
+
+        return 'GF '.$v('glue_flap').' · Allowance '.$v('flap_extra').' · Hand hole '.$v('hand_hole_width').' · Bleed '.$v('overflow_margin').' mm';
+    }
+
+    /** @param array<string, mixed> $d */
+    private static function holeText(array $d): string
+    {
+        $type = strtoupper((string) ($d['hole_type'] ?? 'NONE'));
+        if ($type === 'NONE' || $type === '') {
+            return 'None';
+        }
+
+        return ($type === 'ROUND' ? 'Round Ø '.($d['hole_w'] ?? '?') : 'Rectangle '.($d['hole_w'] ?? '?').' × '.($d['hole_h'] ?? '?')).' mm';
+    }
+
+    /** Small dieline drawing (SVG) from an Inquiry part dieline_spec; null when the spec has no known type or sizes. */
+    private static function compactDieline(string $spec): ?string
+    {
+        $d = json_decode($spec, true);
+        if (! is_array($d) || empty($d['type_code']) || empty($d['dims'])) {
+            return null;
+        }
+        $svg = MasterCardShape::svg((string) $d['type_code'], (array) $d['dims']);
+
+        return $svg ? str_replace('width="100%" height="100%"', 'width="210" height="135"', $svg) : null;
+    }
+
+    /** Product ids that have a Master Card (linked by product id; no name matching). @return array<int, true> */
+    public static function cardProductIds(): array
+    {
+        $ids = ProdMasterCard::where('status', 'PRODUCT')->whereNotNull('product_id')->pluck('product_id')->map(fn ($i) => (int) $i)->all();
+
+        return array_fill_keys($ids, true);
+    }
+
+    /** Delivery plan lines without a Work Order whose product has no Master Card: not offered for a Work Order until the card exists. */
+    public static function linesWithoutCard(): int
+    {
+        return count(self::pendingDeliveries(500, false)) - count(self::pendingDeliveries(500));
+    }
+
+    /** Delivery plan lines waiting for a Work Order. Only products with a Master Card are offered (the Work Order follows the card). */
+    public static function pendingDeliveries(int $limit = 200, bool $onlyWithCard = true): array
     {
         // Work Orders live in another database: ids with a Work Order are fetched apart, never joined (no cross-connection subquery).
-        $hasWo = DB::connection('tm2prd')->table('prd_wo')->whereNotNull('source_delivery_id')->distinct()->pluck('source_delivery_id')->all();
+        $hasWo = DB::connection('tm2prd')->table('prd_wo')->whereNotNull('source_delivery_id')->where('wo_status', '!=', 'CANCELLED')->distinct()->pluck('source_delivery_id')->all();
         $rows = Cpdel::query()->with(['item.inquiry.parts'])->where('status', 'PLANNED')->whereNull('posted_at')->whereNotIn('id_delivery', $hasWo)
             ->orderBy('ship_date')->limit($limit)->get();
         $customers = DB::connection('tm2mst')->table('cust_customer')->whereIn('id_customer', $rows->pluck('order.customer_id')->filter()->unique())->pluck('customer_name', 'id_customer');
@@ -693,6 +1379,11 @@ final class Ppic
         $byProduct = $products
             ? IqpInquiry::with('parts')->whereIn('product_id', $products)->where('stat_cancel', false)->orderBy('id_inquiry')->get()->keyBy('product_id')
             : collect();
+
+        $cards = $onlyWithCard ? self::cardProductIds() : [];
+        if ($onlyWithCard) {
+            $rows = $rows->filter(fn ($d) => isset($cards[(int) ($d->item?->product_id ?: ($d->item?->inquiry?->product_id ?? 0))]))->values();
+        }
 
         return $rows->map(function ($d) use ($customers, $byProduct) {
             $inq = $d->item?->inquiry ?? ($d->item?->product_id ? $byProduct->get($d->item->product_id) : null);

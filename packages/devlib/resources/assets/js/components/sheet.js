@@ -1,3 +1,12 @@
+/*
+ * REMARK
+ * Tujuan       : Perilaku grid sel: edit, undo, save ke server, sel terhitung (links), tanya Reason sekali saat Save (reasonOnSave).
+ * Sumber hulu  : config JSON dari Sheet.php.
+ * Input        : Edit sel, klik Save/Undo, drag baris, nomor baris (memilih baris untuk DELETE), tombol ADD / DELETE / RESET (resetUrl: dry run lalu konfirmasi dengan jumlah); event dl:plan-sync dari Gantt (kolom start/finish/machine ikut posisi bar).
+ * Output       : POST saveUrl {changed, reason}; render ulang dari baris balasan.
+ * Dipakai oleh : x-dl::sheet dan x-dl::lookup-grid.
+ * Status       : Aktif (DevLib).
+ */
 /* DevLib · Sheet */
 (function (Devlib) {
   'use strict';
@@ -15,6 +24,15 @@
       this.orig = new Map(this.data.map(r => [String(r[this.cfg.rowKey]), {...r}]));
       this.undo = [];
       this.redo = [];
+      // Live link with a Gantt on the same page: read-only cells (start, finish, machine) follow the bar being moved.
+      document.addEventListener('dl:plan-sync', e => {
+        const k = String(e.detail.id), row = this.data.find(r => String(r[this.cfg.rowKey]) === k), o = this.orig.get(k); if (!row || !o) return;
+        this.loaded ??= new Map(); if (!this.loaded.has(k)) this.loaded.set(k, {...o});
+        const base = this.loaded.get(k);
+        // orig follows too, so these read-only cells never count as unsaved edits
+        ['start', 'finish', 'machine'].forEach(f => { if (f in base) row[f] = o[f] = e.detail.cells && e.detail.cells[f] != null ? e.detail.cells[f] : base[f]; });
+        this.render();
+      });
       this.cur = {r: 0, c: this.firstEditable()};
       this.anchor = null;
       this.edit = null;
@@ -27,6 +45,25 @@
       this.caseMode = this.cols.map(c => CASES.includes(c.case) ? c.case : 'none');
       const srch = $(this.el, '[data-s-search]');
       if (srch) srch.addEventListener('input', () => { this.term = srch.value.trim().toLowerCase(); this.render(); });
+      // Row drag (prop reorderUrl): drag a row onto another, ask for a reason, the server returns the rows in their new order.
+      if (this.cfg.reorderUrl) {
+        const draw = this.render.bind(this);
+        this.render = () => { draw(); this.table.querySelectorAll('tbody tr').forEach(tr => { tr.draggable = true; }); };
+        let from = null;
+        const idx = tr => { const td = tr && tr.querySelector('[data-s-rowsel]'); return td ? +td.dataset.sRowsel : null; };
+        this.table.addEventListener('dragstart', e => { from = idx(e.target.closest('tr')); if (from !== null) e.dataTransfer.effectAllowed = 'move'; });
+        this.table.addEventListener('dragover', e => { if (from === null) return; e.preventDefault(); this.table.querySelectorAll('.is-drop').forEach(x => x.classList.remove('is-drop')); e.target.closest('tr')?.classList.add('is-drop'); });
+        this.table.addEventListener('drop', e => {
+          e.preventDefault();
+          const to = idx(e.target.closest('tr'));
+          this.table.querySelectorAll('.is-drop').forEach(x => x.classList.remove('is-drop'));
+          if (from === null || to === null || from === to) { from = null; return; }
+          const order = this.data.map(r => r[this.cfg.rowKey]);
+          order.splice(to, 0, order.splice(from, 1)[0]);
+          from = null;
+          this.commitOrder(order);
+        });
+      }
       // Kotak statistik di atas sheet (prop stats) = saringan: klik menyalakan, klik lagi melepas.
       this.statWhere = null;
       this.el.addEventListener('dl:stat', e => { const box = e.target.closest('[data-dl-stat]'); this.statWhere = e.detail.active && box ? JSON.parse(box.dataset.where || '{}') : null; this.render(); });
@@ -76,14 +113,14 @@
         if (dec) {
           e.preventDefault(); const td = dec.closest('td'), c = +td.dataset.c, col = this.cols[c], steps = this.decSteps(col);
           col._dv = steps[(steps.indexOf(this.decNow(col)) + 1) % steps.length];
-          this.anchor = null; this.cur = {r: +td.dataset.r, c}; this.render(); this.wrap.focus(); if (col._dv === null) this.openPick(); return;
+          this.rowPick = false; this.anchor = null; this.cur = {r: +td.dataset.r, c}; this.render(); this.wrap.focus(); if (col._dv === null) this.openPick(); return;
         }
         const cal = e.target.closest('[data-s-cal]'); if (cal) { e.preventDefault(); const td = cal.closest('td'); this.anchor = null; this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.render(); this.wrap.focus(); this.openPick(); return; }
         const fh = e.target.closest('[data-s-fill]'); if (fh) { e.preventDefault(); this.fill = {...this.rng(), to: this.rng().r1}; return; }
-        const rs = e.target.closest('[data-s-rowsel]'); if (rs) { this.anchor = {r: +rs.dataset.sRowsel, c: 0}; this.cur = {r: +rs.dataset.sRowsel, c: this.cols.length - 1}; this.render(); this.wrap.focus(); return; }
+        const rs = e.target.closest('[data-s-rowsel]'); if (rs) { this.rowPick = true; this.anchor = {r: +rs.dataset.sRowsel, c: 0}; this.cur = {r: +rs.dataset.sRowsel, c: this.cols.length - 1}; this.render(); this.wrap.focus(); return; }
         const td = e.target.closest('td[data-r]'); if (!td || this.edit) return;
         if (e.shiftKey) { if (!this.anchor) this.anchor = {...this.cur}; } else this.anchor = null;
-        this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.drag = true; this.render(); this.wrap.focus();
+        this.rowPick = false; this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.drag = true; this.render(); this.wrap.focus();
       });
       this.table.addEventListener('mouseover', e => {
         const td = e.target.closest('td[data-r]'); if (!td) return;
@@ -112,6 +149,8 @@
           return;
         }
         if (e.target.closest('[data-s-del]')) { const R = this.rng(), n = R.r1 - R.r0 + 1; confirmBox({message: Tf('s_delete_n', {n}), tone: 'danger'}).then(ok => { if (!ok) return; this.data.splice(R.r0, n); this.cur = {r: Math.max(0, Math.min(R.r0, this.data.length - 1)), c: this.cur.c}; this.anchor = null; this.undo.length = 0; this.render(); }); return; }
+        if (e.target.closest('[data-s-del-srv]')) return this.deleteSelected();
+        if (e.target.closest('[data-s-reset]')) return this.resetSheet();
         if (e.target.closest('[data-s-undo]')) { const u = this.undo.pop(); if (u) this.redo.push(this.apply(u, true)); return; }
         if (e.target.closest('[data-s-redo]')) { const u = this.redo.pop(); if (u) this.undo.push(this.apply(u, true)); return; }
         if (e.target.closest('[data-s-save]')) {
@@ -181,7 +220,8 @@
 
     // readonly = kolom hanya-baca; lockSaved = kolom kunci (kode) yang hanya bisa diisi di baris BARU -- baris yang sudah
     // tersimpan terkunci, karena kodenya sudah dirujuk data lain.
-    ro(c, row) { return !!c.readonly || (!!c.lockSaved && !!row && this.orig.has(String(row[this.cfg.rowKey]))); }
+    // lockSaved = locked on saved rows; with lockFilled only a saved cell that already has a value is locked (an empty one can still be chosen)
+    ro(c, row) { return !!c.readonly || (!!c.lockSaved && !!row && this.orig.has(String(row[this.cfg.rowKey])) && (!c.lockFilled || (row[c.key] ?? '') !== '')); }
 
     firstEditable() { const i = this.cols.findIndex(c => !c.readonly); return i < 0 ? 0 : i; }
 
@@ -227,7 +267,7 @@
     }
 
     show(c, v) {
-      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'IDR ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' ? fmt.gridDate(v) : (v ?? '');
+      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'IDR ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? ((v === '' || v == null) && c.emptyText ? c.emptyText : v) ?? '') : c.type === 'date' ? fmt.gridDate(v) : (v ?? '');
     }
 
     // unique: nilai tidak boleh kembar di baris lain (tanpa beda huruf besar/kecil) -- validasi final tetap di server.
@@ -261,23 +301,51 @@
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
         + this.data.map((r, i) => this.hide(r) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.num(c) && !this.int(c) ? 'is-dec' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''} ${c.emptyWarn && (v === '' || v == null) ? 'is-empty' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? (this.int(c) ? `<span class="dl-sheet__spin"><button type="button" data-s-spin="1" tabindex="-1">▲</button><button type="button" data-s-spin="-1" tabindex="-1">▼</button></span>` : this.num(c) ? `<button type="button" class="dl-sheet__cal dl-sheet__dec" data-s-dec tabindex="-1" title="${esc(T('nt_tip'))}">${this.decLabel(c)}</button>` : `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${esc(T(c.type === 'date' ? 's_tip_date' : 's_tip_time'))}"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : 'fa-regular fa-clock'}"></i></button>`) : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="' + esc(T('s_fill_tip')) + '"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
-      sv.disabled = !changed.length;
+      if (sv) sv.disabled = !changed.length;
+      // DELETE (server) is enabled only after a row number was clicked (a whole row is chosen), never by a plain cell click
+      const dl = $(this.el, '[data-s-del-srv]'); if (dl && dl.classList.contains('dl-btn--danger')) dl.disabled = !this.rowPick;
       if (this.lookup) {
-        info.textContent = changed.length ? Tf('s_unsaved', {n: changed.length}) : Tf('g_rows_n', {n: this.data.length}); info.classList.toggle('is-warn', !!changed.length);
+        if (info) { info.textContent = changed.length && !this.cfg.autoSave ? Tf('s_unsaved', {n: changed.length}) : Tf('g_rows_n', {n: this.data.length}); info.classList.toggle('is-warn', !!changed.length && !this.cfg.autoSave); }
         const rv = $(this.el, '[data-s-revert]'); if (rv) rv.disabled = !changed.length;
       } else {
         info.textContent = Tf('s_rows_changed', {n: this.data.length, c: changed.length});
         sv.lastChild.textContent = changed.length ? `Save All (${changed.length})` : 'Save All';
         $(this.el, '[data-s-undo]').disabled = !this.undo.length; $(this.el, '[data-s-redo]').disabled = !this.redo.length;
       }
-      const td = this.cellEl(this.cur.r, this.cur.c); if (td) td.scrollIntoView({block: 'nearest', inline: 'nearest'});
+      // Only follow the cell while the sheet has focus: the first render must not scroll the whole page down to the table.
+      const td = this.cellEl(this.cur.r, this.cur.c); if (td && document.activeElement === this.wrap) td.scrollIntoView({block: 'nearest', inline: 'nearest'});
+    }
+
+    commitOrder(order) {
+      const ask = window.Devlib && window.Devlib.confirm ? window.Devlib.confirm({title: 'Change the sequence', message: 'Move this row? The operations are planned again in the new order. A reason is required.', tone: 'warn', ok: 'Change', reason: true}) : Promise.resolve(window.prompt('Reason'));
+      ask.then(reason => {
+        if (!reason) return;
+        fetch(this.cfg.reorderUrl, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.cfg.csrf || ''},
+          body: JSON.stringify({order, reason: typeof reason === 'string' ? reason : String(reason)})})
+          .then(res => res.json().then(j => ({ok: res.ok, j})))
+          .then(({ok, j}) => {
+            if (!ok || j.error) return toast(j.error || j.message || T('s_save_failed'), 'danger');
+            this.data = j.rows; this.orig = new Map(this.data.map(r => [String(r[this.cfg.rowKey]), {...r}])); this.undo.length = 0; this.redo.length = 0;
+            toast('Sequence changed', 'success'); this.render();
+            if (j.reload) window.location.reload();
+          })
+          .catch(() => toast(T('s_save_failed'), 'danger'));
+      });
     }
 
     // Simpan ke database: server memvalidasi & menulis, lalu mengirim isi terbaru (baris baru mendapat id asli).
     saveServer(changed) {
       if (!changed.length) return toast(T('s_no_changes'));
+      if (this.cfg.reasonOnSave) {
+        const ask = window.Devlib && window.Devlib.confirm ? window.Devlib.confirm({title: 'Save changes', message: this.cfg.reasonOnSave, tone: 'warn', ok: 'Save', reason: true}) : Promise.resolve(window.prompt('Reason'));
+        return ask.then(reason => { if (reason) this.postSave(changed, String(reason)); });
+      }
+      this.postSave(changed, null);
+    }
+
+    postSave(changed, reason) {
       fetch(this.cfg.saveUrl, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.cfg.csrf || ''},
-        body: JSON.stringify({changed})})
+        body: JSON.stringify({changed, reason})})
         .then(res => res.json().then(j => ({ok: res.ok, j})))
         .then(({ok, j}) => {
           if (!ok || j.error) return toast(j.error || j.message || T('s_save_failed'), 'danger');
@@ -299,12 +367,109 @@
     apply(list, noUndo) {
       const back = list.map(({r, k, v}) => ({r, k, v: this.data[r][k]}));
       list.forEach(({r, k, v}) => { this.data[r][k] = v; });
+      // Linked cells (prop links): e.g. Purchase = Required - Release, computed here and validated again by the server.
+      (this.cfg.links || []).forEach(l => list.forEach(({r, k}) => {
+        if (!l.when.includes(k) || list.some(x => x.r === r && x.k === l.set)) return;
+        const a = parseFloat(this.data[r][l.a]) || 0, b = parseFloat(this.data[r][l.b]) || 0;
+        this.data[r][l.set] = Math.max(l.min ?? -Infinity, +((l.op === '+' ? a + b : a - b).toFixed(4)));
+      }));
       if (!noUndo) { this.undo.push(back); this.redo.length = 0; }
       this.render(); this.el.dispatchEvent(new CustomEvent('dl:sheet-change', {bubbles: true, detail: {changes: list}}));
+      if (this.cfg.autoSave && !noUndo) this.autoSave([...new Set(list.map(x => x.r))], back);
       return back;
     }
 
+    // Auto save: the rows just edited go to the server at once; a cell that is refused (or whose reason is cancelled) goes back.
+    autoSave(rows, back) {
+      const isNew = r => !this.orig.has(String(r[this.cfg.rowKey]));
+      // a column with optionsBy (e.g. Machine of the Process) must also be chosen once the process offers choices
+      const needs = (c, r) => c.required || (c.optionsBy && Object.keys(c.optionsBy.map[String(r[c.optionsBy.key])] || {}).length > 0);
+      const filled = r => this.cols.filter(c => needs(c, r)).every(c => r[c.key] !== '' && r[c.key] != null);
+      const changed = rows.map(r => this.data[r]).filter(r => r && this.cols.some(c => this.dirty(r, c)) && (!isNew(r) || filled(r)));
+      if (changed.length) this.autoPost(changed, back, null);
+    }
+
+    // Delete row (server): the selected rows go; unsaved new rows just disappear. The server may ask a reason (engine rows) or refuse (started, used).
+    async deleteSelected() {
+      const R = this.rng(), rows = this.data.slice(R.r0, R.r1 + 1), key = this.cfg.rowKey;
+      const saved = rows.filter(r => this.orig.has(String(r[key])));
+      const fresh = rows.filter(r => !this.orig.has(String(r[key])));
+      if (!rows.length) return;
+      const ok = await confirmBox({message: Tf('s_delete_n', {n: rows.length}), tone: 'danger'});
+      if (!ok) return;
+      if (fresh.length) { this.data = this.data.filter(r => !fresh.includes(r)); this.render(); }
+      if (!saved.length) return;
+      await this.deletePost(saved.map(r => r[key]), null);
+    }
+
+    // RESET: ask the server what would happen (dry run), confirm with those numbers, then restore the engine output.
+    async resetSheet() {
+      const call = async body => {
+        try {
+          const res = await fetch(this.cfg.resetUrl, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.cfg.csrf || ''}, body: JSON.stringify(body)});
+          const j = await res.json().catch(() => ({}));
+          j.ok = res.ok && !j.error;
+          return j;
+        } catch (e) { return {ok: false, error: T('s_save_failed')}; }
+      };
+      const pre = await call({dry: true});
+      if (!pre.ok) return toast(pre.error || T('s_save_failed'), 'danger');
+      const ok = await confirmBox({title: 'RESET', message: pre.message, tone: 'warn', ok: 'RESET'});
+      if (!ok) return;
+      const j = await call({});
+      if (!j.ok) return toast(j.error || T('s_save_failed'), 'danger');
+      // BOP, BOM, gates and schedule all changed: load the page again (the server keeps the result message as flash)
+      location.reload();
+    }
+
+    async deletePost(ids, reason) {
+      let j;
+      try {
+        const res = await fetch(this.cfg.deleteUrl, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.cfg.csrf || ''}, body: JSON.stringify({ids, reason})});
+        j = await res.json().catch(() => ({}));
+        j.ok = res.ok && !j.error;
+      } catch (e) { j = {ok: false, error: T('s_save_failed')}; }
+      if (j.reason_required) {
+        const text = await confirmBox({title: 'Reason', message: j.error || 'A reason is required.', tone: 'warn', ok: 'Delete', reason: true});
+        return text ? this.deletePost(ids, String(text)) : null;
+      }
+      if (!j.ok) return toast(j.error || j.message || T('s_save_failed'), 'danger');
+      this.data = j.rows; this.orig = new Map(this.data.map(r => [String(r[this.cfg.rowKey]), {...r}])); this.undo.length = 0; this.redo.length = 0;
+      this.cur = {r: Math.min(this.cur.r, Math.max(0, this.data.length - 1)), c: this.cur.c}; this.anchor = null; this.rowPick = false;
+      toast(Tf('s_saved', {n: ids.length}), 'success'); this.render();
+    }
+
+    revert(back) {
+      this.apply(back, true);
+      this.undo.pop();
+    }
+
+    async autoPost(changed, back, reason) {
+      let j;
+      try {
+        const res = await fetch(this.cfg.saveUrl, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.cfg.csrf || ''},
+          body: JSON.stringify({changed, reason})});
+        j = await res.json().catch(() => ({}));
+        j.ok = res.ok && !j.error;
+      } catch (e) { j = {ok: false, error: T('s_save_failed')}; }
+      if (j.reason_required) {
+        const ask = window.Devlib && window.Devlib.confirm ? window.Devlib.confirm({title: 'Reason', message: j.error || 'A reason is required.', tone: 'warn', ok: 'Save', reason: true}) : Promise.resolve(window.prompt('Reason'));
+        const text = await ask;
+        return text ? this.autoPost(changed, back, String(text)) : this.revert(back);
+      }
+      if (!j.ok) { toast(j.error || j.message || T('s_save_failed'), 'danger'); return this.revert(back); }
+      this.data = j.rows; this.orig = new Map(this.data.map(r => [String(r[this.cfg.rowKey]), {...r}])); this.undo.length = 0; this.redo.length = 0;
+      this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
+      toast(Tf('s_saved', {n: changed.length}), 'success'); this.render();
+    }
+
     move(dr, dc, extend) { if (extend && !this.anchor) this.anchor = {...this.cur}; if (!extend) this.anchor = null; this.cur = {r: Math.max(0, Math.min(this.data.length - 1, this.cur.r + dr)), c: Math.max(0, Math.min(this.cols.length - 1, this.cur.c + dc))}; this.render(); }
+
+    // Choices of a select cell: the column's own list, or (optionsBy) the list that belongs to the value of another cell of the row, e.g. machines of the process.
+    choices(c, row) {
+      const by = c.optionsBy;
+      return Object.keys(by ? (by.map[String(row[by.key])] || {}) : (c.options || {}));
+    }
 
     startEdit(initial) {
       const c = this.cols[this.cur.c]; if (this.ro(c, this.data[this.cur.r])) return;
@@ -312,7 +477,7 @@
       const td = this.cellEl(this.cur.r, this.cur.c); if (!td) return;
       this.edit = {r: this.cur.r, c: this.cur.c};
       const v = this.data[this.cur.r][c.key];
-      if (c.type === 'select') td.innerHTML = `<select class="dl-sheet__in">${['', ...Object.keys(c.options || {})].map(k => `<option value="${esc(k)}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(k ? c.options[k] : '—')}</option>`).join('')}</select>`;
+      if (c.type === 'select') td.innerHTML = `<select class="dl-sheet__in">${['', ...this.choices(c, this.data[this.cur.r])].map(k => `<option value="${esc(k)}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(k ? c.options[k] : '—')}</option>`).join('')}</select>`;
       else {
         const ci = this.cur.c, mode = this.caseMode[ci], start = initial ?? (this.num(c) && typeof v === 'number' ? fmt.raw(v) : c.type === 'date' ? fmt.gridDate(v) : v ?? '');
         td.innerHTML = `<input class="dl-sheet__in ${this.isText(c) ? 'has-case' : ''}" type="text" ${this.num(c) ? 'inputmode="decimal"' : ''} ${c.type === 'date' ? 'placeholder="dd-mm-yyyy"' : c.type === 'time' ? 'placeholder="hh:mm" inputmode="numeric"' : ''} value="${esc(this.isText(c) ? applyCase(String(start), mode) : start)}">`

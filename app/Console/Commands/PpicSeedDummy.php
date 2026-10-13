@@ -1,8 +1,19 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Menyemai data dummy PPIC dari produk yang punya Master Card lengkap (dieline, flat, ukuran, artwork) dan BOP.
+ * Sumber hulu  : prod_product, prod_part*, iqp_*, co_*.
+ * Input        : Opsi artisan; hanya situs dummy ddt*.
+ * Output       : CO, baris kirim, dan WO dummy.
+ * Dipakai oleh : Dijalankan manual lewat php artisan.
+ * Status       : Dummy; tidak membuat data tanpa Master Card.
+ */
+
 namespace App\Console\Commands;
 
 use App\Models\Master\CustCustomer;
+use App\Models\Master\ProdMasterCard;
 use App\Models\Master\ProdProduct;
 use App\Models\Prd\PrdWo;
 use App\Models\Sdi\CoOrder;
@@ -20,7 +31,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 // Dummy PPIC realistis untuk layar Production Scheduling: CO INSTANT Confirmed dengan qty ribuan untuk product yang punya
-// data ProDev lengkap (BOP + routing + BOM), beberapa baris kirim per CO. Hanya di database dummy (ddt*), tidak pernah tm2*.
+// Master Card lengkap (dieline + artwork + ukuran) dan data ProDev lengkap (BOP + routing + BOM), beberapa baris kirim per CO. Hanya di database dummy (ddt*), tidak pernah tm2*.
 // Baris kirim yang belum dibuat WO-nya sengaja ditinggal agar kartu Create Work Order di layar Work Order berisi.
 class PpicSeedDummy extends Command
 {
@@ -44,7 +55,17 @@ class PpicSeedDummy extends Command
     private function seed(): int
     {
         Auth::login(SecUser::where('login', 'johiwan')->firstOrFail());
-        $products = ProdProduct::whereIn('id_product', [14405, 14406])->get();
+        // Offset printing: no dummy order without a complete Master Card (dieline, artwork, size L x W x H and flat size) and a BOP.
+        $complete = ProdMasterCard::where('status', 'PRODUCT')->whereNotNull('product_id')->whereNotNull('dieline_svg')
+            ->whereNotNull('flat_w')->whereNotNull('flat_h')->whereNotNull('dim_l')->whereNotNull('dim_w')->whereNotNull('dim_h')
+            ->whereHas('files', fn ($q) => $q->where('file_kind', 'ARTWORK'))->pluck('product_id')->all();
+        $products = ProdProduct::whereIn('id_product', $complete)->where('activate', 1)
+            ->whereIn('id_product', DB::connection('tm2mst')->table('prod_part as p')->join('prod_part_process as r', 'r.part_id', '=', 'p.id_part')->pluck('p.product_id')->unique()->all())->get();
+        if ($products->isEmpty()) {
+            $this->error('No product has a complete Master Card (dieline, artwork, size) and a BOP yet. Complete the card first; nothing was seeded.');
+
+            return self::FAILURE;
+        }
         $customers = CustCustomer::where('activate', 1)->orderBy('id_customer')->limit(8)->get();
         $today = CarbonImmutable::today();
         // Qty, hari kirim per baris: sengaja campur agar ada yang mepet, ada yang longgar.

@@ -631,6 +631,7 @@ window.Devlib = window.Devlib || {};
     if (!open && horiz) return;
     if (open && grp && grp.dataset.multiple !== '1') $$(grp, ':scope > .dl-accordion.is-open').forEach(a => { a.classList.remove('is-open'); $(a, '.dl-accordion__head').setAttribute('aria-expanded', 'false'); });
     acc.classList.toggle('is-open', open); h.setAttribute('aria-expanded', String(open));
+    if (grp && grp.dataset.remember) { try { localStorage.setItem('dl-acc:' + grp.dataset.remember, JSON.stringify($$(grp, ':scope > .dl-accordion.is-open').map(a => a.dataset.accKey).filter(Boolean))); } catch (_) {} }
   });
 
 

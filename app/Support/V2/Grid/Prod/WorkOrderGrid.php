@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Grid daftar Work Order (menu Planning > Work Order): pilih WO untuk dibuka, tombol membuat WO baru.
+ * Sumber hulu  : prd_wo (WO tidak dibatalkan), prd_wo_operation.
+ * Input        : Query grid standar DbGrid.
+ * Output       : Baris WO dengan status dan tautan ke Form WO; tombol "+ Create new Work Order" membuka picker.
+ * Dipakai oleh : Layar production-wo (mode grid).
+ * Status       : Aktif di mockup.
+ */
+
 namespace App\Support\V2\Grid\Prod;
 
 use App\Models\Master\CustCustomer;
@@ -10,7 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Work Order (v1: pages::production.wo-list -> wo-entry). Buka = WO Detail v1, New = Generate dari Plan Delivery v1.
+// Work Order: Open = the v2 Work Order form; New = the picker of delivery plan lines that have no Work Order yet.
 class WorkOrderGrid extends ProdGrid
 {
     private const STATUS_TONES = ['DRAFT' => 'neutral', 'SIMULATED' => 'info', 'SCHEDULED' => 'info', 'IN_PROGRESS' => 'warn',
@@ -55,7 +65,12 @@ class WorkOrderGrid extends ProdGrid
 
     public function newUrl(): ?string
     {
-        return route('production.wo.new');
+        return route('v2.screen', 'production-wo').'?new=1';
+    }
+
+    public function newLabel(): string
+    {
+        return '+ Create new Work Order';
     }
 
     protected function models(): array
@@ -70,7 +85,8 @@ class WorkOrderGrid extends ProdGrid
 
     protected function query(): Builder
     {
-        return PrdWo::query()->orderByDesc('wo_id');
+        // A deleted (cancelled) Work Order leaves the list; its reason stays on the Work Order.
+        return PrdWo::query()->where('wo_status', '!=', 'CANCELLED')->orderByDesc('wo_id');
     }
 
     protected function prefetch(Collection $items): void

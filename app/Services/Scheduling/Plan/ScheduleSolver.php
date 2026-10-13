@@ -378,7 +378,7 @@ final class ScheduleSolver
         }
     }
 
-    /** Crew jobs and subcontract steps take time but no machine capacity (machine id 0). */
+    /** Crew jobs and subcontract steps take time but no machine capacity (machine id 0). ATTENTION-ENGINE-07: lihat docs/ENGINE-ATTENTION.md. */
     private function placeOutsideMachines(PlanOp $op, PlanWo $wo, WorkingCalendar $cal, CarbonImmutable $earliest): Placement
     {
         $zero = ['base' => 0, 'change' => 0, 'tool' => 0, 'total' => 0, 'extra_waste' => 0, 'parts' => []];

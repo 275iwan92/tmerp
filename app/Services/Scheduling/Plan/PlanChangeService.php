@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Perubahan jadwal oleh officer: pratinjau dampak (impact), Move into Draft (move), prioritas, urutan, lepas penempatan; urutan BOP dan Priority dari Form WO = perubahan tertunda (queueOrder / queuePriority, dipakai di PROCESS lewat applyPendingHeader).
+ * Sumber hulu  : prd_wo_operation (Draft/CONFIRMED), PlanLoader + ScheduleSolver (rencana engine), prd_plan_decision.
+ * Input        : id operasi, mesin, jam mulai, alasan, login.
+ * Output       : impact: Start/Finish, operasi yang bergeser (WO, proses, dari ke) dibanding jadwal tersimpan, WO yang jadi terlambat, no_change, moves untuk pratinjau Gantt; move: Draft baru.
+ * Dipakai oleh : PpicController (impact, moveOp, prioritize, unpin), layar production-wo (Simulation).
+ * Status       : Aktif di mockup. WO yang sudah diterapkan (bukan DRAFT/SIMULATED) ditolak: Applied WO is locked.
+ */
+
 declare(strict_types=1);
 
 namespace App\Services\Scheduling\Plan;
@@ -37,6 +47,76 @@ final class PlanChangeService
     }
 
     /**
+     * Priority chosen on the Work Order form is a PENDING change (Jo 2026-10-13): it is kept on the Work Order and applied by PROCESS.
+     * Choosing the priority the Work Order already has withdraws the pending one.
+     */
+    public function queuePriority(int $woId, string $kind, string $reason, string $login): void
+    {
+        if (trim($reason) === '') {
+            throw new \DomainException('A reason is required to give a Work Order priority.');
+        }
+        $wo = PrdWo::findOrFail($woId);
+        $header = (array) ($wo->pending_header ?? []);
+        if ($kind === self::priorityOf($wo)) {
+            unset($header['priority']);
+        } else {
+            $header['priority'] = ['kind' => $kind, 'reason' => mb_substr($reason, 0, 190)];
+        }
+        $wo->forceFill(['pending_header' => $header ?: null])->save();
+        PrdPlanDecision::create(['operation_id' => null, 'actor' => $login, 'event' => 'PRIORITY_PENDING', 'old_value' => self::priorityOf($wo), 'new_value' => $kind.' '.$wo->wo_no, 'reason' => mb_substr($reason, 0, 190)]);
+    }
+
+    /** The new BOP order of one Work Order, kept as a PENDING change until PROCESS. The current order withdraws it. @param list<int> $order */
+    public function queueOrder(int $woId, array $order, string $reason, string $login): void
+    {
+        $wo = PrdWo::findOrFail($woId);
+        $current = PrdWoOperation::where('wo_id', $woId)->orderBy('seq_no')->pluck('operation_id')->map(fn ($i) => (int) $i)->all();
+        $header = (array) ($wo->pending_header ?? []);
+        if ($order === $current) {
+            unset($header['order']);
+        } else {
+            $header['order'] = ['ids' => $order, 'reason' => mb_substr($reason, 0, 190)];
+        }
+        $wo->forceFill(['pending_header' => $header ?: null])->save();
+        PrdPlanDecision::create(['operation_id' => $order[0] ?? null, 'actor' => $login, 'event' => 'RESEQUENCE_PENDING', 'old_value' => json_encode($current), 'new_value' => json_encode($order), 'reason' => mb_substr($reason, 0, 190)]);
+    }
+
+    /**
+     * PROCESS starts here: the pending order and priority of the Work Order become real (order: seq_no, drafts of its operations are
+     * dropped so the engine plans them again; priority: Hot job / Move up flags), then the pending note is cleared. No replan here:
+     * PROCESS runs the engines right after.
+     */
+    public function applyPendingHeader(PrdWo $wo, string $login): void
+    {
+        $header = (array) ($wo->pending_header ?? []);
+        if ($header === []) {
+            return;
+        }
+        if (isset($header['order'])) {
+            $ops = PrdWoOperation::where('wo_id', $wo->wo_id)->orderBy('seq_no')->get()->keyBy('operation_id');
+            $old = $ops->keys()->map(fn ($i) => (int) $i)->all();
+            $order = array_values(array_filter(array_map('intval', $header['order']['ids']), fn ($id) => isset($ops[$id])));
+            foreach ($order as $i => $id) {
+                $ops[$id]->forceFill(['seq_no' => ($i + 1) * 10, 'plan_status' => 'NONE', 'draft_machine_id' => null, 'draft_start' => null, 'draft_finish' => null, 'draft_run_id' => null])->save();
+            }
+            PrdPlanDecision::create(['operation_id' => $order[0] ?? null, 'actor' => $login, 'event' => 'RESEQUENCE', 'old_value' => json_encode($old), 'new_value' => json_encode($order), 'reason' => $header['order']['reason'] ?? null]);
+        }
+        if (isset($header['priority'])) {
+            $kind = $header['priority']['kind'];
+            $old = self::priorityOf($wo);
+            $wo->forceFill(['is_hot_job' => $kind === 'HOT', 'priority' => $kind === 'HOT' ? 'SUPER_URGENT' : ($kind === 'MOVE_UP' ? 'URGENT' : 'NORMAL')]);
+            PrdWoOperation::where('wo_id', $wo->wo_id)->update(['priority_note' => $kind === 'NORMAL' ? null : mb_substr((string) $header['priority']['reason'], 0, 120)]);
+            PrdPlanDecision::create(['operation_id' => null, 'actor' => $login, 'event' => 'PRIORITY', 'old_value' => $old, 'new_value' => $kind.' '.$wo->wo_no, 'reason' => $header['priority']['reason'] ?? null]);
+        }
+        $wo->forceFill(['pending_header' => null])->save();
+    }
+
+    private static function priorityOf(PrdWo $wo): string
+    {
+        return $wo->is_hot_job ? 'HOT' : ($wo->priority === 'URGENT' ? 'MOVE_UP' : 'NORMAL');
+    }
+
+    /**
      * @return array{ok: bool, reason?: string, lines?: list<array{label: string, value: string, tone: string}>, new?: array{machine: int, start: CarbonImmutable, finish: CarbonImmutable}}
      */
     public function impact(int $opId, int $machineId, CarbonImmutable $start, ?CarbonImmutable $now = null): array
@@ -47,6 +127,10 @@ final class PlanChangeService
             return ['ok' => false, 'reason' => 'Operation not found.'];
         }
         $wo = PrdWo::find($op->wo_id);
+        // Applied to the live schedule (Jo 2026-10-13): the whole Work Order is fixed, whatever the status of each of its operations.
+        if ($wo && ! in_array($wo->wo_status, ['DRAFT', 'SIMULATED'], true)) {
+            return ['ok' => false, 'reason' => 'Applied WO is locked; Undo Confirm first.'];
+        }
         if (in_array($op->task_status, ['RUNNING', 'DONE', 'QC_HOLD', 'QC_PASSED', 'QC_REJECTED'], true)) {
             return ['ok' => false, 'reason' => 'A running or finished operation cannot be moved.'];
         }
@@ -65,7 +149,6 @@ final class PlanChangeService
         $wos = $this->loader->wos($now);
         $cal = $this->loader->calendar($now, array_merge([$machineId], $this->loader->machineIds($wos)));
         $solver = $this->runner->solver();
-        $before = $solver->solve($wos, $cal, $now);
 
         $rate = $cand->target_qty_per_hour !== null ? (float) $cand->target_qty_per_hour : null;
         $run = $rate ? (int) ceil((float) $op->qty / $rate * 60) : 60;
@@ -81,20 +164,78 @@ final class PlanChangeService
 
         $oldStart = $this->currentStart($op);
         $oldFinish = $this->currentFinish($op);
+
+        // Baseline = the schedule as stored and shown on the Gantt (Draft or live), not a fresh engine solve, so "what moves" is
+        // measured against what the officer sees. After = the engine plan with this operation pinned (what Move into Draft produces).
+        $ids = [];
+        foreach ($wos as $pw) {
+            foreach ($pw->ops as $po) {
+                $ids[] = $po->id;
+            }
+        }
+        $stored = PrdWoOperation::whereIn('operation_id', $ids)->get()->keyBy('operation_id');
+        $machineOf = fn (PrdWoOperation $o) => (int) ($o->plan_status === 'DRAFT' ? $o->draft_machine_id : $o->machine_id);
+        $shifted = [];
+        foreach ($after->placements as $id => $p) {
+            $o = $stored[$id] ?? null;
+            $was = $o ? $this->currentStart($o) : null;
+            if ($id !== $opId && $o && $was && ($was->ne($p->start) || $machineOf($o) !== $p->machineId)) {
+                $shifted[] = [$o, $machineOf($o), $was, $p];
+            }
+        }
+        $machines = DB::connection('tm2mst')->table('prod_machine')->whereIn('machine_id', array_merge([$machineId], array_filter(array_map(fn ($x) => $x[1], $shifted)),
+            array_map(fn ($x) => $x[3]->machineId, $shifted)))->pluck('machine_code', 'machine_id');
+        $mc = fn (int $id) => $id ? (string) ($machines[$id] ?? '#'.$id) : 'SUBCON';
+        $woNo = PrdWo::whereIn('wo_id', array_unique(array_map(fn ($x) => (int) $x[0]->wo_id, $shifted)))->pluck('wo_no', 'wo_id');
+
+        // Late: a Work Order whose last operation ends after its due date in the new plan but did not in the stored schedule.
+        $late = [];
+        foreach ($wos as $pw) {
+            if (! $pw->due) {
+                continue;
+            }
+            $was = null;
+            $now2 = null;
+            foreach ($pw->ops as $po) {
+                $o = $stored[$po->id] ?? null;
+                $f = $o ? $this->currentFinish($o) : null;
+                $was = $f && (! $was || $f->greaterThan($was)) ? $f : $was;
+                $n = isset($after->placements[$po->id]) ? $after->placements[$po->id]->finish : $f;
+                $now2 = $n && (! $now2 || $n->greaterThan($now2)) ? $n : $now2;
+            }
+            if ($now2 && $now2->greaterThan($pw->due) && ! ($was && $was->greaterThan($pw->due))) {
+                $late[] = $pw->no;
+            }
+        }
+
         $lines = [
             ['label' => 'Start', 'value' => ($oldStart ? $oldStart->format('D H:i').' to ' : '').$newStart->format('D H:i'), 'tone' => 'ok'],
             ['label' => 'Finish', 'value' => ($oldFinish ? $oldFinish->format('D H:i').' to ' : '').$newFinish->format('D H:i'), 'tone' => 'ok'],
             ['label' => 'Setup / run', 'value' => $setupMin.' min / '.round($run / 60, 1).' h', 'tone' => 'ok'],
+            ['label' => 'Other operations that move', 'value' => (string) count($shifted), 'tone' => count($shifted) > 3 ? 'warn' : 'ok'],
         ];
-        $late = $this->newLate($before, $after);
-        $shifted = $this->shiftedCount($before, $after, $opId);
-        $lines[] = ['label' => 'Other operations that move', 'value' => (string) $shifted, 'tone' => $shifted > 3 ? 'warn' : 'ok'];
+        foreach (array_slice($shifted, 0, 6) as [$o, $bm, $was, $p]) {
+            $lines[] = ['label' => ($woNo[$o->wo_id] ?? '#'.$o->wo_id).' · '.$o->process_name, 'tone' => 'warn',
+                'value' => $was->format('D H:i').' '.$mc($bm).' to '.$p->start->format('D H:i').' '.$mc($p->machineId)];
+        }
+        if (count($shifted) > 6) {
+            $lines[] = ['label' => '+'.(count($shifted) - 6), 'value' => 'more', 'tone' => 'warn'];
+        }
         $lines[] = ['label' => 'Work Orders that become late', 'value' => $late ? implode(', ', $late) : 'none', 'tone' => $late ? 'bad' : 'ok'];
         if ($op->gate_material === 'WAIT' && $op->material_ready_at && $newStart->lessThan(CarbonImmutable::parse($op->material_ready_at))) {
             return ['ok' => false, 'reason' => sprintf('Material arrives %s, after this start.', CarbonImmutable::parse($op->material_ready_at)->format('D j M H:i'))];
         }
+        $same = $oldStart && $oldStart->eq($newStart) && $machineOf($op) === $machineId;
+        if ($same && $shifted === []) {
+            return ['ok' => true, 'no_change' => true, 'lines' => [['label' => 'Result', 'value' => 'No change', 'tone' => 'ok']],
+                'new' => ['machine' => $machineId, 'start' => $newStart, 'finish' => $newFinish]];
+        }
 
-        return ['ok' => true, 'lines' => $lines, 'new' => ['machine' => $machineId, 'start' => $newStart, 'finish' => $newFinish]];
+        // Every operation that moves (not only the six listed): the Gantt draws them in their new place as a preview.
+        $moves = array_map(fn ($x) => ['op' => (int) $x[0]->operation_id, 'wo' => $woNo[$x[0]->wo_id] ?? '#'.$x[0]->wo_id, 'process' => (string) $x[0]->process_name,
+            'from' => ['machine' => $x[1], 'start' => $x[2], 'finish' => $this->currentFinish($x[0])], 'to' => ['machine' => $x[3]->machineId, 'start' => $x[3]->start, 'finish' => $x[3]->finish]], $shifted);
+
+        return ['ok' => true, 'lines' => $lines, 'moves' => $moves, 'new' => ['machine' => $machineId, 'start' => $newStart, 'finish' => $newFinish]];
     }
 
     /** Save the move as an officer placement in the Draft and let the engine re-plan the rest around it. */
@@ -115,6 +256,69 @@ final class PlanChangeService
             'new_value' => $check['new']['start']->format('Y-m-d H:i').' m'.$machineId, 'reason' => mb_substr($reason, 0, 190) ?: null]);
 
         return $this->runner->run('EVENT', $login);
+    }
+
+    /**
+     * Simulation: an officer's drag is only QUEUED as a pending change (the operation takes the new place as an officer placement,
+     * the old place is kept to discard). The engine runs once when PROCESS is pressed (clearPending() after that run).
+     *
+     * @return int pending changes now
+     */
+    public function queueMove(int $opId, int $machineId, CarbonImmutable $start, string $reason, string $login): int
+    {
+        if (trim($reason) === '') {
+            throw new \DomainException('A reason is required to move an operation.');
+        }
+        $check = $this->impact($opId, $machineId, $start);
+        if (! $check['ok']) {
+            throw new \DomainException($check['reason'] ?? 'The move is not allowed.');
+        }
+        if (! empty($check['no_change'])) {
+            throw new \DomainException('No change.');
+        }
+        $op = PrdWoOperation::findOrFail($opId);
+        $from = $op->pending_move && $op->pending_from ? $op->pending_from : json_encode([
+            'plan_status' => $op->plan_status, 'planned_by' => $op->planned_by, 'draft_machine_id' => $op->draft_machine_id,
+            'draft_start' => $op->draft_start?->format('Y-m-d H:i:s'), 'draft_finish' => $op->draft_finish?->format('Y-m-d H:i:s'),
+            'draft_run_id' => $op->draft_run_id, 'priority_note' => $op->priority_note]);
+        $old = $this->currentStart($op)?->format('Y-m-d H:i').' m'.($op->draft_machine_id ?? $op->machine_id);
+        $op->forceFill(['plan_status' => 'DRAFT', 'planned_by' => 'OFFICER', 'draft_machine_id' => $machineId,
+            'draft_start' => $check['new']['start'], 'draft_finish' => $check['new']['finish'], 'is_locked' => false,
+            'priority_note' => mb_substr($reason, 0, 120) ?: null, 'pending_move' => true, 'pending_from' => $from, 'pending_reason' => mb_substr($reason, 0, 190)])->save();
+        PrdPlanDecision::create(['operation_id' => $opId, 'actor' => $login, 'event' => 'MOVE_PENDING', 'old_value' => $old,
+            'new_value' => $check['new']['start']->format('Y-m-d H:i').' m'.$machineId, 'reason' => mb_substr($reason, 0, 190) ?: null]);
+
+        return PrdWoOperation::where('pending_move', true)->count();
+    }
+
+    /**
+     * Throw the queued changes away: every pending operation goes back to the place it had before it was dragged, and the pending
+     * order / priority of the Work Order $woId (every Work Order when null) is forgotten.
+     */
+    public function discardPending(string $login, ?int $woId = null): int
+    {
+        $n = 0;
+        foreach (PrdWo::whereNotNull('pending_header')->when($woId, fn ($q) => $q->where('wo_id', $woId))->get() as $wo) {
+            $n += count((array) $wo->pending_header);
+            $wo->forceFill(['pending_header' => null])->save();
+        }
+        foreach (PrdWoOperation::where('pending_move', true)->get() as $op) {
+            $from = json_decode((string) $op->pending_from, true) ?: [];
+            $op->forceFill($from + ['plan_status' => 'NONE', 'planned_by' => null, 'draft_machine_id' => null, 'draft_start' => null, 'draft_finish' => null]);
+            $op->forceFill(['pending_move' => false, 'pending_from' => null, 'pending_reason' => null])->save();
+            $n++;
+        }
+        if ($n) {
+            PrdPlanDecision::create(['actor' => $login, 'event' => 'MOVE_DISCARD', 'old_value' => (string) $n, 'reason' => 'Pending changes discarded']);
+        }
+
+        return $n;
+    }
+
+    /** The pending changes were processed (the engine ran with them): forget the old places. */
+    public function clearPending(): void
+    {
+        PrdWoOperation::where('pending_move', true)->update(['pending_move' => false, 'pending_from' => null, 'pending_reason' => null]);
     }
 
     /**

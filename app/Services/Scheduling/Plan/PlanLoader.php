@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Reads the database into the plain objects the solver works with (PlanWo, PlanOp, WorkingCalendar). Nothing is written here.
+ * Earliest start of a Work Order (prd_wo.earliest_start) is a floor for every operation of it: minStart = max(material arrival, earliest start).
  */
 final class PlanLoader
 {
@@ -111,6 +112,15 @@ final class PlanLoader
         return array_values(array_unique(array_merge([0], $ids)));
     }
 
+    private ?array $officerAdded = null;
+
+    /** Operation ids the officer added (Add row on the BOP sheet). @return array<int, int> */
+    private function officerAdded(): array
+    {
+        return $this->officerAdded ??= DB::connection('tm2prd')->table('prd_plan_decision')->where('event', 'ROW_ADDED')->where('old_value', 'like', '%"kind":"OP"%')
+            ->pluck('operation_id')->filter()->mapWithKeys(fn ($id) => [(int) $id => (int) $id])->all();
+    }
+
     private function op(PrdWo $wo, PrdWoOperation $op, $cands, $stage, array $tools, CarbonImmutable $now, array $inks = [], array $down = []): PlanOp
     {
         // Confirmed and locked on a machine that is down now: the engine proposes a new place in the Draft (the officer decides at Confirm).
@@ -134,7 +144,12 @@ final class PlanLoader
             : (in_array('WAIT', [$op->gate_material, $op->gate_tooling, $op->gate_artwork], true) ? 'WAIT' : 'READY');
 
         $proc = $stage[$op->process_id] ?? null;
-        $kind = $proc && ! $proc->inhouse ? 'SUBCON' : (($proc && $proc->is_manual) || (! $candidates && in_array($stageName, ['QC', 'PACKING', 'LOGISTIC'], true)) ? 'MANUAL' : 'MACHINE');
+        // An operation added by the officer (decision ROW_ADDED) runs on the machine chosen there; no machine = subcontract.
+        $byOfficer = isset($this->officerAdded()[(int) $op->operation_id]);
+        if ($byOfficer && $op->machine_id && isset($candidates[(int) $op->machine_id])) {
+            $candidates = [(int) $op->machine_id => $candidates[(int) $op->machine_id]];
+        }
+        $kind = ($byOfficer && ! $op->machine_id) || ($proc && ! $proc->inhouse) ? 'SUBCON' : (($proc && $proc->is_manual) || (! $candidates && in_array($stageName, ['QC', 'PACKING', 'LOGISTIC'], true)) ? 'MANUAL' : 'MACHINE');
 
         $facts = [
             'stage' => $stageName,
@@ -149,9 +164,17 @@ final class PlanLoader
         return new PlanOp(
             id: (int) $op->operation_id, woId: (int) $wo->wo_id, seq: (int) $op->seq_no, processName: (string) $op->process_name, stage: $stageName,
             qtyIn: (float) $op->qty, candidates: $candidates, facts: $facts, waitAfterMinutes: $wait,
-            minStart: $op->material_ready_at ? CarbonImmutable::parse($op->material_ready_at) : null,
+            minStart: $this->floor($op->material_ready_at, $wo->earliest_start),
             gate: $gate, gateNote: $op->gate_note, fixed: $wasDown ? null : $this->fixed($op, $now), kind: $kind, leadDays: (int) ($stage[$op->process_id]->subcon_lead_days ?? 3), wasDown: $wasDown,
         );
+    }
+
+    /** The later of material arrival and the Work Order's Earliest start (the officer's input); null when neither is set. */
+    private function floor(mixed $materialReady, mixed $earliestStart): ?CarbonImmutable
+    {
+        $times = array_filter([$materialReady, $earliestStart]);
+
+        return $times ? max(array_map(fn ($t) => CarbonImmutable::parse($t), $times)) : null;
     }
 
     /** @return array{machine: int, start: CarbonImmutable, finish: CarbonImmutable}|null */

@@ -29,6 +29,8 @@ class PrdWo extends Model
 
     protected $casts = [
         'due_date' => 'datetime',
+        'earliest_start' => 'datetime',
+        'pending_header' => 'array',
         'material_needed_by' => 'datetime',
         'confirmed_at' => 'datetime',
         'is_hot_job' => 'boolean',

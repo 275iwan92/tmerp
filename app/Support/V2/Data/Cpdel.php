@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Data layar CPDEL: baris pengiriman yang diposting ke produksi; post() membuat Work Order.
+ * Sumber hulu  : co_order_delivery, co_order, WoGenerationService.
+ * Input        : Id baris pengiriman.
+ * Output       : WO (prd_wo + operasi + bahan) dan penanda posted_at; WO dibatalkan tidak menghalangi posting ulang.
+ * Dipakai oleh : Layar CPDEL, PpicController::createWo.
+ * Status       : Aktif di mockup.
+ */
+
 namespace App\Support\V2\Data;
 
 use App\Models\Master\CustCustomer;
@@ -78,7 +88,7 @@ final class Cpdel
             return t('Only lines not yet shipped can be Posted to Production.');
         }
         // WO yang sudah dibuat lewat layar Generate WO lama cukup ditandai Posted (tidak dibuat dobel).
-        if (! PrdWo::where('source_delivery_id', $d->id_delivery)->exists()) {
+        if (! PrdWo::where('source_delivery_id', $d->id_delivery)->where('wo_status', '!=', 'CANCELLED')->exists()) {
             try {
                 app(WoGenerationService::class)->generateFromDelivery($d);
             } catch (\RuntimeException $e) {

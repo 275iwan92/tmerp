@@ -46,7 +46,7 @@
         <div class="dl-grid__bulk" data-g-bulk hidden>
             <b data-g-bulk-count>0</b> {{ \Devlib\Lang::t('g_selected') }} <x-dl::button variant="link" :label="\Devlib\Lang::text('Select all results')" data-g-select-all />
             <span class="dl-grid__spacer"></span>
-            @foreach ($bulk as $b)<x-dl::button variant="{{ $b['variant'] ?? 'secondary' }}" size="sm" :icon="$b['icon'] ?? null" :label="$b['label']" data-g-bulk-action="{{ $b['key'] }}" :data-dl-confirm="$b['confirm'] ?? null" />@endforeach
+            @foreach ($bulk as $b)<x-dl::button variant="{{ $b['variant'] ?? 'secondary' }}" size="sm" :icon="$b['icon'] ?? null" :label="$b['label']" data-g-bulk-action="{{ $b['key'] }}" :data-dl-confirm="$b['confirm'] ?? null" :data-g-bulk-quiet="! empty($b['quiet']) ? '1' : null" />@endforeach
             <x-dl::button variant="ghost" size="sm" :label="\Devlib\Lang::text('Clear selection')" data-g-select-none />
         </div>
         <div class="dl-grid__cards" data-g-cards hidden></div>

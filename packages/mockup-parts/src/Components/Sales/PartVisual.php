@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Visual part (dieline + 3D) untuk layar Sales dan Form WO; prop readonly menyembunyikan panel editor.
+ * Sumber hulu  : Data dieline/artwork part dari Inquiry/ProDev.
+ * Input        : part, types, height, readonly.
+ * Output       : Markup .dl-dieline dengan atau tanpa panel samping.
+ * Dipakai oleh : Layar Sales dan production-wo.
+ * Status       : Aktif.
+ */
+
 namespace MockupParts\Components\Sales;
 
 use Devlib\Components\DevlibComponent;
@@ -14,6 +24,7 @@ class PartVisual extends DevlibComponent
         public array $part = [],
         public array $types = [],
         public string $height = '360px',
+        public bool $readonly = false,
     ) {}
 
     public function tag(): string
@@ -41,7 +52,7 @@ class PartVisual extends DevlibComponent
         return <<<'BLADE'
             <div {{ $attributes->class('mp-partvis') }} {!! $dl() !!}>
                 @if ($typed())
-                    <x-mp::dieline-v3 :data-artwork="$part['artwork']" :data-artwork-inner="$part['artwork_inner']" :types="$types" :type="$part['type_code']" :dims="$part['dims']" :name="'pv'.$part['id']" :picker="false" :height="$height" />
+                    <x-mp::dieline-v3 :data-artwork="$part['artwork']" :data-artwork-inner="$part['artwork_inner']" :types="$types" :type="$part['type_code']" :dims="$part['dims']" :name="'pv'.$part['id']" :picker="false" :height="$height" :class="$readonly ? 'dl-dieline--ro' : ''" />
                 @elseif ($sides())
                     <x-dl::tabs :tabs="$sides()">
                         <x-slot:out><img class="mp-partvis__img" src="{{ $part['artwork'] }}" alt="{{ strtr(\Devlib\Lang::text('Dieline :name outer side'), [':name' => $part['name']]) }}"></x-slot:out>
