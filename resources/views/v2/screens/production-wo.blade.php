@@ -2,7 +2,7 @@
 Tujuan       : Layar Work Order PPIC: grid, picker Create Work Order, dan Form WO berupa accordion (Master Card, Bill of Process, Bill of Material, Simulation, QUE).
 Sumber hulu  : Ppic::workOrder/masterCard/bomSheet/simulation, prd_wo*, Master Card otomatis dari Inquiry + ProDev.
 Input        : Query ?id= (WO), ?new=1 (picker), ?open= atau ?tab= (bagian terbuka), ?layout=tabs, ?extras=1 (kartu angka + legenda Gantt di Simulation, mati secara default).
-Output       : Tampilan; aksi lewat rute v2.ppic.* (target, reorder, earliest, bom-cells, queue-move, process, apply, delete). Sheet BOP dan BOM: toolbar hanya ADD / DELETE / RESET (tanpa Search dan hitung baris; DELETE aktif setelah nomor baris diklik; RESET = ambil ulang dari engine ProDev, hanya WO Draft), teks hitam lewat token DevLib (tanpa kelas lokal). Urutan BOP dan Priority dari form ini tertunda sampai PROCESS; Earliest start = lantai waktu engine. Live Schedule kini menu sendiri (production-live).
+Output       : Tampilan; aksi lewat rute v2.ppic.* (target, reorder, earliest, bom-cells, queue-move, process, apply, delete). Sheet BOP dan BOM: toolbar hanya ADD / DELETE / RESET (tanpa Search dan hitung baris; DELETE aktif setelah nomor baris diklik; RESET = ambil ulang dari engine ProDev, hanya WO Draft), teks hitam lewat token DevLib (tanpa kelas lokal). Urutan BOP dan Priority dari form ini tertunda sampai PROCESS; Earliest start = lantai waktu engine. Kolom Start dan Stop editable: Start menggeser operasi lewat engine dampak (pending), Stop mengubah target per jam (Run h mengikuti). Live Schedule kini menu sendiri (production-live).
 Dipakai oleh : Menu Planning > Work Order (v2:production-wo).
 Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja di background.
 --}}
@@ -271,13 +271,13 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
                 ['key' => 'actor', 'label' => 'Crew / Subcon', 'type' => 'select', 'options' => Ppic::actorOptions(), 'width' => '240px'],
                 ['key' => 'setup', 'label' => 'Setup (min)', 'readonly' => true, 'width' => '90px'],
                 ['key' => 'run', 'label' => 'Run (h)', 'readonly' => true, 'width' => '70px'],
-                ['key' => 'start', 'label' => 'Start', 'readonly' => true, 'width' => '160px'],
-                ['key' => 'finish', 'label' => 'Finish', 'readonly' => true, 'width' => '160px'],
+                ['key' => 'start', 'label' => 'Start', 'type' => 'datetime', 'width' => '170px'],
+                ['key' => 'finish', 'label' => 'Stop', 'type' => 'datetime', 'width' => '170px'],
             ], $bopExtra)" />
         @else
             @php $actors = collect(Ppic::bopSheet($wo->wo_id))->pluck('actor', 'id'); @endphp
             <x-dl::table :source="$src" empty="This Work Order has no operations yet." :columns="['seq' => '#', 'process' => 'Process', 'machine' => 'Machine', 'qin' => 'Qty in', 'qout' => 'Good out', 'target' => 'Target / hour', 'waste' => 'Waste qty', 'spoil' => 'Spoilage qty',
-            'actor' => 'Crew / Subcon', 'setup' => 'Setup (min)', 'run' => 'Run (h)', 'start' => 'Start', 'finish' => 'Finish', 'out' => 'Output'] + (request('cols') === 'all' ? ['status' => 'Status', 'gates' => 'Gates'] : [])"
+            'actor' => 'Crew / Subcon', 'setup' => 'Setup (min)', 'run' => 'Run (h)', 'start' => 'Start', 'finish' => 'Stop', 'out' => 'Output'] + (request('cols') === 'all' ? ['status' => 'Status', 'gates' => 'Gates'] : [])"
             :rows="array_map(fn ($o) => ['seq' => $o['seq'], 'process' => raw($o['process']), 'machine' => raw($o['machine'] ?? 'SUBCON'),
                 'qin' => raw(Locale::number($o['qty'], 0).' '.$o['uom']), 'qout' => raw(Locale::number($o['qty_out'], 0).' '.$o['uom']),
                 'target' => raw($o['target'] ? Locale::number($o['target'], 0).'/h'.($ups && $o['uom'] === 'LBR' ? ' = '.Locale::number($o['target'] * $ups, 0).' pcs/h' : '') : '—'),

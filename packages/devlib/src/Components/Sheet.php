@@ -15,7 +15,7 @@ namespace Devlib\Components;
 // Grid spreadsheet (perilaku DataTables Editor + AutoFill + KeyTable, buatan sendiri -- Editor asli berbayar).
 // Klik sel, panah/Tab pindah, ketik = edit, Enter/F2 edit, Esc batal, Shift/drag = rentang, Ctrl+C/Ctrl+V
 // dengan Excel, pegangan isi di pojok seleksi (salin / lanjutkan deret angka), Ctrl+Z / Ctrl+Y, Delete kosongkan.
-// columns: [['key','label','type' => text|number|money|select|date|time|check,'options','required','readonly','width']]
+// columns: [['key','label','type' => text|number|money|select|date|time|datetime|check,'options','required','readonly','width']]
 // 'emptyWarn' => true: sel kosong diberi warna peringatan (terjemahan yang belum diisi di Translation Dictionary).
 // 'lockFilled' => true (dengan lockSaved): baris tersimpan hanya terkunci bila selnya SUDAH berisi; sel kosong masih bisa dipilih.
 // 'emptyText' => teks sel pilihan yang masih kosong (mis. 'Process not set').

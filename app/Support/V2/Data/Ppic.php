@@ -1046,7 +1046,7 @@ final class Ppic
             'source' => isset($last[$o['op_id']]) ? 'Override · '.$last[$o['op_id']]->reason : 'Engine',
             'actor' => $actor[$o['op_id']] ?? '',
             'setup' => $o['setup'] ?: '—', 'run' => $o['run'] !== null ? Locale::decimal($o['run'] / 60, 2) : '—',
-            'start' => $o['start'] ? Locale::dt($o['start']) : '—', 'finish' => $o['finish'] ? Locale::dt($o['finish']) : '—',
+            'start' => $o['start']?->format('Y-m-d H:i:s') ?? '', 'finish' => $o['finish']?->format('Y-m-d H:i:s') ?? '',
             'status' => $o['plan_status'] === 'DRAFT' ? 'Draft' : (string) $o['task_status'],
             'gates' => implode(' / ', array_map(fn ($x) => $gate[$x] ?? $x, $o['gates'])),
         ], $ops);

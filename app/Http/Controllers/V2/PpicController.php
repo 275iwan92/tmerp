@@ -135,7 +135,7 @@ final class PpicController extends Controller
 
         return response()->json(['ok' => true, 'no_change' => (bool) ($res['no_change'] ?? false), 'lines' => $res['lines'], 'moves' => $this->moveRows($res['moves'] ?? []), 'row' => 'm'.$res['new']['machine'],
             'start' => Ppic::hm(Ppic::hours($res['new']['start'])), 'end' => Ppic::hm(Ppic::hours($res['new']['finish'])),
-            'sheet' => ['start' => $dt($res['new']['start']), 'finish' => $dt($res['new']['finish']), 'machine' => $this->machineName($res['new']['machine'])]]);
+            'sheet' => ['start' => $res['new']['start']->format('Y-m-d H:i:s'), 'finish' => $res['new']['finish']->format('Y-m-d H:i:s'), 'machine' => $this->machineName($res['new']['machine'])]]);
     }
 
     /** Machine name for the BOP sheet while a move is previewed (no machine = SUBCON). */
@@ -155,7 +155,7 @@ final class PpicController extends Controller
 
         return array_map(fn ($m) => ['id' => $m['op'], 'wo' => $m['wo'], 'process' => $m['process'],
             'row' => $row($m['to']['machine'], $m['process']), 'start' => $hm($m['to']['start']), 'end' => $hm($m['to']['finish']),
-            'sheet' => ['start' => Locale::dt($m['to']['start']), 'finish' => Locale::dt($m['to']['finish']), 'machine' => $this->machineName($m['to']['machine'])],
+            'sheet' => ['start' => $m['to']['start']->format('Y-m-d H:i:s'), 'finish' => $m['to']['finish']->format('Y-m-d H:i:s'), 'machine' => $this->machineName($m['to']['machine'])],
             'from' => ['row' => $row($m['from']['machine'], $m['process']), 'start' => $hm($m['from']['start']), 'end' => $hm($m['from']['finish'])]], $moves);
     }
 
@@ -615,7 +615,7 @@ final class PpicController extends Controller
      * Target / hour needs the one reason the sheet asks at Save (planned again by the engines, only while the Work Order is not applied);
      * Crew / Subcon ('C:<work center>' | 'S:<vendor>' | '') is saved at once, with no reason and no replan.
      */
-    public function targetCells(Request $r, int $wo, WoPlanningEnricher $enricher): JsonResponse
+    public function targetCells(Request $r, int $wo, WoPlanningEnricher $enricher, PlanChangeService $changes): JsonResponse
     {
         $this->schedulerOnly();
         $editable = $this->woEditable($wo);
@@ -646,6 +646,10 @@ final class PpicController extends Controller
                 PrdWoOperation::where('wo_id', $wo)->findOrFail((int) $c['id'])->assignActor((string) $c['actor']);
                 $done++;
             }
+            if ($err = $this->applyTimes($wo, $row, $c, $editable, $reason, $changes)) {
+                return $err;
+            }
+            $done += (int) $this->timesChanged($row, $c);
             $target = isset($c['target']) && $c['target'] !== '' ? (float) $c['target'] : null;
             if ($target === null || abs($target - (float) ($row['target'] ?? 0)) <= 0.0049) {
                 continue;
@@ -664,7 +668,54 @@ final class PpicController extends Controller
         }
         Ppic::forget();
 
-        return response()->json(['rows' => Ppic::bopSheet($wo), 'saved' => $done]);
+        return response()->json(['rows' => Ppic::bopSheet($wo), 'saved' => $done, 'reload' => true]);
+    }
+
+    private function timesChanged(array $row, array $c): bool
+    {
+        return (isset($c['start']) && (string) $c['start'] !== (string) $row['start']) || (isset($c['finish']) && (string) $c['finish'] !== (string) $row['finish']);
+    }
+
+    /**
+     * Start / Stop typed in the BOP sheet (Jo 2026-10-13): Start moves the operation on its machine through the same impact engine as a Gantt drag
+     * (queued as a pending change until PROCESS); Stop changes the run time, so target / hour is scaled by old run / new run and the engines plan again.
+     * Refused with the engine reason when the move is not allowed (clash, gates, locked) or the Work Order is already on the main schedule.
+     */
+    private function applyTimes(int $wo, array $row, array $c, bool $editable, string $reason, PlanChangeService $changes): ?JsonResponse
+    {
+        if (! $this->timesChanged($row, $c)) {
+            return null;
+        }
+        if (! $editable) {
+            return response()->json(['error' => t('This Work Order is already on the main schedule; Start and Stop are read only.')], 422);
+        }
+        $op = collect(Ppic::workOrder($wo)['ops'] ?? [])->firstWhere('op_id', (int) $row['id']);
+        $parse = fn ($v) => $v === null || $v === '' ? null : CarbonImmutable::parse((string) $v);
+        $reason = $reason !== '' ? $reason : 'Start / Stop edited in the BOP sheet';
+        $start = $op['start'] ?? null;
+        try {
+            $newStart = isset($c['start']) && (string) $c['start'] !== (string) $row['start'] ? $parse($c['start']) : null;
+            if ($newStart) {
+                if (! ctype_digit((string) $row['machine'])) {
+                    return response()->json(['error' => t('Start').': '.t('a subcontract step has no machine to move on.')], 422);
+                }
+                $changes->queueMove((int) $row['id'], (int) $row['machine'], $newStart, $reason, $this->login());
+                $start = $newStart;
+            }
+            $stop = isset($c['finish']) && (string) $c['finish'] !== (string) $row['finish'] ? $parse($c['finish']) : null;
+            if ($stop) {
+                $run = (float) ($op['run'] ?? 0);
+                $new = $run + ($stop->getTimestamp() - $op['finish']->getTimestamp()) / 60 - ($newStart ? ($newStart->getTimestamp() - $op['start']->getTimestamp()) / 60 : 0);
+                if ($run <= 0 || $new <= 0 || ! $op['target'] || ! $start) {
+                    return response()->json(['error' => t('Stop').': '.t('must be later than Start plus setup.')], 422);
+                }
+                $this->applyTarget($wo, (int) $row['id'], round((float) $op['target'] * $run / $new, 2), mb_substr($reason, 0, 190));
+            }
+        } catch (\DomainException $e) {
+            return response()->json(['error' => t($e->getMessage())], 422);
+        }
+
+        return null;
     }
 
     /**

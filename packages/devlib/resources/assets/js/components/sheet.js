@@ -2,7 +2,7 @@
  * REMARK
  * Tujuan       : Perilaku grid sel: edit, undo, save ke server, sel terhitung (links), tanya Reason sekali saat Save (reasonOnSave).
  * Sumber hulu  : config JSON dari Sheet.php.
- * Input        : Edit sel, klik Save/Undo, drag baris, nomor baris (memilih baris untuk DELETE), tombol ADD / DELETE / RESET (resetUrl: dry run lalu konfirmasi dengan jumlah); event dl:plan-sync dari Gantt (kolom start/finish/machine ikut posisi bar).
+ * Input        : Edit sel (teks, angka, select, date, time, datetime = "dd-Mmm-yyyy hh:mm" disimpan ISO), klik Save/Undo, drag baris, nomor baris (memilih baris untuk DELETE), tombol ADD / DELETE / RESET (resetUrl: dry run lalu konfirmasi dengan jumlah); event dl:plan-sync dari Gantt (kolom start/finish/machine ikut posisi bar).
  * Output       : POST saveUrl {changed, reason}; render ulang dari baris balasan.
  * Dipakai oleh : x-dl::sheet dan x-dl::lookup-grid.
  * Status       : Aktif (DevLib).
@@ -10,7 +10,7 @@
 /* DevLib · Sheet */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, numStr, NUM, DlDate, DlTime, T, Tf, calcPanel} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, numStr, NUM, DlDate, DlTime, DlDateTime, T, Tf, calcPanel} = Devlib.h;
   /* ============================ SHEET (spreadsheet) ============================ */
   class Sheet extends Devlib.Component {
     static selector = "[data-dl-sheet]";
@@ -261,19 +261,20 @@
       if (c.type === 'check') return /^(1|true|ya|y|x|✓)$/i.test(s);
       if (c.type === 'date') return s === '' ? '' : this.pDate(s) ?? s;
       if (c.type === 'time') return s === '' ? '' : this.pTime(s) ?? s;
+      if (c.type === 'datetime') return s === '' ? '' : DlDateTime.of(s)?.iso() ?? s;
       if (this.num(c)) { if (s === '') return ''; const c0 = numStr(s), n = c0 === '' ? NaN : +c0; return isNaN(n) ? s : c.decimals != null ? Math.round(n * 10 ** c.decimals) / 10 ** c.decimals : n; }
       if (c.type === 'select' && c.options) { const hit = Object.entries(c.options).find(([k, l]) => k.toLowerCase() === s.toLowerCase() || String(l).toLowerCase() === s.toLowerCase()); return hit ? hit[0] : s; }
       return s;
     }
 
     show(c, v) {
-      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'IDR ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? ((v === '' || v == null) && c.emptyText ? c.emptyText : v) ?? '') : c.type === 'date' ? fmt.gridDate(v) : (v ?? '');
+      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'IDR ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? ((v === '' || v == null) && c.emptyText ? c.emptyText : v) ?? '') : c.type === 'date' ? fmt.gridDate(v) : c.type === 'datetime' ? (DlDateTime.of(v)?.display() ?? v ?? '') : (v ?? '');
     }
 
     // unique: nilai tidak boleh kembar di baris lain (tanpa beda huruf besar/kecil) -- validasi final tetap di server.
     bad(c, v, row) {
       if (c.unique && row && v !== '' && v != null && this.data.some(o => o !== row && String(o[c.key] ?? '').trim().toLowerCase() === String(v).trim().toLowerCase())) return true;
-      if (v && ((c.type === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(v)) || (c.type === 'time' && !/^\d{2}:\d{2}$/.test(v)))) return true;
+      if (v && ((c.type === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(v)) || (c.type === 'time' && !/^\d{2}:\d{2}$/.test(v)) || (c.type === 'datetime' && !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(v)))) return true;
       return (c.required && (v === '' || v == null)) || (this.num(c) && v !== '' && v != null && typeof v !== 'number') || (c.type === 'select' && v && c.options && !(v in c.options));
     }
 
@@ -479,7 +480,7 @@
       const v = this.data[this.cur.r][c.key];
       if (c.type === 'select') td.innerHTML = `<select class="dl-sheet__in">${['', ...this.choices(c, this.data[this.cur.r])].map(k => `<option value="${esc(k)}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(k ? c.options[k] : '—')}</option>`).join('')}</select>`;
       else {
-        const ci = this.cur.c, mode = this.caseMode[ci], start = initial ?? (this.num(c) && typeof v === 'number' ? fmt.raw(v) : c.type === 'date' ? fmt.gridDate(v) : v ?? '');
+        const ci = this.cur.c, mode = this.caseMode[ci], start = initial ?? (this.num(c) && typeof v === 'number' ? fmt.raw(v) : c.type === 'date' ? fmt.gridDate(v) : c.type === 'datetime' ? (DlDateTime.of(v)?.display() ?? v ?? '') : v ?? '');
         td.innerHTML = `<input class="dl-sheet__in ${this.isText(c) ? 'has-case' : ''}" type="text" ${this.num(c) ? 'inputmode="decimal"' : ''} ${c.type === 'date' ? 'placeholder="dd-mm-yyyy"' : c.type === 'time' ? 'placeholder="hh:mm" inputmode="numeric"' : ''} value="${esc(this.isText(c) ? applyCase(String(start), mode) : start)}">`
           + (this.isText(c) ? `<button type="button" class="dl-case dl-sheet__case" data-s-case title="${esc(T('case_tip'))}">${CASE_LABEL[mode]}</button>` : '');
         const inp = $(td, '.dl-sheet__in');
