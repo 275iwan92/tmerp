@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Menu v2 dari sys_app_menu; item berstatus hide_in_menu keluar dari sidebar tetapi layarnya tetap bisa dibuka lewat URL.
+ * Sumber hulu  : sys_app_menu (kolom activate, hide_in_menu, target).
+ * Input        : Pengguna aktif dan hak modul.
+ * Output       : Pohon menu untuk x-dl::layer-shell.
+ * Dipakai oleh : Layout v2 (resources/views/v2/layout.blade.php).
+ * Status       : Aktif.
+ */
+
 namespace App\Support\V2;
 
 use App\Models\Sys\SecUser;
@@ -9,6 +19,7 @@ use App\Support\Localization\Dictionary;
 use App\Support\Localization\Translator;
 use App\Support\Menu\MenuRoutes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 // Menu v2 (x-dl::layer-shell) dari sys_app_menu (di mockup.test = ddtsys). Isi menu = induk di database, bukan kode.
 // Hak akses: modul lewat SecUser::visibleAppMenuCodes() (sama dengan v1), PLUS required_object di grup/item
@@ -24,7 +35,9 @@ final class AppMenu
 
     public static function modules(SecUser $user): array
     {
-        $rows = SysAppMenu::query()->where('activate', true)->orderBy('sort_order')->orderBy('id')->get();
+        $rows = SysAppMenu::query()->where('activate', true)
+            ->when(self::hasHideFlag(), fn ($q) => $q->where('hide_in_menu', false))
+            ->orderBy('sort_order')->orderBy('id')->get();
         $children = $rows->whereNotNull('parent_id')->groupBy('parent_id');
         $allowed = $user->is_admin ? null : $user->accessibleModules()->keys();
         // Direksi boleh melihat menu operasional (aturan user 2026-09-25); pendaratan awalnya Laporan Manajemen (login).
@@ -67,6 +80,14 @@ final class AppMenu
         }
 
         return $modules;
+    }
+
+    // Column arrives with a migration; the live site (tm2sys) may not have it yet.
+    private static function hasHideFlag(): bool
+    {
+        static $has = null;
+
+        return $has ??= Schema::connection('tm2sys')->hasColumn('sys_app_menu', 'hide_in_menu');
     }
 
     // Isi satu grup. Grup di dalam grup (mis. Inquiry & Quotation > Pro-Dev > ...) = submenu bertingkat
