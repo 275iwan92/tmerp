@@ -43,6 +43,10 @@ return [
     'media_path' => public_path('media'),
     'media_url' => '/media',
 
+    // Identitas pojok kiri atas bingkai login / lupa password situs devlib.test (logo di media/brand).
+    // Kosongkan key 'brand' untuk kembali ke identitas Telasih Makmur bawaan x-dl::frame.
+    'brand' => ['name' => 'DevLib', 'tagline' => 'Developer Library', 'logo' => '/media/brand/devlib-logo.svg'],
+
     // Variasi login yang dipakai halaman /login = resources/views/demos/login-<n>.blade.php.
     // Identitas cetak contoh. Non PPN = nama dagang; PPN = badan usaha terdaftar + NPWP (keputusan user 2026-09-23).
     // Di tmerp nilainya dari Settings > Identifikasi (sys_constant COMPANY_NAME / COMPANY_LEGAL_NAME / NPWP).

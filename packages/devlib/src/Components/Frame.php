@@ -2,8 +2,15 @@
 
 namespace Devlib\Components;
 
-// Bingkai layar penuh untuk HP/tablet/laptop/desktop di resolusi apa pun.
-// Dipakai halaman login dan nanti dashboard. Yang cukup disebut:
+/* REMARK
+ * Tujuan: bingkai layar penuh (gambar latar + widget + kotak isi) untuk HP/tablet/laptop/desktop di resolusi apa pun.
+ * Sumber hulu: media/bg/<kelompok>/*.jpg, media/text/*.txt, config devlib.brand (nama, tagline, logo pojok kiri atas).
+ * Input: prop di bawah; brand/tagline/logo kosong = ambil config('devlib.brand.*'), lalu bawaan Telasih Makmur.
+ * Output: view devlib::components.frame (widget brand/clock/quote/... + slot kotak isi).
+ * Dipakai oleh: halaman login dan lupa password (devlib/resources/views/demos/*), dashboard nanti.
+ * Status: aktif.
+ */
+// Yang cukup disebut:
 //   bg       = folder (atau file) di media/bg, mis. "login" atau "login/contoh-01-navy.jpg"
 //   bg-order = random | sequence (urut, lanjut tiap kali halaman dibuka)
 //   bg-interval = detik ganti gambar selama halaman terbuka (0 = tidak berganti)
@@ -34,10 +41,14 @@ class Frame extends DevlibComponent
         public string $city = 'Surabaya',
         public float $lat = -7.2575,
         public float $lon = 112.7521,
-        public string $brand = 'TELASIH MAKMUR',
-        public string $tagline = 'packaging solution',
+        public ?string $brand = null,
+        public ?string $tagline = null,
+        public ?string $logo = null,
     ) {
         $this->boxStyle ??= $box === 'center' ? 'card' : 'panel';
+        $this->brand ??= config('devlib.brand.name', 'TELASIH MAKMUR');
+        $this->tagline ??= config('devlib.brand.tagline', 'packaging solution');
+        $this->logo ??= config('devlib.brand.logo');
     }
 
     public function tag(): string
