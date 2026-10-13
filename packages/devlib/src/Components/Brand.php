@@ -2,9 +2,26 @@
 
 namespace Devlib\Components;
 
-// Logo + nama + tagline perusahaan. tone: light (di atas gelap) | dark.
+/* REMARK
+ * Tujuan: lencana logo + nama + tagline aplikasi. tone: light (di atas gelap) | dark | auto.
+ * Sumber hulu: prop dari pemanggil; identity() = identitas bawaan situs (config devlib.brand.*, lalu Telasih Makmur).
+ * Input: name, tagline, tone, logo (url gambar; kosong = lencana gradasi bawaan).
+ * Output: div.dl-brand (lencana + nama + tagline).
+ * Dipakai oleh: Frame (login), Shell / LayerShell (sidebar), LoginBox, layar identitas tmerp.
+ * Status: aktif.
+ */
 class Brand extends DevlibComponent
 {
+    /** Identitas bawaan situs: config('devlib.brand.*') bila diisi, selain itu Telasih Makmur (tmerp mengirim nilai sendiri). */
+    public static function identity(): array
+    {
+        return [
+            'name' => config('devlib.brand.name', 'TELASIH MAKMUR'),
+            'tagline' => config('devlib.brand.tagline', 'packaging solution'),
+            'logo' => config('devlib.brand.logo'),
+        ];
+    }
+
     public function __construct(
         public string $name = 'TELASIH MAKMUR',
         public string $tagline = 'packaging solution',

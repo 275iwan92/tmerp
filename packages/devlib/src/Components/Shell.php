@@ -2,6 +2,15 @@
 
 namespace Devlib\Components;
 
+/* REMARK
+ * Tujuan: kerangka aplikasi setelah login (sidebar, mega menu modul, tab MDI, Ctrl+K, laci); induk LayerShell.
+ * Sumber hulu: array modules (setara sys_app_menu), user, chat, account dari layar pemakai; brand / tagline / logo
+ * kosong = Brand::identity() (config devlib.brand.*, lalu Telasih Makmur).
+ * Input: prop konstruktor di bawah.
+ * Output: view devlib::components.shell (atau layer-shell untuk turunan).
+ * Dipakai oleh: tmerp resources/views/v2/home.blade.php (mengirim brand sendiri) dan devlib.test home / demo shell.
+ * Status: aktif.
+ */
 // Kerangka aplikasi setelah login (acuan mockup main_menu_v2.html): sidebar
 // kontekstual + mega menu modul + tab MDI + Ctrl+K + menu avatar + drawer.
 // Menu = data (baris setara sys_app_menu), bukan markup: layar pemakai cukup
@@ -23,8 +32,9 @@ class Shell extends DevlibComponent
     public function __construct(
         public array $modules = [],
         public array $user = ['name' => 'User', 'email' => '', 'role' => ''],
-        public string $brand = 'TELASIH MAKMUR',
-        public string $tagline = 'packaging solution',
+        // brand / tagline / logo kosong = identitas bawaan situs (Brand::identity(), config devlib.brand.*).
+        public ?string $brand = null,
+        public ?string $tagline = null,
         // Url gambar logo APLIKASI; kosong = lencana gradasi bawaan. Bukan logo perusahaan (itu untuk kop cetakan).
         public ?string $logo = null,
         public string $logoutAction = '',
@@ -55,7 +65,12 @@ class Shell extends DevlibComponent
         // Help & support "banyak aspek, windownya harus besar"): ['edit' => ['label', 'icon' => 'fa-...', 'url'], 'help' => [...]].
         // Tanpa laci: 'edit' = modal kecil nama / e-mail / telepon, 'help' = tab Bantuan.
         public array $drawers = [],
-    ) {}
+    ) {
+        $identity = Brand::identity();
+        $this->brand ??= $identity['name'];
+        $this->tagline ??= $identity['tagline'];
+        $this->logo ??= $identity['logo'];
+    }
 
     public function tag(): string
     {

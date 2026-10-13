@@ -46,9 +46,10 @@ class Frame extends DevlibComponent
         public ?string $logo = null,
     ) {
         $this->boxStyle ??= $box === 'center' ? 'card' : 'panel';
-        $this->brand ??= config('devlib.brand.name', 'TELASIH MAKMUR');
-        $this->tagline ??= config('devlib.brand.tagline', 'packaging solution');
-        $this->logo ??= config('devlib.brand.logo');
+        $identity = Brand::identity();
+        $this->brand ??= $identity['name'];
+        $this->tagline ??= $identity['tagline'];
+        $this->logo ??= $identity['logo'];
     }
 
     public function tag(): string
