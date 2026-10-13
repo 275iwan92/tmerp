@@ -3,12 +3,18 @@
 namespace App\Support\V2\Board\Widgets;
 
 use App\Models\Sys\SecUser;
-use App\Models\Sys\SysDailyQuote;
+use App\Services\Sys\QuoteRotation;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\Widget;
-use Carbon\CarbonImmutable;
 
-// Kata harian (Setup > Daily Quotes): tanggal yang sama = baris yang sama tiap tahun (hari ke-n kalender tahun kabisat).
+/* REMARK
+ * Tujuan       : Widget Quote of the Day di opening board: satu kutipan acak per user per slot (pagi, setelah makan siang, sore/malam), tanpa ulang dalam 7 hari.
+ * Sumber hulu  : tm2sys.sys_quotes lewat App\Services\Sys\QuoteRotation; catatan tampil di tm2sys.sys_quote_shown.
+ * Input        : User login dan waktu sekarang.
+ * Output       : Teks dan pengarang kutipan, nomor hari dalam tahun.
+ * Dipakai oleh : Opening board (Board / WidgetCatalog).
+ * Status       : Aktif.
+ */
 final class QuoteOfDay extends Widget
 {
     public function key(): string
@@ -23,7 +29,7 @@ final class QuoteOfDay extends Widget
 
     public function description(): string
     {
-        return 'One line for every day of the year.';
+        return 'A different random quote for each part of the day, never repeated within 7 days.';
     }
 
     public function type(): string
@@ -48,10 +54,9 @@ final class QuoteOfDay extends Widget
 
     public function build(Numbers $n, SecUser $user): array
     {
-        $day = CarbonImmutable::create(2024, $n->now->month, $n->now->day)->dayOfYear;
-        $quote = SysDailyQuote::query()->where('day_no', $day)->where('activate', true)->first();
+        $quote = QuoteRotation::pick($user->id_user, $n->now);
 
-        return ['source' => 'tm2sys.sys_daily_quote', 'data' => ['text' => $quote?->quote_text ?? '—', 'author' => $quote?->author ?? '',
+        return ['source' => 'tm2sys.sys_quotes', 'data' => ['text' => $quote?->quote_text ?? '—', 'author' => $quote?->author ?? '',
             'day' => $n->now->dayOfYear, 'days' => $n->now->isLeapYear() ? 366 : 365]];
     }
 }

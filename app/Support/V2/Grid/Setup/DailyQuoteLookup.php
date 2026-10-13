@@ -53,7 +53,7 @@ class DailyQuoteLookup extends DbLookup
     public function columns(): array
     {
         return [
-            ['key' => 'day_no', 'label' => 'Day', 'type' => 'number', 'required' => true, 'unique' => true, 'width' => '80px'],
+            ['key' => 'day_no', 'label' => 'Day', 'type' => 'number', 'required' => true, 'unique' => true, 'width' => '130px'],
             ['key' => 'quote_text', 'label' => 'Quote', 'required' => true, 'width' => '760px'],
             ['key' => 'author', 'label' => 'Author', 'width' => '200px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '70px'],

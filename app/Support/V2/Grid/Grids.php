@@ -128,6 +128,7 @@ final class Grids
         Setup\HelpTopicLookup::class,
         Setup\HelpLineLookup::class,
         Setup\HelpCenterReport::class,
+        Setup\QuoteLookup::class,
         Setup\AssistantQuestionLookup::class,
         Setup\AssistantLogReport::class,
         Setup\DashboardLookup::class,
