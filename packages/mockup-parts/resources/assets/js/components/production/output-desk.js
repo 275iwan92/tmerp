@@ -42,7 +42,6 @@
       this.on('click', '[data-od-bad-add]', () => this.badRow());
       this.on('click', '[data-od-bad-rm]', (e, b) => { b.closest('.mp-od__badrow').remove(); this.badSum(); });
       this.on('input', '[data-od-bad-qty]', () => this.badSum());
-      this.on('click', '[data-od-bad-ok]', () => this.confirmBad());
       this.on('click', '[data-od-job]', (e, r) => { location.href = r.dataset.odJob; });
       this.on('keydown', '[data-od-job]', (e, r) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); r.click(); } });
       const layer = $(this.el, '[data-od-zoomlayer]');
@@ -102,22 +101,27 @@
       if (j) { this.t = j.timers; this.at = Date.now(); this.draw(); }
     }
 
-    // GOOD + BAD shown under the two inputs, counted live.
+    // TOTAL, share bar and the reason panel follow the two inputs live.
     total() {
-      const g = +$(this.el, '[data-od-in="good"]').value || 0, b = +$(this.el, '[data-od-in="bad"]').value || 0;
-      $(this.el, '[data-od="total"]').textContent = num(g + b);
+      const g = +$(this.el, '[data-od-in="good"]').value || 0, b = +$(this.el, '[data-od-in="bad"]').value || 0, t = g + b;
+      $(this.el, '[data-od="total"]').textContent = num(t);
+      const pg = t ? g / t * 100 : 0, pb = t ? b / t * 100 : 0;
+      $(this.el, '[data-od="bar-good"]').style.width = pg + '%';
+      $(this.el, '[data-od="bar-bad"]').style.width = pb + '%';
+      $(this.el, '[data-od="pct-good"]').textContent = `GOOD ${pg.toFixed(1)}%`;
+      $(this.el, '[data-od="pct-bad"]').textContent = `BAD ${pb.toFixed(1)}%`;
+      this.reasons(b);
     }
 
-    // SAVE RESULT: GOOD only is saved at once; BAD first asks the reason(s) in a pop-up (one row per reason, rows add up to BAD).
-    save() {
-      const good = +$(this.el, '[data-od-in="good"]').value || 0, bad = +$(this.el, '[data-od-in="bad"]').value || 0;
-      if (!good && !bad) return Devlib.toast(T('Enter GOOD or BAD first.'), 'warn');
-      if (!bad) return this.send(good, 0, []);
-      this.pending = {good, bad};
-      $(this.el, '[data-od-bad-rows]').innerHTML = '';
+    // BAD > 0 opens the reason panel under the BAD box; a single row follows BAD until the operator splits it.
+    reasons(bad) {
+      const panel = $(this.el, '[data-od-reasons]'), rows = $$(this.el, '.mp-od__badrow');
+      panel.hidden = !bad;
       $(this.el, '[data-od="bad-want"]').textContent = num(bad);
-      this.badRow(bad);
-      $(this.el, '[data-dl-modal-id="od-bad"]').classList.add('is-on');
+      if (!bad) return;
+      if (!rows.length) this.badRow(bad);
+      else if (rows.length === 1) $(rows[0], '[data-od-bad-qty]').value = bad;
+      this.badSum();
     }
 
     badRow(qty = 0) {
@@ -131,16 +135,22 @@
 
     badSum() {
       const sum = $$(this.el, '[data-od-bad-qty]').reduce((a, i) => a + (+i.value || 0), 0);
-      $(this.el, '[data-od="bad-total"]').textContent = num(sum);
+      const bad = +$(this.el, '[data-od-in="bad"]').value || 0;
+      const el = $(this.el, '[data-od="bad-total"]');
+      el.textContent = num(sum);
+      el.closest('.mp-od__total').classList.toggle('is-off', Math.abs(sum - bad) > 0.0001);
       return sum;
     }
 
-    confirmBad() {
+    // SAVE RESULT: GOOD only is saved at once; with BAD the reason rows must be filled and add up to BAD.
+    save() {
+      const good = +$(this.el, '[data-od-in="good"]').value || 0, bad = +$(this.el, '[data-od-in="bad"]').value || 0;
+      if (!good && !bad) return Devlib.toast(T('Enter GOOD or BAD first.'), 'warn');
+      if (!bad) return this.send(good, 0, []);
       const rows = $$(this.el, '.mp-od__badrow').map(r => ({scrap_type_id: +$(r, '[data-od-bad-reason]').value, qty: +$(r, '[data-od-bad-qty]').value || 0}));
       if (!rows.length || rows.some(r => !r.scrap_type_id || r.qty <= 0)) return Devlib.toast(T('Choose a reason and a quantity for every BAD row.'), 'warn');
-      if (Math.abs(this.badSum() - this.pending.bad) > 0.0001) return Devlib.toast(T('The BAD reasons must add up to the BAD quantity.'), 'warn');
-      $(this.el, '[data-dl-modal-id="od-bad"]').classList.remove('is-on');
-      this.send(this.pending.good, this.pending.bad, rows);
+      if (Math.abs(this.badSum() - bad) > 0.0001) return Devlib.toast(T('The BAD reasons must add up to the BAD quantity.'), 'warn');
+      return this.send(good, bad, rows);
     }
 
     async send(good, bad, defects) {
@@ -148,6 +158,7 @@
       if (!j) return;
       this.saved = j.saved;
       $$(this.el, '[data-od-in]').forEach(i => { i.value = 0; });
+      $(this.el, '[data-od-bad-rows]').innerHTML = '';
       this.total();
       Devlib.toast(T('Saved: +:g good, +:b bad for :j.').replace(':g', num(good)).replace(':b', num(bad)).replace(':j', this.desk.card.info[0][1]), 'success');
       this.draw();

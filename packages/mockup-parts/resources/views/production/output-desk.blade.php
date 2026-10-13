@@ -1,7 +1,7 @@
 {{--
  REMARK
  Tujuan       : Tampilan layar Production Output: kepala proses, Master Card satu baris (dieline + artwork, target, info job), timer SETUP dan PRODUCTION OUTPUT,
-                LIST OF JOBS (tanpa grid), dan QC input GOOD / BAD dengan TOTAL (GOOD + BAD) dan pop-up alasan BAD (multi baris, jumlah = BAD).
+                LIST OF JOBS (tanpa grid), dan QC input GOOD / BAD dengan TOTAL (GOOD + BAD) batang proporsi GOOD / BAD, dan panel alasan BAD di bawah kotak BAD (multi baris, jumlah = BAD).
  Sumber hulu  : $desk dari ProductionOutput::desk(); angka dinamis digambar output-desk.js.
  Input        : $desk.
  Output       : Markup bertanda data-od-*; JS mengisi angka, timer dan status.
@@ -99,22 +99,20 @@
                         </div>
                     </div>
                 @endforeach
-                <x-dl::box as="p" class="mp-od__total">{{ $t('TOTAL (GOOD + BAD)') }} : <b data-od="total">0</b> {{ $desk['target']['uom'] }}</x-dl::box>
+                <div class="mp-od__bar" aria-hidden="true"><i class="mp-od__bar-good" data-od="bar-good"></i><i class="mp-od__bar-bad" data-od="bar-bad"></i></div>
+                <x-dl::box as="p" class="mp-od__total">{{ $t('TOTAL') }} <b data-od="total">0</b> {{ $desk['target']['uom'] }}
+                    <x-dl::badge label="GOOD 0%" tone="success" data-od="pct-good" /> <x-dl::badge label="BAD 0%" tone="danger" data-od="pct-bad" /></x-dl::box>
+                <div class="mp-od__reasons" data-od-reasons hidden>
+                    <div data-od-bad-rows></div>
+                    <div class="mp-od__reasons-foot">
+                        <x-dl::button size="sm" variant="secondary" icon="fa-plus" label="Add reason row" type="button" data-od-bad-add />
+                        <span class="mp-od__total">{{ $t('Reasons') }} <b data-od="bad-total">0</b> / <b data-od="bad-want">0</b> {{ $desk['target']['uom'] }}</span>
+                    </div>
+                </div>
                 <button type="button" class="mp-od__save" data-od-save>{{ $t('SAVE RESULT') }}</button>
                 <p class="mp-od__sum" data-od="sum"></p>
             </div>
         </div>
-
-        <x-dl::modal id="od-bad" title="Why are these BAD?" size="md" icon="fa-triangle-exclamation">
-            <x-dl::hint>{{ $t('Split the BAD quantity by reason. One row per reason; the rows must add up to the BAD quantity.') }}</x-dl::hint>
-            <div data-od-bad-rows></div>
-            <x-dl::box as="p" class="mp-od__total">{{ $t('BAD entered') }} : <b data-od="bad-total">0</b> / <b data-od="bad-want">0</b> {{ $desk['target']['uom'] }}</x-dl::box>
-            <x-slot:footer>
-                <x-dl::button variant="secondary" icon="fa-plus" label="Add reason row" type="button" data-od-bad-add />
-                <x-dl::button variant="secondary" label="Cancel" type="button" data-dl-close-modal />
-                <x-dl::button label="Save" type="button" data-od-bad-ok />
-            </x-slot:footer>
-        </x-dl::modal>
 
         <div class="mp-od__zoom" data-od-zoomlayer hidden><img alt="Dieline + artwork"></div>
     </div>
