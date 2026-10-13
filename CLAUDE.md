@@ -4,6 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Konteks Proyek ERP CV. Telasih Makmur (Versi 2)
 
+## CHECK DEVLIB DULU, PAKAI OBJEK (user 2026-10-13, WAJIB di SETIAP layar dan SETIAP prompt)
+
+> User: *"CHECK DI DEVLIB JANGAN GOBLOK TERUS"*, *"UBAH HARUS PAKAI OBJECT ... DAN BUAT AGAR INI TIDAK TERJADI LAGI"*.
+- Sebelum menulis markup, kelas, atau warna di layar: periksa `packages/devlib` (`x-dl::*`) dan `packages/mockup-parts` (`x-mp::*`), lalu **pakai atau extends objek yang ada**. Tulis objek baru (turunan `DevlibComponent`, blok REMARK enam butir) hanya bila belum ada, lalu pakai ulang.
+- Gaya hanya ditulis di OBJEK / TOKEN DevLib, satu perubahan di sana berlaku ke semua layar. Layar = deklarasi tipis: tanpa tag mentah, warna literal, inline style, atau kelas lokal.
+- Dijaga `DevlibOnlyRatchetTest` (tag mentah, warna literal, kelas lokal, warna literal di CSS lokal): angkanya hanya boleh turun.
+
 ## TEKS HITAM ATAU TERANG, TANPA ABU-ABU; REVIEW = BLOG (user 2026-10-13, WAJIB)
 
 > User: *"JANGAN GREY!!!! TIDAK TERBACA"*, *"TULIS DI OBJECT mu JANGAN PAKAI GREY kalau TIDAK DISABLE"*, *"INI ITU MAU DIBACA PAKAI WARNA HITAM ATAU WARNA CERAH"*, *"UBAH SATU HARUSNYA BERUBAH SEMUA KALAU PAKAI OBJECT INHERITATE"*.

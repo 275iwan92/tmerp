@@ -2,6 +2,7 @@
 
 > Aturan (CLAUDE.md, user 2026-10-13): setiap perubahan kode memperbarui blok REMARK di file yang diubah
 > DAN baris layarnya di sini. Format REMARK enam butir: Tujuan, Sumber hulu, Input, Output, Dipakai oleh, Status.
+> Aturan DevLib-dulu (CLAUDE.md): layar memakai objek `x-dl::*` / `x-mp::*`; gaya hanya di objek atau token DevLib. Ratchet `DevlibOnlyRatchetTest` menghitung tag mentah, warna literal, kelas lokal; angka hanya boleh turun.
 > Kolom Menu: tampil = ada di sidebar; disembunyikan = `sys_app_menu.hide_in_menu=1` (layar tetap terbuka lewat URL).
 > Rute layar v2 = `/v2/s/<slug>` (nama rute `v2.screen`); aksi PPIC = `/v2/ppic/*` (`v2.ppic.*`, modul PROD).
 > Status data: mockup (database ddt*), kecuali disebut lain.
