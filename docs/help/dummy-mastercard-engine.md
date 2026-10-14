@@ -73,7 +73,7 @@ app(App\Services\MasterCard\MasterCardDummyEngine::class)->plan(base_path('docs/
 Gejala umum:
 | Gejala | Penyebab | Tindakan |
 |---|---|---|
-| `pdftotext gagal` | program tidak ada di PATH | pasang xpdf / poppler atau set env `PDFTOTEXT_BIN` |
+| `pdftotext tidak ditemukan` / `gagal` | engine mencari: env `PDFTOTEXT_BIN`, PATH, lalu pdftotext bawaan Git for Windows | pasang xpdf / poppler atau isi `PDFTOTEXT_BIN` di .env.mockup |
 | Field kosong atau salah | label formulir bergeser | lihat `LABELS` dan `pieces()` di reader; uji dengan `read()` |
 | "card incomplete: artwork" | gambar tidak ada di `extracted/` dengan nama slug PDF | taruh gambar, nama = `Str::slug(nama PDF tanpa .pdf)` |
 | "incomplete: Customer (master)" | customer tidak ada atau placeholder kartu | isi kartu / buat customer |

@@ -15,6 +15,7 @@ namespace App\Services\MasterCard;
 
 use Illuminate\Support\Str;
 use RuntimeException;
+use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
 final class MasterCardPdfReader
@@ -98,13 +99,26 @@ final class MasterCardPdfReader
 
     private function text(string $path): string
     {
-        $run = new Process([getenv('PDFTOTEXT_BIN') ?: 'pdftotext', '-layout', $path, '-']);
+        $run = new Process([$this->binary(), '-layout', $path, '-']);
         $run->run();
         if (! $run->isSuccessful()) {
             throw new RuntimeException('pdftotext gagal untuk '.basename($path).': '.trim($run->getErrorOutput()));
         }
 
         return explode('ACC PROOF', $run->getOutput())[0];
+    }
+
+    // env PDFTOTEXT_BIN, lalu PATH, lalu pdftotext bawaan Git for Windows (dipakai bila terminal tidak punya PATH-nya).
+    private function binary(): string
+    {
+        $finder = new ExecutableFinder;
+        foreach (array_filter([getenv('PDFTOTEXT_BIN') ?: null, 'pdftotext', 'C:/Program Files/Git/mingw64/bin/pdftotext.exe', 'C:/Program Files/Git/usr/bin/pdftotext.exe']) as $c) {
+            if ($found = is_file($c) ? $c : $finder->find($c)) {
+                return $found;
+            }
+        }
+
+        throw new RuntimeException('pdftotext tidak ditemukan. Pasang xpdf / poppler dan masukkan ke PATH, atau isi PDFTOTEXT_BIN di .env.mockup.');
     }
 
     private function lines(string $text): array
