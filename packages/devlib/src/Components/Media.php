@@ -4,8 +4,8 @@
  * REMARK
  * Tujuan       : Gambar atau frame dokumen (img / iframe) sebagai objek, supaya layar tidak menulis tag media mentah.
  * Sumber hulu  : URL berkas dari layar (mis. peta alur, berkas sumber penawaran supplier).
- * Input        : src, alt (teks gambar / judul frame), as = img (bawaan) | frame; kelas dan atribut lain diteruskan.
- * Output       : <img src alt> atau <iframe src title>; gaya dari kelas yang diteruskan (mis. mp-file-preview, mp-flowmap).
+ * Input        : src, alt (teks gambar / judul frame), as = img (bawaan) | frame | video; kelas dan atribut lain diteruskan.
+ * Output       : <img src alt>, <iframe src title>, atau <video controls src>; gaya dari kelas yang diteruskan (mis. mp-file-preview, mp-flowmap).
  * Dipakai oleh : screens/help (Application's Flow), screens/purchase-quotation (pratinjau berkas sumber).
  * Status       : Aktif.
  */
@@ -28,7 +28,9 @@ class Media extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            @if ($as === 'frame')
+            @if ($as === 'video')
+                <video class="dl-media-video" {{ $attributes }} src="{{ $src }}" title="{{ $alt }}" controls preload="metadata"></video>
+            @elseif ($as === 'frame')
                 <iframe {{ $attributes }} src="{{ $src }}" title="{{ $alt }}"></iframe>
             @else
                 <img {{ $attributes }} src="{{ $src }}" alt="{{ $alt }}">

@@ -129,6 +129,25 @@
             <x-dl::card title="Production Planning flow" description="From the officer's arrangement in Simulation, through PROCESS and APPLY, to the order suggested by machine learning, with the table where each step is stored." icon="fa-route">
                 <x-dl::box><x-dl::media src="{{ asset('images/planning-produksi/alur-planning-produksi.svg') }}" alt="Alur Planning Produksi v2: 1. Officer menyusun di Simulation, tukar job DRAFT. 2. Klik PROCESS, tombol di top bar Form WO. 3. Hasil PROCESS: lulus APPLY aktif, BLOCK mati. Di balik PROCESS: a. bangun ulang BOP dari ProDev, disimpan di prd_wo_operation. b. bangun ulang BOM dan cek stok tersedia, prd_wo_material (Required, Release, Purchase). c. hitung target, waste, setup, prd_wo_operation. d. cek gate bahan baku dan tooling, prd_wo_operation.gate_* (READY, WAIT, BLOCK). e. susun jadwal Draft per mesin, prd_wo_operation.draft_*. f. simpan sidik PROCESS, prd_wo.process_hash dan processed_at. g. ML catat urutan sebagai percobaan TRIAL, prd_plan_trace. 4. APPLY ke Live Schedule: aktif hanya setelah PROCESS lulus dan bahan siap; job jadi LIVE terkunci; prd_wo_operation is_locked, prd_wo.wo_status SCHEDULED, prd_plan_run dan prd_plan_decision, prd_plan_trace FINAL. 5. ML belajar dari urutan FINAL, pairwise ranking harian, prd_sequence_model. 6. ML beri usulan urutan di Simulation dan QUE, officer boleh menolak, tercatat SEQ_REJECT, lalu kembali ke langkah 1. Jalur samping: job bermasalah atau mesin jam atau rusak, contoh laminasi; Live Schedule mengambil job berikutnya yang siap dan dicatat jadi bahan ML." /></x-dl::box>
             </x-dl::card>
+            @php
+                $videos = [
+                    '01-buat-work-order' => ['Create a Work Order', 'From the menu to a new Work Order: pick Customer Order lines, Create Work Order, then check Master Card, Bill of Process and Bill of Material.'],
+                    '02-susun-dan-apply' => ['Arrange, PROCESS and APPLY', 'Open a Work Order, read Simulation, press PROCESS, then APPLY TO LIVE SCHEDULE.'],
+                    '03-live-schedule' => ['Watch the Live Schedule', 'Read the live Gantt per machine and process, and the detail table below it.'],
+                    '04-production-output' => ['Record Production Output', 'Start the timer on a job, then enter the good and bad results.'],
+                ];
+                $videos = array_filter($videos, fn ($k) => file_exists(public_path("videos/ppic/{$k}.webm")), ARRAY_FILTER_USE_KEY);
+            @endphp
+            @if ($videos)
+                <x-dl::card title="How to use the PPIC screens (videos)" description="Each video is recorded from the real screen: menu, mouse pointer, keyboard keys and Indonesian captions." icon="fa-circle-play">
+                    @foreach ($videos as $k => [$vt, $vd])
+                        <x-dl::box>
+                            <x-dl::media as="video" src="{{ asset('videos/ppic/'.$k.'.webm') }}" alt="{{ $vt }}" />
+                            <x-dl::alert tone="info" :message="raw($vt.' · '.$vd)" />
+                        </x-dl::box>
+                    @endforeach
+                </x-dl::card>
+            @endif
             <x-dl::card title="Line by line" icon="fa-bezier-curve">
                 <x-dl::table :columns="['a' => 'Line', 'b' => 'From', 'c' => 'To', 'd' => 'Status']" :rows="$keys($lines)" />
             </x-dl::card>
