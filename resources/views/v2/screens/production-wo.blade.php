@@ -306,6 +306,7 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
                     <x-dl::button icon="fa-lock" label="APPLIED" disabled />
                 @endif
             </x-dl::action-bar>
+            <x-dl::hint note>@t('LIVE (locked) = already applied to the live schedule. DRAFT = not applied yet: move, swap, or simulate it freely until APPLY TO LIVE SCHEDULE.')</x-dl::hint>
             <x-dl::gantt :mode-switch="false" :extras="request()->boolean('extras')" :linked="$sim['linked']" :rows="$sim['rows']" :tasks="$sim['tasks']" :categories="$sim['categories']" :origin-date="$sim['originDate']" :start="$sim['start']" :end="$sim['end']" :px-per-hour="$sim['pxPerHour']"
                 :snap="$sim['snap']" :now-at="$sim['nowAt']" :lock-until="$sim['lockUntil']" :submit-label="null"
                 impact-url="{{ route('v2.ppic.impact') }}" move-url="{{ route('v2.ppic.queue-move') }}" move-label="Add to pending changes" bulk-label="APPLY ALL WOs to LIVE SCHEDULE" bulk-url="{{ $ps['needed'] ? '' : route('v2.ppic.apply-all') }}" :reason-required="true" resource-label="Machine" :source="$src" />

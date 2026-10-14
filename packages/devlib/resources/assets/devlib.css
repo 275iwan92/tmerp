@@ -3672,6 +3672,7 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 
 /* Gantt hierarchy: every not-confirmed bar in full colour; the open Work Order is outlined (is-mine); confirmed / live bars are a firm locked backdrop (is-live) */
 .dl-gantt__blk.is-mine{box-shadow:0 0 0 2px var(--dl-ink-strong)}
+.dl-gantt__tag{font-style:normal;font-size:10px;font-weight:700;border:1px solid currentColor;border-radius:4px;padding:0 3px;margin-left:4px}
 .dl-gantt__blk.is-live{border:2px solid #475569;background-image:repeating-linear-gradient(135deg,rgba(71,85,105,.12) 0 6px,transparent 6px 12px)}
 
 /* Gantt: an officer drag waiting for PROCESS (queued) */

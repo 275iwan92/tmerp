@@ -362,7 +362,7 @@
       return `<div class="dl-gantt__blk dl-gantt--${esc(cls)} ${flags}"
         style="left:${(t.s - this.S) * this.PX}px;width:${Math.max(0.25, t.e - t.s) * this.PX}px" data-g2-task="${esc(t.id)}" title="${esc(t.detail || t.label)} · ${esc(this.lbl(t.s))}–${esc(this.lbl(t.e))}">
         ${setupPx > 0 ? `<span class="dl-gantt__setup" style="width:${setupPx}px">${setupPx >= 40 ? 'S ' + (+t.setup) : ''}</span>` : ''}
-        <b>${t.state === 'hot' ? '🔥 ' : t.state === 'breakdown' ? '⚠ ' : t.state === 'qchold' ? '🔍 ' : ''}${this.lockedFor(t) && t.state !== 'qchold' ? '<i class="fa-solid fa-lock dl-gantt__lk"></i> ' : ''}${wide ? esc(t.label) + (t.state !== 'breakdown' && c.label ? ' · ' + esc(c.label) : '') : esc(t.short || t.label)}</b>
+        <b>${t.state === 'hot' ? '🔥 ' : t.state === 'breakdown' ? '⚠ ' : t.state === 'qchold' ? '🔍 ' : ''}${this.lockedFor(t) && t.state !== 'qchold' ? '<i class="fa-solid fa-lock dl-gantt__lk"></i> ' : ''}${wide ? esc(t.label) + (t.state !== 'breakdown' && c.label ? ' · ' + esc(c.label) : '') : esc(t.short || t.label)}${wide && t.live ? ' <em class="dl-gantt__tag">LIVE</em>' : wide && t.movable ? ' <em class="dl-gantt__tag">DRAFT</em>' : ''}</b>
         <small ${wide || !t.short ? '' : 'hidden'}>${esc(this.lbl(t.s))}–${esc(this.lbl(t.e))}</small>${this.gatesHtml(t)}<span class="dl-gantt__prog"><span style="width:${+t.progress || 0}%"></span></span>
         ${t.state === 'qchold' || this.live() || this.lockedFor(t) ? '' : '<span class="dl-gantt__rz" data-g2-rz></span>'}</div>`;
     }
