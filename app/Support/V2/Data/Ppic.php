@@ -7,7 +7,7 @@
  * Input        : Id WO atau daftar operasi; cache per request (Ppic::forget() bila data berubah).
  * Output       : Array siap tampil: operations(), gantt(), simulation()/linkedBoard(), live() (monitor Live Schedule), rowKey() (baris Gantt: mesin, atau SUBCON per proses; tanpa konsep crew), queue() (antrean per proses per mesin, dengan jeda "Idle before" dan alasannya dari MachineIdle), masterCard(), bomSheet(), bopSheet(), stockOf().
  * Dipakai oleh : PpicController, layar production-wo, ppic-color-sequence, production-scheduling.
- * Status       : Aktif di mockup (ddt*). Hanya membaca; tidak menulis database. bomSheet(): kolom waste/spill (timpaan officer atau nilai ProDev). applyBlockedReason(): alasan APPLY mati (belum PROCESS, bahan kurang, gerbang BLOCK).
+ * Status       : Aktif di mockup (ddt*). Hanya membaca; tidak menulis database. pendingDeliveries(): Complete = tiap part punya dieline + artwork + ukuran (daftar yang kurang di "missing"). bomSheet(): kolom waste/spill (timpaan officer atau nilai ProDev). applyBlockedReason(): alasan APPLY mati (belum PROCESS, bahan kurang, gerbang BLOCK).
  */
 
 declare(strict_types=1);
@@ -1515,13 +1515,41 @@ final class Ppic
         return $rows->map(function ($d) use ($customers, $byProduct) {
             $inq = $d->item?->inquiry ?? ($d->item?->product_id ? $byProduct->get($d->item->product_id) : null);
             $parts = $inq?->parts?->count() ?? 0;
+            // Complete = every part carries dieline, artwork and size (rule: no Work Order without a READY Master Card).
+            $missing = $parts > 0 ? self::partsMissing($inq->parts) : ['part'];
 
             return [
                 'id' => $d->id_delivery, 'co' => $d->order?->co_no, 'customer' => $customers[$d->order?->customer_id] ?? '—',
                 'product' => $d->item?->description, 'qty' => (float) $d->ship_qty, 'ship' => $d->ship_date?->toDateString(),
-                'parts' => $parts, 'complete' => $parts > 0,
+                'parts' => $parts, 'complete' => $missing === [], 'missing' => $missing,
             ];
         })->all();
+    }
+
+    /**
+     * What the Inquiry parts still lack for a READY Master Card: dieline, artwork, size (L x W x H). Body parts of an assembly hold
+     * no artwork of their own, so only COMPONENT / single parts are checked.
+     *
+     * @param  iterable<object>  $parts
+     * @return array<int, string>
+     */
+    private static function partsMissing(iterable $parts): array
+    {
+        $missing = [];
+        foreach ($parts as $p) {
+            if (($p->part_kind ?? null) === 'ASSEMBLY') {
+                continue;
+            }
+            $spec = is_array($p->dieline_spec) ? $p->dieline_spec : (array) json_decode((string) $p->dieline_spec, true);
+            $dims = (array) ($spec['dims'] ?? []);
+            foreach (['dieline' => ! $p->dieline_spec, 'artwork' => ! $p->artwork_path, 'size' => empty($dims['product_length']) || empty($dims['product_width']) || empty($dims['product_height'])] as $what => $absent) {
+                if ($absent) {
+                    $missing[$what] = $what;
+                }
+            }
+        }
+
+        return array_values($missing);
     }
 
     /** Dieline, artwork and spec of the part this Work Order makes, read from Product Development (TMDieline). null = no part linked. @return array<string, mixed>|null */

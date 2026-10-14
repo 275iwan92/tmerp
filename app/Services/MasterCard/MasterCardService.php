@@ -262,7 +262,8 @@ final class MasterCardService
                 $c->update(['status' => 'PRODUCT', 'product_id' => $product->id_product, 'updated_by' => $this->login]);
             }
             $mst = DB::connection('tm2mst');
-            $mst->table('prod_part')->where('product_id', $product->id_product)->update(['data_origin' => $card->data_origin]);
+            // Each part points back to its card (PlanFacts reads the knife code of the card through prod_part.mastercard_code).
+            $mst->table('prod_part')->where('product_id', $product->id_product)->update(['data_origin' => $card->data_origin, 'mastercard_code' => $card->card_code]);
             $mst->table('prod_product')->where('id_product', $product->id_product)->update(['data_origin' => $card->data_origin]);
 
             return $product->refresh();

@@ -35,7 +35,7 @@ Status       : Aktif di mockup (ddt*). Simulation: strip ML (x-dl::suggestion-st
         $pending = Ppic::pendingDeliveries();
         $pickRows = array_map(fn ($p) => ['id' => $p['id'], 'co' => raw($p['co']), 'customer' => raw($p['customer']), 'product' => raw($p['product']), 'qty' => (float) $p['qty'],
             'ship' => $p['ship'] ? \Carbon\Carbon::parse($p['ship'])->toDateString() : null,
-            'pd' => $p['complete'] ? t('Complete').' · '.$p['parts'].' '.t('parts') : t('Simple Work Order (no operations)')], $pending);
+            'pd' => $p['complete'] ? t('Complete').' · '.$p['parts'].' '.t('parts') : ($p['parts'] > 0 ? t('Master Card incomplete').': '.implode(', ', array_map('t', $p['missing'])) : t('Simple Work Order (no operations)'))], $pending);
     @endphp
     @php $noCard = Ppic::linesWithoutCard(); @endphp
     <x-dl::card title="Create Work Order" description="Tick the lines to process, then Create Work Order. A Work Order is built from Product Development (BOP, routing, BOM); the form opens so you can check it, PROCESS it and APPLY TO LIVE SCHEDULE in Simulation.">
