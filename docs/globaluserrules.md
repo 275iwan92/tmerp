@@ -269,8 +269,9 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 - **Pengaman URGENT sesuai saran** (user 2026-10-08): yang boleh menandai PPIC, Supervisor Produksi, Ops Manager dan di atasnya; alasan dan tautan WO / CO wajib; bahan FSC / food grade butuh persetujuan kepala QC atau Ops Manager.
 - **Disetujui user 2026-10-08** ("setuju"): landed cost terlambat ke qty yang masih ada + akun Selisih Landed Cost; jurnal koreksi bersusun untuk transaksi mundur; kurang kirim memakai toleransi PO dengan jendela 7 hari dan debit note bila ditolak; nilai awal pengaturan, kelas risiko awal, dan PO Subkon sebagai induk dokumen kirim subkon (rinci: `inventorywarehouse_v201_scope.md` bagian 13).
 - **Semua perubahan di-PREVIEW dulu** (user 2026-10-08: "all MUST BE PREVIEW first"): setiap layar baru atau perubahan tampilan dibuat sebagai JPEG (skill `tmerp-ui-mockup`), diperiksa, dikirim, dan **tidak dibangun sebelum disetujui**. Laporan **Stock Card**, **Stock Summary**, dan **Warehouse Map** yang ada **sudah benar**: tidak diubah; perbaikan boleh tetapi selalu lewat preview dulu. **Stock Card dibiarkan persis seperti sekarang** (user: "format yang biasa digunakan"), tanpa kolom baru. **Preview layar yang sudah ada = tangkapan layar asli** (`docs/mockups/inventory_report_app/`), bukan replika; angka contoh harus bersambung (user 2026-10-08: "angka tidak bersambung ... cari yang BENAR"). Aturan area gudang = tiga isian (Mixing, Pick order, hitung tiap N hari). Mockup Fase 1: `docs/mockups/inv_v201_*.jpg` dan `wh_v201_storage_area.jpg`.
-- **Stock Card: rumus bersambung** (user 2026-10-08: "kalau terakhir EB 5000 berikutnya sambung BB nya ya 5000"; "konsep formula nya harus sambung"): BB baris berikutnya = EB baris sebelumnya; BB / EB = saldo seluruh item (bukan per lokasi); EB = BB + In - Out + Adj. Menggantikan keputusan 3 Oktober (BB / EB per lokasi apa adanya). Preview: `inv_v201_stock_card_chain.jpg`. **Disetujui dan dibangun 2026-10-08**; saldo lokasi = kolom opsional Location Balance.
+- **Stock Card: rumus bersambung** (user 2026-10-08: "kalau terakhir EB 5000 berikutnya sambung BB nya ya 5000"; "konsep formula nya harus sambung"): BB baris berikutnya = EB baris sebelumnya; BB / EB = saldo seluruh item (bukan per lokasi); EB = BB + In - Out + Adj. Menggantikan keputusan 3 Oktober (BB / EB per lokasi apa adanya). Preview: `inv_v201_stock_card_chain.jpg`. **Disetujui dan dibangun 2026-10-08**; saldo lokasi = kolom opsional Location Balance.
 - **Koreksi salah input** (**disetujui user 2026-10-08 dengan keterangan wajib "Kesalahan transaksi no. XXX"**; dialog Cancel belum dipreview): dokumen POSTED tidak diedit; koreksi lewat dokumen baru yang menunjuk dokumen asal; Pembalik untuk salah input, Adjustment hanya untuk selisih fisik; periode tertutup menolak.
+- **Rumus Bill of Material di Form WO PPIC** (user 2026-10-13: "RUMUS DI CATAT !!! Kolom RELEASE = kolom AVAILABLE. Kolom PURCHASE = kolom REQUIRED - kolom RELEASE"): **Release = Available** (stok yang boleh dilepas; nilai awal baris, officer boleh mengubah dengan alasan, dan tidak melebihi Required supaya Purchase tidak negatif) dan **Purchase = Required - Release**. Available = bebas dari BOOKING / RESERVE (user 2026-10-13; booking Draft / PRE ikut mengurangi, keputusan 06:31Z) = On hand dikurangi sisa booking terbuka semua tahap, minimum 0 (dibaca di PPIC oleh `AvailableStock`; view `v_rm_available` tidak diubah; reserve = booking, tidak ada tabel reserve terpisah); Required dari ENGINE ProDev (printSheets x qty per lembar, waste dan toleransi sudah di dalam). Release hanya menentukan status gate material PPIC dan TIDAK mereservasi stok (reservasi / booking = ENGINE ProCost). Kode: `Ppic::bomSheet`, `GateService::ownLines`, `PpicController::bomCells`; tes `WoBomRequiredEditTest`.
 
 ## B. Database & data
 
@@ -638,11 +639,14 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 3. **Jangan menambah lingkup yang tidak diminta.** Kebutuhan belum jelas = proposal tertulis dulu.
 4. **Bertanya lewat narasi**, bukan widget pilihan, saat diskusi. Saat user minta berjalan sendiri (tanpa
    prompting), jangan bertanya; catat keputusan untuk ditinjau user.
-5. **Jangan membuat user mengizinkan prompt** untuk situs .test; jangan pakai browser pane untuk situs .test.
-6. **Uji:** saat ini user menguji sendiri secara manual, kecuali user minta Claude menguji. Test yang menulis ke
+5. ~~**Jangan membuat user mengizinkan prompt** untuk situs .test; jangan pakai browser pane untuk situs .test.~~
+   **Dicoret user 2026-10-14:** preview dibuat dari tangkapan layar sendiri (`CLAUDE.md` §7 butir 3-4), tanpa meminta prompt ke Jo.
+6. **Uji:** ~~saat ini user menguji sendiri secara manual, kecuali user minta Claude menguji.~~ **Dicoret user 2026-10-14:**
+   agen menguji hasilnya sendiri, diam-diam di latar belakang, tanpa memprompt Jo. Test yang menulis ke
    database wajib membersihkan sendiri, dan hasil bersih-bersihnya diverifikasi ke DB.
-7. **Selesai kerja:** `npm run build` (bila class Tailwind berubah) → commit per potongan kerja → push ke GitHub.
-   `git add` hanya path yang jelas (ada agen lain di checkout yang sama). Satu branch `main`, tanpa branch/worktree baru.
+7. **Selesai kerja:** `npm run build` (bila class Tailwind berubah) → ~~commit per potongan kerja → push ke GitHub.~~
+   **Dicoret user 2026-10-14:** commit + push hanya setelah Jo agree atas preview (seizin Jo, `CLAUDE.md` §7 butir 3);
+   tidak agree = rollback. `git add` hanya path yang jelas (ada agen lain di checkout yang sama). Satu branch `main`, tanpa branch/worktree baru.
 8. **Backlog:** item yang selesai dipindah ke `docs/LOG_JOB_DONE.md`, bukan ditandai SELESAI di backlog.
 9. **Yang tidak dipakai lagi dipindah ke** `C:\Users\iwanp\tmerp_unused\` (+ MANIFEST), bukan dibiarkan atau diedit.
 10. **Serah terima:** tulis hand-off di memori, lalu arsipkan sesi setelah selesai.
@@ -687,6 +691,15 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     dan live dijalankan sesuai layar yang sudah Approved.
 
 20. **Identitas agen ditentukan HARI (user 2026-10-07, tidak perlu diulang).** Senin-Selasa = **Agent Iwan**; Rabu-Kamis-Jumat-Sabtu = **Agent Jo**; Minggu libur (bila user bekerja di hari Minggu, kemungkinan besar Jo, probabilitas kecil ~5%: tanyakan bila ragu). Iwan dan Jo adalah Claude Code yang sama, login bergantian oleh user, di laptop dan folder yang sama; email akun BUKAN penentu. Agen mengecek `date` lalu menulis `Agent: Iwan` / `Agent: Jo` di trailer commit; pernyataan eksplisit user menang atas jadwal. Karena satu folder dan satu git index: `git add` path eksplisit, jangan campur pekerjaan agen lain.
+
+21. **Standar kode: empat butir, berlaku di setiap tugas (user 2026-10-13, dirangkum 2026-10-14).**
+    - **OO + DevLib dulu:** sebelum menulis markup, kelas, atau warna, periksa `packages/devlib` (`x-dl::*`) dan `packages/mockup-parts`
+      (`x-mp::*`); pakai atau turunkan objek yang ada, objek baru hanya bila belum ada (D.15, D.17, D.18). Layar = deklarasi tipis.
+    - **Sederhana:** kode minimal yang menyelesaikan masalah, tanpa fitur spekulatif; komentar hanya untuk yang tidak lazim.
+    - **REMARK:** setiap file yang diubah memuat blok REMARK enam butir (Tujuan, Sumber hulu, Input, Output, Dipakai oleh, Status)
+      dan baris layarnya di `docs/SCREEN-INDEX.md` diperbarui. "Ini untuk apa?" dijawab dari REMARK, bukan membaca ulang kode.
+    - **Tanpa dead code:** pada file yang disentuh, buktikan tak terpakai lewat grep (rute, view, JS, tes), lalu hapus (bukan
+      dikomentari) tanpa mengubah perilaku. Yang meragukan (flag URL seperti `?layout=tabs`) tidak dihapus, dilaporkan.
 
 ## E. Help & Asisten AI
 
@@ -849,4 +862,7 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-08 | A.26: **Stock Card tanpa perubahan** dan **aturan area = tiga isian** (user) — preview Stock Card diganti replika tanpa perubahan. |
 | 2026-10-08 | A.26: **preview layar yang sudah ada memakai tangkapan layar asli**, angka contoh harus bersambung; replika salah dibuang. Rencana teknis Inventory & Warehouse v2.01 dibangun ulang dengan mockup preview. |
 | 2026-10-08 | A.26: **Stock Card bersambung** (BB berikutnya = EB sebelumnya, saldo item) menggantikan BB / EB per lokasi; **koreksi salah input lewat Pembalik** diusulkan. Dua preview dibuat. |
+| 2026-10-13 | A: **Rumus BOM Form WO dicatat** (user: "RUMUS DI CATAT") — Release = Available (tidak melebihi Required), Purchase = Required - Release; Release tidak mereservasi stok. |
 | 2026-10-13 | C.34: **teks hitam atau terang, tanpa abu-abu; review = blog** (user) — abu-abu hanya untuk disabled (`--dl-disabled`), read-only dibedakan lewat latar; aturan ditulis di token / objek DevLib supaya satu perubahan menurunkan ke semua layar. Layar review memakai objek `x-dl::review-feed` (huruf besar ala WordPress, tombol keputusan besar). MD Review dan Old Stories Review dibangun ulang dengan objek itu. |
+| 2026-10-14 | D.21: **Standar kode empat butir dikumpulkan di rulebook** (user 2026-10-13: "Always check and eliminate dead-code every you work. Make sure make it simple code and effective"; "KENAPA KAMU DI TIAP CODING GA BERI REMARK SUMMARY"; "CHECK DI DEVLIB JANGAN GOBLOK TERUS") — OO + DevLib dulu, sederhana, REMARK enam butir + SCREEN-INDEX, tanpa dead code. Sebelumnya hanya ada di CLAUDE.md. |
+| 2026-10-14 | D.5-D.7: **dicoret / diubah** (user: "setuju, coret D.5-D.7") — D.5 (jangan browser pane / prompt .test) dicoret penuh; D.6 hanya klausa "user menguji sendiri" dicoret (agen menguji sendiri, diam-diam), kewajiban test membersihkan DB tetap; D.7 hanya klausa "commit per potongan kerja → push" dicoret (commit/push setelah Jo agree, rollback bila tidak), `npm run build`, `git add` eksplisit, dan satu branch tetap. Alasan: bertabrakan dengan aturan seizin Jo 2026-10-13 di CLAUDE.md. |

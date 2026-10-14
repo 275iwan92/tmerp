@@ -67,11 +67,11 @@
 | 50 | `docs/md_for_systems/uistandard/uistandard_component_other.md` | 147 | 2026-09-22 | 2 | **RAGU** | Katalog komponen v1 (x-form, x-grid); v2 memakai DevLib | |
 | 51 | `docs/md_for_systems/uistandard/uistandard_component_print.md` | 124 | 2026-09-22 | 2 | **RAGU** | Katalog komponen v1 (x-form, x-grid); v2 memakai DevLib | |
 | 52 | `docs/mockups/inquiry_product_costing/gemini_spark_productcosting.md` | 282 | 2026-09-22 | 5 | **RAGU** | Dokumen buatan AI luar tentang HPP; isi sudah ada di CostingEngine dan procost_formula_library | |
-| 53 | `CLAUDE.md` | 498 | 2026-10-08 | 195 | **RINGKAS** | Sudah ada versi ringkas 73 baris di docs/ringkas/CLAUDE.md; ganti setelah Jo agree | |
+| 53 | `CLAUDE.md` | 498 | 2026-10-08 | 195 | **RINGKAS** | SELESAI 2026-10-14: diganti ringkas 85 baris (Jo setuju); asli diarsipkan ke tmerp_unused | |
 | 54 | `docs/LOG_JOB_DONE.md` | 3979 | 2026-10-10 | 25 | **RINGKAS** | Log riwayat 3.979 baris; pertahankan, arsipkan entri lama per bulan | |
 | 55 | `docs/globalgitbranch.md` | 127 | 2026-09-22 | 2 | **RINGKAS** | 127 baris untuk satu aturan "satu jalur tanpa cabang"; sudah satu butir di ringkasan | |
 | 56 | `docs/globalstarthere.md` | 123 | 2026-10-07 | 14 | **RINGKAS** | Pintu masuk; gabung dengan index_master.md jadi satu | |
-| 57 | `docs/globaluserrules.md` | 843 | 2026-10-08 | 22 | **RINGKAS** | Sudah ada versi ringkas 111 baris di docs/ringkas/globaluserrules.md; asli jadi arsip setelah Jo agree | |
+| 57 | `docs/globaluserrules.md` | 843 | 2026-10-08 | 22 | **RINGKAS** | 2026-10-14: asli TETAP (nomor dirujuk memori, skill, kode); docs/ringkas/globaluserrules.md = indeks bernomor; D.5-D.7 dicoret | |
 | 58 | `docs/index_master.md` | 307 | 2026-10-07 | 2 | **RINGKAS** | Indeks dokumentasi 307 baris, kembar dengan globalstarthere; gabung | |
 | 59 | `docs/md_for_systems/TIER_1_ATTENDANCE.md` | 967 | 2026-09-22 | 7 | **RINGKAS** | 967 baris; kebutuhan presensi masih benar, ringkas | |
 | 60 | `docs/md_for_systems/customerinvoice_plan.md` | 424 | 2026-10-02 | 6 | **RINGKAS** | Rencana yang sudah dibangun; sisakan tabel dan layar, buang rencana | |
