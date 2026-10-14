@@ -103,10 +103,7 @@ class CrewMachineGrid extends DbGrid
         $nick = trim((string) $m->nickname);
         $row = ['name' => $nick !== '' ? $nick : t('Fill in nickname'), 'detail' => $m->machine_name, 'type' => $m->machine_type];
         foreach (MachineCrewService::productionShifts() as $shift) {
-            $names = $crews->filter(fn ($c) => $c->shift_id === $shift->shift_id)
-                ->flatMap(fn ($c) => $c->periods->first(fn ($p) => $p->covers($today))?->members ?? collect())
-                ->map(fn ($mem) => $mem->employee?->full_name)->filter()->unique()->values();
-            $row['shift_'.$shift->shift_id] = $names->implode('
+            $row['shift_'.$shift->shift_id] = MachineCrewService::namesOn($crews, $shift->shift_id, $today)->implode('
 ');
         }
 

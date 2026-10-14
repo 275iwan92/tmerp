@@ -5,7 +5,7 @@
  Input        : Query tab (schedule, material, incoming, monitoring), view (gantt, kanban, calendar, grid), process, machine, q, sim (id WO simulasi).
  Output       : Tab dan tampilan x-dl::* untuk jadwal, material, incoming dan monitoring; aksi plan memanggil rute v2.ppic.*.
  Dipakai oleh : Layar v2 slug production-scheduling lewat rute v2.screen (view v2.screen memuat berkas ini)
- Status       : Aktif
+ Status       : Aktif. Tabel On the shop floor now punya kolom Crew (crew standar hari ini dari Assign Crew; disetujui Jo 14-Okt-2026).
 --}}
 @php
     use App\Support\V2\Data\Ppic;
@@ -76,12 +76,13 @@
 @if ($floor)
     <x-dl::card title="On the shop floor now" description="Mirror of the operator screens: what each machine is making, what it should have made by now, and the next jobs. Reload to refresh.">
         <x-dl::table :source="\App\Support\V2\Src::of('tm2prd.prd_operation_time_log', 'tm2prd.prd_wo_operation')"
-            :columns="['machine' => 'Machine', 'job' => 'Job', 'state' => 'State', 'time' => 'Time', 'good' => 'Made', 'expected' => 'Should be', 'next' => 'Next jobs']"
+            :columns="['machine' => 'Machine', 'job' => 'Job', 'state' => 'State', 'time' => 'Time', 'good' => 'Made', 'expected' => 'Should be', 'crew' => 'Crew', 'next' => 'Next jobs']"
             :rows="array_map(fn ($f) => ['machine' => raw($f['machine']), 'job' => raw($f['wo'].' · '.($f['product'] ?? '—').' · '.$f['process']),
                 'state' => raw(['SETUP' => t('Setup'), 'RUN' => t('Run'), 'PAUSE' => t('Paused')][$f['state']].($f['why'] ? ' · '.$f['why'] : '')),
                 'time' => raw(sprintf('%02d:%02d:%02d', intdiv($f['seconds'], 3600), intdiv($f['seconds'] % 3600, 60), $f['seconds'] % 60)),
                 'good' => raw(\Devlib\Locale::number($f['good'], 0).' / '.\Devlib\Locale::number($f['planned'], 0)),
                 'expected' => $f['expected'] !== null ? raw(\Devlib\Locale::number($f['expected'], 0)) : '—',
+                'crew' => raw($f['crew'] ?? t('No crew assigned')),
                 'next' => raw($f['next'] ? implode(' · ', array_map(fn ($n) => $n['wo'], $f['next'])) : '—')], $floor)" />
         <x-dl::form.row :cols="3">
             @foreach ($floor as $f)

@@ -8,8 +8,8 @@
  * Input        : machine_id / crew id, shift_id, tanggal dari-sampai, daftar [employee_id, role].
  * Output       : Baris tersimpan ; ValidationException berisi pesan (bukan mesin Offset, nickname kosong, crew ke-5, tanggal kosong / terbalik, tabrakan periode,
  *                lebih dari 10, orang dua kali, peran kosong, bukan karyawan produksi, orang yang sama bentrok di crew lain pada shift dan periode yang sama).
- * Dipakai oleh : Rute v2.crew.* dan layar v2 crew-form.
- * Status       : Aktif (dummy). Definisi "karyawan produksi" = PRODUCTION_DEPARTMENTS, usulan, menunggu jawaban Jo. Grup tetap menyusul.
+ * Dipakai oleh : Rute v2.crew.*, layar v2 crew-form, grid Assign Crew dan kolom Crew di PPIC Workspace (namesOn).
+ * Status       : Aktif (dummy). "Karyawan produksi" = PRODUCTION_DEPARTMENTS (keputusan Jo 14-Okt-2026: PLAT / PRA-CETAK masuk; QC, LEM MANUAL dan kupas manual = kerja manusia tanpa mesin, belum punya crew). Grup tetap menyusul.
  */
 
 namespace App\Services\Scheduling\Crew;
@@ -32,10 +32,10 @@ class MachineCrewService
 
     public const MAX_MEMBERS = 10;
 
-    public const ROLES = ['Main operator', 'Co-operator', 'Helper'];
+    public const ROLES = ['Main operator', 'Co-operator', 'Helper', 'Kabag'];
 
-    // Usulan: karyawan aktif yang posisinya di departemen produksi SBU Offset (bukan Digital / Indostry / Legacy belum dipetakan).
-    public const PRODUCTION_DEPARTMENTS = ['PRESS', 'CETAK', 'PLONG-DIECUT', 'LAMINASI', 'LAMINATING', 'POTONG', 'FOLDER-GLUE', 'KUPAS', 'SHRINK', 'MANUAL', 'HARIAN-LEPAS'];
+    // Karyawan aktif yang posisinya di departemen produksi SBU Offset (bukan Digital / Indostry / Legacy belum dipetakan); PRA-CETAK = operator CTP (PLAT).
+    public const PRODUCTION_DEPARTMENTS = ['PRA-CETAK', 'PRESS', 'CETAK', 'PLONG-DIECUT', 'LAMINASI', 'LAMINATING', 'POTONG', 'FOLDER-GLUE', 'KUPAS', 'SHRINK', 'MANUAL', 'HARIAN-LEPAS'];
 
     /** Mesin yang boleh punya crew: aktif, mesin proses, SBU Offset Printing (satu aturan untuk grid, form, dan simpan). */
     public static function assignableMachines(): Builder
@@ -63,6 +63,14 @@ class MachineCrewService
     public static function crewFor(ProdMachine $machine, int $shiftId): ?ProdMachineCrew
     {
         return ProdMachineCrew::query()->where('machine_id', $machine->machine_id)->where('shift_id', $shiftId)->where('activate', true)->orderBy('crew_index')->first();
+    }
+
+    /** Nama anggota crew pada shift itu yang periodenya mencakup $date; $crews = crew aktif satu mesin (dengan periods.members.employee). */
+    public static function namesOn(iterable $crews, int $shiftId, string $date): Collection
+    {
+        return collect($crews)->filter(fn ($c) => $c->shift_id === $shiftId)
+            ->flatMap(fn ($c) => $c->periods->first(fn ($p) => $p->covers($date))?->members ?? collect())
+            ->map(fn ($m) => $m->employee?->full_name)->filter()->unique()->values();
     }
 
     /** [employee_id => "kode · nama"] karyawan produksi aktif. */

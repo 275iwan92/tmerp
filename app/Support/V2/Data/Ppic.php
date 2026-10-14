@@ -7,7 +7,7 @@
  * Input        : Id WO atau daftar operasi; cache per request (Ppic::forget() bila data berubah).
  * Output       : Array siap tampil: operations(), gantt(), simulation()/linkedBoard(), live() (monitor Live Schedule), rowKey() (baris Gantt: mesin, atau SUBCON per proses; tanpa konsep crew), queue() (antrean per proses per mesin, dengan jeda "Idle before" dan alasannya dari MachineIdle), masterCard(), bomSheet(), bopSheet(), stockOf().
  * Dipakai oleh : PpicController, layar production-wo, ppic-color-sequence, production-scheduling.
- * Status       : Aktif di mockup (ddt*). Hanya membaca; tidak menulis database. pendingDeliveries(): Complete = tiap part punya dieline + artwork + ukuran (daftar yang kurang di "missing"). bomSheet(): kolom waste/spill (timpaan officer atau nilai ProDev). applyBlockedReason(): alasan APPLY mati (belum PROCESS, bahan kurang, gerbang BLOCK).
+ * Status       : Aktif di mockup (ddt*). shopFloor(): kolom crew = crew standar hari ini dari Assign Crew (disetujui Jo 14-Okt-2026). Hanya membaca; tidak menulis database. pendingDeliveries(): Complete = tiap part punya dieline + artwork + ukuran (daftar yang kurang di "missing"). bomSheet(): kolom waste/spill (timpaan officer atau nilai ProDev). applyBlockedReason(): alasan APPLY mati (belum PROCESS, bahan kurang, gerbang BLOCK).
  */
 
 declare(strict_types=1);
@@ -19,7 +19,9 @@ use App\Models\Master\ProdPart;
 use App\Models\Prd\PrdPlanRun;
 use App\Models\Prd\PrdWo;
 use App\Models\Sdi\IqpInquiry;
+use App\Models\Master\ProdMachineCrew;
 use App\Services\MasterCard\MasterCardShape;
+use App\Services\Scheduling\Crew\MachineCrewService;
 use App\Services\Scheduling\Operator\OperatorTimerService;
 use App\Services\Scheduling\Plan\AutoPlanRunner;
 use App\Services\Scheduling\Plan\AvailableStock;
@@ -221,6 +223,12 @@ final class Ppic
         $ops = collect(self::operations())->keyBy('op_id');
         $queue = collect(self::operations())->filter(fn ($o) => $o['plan_status'] === 'CONFIRMED' && $o['machine_id'] && $o['bucket'] !== 'done')->groupBy('machine_id');
         $reasons = OperatorTimerService::PAUSE_REASONS;
+        // Crew standar hari ini dari Assign Crew: per mesin, satu bagian per shift yang punya anggota. null = mesin Offset tanpa crew (celah); '—' = bukan mesin Offset.
+        $machineIds = $open->map(fn ($s) => $ops[(int) $s->operation_id]['machine_id'] ?? null)->filter()->unique()->values();
+        $crews = ProdMachineCrew::query()->with('periods.members.employee')->where('activate', true)->whereIn('machine_id', $machineIds)->get()->groupBy('machine_id');
+        $assignable = MachineCrewService::assignableMachines()->whereIn('machine_id', $machineIds)->pluck('machine_id')->all();
+        $shifts = MachineCrewService::shifts();
+        $today = now()->toDateString();
         $out = [];
         foreach ($open as $seg) {
             $o = $ops[(int) $seg->operation_id] ?? null;
@@ -229,7 +237,8 @@ final class Ppic
             }
             $sum = $svc->summary((int) $seg->operation_id);
             $next = ($queue[$o['machine_id']] ?? collect())->where('op_id', '!=', $o['op_id'])->sortBy(fn ($x) => $x['start']?->timestamp ?? PHP_INT_MAX)->take(3);
-            $out[] = ['machine' => (string) $o['machine'], 'wo_id' => $o['wo_id'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'process' => $o['process'], 'state' => $seg->kind, 'why' => $seg->kind === 'PAUSE' ? t($reasons[$seg->pause_reason] ?? 'Other') : null,
+            $crew = collect($shifts)->map(fn ($name, $sid) => ($n = MachineCrewService::namesOn($crews[$o['machine_id']] ?? [], (int) $sid, $today))->isEmpty() ? null : $name.': '.$n->implode(', '))->filter()->implode(' · ');
+            $out[] = ['machine' => (string) $o['machine'], 'crew' => in_array((int) $o['machine_id'], $assignable, true) ? ($crew ?: null) : '—', 'wo_id' => $o['wo_id'], 'wo' => $o['wo_no'], 'product' => $o['product'], 'process' => $o['process'], 'state' => $seg->kind, 'why' => $seg->kind === 'PAUSE' ? t($reasons[$seg->pause_reason] ?? 'Other') : null,
                 'seconds' => $svc->elapsed($seg), 'planned' => $o['qty_out'], 'good' => $sum['good'], 'expected' => self::expectedQty($o, $sum), 'uom' => $o['uom'], 'operator' => $seg->operator,
                 'next' => $next->map(fn ($x) => ['wo' => $x['wo_no'], 'product' => $x['product'], 'qty' => $x['qty'], 'start' => $x['start']])->values()->all()];
         }

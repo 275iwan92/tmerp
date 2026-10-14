@@ -2253,7 +2253,7 @@ td.dl-print__no{text-align:center}
 .dl-form__step.is-hold{background:var(--dl-amber-2);color:var(--dl-white)}
 .dl-form__logact--hold{background:var(--dl-amber-soft, #fef3c7);color:var(--dl-amber-2)}
 .dl-form__step.is-rejected{background:var(--dl-danger);color:var(--dl-white)}
-.dl-form__panel .dl-form__title{font-size:calc(15px * var(--dl-font-scale))}
+.dl-form__panel .dl-form__title{font-size:calc(22px * var(--dl-font-scale))}
 .dl-form--panel .dl-form__body.dl-tabs{display:block;margin-top:4px}
 .dl-form--panel .dl-tabs__panel > * + *{margin-top:6px}
 .dl-form__audit{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 16px;max-width:880px}
