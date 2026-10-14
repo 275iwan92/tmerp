@@ -120,6 +120,35 @@ class MachineCrewService
     }
 
     /**
+     * Simpan semua kotak crew satu mesin sekaligus (semua atau tidak sama sekali). $boxes = [['shift_id' => int, 'members' => [[employee_id, role], ...]], ...].
+     * Kotak berisi: crew mesin + shift itu dibuat / diperbarui pada periode yang berlaku hari ini (atau yang terakhir) dengan tanggal $from-$to.
+     * Kotak kosong: crew shift itu dinonaktifkan (bila ada). Satu shift hanya boleh dipakai satu kotak.
+     */
+    public static function saveMachine(ProdMachine $machine, ?string $from, ?string $to, array $boxes): void
+    {
+        $shiftIds = array_map(fn ($b) => (int) ($b['shift_id'] ?? 0), $boxes);
+        if (count($shiftIds) !== count(array_unique($shiftIds))) {
+            self::fail(t('Each shift can be used once for a machine.'));
+        }
+
+        DB::connection('tm2mst')->transaction(function () use ($machine, $from, $to, $boxes, $shiftIds) {
+            $today = now()->toDateString();
+            foreach ($boxes as $i => $box) {
+                $members = array_filter((array) ($box['members'] ?? []), fn ($m) => (int) ($m['employee_id'] ?? 0) > 0);
+                $crew = self::crewFor($machine, $shiftIds[$i]);
+                if (! $members) {
+                    $crew && self::deactivate($crew);
+
+                    continue;
+                }
+                $crew ??= self::addCrew($machine, $shiftIds[$i]);
+                $period = $crew->periods->first(fn ($p) => $p->covers($today)) ?? $crew->periods->last();
+                self::savePeriod($crew, $period?->id_crew_period, $from, $to, $members);
+            }
+        });
+    }
+
+    /**
      * Simpan satu periode crew (baru bila $periodId null). $members = [[employee_id, role], ...]; baris kosong diabaikan.
      * Rumus periode berlaku pada tanggal d: valid_from <= d AND (valid_to IS NULL OR valid_to >= d).
      */

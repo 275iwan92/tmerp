@@ -3841,4 +3841,5 @@ input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--dl-ink) 7
 .dl-hint--italic{font-style:italic}
 .dl-form__row > .dl-btn{align-self:end;justify-self:start}
 .dl-display--plain,.dl-display--plain .dl-display{border-bottom:0}
+.dl-display--lead .dl-display{font-size:calc(20px * var(--dl-font-scale));font-weight:700;color:var(--dl-ink-strong)}
 .dl-media-video{display:block;width:100%;max-width:960px;border:1px solid var(--dl-border);border-radius:var(--dl-radius)}

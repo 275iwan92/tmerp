@@ -565,6 +565,28 @@ window.Devlib = window.Devlib || {};
   // Form berpenanda data-dl-autosubmit: mengubah satu isian langsung mengirim form (mis. pilihan pola pada panel mesin).
   document.addEventListener('change', e => { const f = e.target.closest('form[data-dl-autosubmit]'); if (f) f.requestSubmit(); });
 
+  // Isian ber-data-dl-swap="grup" (+ data-dl-was = nilai sekarang): satu nilai dipakai sekali dalam grup. Memilih nilai yang sudah dipakai isian lain
+  // menukar keduanya (tanpa error). Elemen ber-data-dl-echo="nama-isian" (+ data-dl-echo-prefix) menampilkan awalan + teks pilihan isian itu.
+  const echoAll = form => $$(form, '[data-dl-echo]').forEach(el => {
+    const h = form.querySelector(`[name="${el.dataset.dlEcho}"]`), it = h?.closest('[data-dl-select]')?.querySelector(`.dl-dd__item[data-value="${h.value}"]`);
+    const out = $(el, '.dl-display'); if (it && out) out.textContent = [el.dataset.dlEchoPrefix, it.textContent.trim()].filter(Boolean).join(' ');
+  });
+  document.addEventListener('change', e => {
+    const w = e.target.closest('[data-dl-swap]');
+    if (w && !w.dlSwapping) {
+      const was = w.dataset.dlWas, now = e.target.value;
+      w.dataset.dlWas = now;
+      const other = $$(document, `[data-dl-swap="${w.dataset.dlSwap}"]`).find(o => o !== w && o.dataset.dlWas === now);
+      if (other) {
+        other.dlSwapping = true;
+        other.dataset.dlWas = was;
+        setField(e.target.form, $(other, '[name]').name, was);
+        other.dlSwapping = false;
+      }
+    }
+    if (e.target.form) echoAll(e.target.form);
+  });
+
   // Pintasan keyboard: tombol ber-data-dl-key (preset Simpan = Ctrl+S, Baru = Alt+N), '?' = daftar pintasan.
   const keyName = e => [e.ctrlKey || e.metaKey ? 'ctrl' : '', e.altKey ? 'alt' : '', e.shiftKey ? 'shift' : '', e.key.toLowerCase()].filter(Boolean).join('+');
   const visible = el => el.offsetParent !== null && !el.disabled;

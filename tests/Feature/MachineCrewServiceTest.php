@@ -44,9 +44,11 @@ class MachineCrewServiceTest extends TestCase
         $this->machine = Crews::assignableMachines()->orderBy('machine_id')->firstOrFail();
         $this->machine->forceFill(['nickname' => 'TESTNICK'])->save();
         $this->shift = (int) array_key_first(Crews::shifts());
-        $this->people = array_keys(Crews::employees());
-        $this->assertGreaterThanOrEqual(12, count($this->people), 'Need at least 12 production employees in the dummy database.');
         $this->mst->table('prod_machine_crew')->where('machine_id', $this->machine->machine_id)->delete();
+        // Orang yang sudah ada di crew mesin lain (data simulasi) dilewati: aturan bentrok akan menolak mereka.
+        $busy = $this->mst->table('prod_machine_crew_member')->pluck('employee_id')->all();
+        $this->people = array_values(array_diff(array_keys(Crews::employees()), $busy));
+        $this->assertGreaterThanOrEqual(12, count($this->people), 'Need at least 12 free production employees in the dummy database.');
     }
 
     protected function tearDown(): void
@@ -154,6 +156,34 @@ class MachineCrewServiceTest extends TestCase
 
         $this->assertRejected(fn () => Crews::savePeriod($b, null, '2026-03-01', null, $this->members(1)), 'already in crew');
         $this->assertCount(1, Crews::savePeriod($b, null, '2026-03-01', null, $this->members(1, 1))->members);
+    }
+
+    public function test_save_machine_takes_boxes_in_any_shift_order_and_rejects_a_shift_used_twice(): void
+    {
+        $shifts = array_keys(Crews::shifts());
+        $box = fn (int $shift, int $count, int $offset = 0) => ['shift_id' => $shift, 'members' => $this->members($count, $offset)];
+
+        Crews::saveMachine($this->machine, '2026-01-01', null, [$box($shifts[2], 2), $box($shifts[0], 3, 2)]);   // shift terakhir dulu
+        $this->assertCount(2, Crews::crewFor($this->machine, $shifts[2])->periods->first()->members);
+        $this->assertCount(3, Crews::crewFor($this->machine, $shifts[0])->periods->first()->members);
+
+        $this->assertRejected(fn () => Crews::saveMachine($this->machine, '2026-01-01', null, [$box($shifts[0], 1), $box($shifts[0], 1, 1)]), 'once');
+    }
+
+    public function test_save_machine_deactivates_the_crew_of_an_empty_box_and_is_all_or_nothing(): void
+    {
+        $shifts = array_keys(Crews::shifts());
+        Crews::saveMachine($this->machine, '2026-01-01', null, [['shift_id' => $shifts[0], 'members' => $this->members(2)]]);
+        $this->assertNotNull(Crews::crewFor($this->machine, $shifts[0]));
+
+        Crews::saveMachine($this->machine, '2026-01-01', null, [['shift_id' => $shifts[0], 'members' => []]]);
+        $this->assertNull(Crews::crewFor($this->machine, $shifts[0]));
+
+        $this->assertRejected(fn () => Crews::saveMachine($this->machine, '2026-01-01', null, [
+            ['shift_id' => $shifts[0], 'members' => $this->members(1)],
+            ['shift_id' => $shifts[1], 'members' => $this->members(11)],
+        ]), '10 people');
+        $this->assertNull(Crews::crewFor($this->machine, $shifts[0]));
     }
 
     public function test_fifth_crew_and_empty_nickname_are_rejected_and_deactivated_index_is_not_reused(): void

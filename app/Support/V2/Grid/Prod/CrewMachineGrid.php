@@ -92,7 +92,7 @@ class CrewMachineGrid extends DbGrid
             ['key' => 'name', 'label' => 'Machine', 'type' => 'identity', 'code' => 'detail', 'avatar' => false, 'lead' => true],
             ['key' => 'type', 'label' => 'Type'],
             // Satu kolom per shift produksi di Master Shift (judul = nama shift); shift baru di master muncul sendiri.
-            ...MachineCrewService::productionShifts()->map(fn ($s) => ['key' => 'shift_'.$s->shift_id, 'label' => $s->shift_name, 'list' => true, 'url' => route('v2.screen', 'crew-form').'?machine={id}&shift_id='.$s->shift_id])->all(),
+            ...MachineCrewService::productionShifts()->map(fn ($s) => ['key' => 'shift_'.$s->shift_id, 'label' => $s->shift_name, 'list' => true, 'url' => route('v2.screen', 'crew-form').'?machine={id}'])->all(),
         ];
     }
 

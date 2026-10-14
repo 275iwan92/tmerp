@@ -1,0 +1,116 @@
+[
+  {
+    "key": "crew",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Assign Crew",
+    "purpose": {
+      "en": "Lists the Offset Printing machines with one column per production shift from Master Shift, showing who works there today. Open it to see the standard crews and to open the crew form of a machine and shift.",
+      "id": "Menampilkan mesin Offset Printing dengan satu kolom per shift produksi dari Master Shift, berisi siapa yang bertugas hari ini. Buka untuk melihat crew standar dan membuka form crew sebuah mesin dan shift."
+    },
+    "keywords": "assign crew, crew, regu, tim mesin, operator mesin, nickname mesin, shift, reguler, shift 1, shift 2, susunan crew",
+    "steps": [
+      {
+        "en": "Open Assign Crew. Each row is one Offset machine: the nickname on top and the machine name below it. Digital machines are not listed.",
+        "id": "Buka Assign Crew. Tiap baris satu mesin Offset: nickname di atas dan nama mesin di bawahnya. Mesin Digital tidak ditampilkan."
+      },
+      {
+        "en": "Read the shift columns. They list the crew members valid today, one name per line. A plus sign means the machine has no crew in that shift yet.",
+        "id": "Baca kolom shift. Isinya anggota crew yang berlaku hari ini, satu nama per baris. Tanda plus berarti mesin belum punya crew di shift itu."
+      },
+      {
+        "en": "Click a shift cell to open the crew form of that machine and shift. Click the machine row to open the first shift that already has a crew.",
+        "id": "Klik sel shift untuk membuka form crew mesin dan shift itu. Klik baris mesin untuk membuka shift pertama yang sudah punya crew."
+      },
+      {
+        "en": "A machine without a nickname cannot get a crew. Fill in its nickname in Master Machine first.",
+        "id": "Mesin tanpa nickname belum bisa diberi crew. Isi dulu nickname-nya di Master Machine."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Machine",
+        "en": "Machine nickname on top and the machine name below it. Filled from Master Machine.",
+        "id": "Nickname mesin di atas dan nama mesin di bawahnya. Diambil dari Master Machine."
+      },
+      {
+        "label": "Type",
+        "en": "Machine type, from Master Machine.",
+        "id": "Jenis mesin, dari Master Machine."
+      },
+      {
+        "label": "Shift columns",
+        "en": "One column per production shift of Master Shift, listing the crew members valid today.",
+        "id": "Satu kolom per shift produksi di Master Shift, berisi anggota crew yang berlaku hari ini."
+      }
+    ]
+  },
+  {
+    "key": "crew-form",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Assign Crew Form",
+    "purpose": {
+      "en": "Sets up the crews of one machine for all its shifts on one screen: a box per shift with the shift, and up to 10 people with their roles. Open it from the Assign Crew grid.",
+      "id": "Menyusun crew satu mesin untuk semua shiftnya dalam satu layar: satu kotak per shift berisi shift dan sampai 10 orang beserta perannya. Buka dari grid Assign Crew."
+    },
+    "keywords": "form crew, assign crew form, susun crew, anggota crew, peran, main operator, helper, kabag, periode crew, shift",
+    "steps": [
+      {
+        "en": "The machine comes from the grid. Each box is one crew. Choose the Shift of each box in any order; the crew name forms by itself, for example Plong1 - TM Production Shift 1.",
+        "id": "Mesin dibawa dari grid. Tiap kotak satu crew. Pilih Shift tiap kotak dalam urutan bebas; nama crew terbentuk sendiri, misalnya Plong1 - TM Production Shift 1."
+      },
+      {
+        "en": "A shift can be used once. Choosing a shift that another box already has swaps the two boxes, so nothing breaks.",
+        "id": "Satu shift hanya dipakai sekali. Memilih shift yang sudah ada di kotak lain menukar kedua kotak, jadi tidak ada yang rusak."
+      },
+      {
+        "en": "Fill Period: from date for all boxes. Leave Until date empty when the crews have no end date.",
+        "id": "Isi Period: from date untuk semua kotak. Kosongkan Until date bila crew tidak punya tanggal akhir."
+      },
+      {
+        "en": "In a box choose an employee, click Add, then set the role: Main operator, Co-operator, Helper or Kabag. Use Remove to take a person out.",
+        "id": "Di sebuah kotak pilih karyawan, klik Add, lalu atur peran: Main operator, Co-operator, Helper atau Kabag. Pakai Remove untuk mengeluarkan orang."
+      },
+      {
+        "en": "Click Save. All boxes are saved together, or none. An empty box deactivates the crew of its shift. Undo discards changes that are not saved.",
+        "id": "Klik Save. Semua kotak disimpan bersama, atau tidak sama sekali. Kotak kosong menonaktifkan crew shift itu. Undo membuang perubahan yang belum disimpan."
+      },
+      {
+        "en": "Rule: one crew is one machine plus one shift, at most 10 people.",
+        "id": "Aturan: satu crew adalah satu mesin ditambah satu shift, maksimum 10 orang."
+      },
+      {
+        "en": "Rule: a person cannot be in another crew of the same shift in an overlapping period. Another shift or a following period is allowed.",
+        "id": "Aturan: satu orang tidak boleh ada di crew lain pada shift yang sama di periode yang bertabrakan. Shift lain atau periode berurutan boleh."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Period: from date",
+        "en": "First day the crews apply, for all boxes. Required.",
+        "id": "Hari pertama crew berlaku, untuk semua kotak. Wajib diisi."
+      },
+      {
+        "label": "Until date (empty = open)",
+        "en": "Last day the crews apply. Empty means no end date.",
+        "id": "Hari terakhir crew berlaku. Kosong berarti tanpa tanggal akhir."
+      },
+      {
+        "label": "Shift",
+        "en": "The production shift of the box, picked from Master Shift. A shift already used by another box swaps places.",
+        "id": "Shift produksi kotak itu, dipilih dari Master Shift. Shift yang dipakai kotak lain saling bertukar."
+      },
+      {
+        "label": "Crew name",
+        "en": "Machine nickname plus shift name. Filled by the system, not typed.",
+        "id": "Nickname mesin ditambah nama shift. Diisi sistem, tidak diketik."
+      },
+      {
+        "label": "Choose user names",
+        "en": "Up to 10 people picked from the employee list, each with a role.",
+        "id": "Sampai 10 orang yang dipilih dari daftar karyawan, masing-masing dengan peran."
+      }
+    ]
+  }
+]

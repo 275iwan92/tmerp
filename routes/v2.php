@@ -231,30 +231,18 @@ Route::prefix('v2')->name('v2.')->group(function () {
         }
     })->name('lookup.save');
 
-    // Assign Crew (layar crew-form = x-dl::form panel top): _action save | delete. Satu crew = satu mesin + satu shift. Aturan = MachineCrewService.
+    // Assign Crew (layar crew-form = x-dl::form panel top): satu simpan untuk semua kotak shift mesin itu. Aturan = MachineCrewService::saveMachine.
     Route::post('/crew/save', function (Request $r) {
         abort_unless(Auth::user()->canAccessModule('PROD'), 403);
         $machine = MachineCrewService::assignableMachines()->findOrFail((int) $r->input('machine'));
-        $shift = (int) $r->input('shift_id');
-        $periodKey = (string) $r->input('period', '');
-        $back = fn (array $q) => redirect(route('v2.screen', 'crew-form').'?'.http_build_query(['machine' => $machine->machine_id, 'shift_id' => $shift] + $q));
+        $back = redirect(route('v2.screen', 'crew-form').'?machine='.$machine->machine_id);
         try {
-            if ($r->input('_action') === 'delete') {
-                $crew = MachineCrewService::crewFor($machine, $shift) ?? abort(404);
-                MachineCrewService::deactivate($crew);
-
-                return $back([])->with('v2_flash', tf('Crew :name deactivated. Its index is not reused.', ['name' => $crew->load('machine')->name()]));
-            }
-            $period = DB::connection('tm2mst')->transaction(function () use ($r, $machine, $shift, $periodKey) {
-                $crew = MachineCrewService::crewFor($machine, $shift) ?? MachineCrewService::addCrew($machine, $shift);
-
-                return MachineCrewService::savePeriod($crew, ctype_digit($periodKey) ? (int) $periodKey : null, $r->input('valid_from'), $r->input('valid_to'), (array) $r->input('members', []));
-            });
-
-            return $back(['period' => $period->id_crew_period])->with('v2_flash', t('Saved.'));
+            MachineCrewService::saveMachine($machine, $r->input('valid_from'), $r->input('valid_to'), array_values((array) $r->input('crews', [])));
         } catch (ValidationException $e) {
-            return $back(array_filter(['period' => $periodKey]))->withInput()->withErrors($e->errors());
+            return $back->withInput()->withErrors($e->errors());
         }
+
+        return $back->with('v2_flash', t('Saved.'));
     })->name('crew.save');
 
     // Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru; logika = App\Services\Sales\InquiryDuplicator (sama dgn v1).
