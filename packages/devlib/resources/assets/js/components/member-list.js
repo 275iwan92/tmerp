@@ -1,7 +1,7 @@
 /* REMARK
  * Tujuan       : Perilaku x-dl::member-list: daftar peserta ber-batas (pilih, atur peran, hapus) yang ikut dikirim bersama form.
  * Sumber hulu  : config JSON dari Devlib\Components\MemberList (rows, options, roles, max, text).
- * Input        : klik Add / Remove, ubah peran, pilih orang di kotak pilih.
+ * Input        : klik Add / Remove (tombol ikon tong sampah, nama lewat title), ubah peran, pilih orang di kotak pilih.
  * Output       : input hidden name[i][employee_id] dan name[i][role] di dalam form; form diberi tanda belum disimpan (dirty-guard DevLib).
  * Dipakai oleh : x-dl::member-list (screens/crew-form). Undo form mengembalikan isi awal lewat fillForm -> el.dlMembers.reset().
  * Status       : Aktif.
@@ -70,7 +70,7 @@
       $(this.el, '[data-m-rows]').innerHTML = this.rows.map((r, i) => `<div class="dl-members__row"><span class="dl-members__no">${i + 1}</span>`
         + `<span class="dl-members__who">${esc(c.options[r.id] || r.id)}</span>`
         + `<select class="dl-members__role" data-m-role="${i}" aria-label="${esc(T.role)}">${c.roles.map(x => `<option${x === r.role ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>`
-        + `<button type="button" class="dl-btn dl-btn--plain dl-btn--sm" data-m-rm="${i}" data-dl-confirm="${esc(T.confirm)}" data-dl-confirm-tone="warn">${esc(T.remove)}</button></div>`).join('');
+        + `<button type="button" class="dl-iconbtn dl-iconbtn--danger" data-m-rm="${i}" title="${esc(T.remove)}" aria-label="${esc(T.remove)}" data-dl-confirm="${esc(T.confirm)}" data-dl-confirm-tone="warn"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
       const used = new Set(this.rows.map(r => String(r.id)));
       this.pick.innerHTML = `<option value="">${esc(full ? T.full.replace(/:max/g, c.max) : T.pick)}</option>`
         + Object.entries(c.options).filter(([k]) => !used.has(k)).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('');
