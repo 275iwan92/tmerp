@@ -2,8 +2,8 @@
  REMARK
  Tujuan       : Status tiap PDF Master Card (siap / sudah ada / kurang apa), jumlah set dummy di tiap level (Master Product, Inquiry, ProDev, ProCost, CO), dan tiga tombol engine.
  Sumber hulu  : App\Services\MasterCard\MasterCardDummyEngine (counts, plan, run, reset) lewat routes/v2_dummy_mastercard.php.
- Input        : plan (design, name, cards, status), counts (product, inquiry, prodev, procost, co) dari route; flash v2_flash / v2_error; khusus developer.
- Output       : x-dl::table status PDF, x-dl::stat-box per level, tiga x-dl::button: Make Master Product, Make dummy data (POST v2.dummy.mastercard.run, mode product / dummy), Reset (POST v2.dummy.mastercard.reset). Hasil = data di ddt*.
+ Input        : plan (design, name, cards, status), counts (inquiry, prodev, procost, quotation, co, product) dari route; flash v2_flash / v2_error; khusus developer.
+ Output       : x-dl::table status PDF, x-dl::progress (jumlah + batang) per dokumen dalam kartu per kelompok, tiga x-dl::button: Make Master Product, Make dummy data (POST v2.dummy.mastercard.run, mode product / dummy), Reset (POST v2.dummy.mastercard.reset). Hasil = data di ddt*.
  Dipakai oleh : Menu Developer > Database > Master Card Dummy (PDF).
  Status       : Aktif (hanya database ddt*).
 --}}
@@ -23,14 +23,24 @@
                 :rows="array_map(fn ($p) => ['design' => raw($p['design'] ?? '-'), 'name' => raw($p['name']), 'cards' => $p['cards'], 'status' => raw($p['status'] === 'ready' ? t('Ready to build') : t($p['status']))], $plan)"
                 empty="No Master Card PDF found." source="docs/attachments/mastercard/*.pdf" />
         </x-dl::card>
+        @php
+            $max = max(1, ...array_values($counts));
+            $groups = [
+                'Product setup' => ['Inquiry Product' => 'inquiry', 'Product Development' => 'prodev', 'Product Costing' => 'procost'],
+                'Sales' => ['Quotation' => 'quotation', 'Customer Order' => 'co'],
+                'Master' => ['Master Product' => 'product'],
+            ];
+        @endphp
         <x-dl::card title="Dummy sets now" icon="fa-layer-group">
-            <x-dl::kpi-row>
-                <x-dl::stat-box label="Master Product" :value="$counts['product']" />
-                <x-dl::stat-box label="Inquiry" :value="$counts['inquiry']" />
-                <x-dl::stat-box label="ProDev" :value="$counts['prodev']" />
-                <x-dl::stat-box label="ProCost" :value="$counts['procost']" />
-                <x-dl::stat-box label="CO" :value="$counts['co']" />
-            </x-dl::kpi-row>
+            <x-dl::cols>
+                @foreach ($groups as $title => $rows)
+                    <x-dl::card :title="$title" :description="raw(array_sum(array_map(fn ($k) => $counts[$k], $rows)).' '.t('set'))">
+                        @foreach ($rows as $label => $key)
+                            <x-dl::progress :value="$counts[$key] / $max * 100" :label="$label" :text="(string) $counts[$key]" />
+                        @endforeach
+                    </x-dl::card>
+                @endforeach
+            </x-dl::cols>
             <x-dl::action-bar>
                 <x-dl::action-form action="{{ route('v2.dummy.mastercard.run', 'product') }}">
                     <x-dl::button type="submit" variant="secondary" icon="fa-box" label="Make Master Product"

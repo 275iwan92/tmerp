@@ -69,21 +69,26 @@ final class MasterCardDummyEngine
     }
 
     /**
-     * Dummy sets now in the database, by the highest level each one reached (Inquiry confirmed by Sales, ProDev, ProCost, CO).
+     * Dummy sets now in the database, by the furthest document each one reached: Inquiry confirmed by Sales, ProDev, ProCost, Quotation, CO;
+     * 'product' = made straight into a Master Product (no ProDev, no CO).
      *
      * @return array<string,int>
      */
     public function counts(): array
     {
-        $rows = DB::connection('tm2sdi')->table('iqp_inquiry')->where('data_origin', 'DUMMY')->where('stat_cancel', 0)
-            ->get(['stat_confirm_sales', 'stat_confirm_prodev', 'stat_confirm_procost', 'co_id', 'product_id']);
+        $sdi = DB::connection('tm2sdi');
+        $rows = $sdi->table('iqp_inquiry')->where('data_origin', 'DUMMY')->where('stat_cancel', 0)
+            ->get(['id_inquiry', 'stat_confirm_sales', 'stat_confirm_prodev', 'stat_confirm_procost', 'co_id', 'product_id']);
+        $quoted = $sdi->table('quo_quotation_item')->whereIn('inquiry_id', $rows->pluck('id_inquiry'))->pluck('inquiry_id')->flip();
+        $open = $rows->whereNull('co_id');
 
         return [
-            'inquiry' => $rows->where('stat_confirm_sales', 1)->where('stat_confirm_prodev', 0)->where('stat_confirm_procost', 0)->whereNull('co_id')->whereNull('product_id')->count(),
-            'prodev' => $rows->where('stat_confirm_prodev', 1)->where('stat_confirm_procost', 0)->whereNull('co_id')->count(),
-            'procost' => $rows->where('stat_confirm_procost', 1)->whereNull('co_id')->count(),
+            'inquiry' => $open->where('stat_confirm_sales', 1)->where('stat_confirm_prodev', 0)->where('stat_confirm_procost', 0)->whereNull('product_id')->count(),
+            'prodev' => $open->where('stat_confirm_prodev', 1)->where('stat_confirm_procost', 0)->count(),
+            'procost' => $open->where('stat_confirm_procost', 1)->reject(fn ($r) => isset($quoted[$r->id_inquiry]))->count(),
+            'quotation' => $open->filter(fn ($r) => isset($quoted[$r->id_inquiry]))->count(),
             'co' => $rows->whereNotNull('co_id')->count(),
-            'product' => $rows->where('stat_confirm_prodev', 0)->whereNull('co_id')->whereNotNull('product_id')->count(),
+            'product' => $open->where('stat_confirm_prodev', 0)->whereNotNull('product_id')->count(),
         ];
     }
 
