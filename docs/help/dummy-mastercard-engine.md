@@ -8,7 +8,7 @@
 PDF Master Card baru di `docs/attachments/mastercard/` dibaca, lalu dibuat data dummy **berlevel**: Inquiry, ProDev, ProCost, CO. Level N membawa semua level di belakangnya. Setiap set selalu punya dieline, artwork, ukuran P x L x T, dan ukuran datar (mm); kartu yang kurang tidak dibuat, alasannya dilaporkan.
 
 Menjalankan:
-- Layar info (jumlah set per level): **Developer > Database > Master Card Dummy (PDF)** (`/v2/dummy/mastercard`, developer saja, hanya ddt*). Menjalankan engine = perintah di bawah.
+- Layar: **Developer > Database > Master Card Dummy (PDF)** (`/v2/dummy/mastercard`, developer saja, hanya ddt*): jumlah set per level dan tombol Run engine. Perintah di bawah = cara yang sama dari terminal.
 - Perintah: `php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2 [--qty=5000] [--due=21] [--path=docs/attachments/mastercard]`. Tanpa `--levels`: semua produk baru ke level Inquiry.
 
 ## 2. Alur proses
@@ -59,7 +59,7 @@ Pelaku (user dummy): `yuna` Sales, `dedi` ProDev, `wiwik` ProCost, approver = pe
 | `app/Services/MasterCard/MasterCardPdfReader.php` | `read()`, `text()` (pdftotext), `pieces()` (potongan teks per baris), `colors()`, `steps()`, `sizes()`, `artwork()` |
 | `app/Services/MasterCard/MasterCardDummyEngine.php` | `plan()`, `run()`, `groups()`, `skipReason()`, `one()`, `inquiry()`, `shapeParts()`, `toProdev()`, `layout()`, `press()`, `toProcost()`, `toCo()`, `approve()` |
 | `app/Console/Commands/DummyMasterCard.php` | opsi perintah, tabel laporan |
-| `routes/v2_dummy_mastercard.php`, `resources/views/v2/dummy-mastercard.blade.php` | layar info jumlah set per level; dimuat dari `routes/web.php` |
+| `routes/v2_dummy_mastercard.php`, `resources/views/v2/dummy-mastercard.blade.php` | layar jumlah set per level + Run engine; dimuat dari `routes/web.php` |
 | `app/Support/V2/AppMenu.php` | item menu Developer > Database |
 | dipakai ulang | `MasterCardService` (fromData, storeFile, makeInquiry, refresh, existingProduct, customerId), `MasterCardShape` (knifePiece, pieces, parts), `Prodev::component()->saveLayout`, `SpecEngine::persist`, `InquiryStage`, `InquiryWriter`, `PricedDummyChain` (priceAndPublish, winViaQuotation), `CustomerOrder` (pickQty, save, confirm, decide) |
 

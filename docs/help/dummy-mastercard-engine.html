@@ -29,7 +29,7 @@
 
   <h2>1. Menjalankan</h2>
   <ul>
-    <li>Layar info (jumlah set per level): <b>Developer &rsaquo; Database &rsaquo; Master Card Dummy (PDF)</b> (<code>/v2/dummy/mastercard</code>, developer saja). Menjalankan engine = perintah di bawah.</li>
+    <li>Layar: <b>Developer &rsaquo; Database &rsaquo; Master Card Dummy (PDF)</b> (<code>/v2/dummy/mastercard</code>, developer saja): jumlah set per level dan tombol Run engine. Perintah di bawah = cara yang sama dari terminal.</li>
     <li>Perintah: <code>php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2 --qty=5000 --due=21</code>. Tanpa <code>--levels</code>: semua produk baru ke level Inquiry.</li>
   </ul>
 
@@ -85,7 +85,7 @@
     <tr><td><code>app/Services/MasterCard/MasterCardPdfReader.php</code></td><td><code>read()</code>, <code>text()</code> (pdftotext), <code>pieces()</code>, <code>colors()</code>, <code>steps()</code>, <code>sizes()</code>, <code>artwork()</code></td></tr>
     <tr><td><code>app/Services/MasterCard/MasterCardDummyEngine.php</code></td><td><code>plan()</code>, <code>run()</code>, <code>groups()</code>, <code>skipReason()</code>, <code>one()</code>, <code>inquiry()</code>, <code>shapeParts()</code>, <code>toProdev()</code>, <code>layout()</code>, <code>press()</code>, <code>toProcost()</code>, <code>toCo()</code>, <code>approve()</code></td></tr>
     <tr><td><code>app/Console/Commands/DummyMasterCard.php</code></td><td>opsi perintah, tabel laporan</td></tr>
-    <tr><td><code>routes/v2_dummy_mastercard.php</code>, <code>resources/views/v2/dummy-mastercard.blade.php</code></td><td>layar info jumlah set per level (dimuat dari <code>routes/web.php</code>); menu di <code>AppMenu.php</code></td></tr>
+    <tr><td><code>routes/v2_dummy_mastercard.php</code>, <code>resources/views/v2/dummy-mastercard.blade.php</code></td><td>layar jumlah set per level + Run engine (dimuat dari <code>routes/web.php</code>); menu di <code>AppMenu.php</code></td></tr>
     <tr><td>dipakai ulang</td><td><code>MasterCardService</code>, <code>MasterCardShape</code>, <code>Prodev::component()->saveLayout</code>, <code>SpecEngine::persist</code>, <code>InquiryStage</code>, <code>InquiryWriter</code>, <code>PricedDummyChain</code>, <code>CustomerOrder</code></td></tr>
   </table>
   <p>Cek cepat tanpa menulis (<code>php artisan tinker --env=mockup</code>):</p>
