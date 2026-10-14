@@ -710,6 +710,12 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     - **Tanpa dead code:** pada file yang disentuh, buktikan tak terpakai lewat grep (rute, view, JS, tes), lalu hapus (bukan
       dikomentari) tanpa mengubah perilaku. Yang meragukan (flag URL seperti `?layout=tabs`) tidak dihapus, dilaporkan.
 
+22. **[2026-10-14] Uji mandiri lewat login admin di devlib.test dan mockup.test; tmerp.test dilarang setelah UAT berjalan.**
+    > User 2026-10-14: *"DEVLIB selamanya boleh kamu buka untuk di uji dan di test dengan baik. Saya perintahkan untuk kamu HARUS bisa menguji mandiri via user admin di devlib.test. CATAT ini di MD yang utama. Begitu pula di mockup.test. YANG TIDAK BOLEH adalah tmerp setelah proses UAT berjalan."*
+    - Agen menguji layar dan objek sendiri sebagai user `admin` di **devlib.test** dan **mockup.test** (termasuk login di browser uji) dan menilai dari tangkapan layar nyata.
+    - **tmerp.test**: boleh selama UAT belum dimulai (user 2026-10-14: *"stage saat ini di tmerp masih jauh dari UAT jadi juga masih boleh"*); dilarang setelah UAT berjalan.
+    - Tetap berlaku: tidak memakai `employee_id=1`, tidak mengetik password akun nyata Jo atau layanan lain.
+
 ## E. Help & Asisten AI
 
 1. **Setiap layar input dan laporan wajib punya Help (2026-10-02)**, tiga hal terpisah: **untuk apa** layar / laporan itu
@@ -879,3 +885,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-14 | A.27: **jumlah kotak crew = jumlah shift produksi aktif di Master Shift** (user) — ikut bertambah atau berkurang bersama master; tidak ada batas tetap 4 dan tidak ada Delete. |
 | 2026-10-14 | A.27: **Assign Crew hanya untuk mesin dulu** (user) — stasiun kerja manual dan anggota borongan ditunda karena satu crew manual hanya satu orang dan terlalu ribet. |
 | 2026-10-14 | Arsip: `customerinvoice_review.md`, `flowengine_tier4.md`, `claude_md_archive_2026_10_07.md`, `help_writing_findings_2026_10_02.md` dibuang atas keputusan Jo di layar MD Review (13-Okt); isinya tersimpan di `sys_md_library` (`php artisan md:library search "customer invoice review"`). Rujukan ke `customerinvoice_review.md` di A.21 menunjuk ke arsip itu; butir pertanyaan terbukanya kini di `customerinvoice_accounting.md` dan `backlog07_finance_accounting.md`. |
+| 2026-10-14 | D.22: **uji mandiri lewat login admin di devlib.test dan mockup.test** (user: "HARUS bisa menguji mandiri via user admin di devlib.test ... Begitu pula di mockup.test. YANG TIDAK BOLEH adalah tmerp setelah proses UAT berjalan") — dicatat di CLAUDE.md butir 8. |

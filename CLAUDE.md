@@ -83,4 +83,5 @@ php artisan engine:catalog               # setelah daftar engine berubah
 5. Setiap nilai yang dibaca aplikasi (konstanta, master, identitas) wajib punya layar input.
 6. Commit/push hanya setelah Jo agree (butir 3); `git add` path eksplisit karena satu folder, satu git index; satu branch `main`, tanpa branch/worktree. Trailer commit `Agent: Iwan` (Senin-Selasa) atau `Agent: Jo` (Rabu-Sabtu). Mengganti aturan lama "commit+push tiap selesai".
 7. Backlog: item selesai pindah ke `docs/LOG_JOB_DONE.md`; aturan baru dari Jo ditambahkan ke rulebook.
-8. Jangan mengetik password ke browser; jangan memakai `employee_id=1` untuk uji.
+8. **Uji mandiri lewat login admin (Jo 2026-10-14, berlaku selamanya):** agen BOLEH dan HARUS menguji sendiri sebagai user `admin` di **devlib.test**, **mockup.test**, dan (selama UAT belum dimulai; tahap sekarang masih jauh dari UAT) **tmerp.test**, termasuk login admin di browser uji (Edge headless / CDP). **TIDAK BOLEH** login atau menguji di **tmerp.test setelah UAT berjalan**.
+9. Jangan memakai `employee_id=1` untuk uji; jangan mengetik password akun nyata Jo atau layanan lain.
