@@ -2,7 +2,7 @@
 
 /*
  * REMARK
- * Tujuan       : Aturan Assign Crew: mesin Offset saja, crew per mesin (maks 4, nama = nickname + nama shift), periode tanpa tabrakan, anggota maks 10 dari karyawan produksi.
+ * Tujuan       : Aturan Assign Crew: mesin Offset saja, crew per mesin (satu per shift produksi aktif di Master Shift, nama = nickname + nama shift), periode tanpa tabrakan, anggota maks 10 dari karyawan produksi.
  * Sumber hulu  : prod_machine (nickname, SBU), emp_shift (Master Shift), emp_employee + org_position + org_department (karyawan produksi),
  *                prod_machine_crew, prod_machine_crew_period, prod_machine_crew_member.
  * Input        : machine_id / crew id, shift_id, tanggal dari-sampai, daftar [employee_id, role].
@@ -28,8 +28,6 @@ use Illuminate\Validation\ValidationException;
 
 class MachineCrewService
 {
-    public const MAX_CREWS = 4;
-
     public const MAX_MEMBERS = 10;
 
     public const ROLES = ['Main operator', 'Co-operator', 'Helper', 'Kabag'];
@@ -99,8 +97,9 @@ class MachineCrewService
         if (trim((string) $machine->nickname) === '') {
             self::fail(t('Fill in the machine nickname first.'));
         }
-        if (ProdMachineCrew::query()->where('machine_id', $machine->machine_id)->where('activate', true)->count() >= self::MAX_CREWS) {
-            self::fail(t('This machine already has 4 active crews (the maximum). Deactivate one first.'));
+        // Satu crew per shift produksi: batas = jumlah shift aktif di Master Shift (ikut bertambah / berkurang bersama master).
+        if (ProdMachineCrew::query()->where('machine_id', $machine->machine_id)->where('activate', true)->count() >= count(self::shifts())) {
+            self::fail(t('This machine already has a crew for every production shift (the maximum). Deactivate one first.'));
         }
         self::checkShift($shiftId);
         $login = auth()->user()?->login;

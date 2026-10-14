@@ -73,7 +73,8 @@ final class AppMenu
                 ...($user->is_admin ? [['label' => t('Setting'), 'items' => [['code' => 'V2-mail', 'label' => t('E-mail Setting (SMTP)'), 'icon' => 'fa-solid fa-envelope', 'url' => route('v2.settings.mail'), 'type' => 'form']]]] : []),
                 ['label' => t('Database'), 'items' => [['code' => 'V2-dictionary', 'label' => t('Data Dictionary'), 'icon' => 'fa-solid fa-database', 'url' => route('v2.dictionary'), 'type' => 'report'],
                     // Hanya di situs dummy (database ddt*): baseline & reset data UAT.
-                    ...(str_starts_with(DB::connection('tm2sdi')->getDatabaseName(), 'ddt') ? [['code' => 'V2-dummy', 'label' => t('Dummy Data (Reset)'), 'icon' => 'fa-solid fa-rotate-left', 'url' => route('v2.dummy.index'), 'type' => 'report']] : [])]],
+                    ...(str_starts_with(DB::connection('tm2sdi')->getDatabaseName(), 'ddt') ? [['code' => 'V2-dummy', 'label' => t('Dummy Data (Reset)'), 'icon' => 'fa-solid fa-rotate-left', 'url' => route('v2.dummy.index'), 'type' => 'report'],
+                        ['code' => 'V2-dummy-mastercard', 'label' => t('Master Card Dummy (PDF)'), 'icon' => 'fa-solid fa-file-pdf', 'url' => route('v2.dummy.mastercard'), 'type' => 'report']] : [])]],
                 // Daftar engine: input, output, cara kerja (App\Support\Engines\EngineRegistry; sama dengan devlib.test > Engines).
                 ['label' => t('Engines'), 'items' => [['code' => 'V2-engines', 'label' => t('Engine Catalog'), 'icon' => 'fa-solid fa-gears', 'url' => route('v2.engines'), 'type' => 'report']]],
             ]];

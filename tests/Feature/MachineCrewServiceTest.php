@@ -189,14 +189,15 @@ class MachineCrewServiceTest extends TestCase
     public function test_fifth_crew_and_empty_nickname_are_rejected_and_deactivated_index_is_not_reused(): void
     {
         $shifts = array_keys(Crews::shifts());
-        foreach (range(1, Crews::MAX_CREWS) as $i) {
+        $max = count(Crews::shifts());   // batas crew aktif = jumlah shift produksi
+        foreach (range(1, $max) as $i) {
             Crews::addCrew($this->machine, $shifts[0]);
         }
         $this->assertRejected(fn () => Crews::addCrew($this->machine, $shifts[0]), 'maximum');
 
         $first = ProdMachineCrew::query()->where('machine_id', $this->machine->machine_id)->orderBy('crew_index')->first();
         Crews::deactivate($first);
-        $this->assertSame(Crews::MAX_CREWS + 1, Crews::addCrew($this->machine, $shifts[0])->crew_index);
+        $this->assertSame($max + 1, Crews::addCrew($this->machine, $shifts[0])->crew_index);
 
         $this->machine->forceFill(['nickname' => ''])->save();
         $this->assertRejected(fn () => Crews::addCrew($this->machine, $shifts[0]), 'nickname');

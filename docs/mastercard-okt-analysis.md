@@ -1,7 +1,7 @@
 # Master Card Okt 2026: Inquiry sampai plan produksi (dummy ddt*)
 
 > Jo 2026-10-14: *"buat data dummy dari folder mastercard; analisa dan simulasi dari inquiry product hingga plan produksi"*, *"jangan ada celah, jangan BOM kosong"*, *"sebelum APPLY"*.
-> Dibangun oleh `database/seeders/UatMasterCardOktSeeder.php` (hanya ddt*, idempotent). Berhenti di plan **Draft**; tidak ada APPLY / Confirm plan.
+> Dibangun dengan seeder sekali pakai (commit 54f93b77, kini digantikan engine `php artisan dummy:mastercard`; lihat `docs/PATOKAN-DATA-DUMMY.md`). Hanya ddt*. Berhenti di plan **Draft**; tidak ada APPLY / Confirm plan.
 > Penanda: **FAKTA** = terukur di ddt* 14 Okt 2026 (plan run 1140). **DUGAAN** = belum dibuktikan.
 
 ## 1. Rantai yang dijalankan (lewat aturan layar yang sama)

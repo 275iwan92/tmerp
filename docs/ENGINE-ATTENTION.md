@@ -23,7 +23,7 @@ Pemilik engine: **ProDev** (BOP/BOM, `SpecEngine`) · **ProCost** (Material Plan
 - **Sisi PPIC (FAKTA):** `WoGenerationService::writeBom` membaca `process_id` dari baris BOM apa adanya (`$b['process_id'] ?? null`); tidak memanggil `processOfBom`. Saat patch kembali, engine perlu mengisi `process_id` per baris BOM (di `forWorkOrder`) agar kolom Process hidup lagi.
 - **Pemilik:** ProDev · **Dampak ke layar:** tab BOM Form WO (nama bahan, kolom Process).
 
-- **STATUS 2026-10-14: SELESAI (izin Jo 14 Okt: "saya ijinkan patch").** Patch diterapkan ke `SpecEngine.php` dan `forWorkOrder` kini memanggil `processOfBom` sehingga setiap baris BOM membawa `process_id`. Bukti: 29 WO dari `UatMasterCardOktSeeder` semuanya punya BOM (7-11 baris). Belum di-commit (menunggu persetujuan Jo). Celah baru dari kerja yang sama: `docs/mastercard-okt-analysis.md` §4 (butir 1-12).
+- **STATUS 2026-10-14: SELESAI (izin Jo 14 Okt: "saya ijinkan patch").** Patch diterapkan ke `SpecEngine.php` dan `forWorkOrder` kini memanggil `processOfBom` sehingga setiap baris BOM membawa `process_id`. Bukti: 29 WO dari rantai dummy Master Card Okt (commit 54f93b77) semuanya punya BOM (7-11 baris). Celah baru dari kerja yang sama: `docs/mastercard-okt-analysis.md` §4 (butir 1-12).
 
 ## ATTENTION-ENGINE-02 — Dua definisi "Available" (view vs PPIC)
 - **FAKTA:** `tm2inv.v_rm_available.qty_available` = on hand dikurangi booking **Confirmed** saja (`stat_confirm=1`). PPIC (`App\Services\Scheduling\Plan\AvailableStock::of`, dipakai `Ppic::stockOf` dan `GateService::ownLines`) = on hand dikurangi sisa booking **semua tahap** (Draft/PRE/B2/Held/Confirmed; keputusan Jo 06:31Z), minimum 0, hold kadaluwarsa tidak dihitung.

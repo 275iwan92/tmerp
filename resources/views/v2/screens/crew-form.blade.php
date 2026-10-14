@@ -1,6 +1,6 @@
 {{--
  REMARK
- Tujuan       : Form Assign Crew: satu mesin (dari grid), tiap shift satu kotak crew; di tiap kotak shift bisa dipilih (urutan bebas, satu shift dipakai sekali), nama crew terbentuk dari nickname + shift, sampai 10 anggota dengan peran.
+ Tujuan       : Form Assign Crew: satu mesin (dari grid), satu kotak crew per shift produksi aktif di Master Shift (jumlahnya ikut master, tanpa Delete); di tiap kotak shift bisa dipilih (urutan bebas, satu shift dipakai sekali), nama crew terbentuk dari nickname + shift, sampai 10 anggota dengan peran.
  Sumber hulu  : prod_machine (nickname), emp_shift (Master Shift), karyawan produksi (MachineCrewService::employees), prod_machine_crew(+period+member).
  Input        : Query machine (wajib); isian periode dari-sampai (berlaku untuk semua kotak); per kotak: shift (crews[i][shift_id]) dan anggota + peran (x-dl::member-list crews[i][members]).
  Output       : POST v2.crew.save -> MachineCrewService::saveMachine (semua kotak atau tidak sama sekali): kotak berisi = crew shift itu dibuat / diperbarui; kotak kosong = crew shift itu dinonaktifkan.
@@ -21,11 +21,11 @@
     $employees = Crews::employees();
     $src = Src::of('tm2mst.prod_machine_crew', 'tm2mst.prod_machine_crew_period', 'tm2mst.prod_machine_crew_member');
 
-    // Satu kotak per shift (urutan Master Shift); isi dari input terakhir (bila simpan gagal) atau dari crew dan periode yang berlaku.
+    // Satu kotak per shift produksi aktif di Master Shift (jumlah kotak mengikuti master, tanpa batas tetap); isi dari input terakhir (bila simpan gagal) atau dari crew dan periode yang berlaku.
     $sent = old('crews');
     $boxes = [];
     $period = null;
-    foreach (array_slice(array_keys($shifts), 0, Crews::MAX_CREWS) as $i => $shiftId) {
+    foreach (array_keys($shifts) as $i => $shiftId) {
         $crew = Crews::crewFor($machine, $shiftId)?->load('periods.members');
         $p = $crew?->periods->first(fn ($x) => $x->covers($today)) ?? $crew?->periods->last();
         $period ??= $p;
@@ -46,7 +46,7 @@
         <x-dl::field.date name="valid_from" label="Period: from date" required :value="$from" :source="$src" />
         <x-dl::field.date name="valid_to" label="Until date (empty = open)" :value="$to" :source="$src" />
     </x-dl::form.row>
-    <x-dl::form.row :cols="3">
+    <x-dl::form.row :cols="count($boxes)">
         @foreach ($boxes as $i => $b)
             <x-dl::box>
                 <x-dl::field.select name="crews[{{ $i }}][shift_id]" label="Shift" required :options="$shifts" :value="$b['shift']" :source="$src" data-dl-swap="crew-shift" data-dl-was="{{ $b['shift'] }}" />

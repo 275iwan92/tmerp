@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patokan Data Dummy</title>
+<style>
+  :root { --bg:#ffffff; --ink:#111111; --line:#111111; --card:#f4f4f4; --accent:#0b4ea2; --ok:#0a6b2d; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#111111; --ink:#ffffff; --line:#ffffff; --card:#1d1d1d; --accent:#8ec1ff; --ok:#7be09b; } }
+  body { margin:0; background:var(--bg); color:var(--ink); font:19px/1.6 system-ui, "Segoe UI", sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:32px; margin:0 0 4px; }
+  h2 { font-size:24px; margin:36px 0 8px; border-bottom:2px solid var(--line); padding-bottom:4px; }
+  .meta { margin:0 0 20px; }
+  .step { background:var(--card); border-left:6px solid var(--accent); padding:12px 16px; margin:12px 0; }
+  .step b { color:var(--accent); }
+  table { width:100%; border-collapse:collapse; margin:12px 0; }
+  th, td { border:2px solid var(--line); padding:8px 10px; text-align:left; }
+  th { background:var(--card); }
+  .chain { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:12px 0; }
+  .chain span { border:2px solid var(--line); padding:6px 12px; font-weight:700; }
+  .chain i { font-style:normal; font-weight:700; }
+  .on { background:var(--ok); color:#ffffff; border-color:var(--ok); }
+  .open { border:2px dashed var(--line); padding:12px 16px; margin:12px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Patokan Data Dummy</h1>
+  <p class="meta">Jo, 14 Okt 2026. Mencatat pemahaman yang sudah dijawab "Paham". Versi teks: <code>docs/PATOKAN-DATA-DUMMY.md</code>.</p>
+
+  <h2>Cerita singkat</h2>
+  <div class="step"><b>1. Tujuan.</b> Setiap data dummy punya <b>dieline</b>, <b>artwork</b>, dan <b>ukuran produk yang jelas</b> (P x L x T, ukuran datar, mm).</div>
+  <div class="step"><b>2. Sumber.</b> Master Card Jo ada di Excel, lalu dijadikan <b>PDF</b> supaya bisa dibaca. PDF di folder <code>docs/attachments/mastercard/</code> adalah sumber isi data dummy.</div>
+  <div class="step"><b>3. Dibuat berlevel, dalam beberapa set.</b> Jumlah set tidak dikunci ("misal 12 set atau entah berapa"). Contoh Jo di tabel di bawah.</div>
+  <div class="step"><b>4. Level maju membawa jejak lengkap di belakangnya.</b> Set yang sudah masuk CO berarti ada Inquiry, ProDev, dan ProCost untuk set itu juga.</div>
+
+  <h2>Level dan contoh jumlah set</h2>
+  <table>
+    <tr><th>Level</th><th>Posisi set di alur</th><th>Contoh jumlah</th></tr>
+    <tr><td>1</td><td>Baru Inquiry saja</td><td>2 set</td></tr>
+    <tr><td>2</td><td>Sudah di ProDev</td><td>2 set</td></tr>
+    <tr><td>3</td><td>Sudah di ProCost</td><td>2 set</td></tr>
+    <tr><td>4</td><td>Sudah masuk CO</td><td>2 set</td></tr>
+  </table>
+
+  <h2>Jejak mundur sebuah set di level CO</h2>
+  <div class="chain">
+    <span class="on">Inquiry</span><i>&rarr;</i><span class="on">ProDev</span><i>&rarr;</i><span class="on">ProCost</span><i>&rarr;</i><span class="on">CO</span>
+  </div>
+  <p>Satu set di level CO harus punya keempat tahap di atas (data yang sama: inquiry, produk, part, qty). Set di level 1 hanya punya tahap Inquiry. Tidak boleh ada tahap yang loncat.</p>
+
+  <h2>Aturan turunan</h2>
+  <ul>
+    <li>Setiap set, di level mana pun, membawa dieline + artwork + ukuran produk (P x L x T) + ukuran datar (mm) sejak Inquiry.</li>
+    <li>Set dibuat per level, bukan campuran: tiap set berhenti tepat di levelnya.</li>
+    <li>Set level N bisa ditelusuri mundur ke level N-1 ... 1 dengan data konsisten.</li>
+  </ul>
+
+  <h2>Engine (dibuat 14 Okt 2026)</h2>
+  <p>PDF baru di <code>docs/attachments/mastercard/</code> diproses satu perintah (hanya ddt*):</p>
+  <p><code>php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2</code></p>
+  <ul>
+    <li>Gambar kartu (bentuk / dieline) = berkas di <code>extracted/</code> dengan nama slug PDF-nya.</li>
+    <li>Produk baru diisi ke level sesuai kuota, urut berkas. Tanpa <code>--levels</code>: semua ke level Inquiry. Opsi: <code>--qty</code> (5000), <code>--due</code> (21 hari).</li>
+    <li>Level N membawa semua level di belakangnya; berhenti di CO Confirmed (baris CPDEL lahir, belum di-Post).</li>
+    <li>Kartu tanpa artwork, ukuran P x L x T, ukuran pisau, atau bahan <b>tidak dibuat</b>, alasannya dilaporkan. Produk yang sudah ada dilewati.</li>
+  </ul>
+
+  <h2>Belum diputuskan Jo (jangan diisi sendiri)</h2>
+  <div class="open">
+    <ul>
+      <li>Jumlah set total dan jumlah per level.</li>
+      <li>Apakah ada level setelah CO (Post to Production / WO / plan), dan berapa set per level itu.</li>
+      <li>Set mana dari PDF yang masuk level mana.</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>

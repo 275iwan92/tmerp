@@ -1,0 +1,20 @@
+[
+  {
+    "key": "guide-dummy-mastercard",
+    "type": "GUIDE",
+    "module": "SETUP",
+    "title": "Dummy data from Master Card PDF",
+    "purpose": {
+      "en": "Builds dummy data in levels (Inquiry, ProDev, ProCost, CO) from new Master Card PDFs, each set with dieline, artwork and clear size. Developer tool, dummy site only.",
+      "id": "Membuat data dummy berlevel (Inquiry, ProDev, ProCost, CO) dari PDF Master Card baru, tiap set punya dieline, artwork, dan ukuran yang jelas. Alat developer, hanya situs dummy."
+    },
+    "keywords": "dummy, master card, pdf, engine, level, inquiry, prodev, procost, co, data dummy, kartu induk",
+    "steps": [
+      {"en": "Put the new Master Card PDFs in docs/attachments/mastercard and the card pictures in the extracted folder next to them (same name as the PDF).", "id": "Taruh PDF Master Card baru di docs/attachments/mastercard dan gambar kartunya di folder extracted di sebelahnya (nama sama dengan PDF)."},
+      {"en": "Open Developer > Database > Master Card Dummy (PDF) to see how many sets are at Inquiry, ProDev, ProCost and CO now, and how many PDFs are ready to build.", "id": "Buka Developer > Database > Master Card Dummy (PDF) untuk melihat jumlah set di Inquiry, ProDev, ProCost, dan CO saat ini, serta jumlah PDF yang siap dibuat."},
+      {"en": "Run the command php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2 to build the new sets.", "id": "Jalankan perintah php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2 untuk membuat set baru."},
+      {"en": "A set at a higher level always has every level behind it. Cards without artwork, size P x L x T, knife size or material are not built; the reason is listed in the result.", "id": "Set di level lebih maju selalu punya semua level di belakangnya. Kartu tanpa artwork, ukuran P x L x T, ukuran pisau, atau bahan tidak dibuat; alasannya tampil di hasil."}
+    ],
+    "fields": []
+  }
+]

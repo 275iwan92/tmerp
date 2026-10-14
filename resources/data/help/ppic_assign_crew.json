@@ -57,8 +57,8 @@
     "keywords": "form crew, assign crew form, susun crew, anggota crew, peran, main operator, helper, kabag, periode crew, shift",
     "steps": [
       {
-        "en": "The machine comes from the grid. Each box is one crew. Choose the Shift of each box in any order; the crew name forms by itself, for example Plong1 - TM Production Shift 1.",
-        "id": "Mesin dibawa dari grid. Tiap kotak satu crew. Pilih Shift tiap kotak dalam urutan bebas; nama crew terbentuk sendiri, misalnya Plong1 - TM Production Shift 1."
+        "en": "The machine comes from the grid. There is one box per active production shift of Master Shift. Choose the Shift of each box in any order; the crew name forms by itself, for example Plong1 - TM Production Shift 1.",
+        "id": "Mesin dibawa dari grid. Ada satu kotak per shift produksi aktif di Master Shift. Pilih Shift tiap kotak dalam urutan bebas; nama crew terbentuk sendiri, misalnya Plong1 - TM Production Shift 1."
       },
       {
         "en": "A shift can be used once. Choosing a shift that another box already has swaps the two boxes, so nothing breaks.",

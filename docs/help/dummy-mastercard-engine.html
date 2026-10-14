@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engine Data Dummy Master Card</title>
+<style>
+  :root { --bg:#ffffff; --ink:#111111; --line:#111111; --card:#f4f4f4; --accent:#0b4ea2; --ok:#0a6b2d; --warn:#7a4a00; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#111111; --ink:#ffffff; --line:#ffffff; --card:#1d1d1d; --accent:#8ec1ff; --ok:#7be09b; --warn:#ffd27a; } }
+  body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.6 system-ui, "Segoe UI", sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:30px; margin:0 0 4px; } h2 { font-size:22px; margin:34px 0 8px; border-bottom:2px solid var(--line); padding-bottom:4px; }
+  code { font-family:ui-monospace, Consolas, monospace; font-size:14px; background:var(--card); padding:1px 5px; }
+  pre { background:var(--card); padding:12px; overflow:auto; font-size:14px; }
+  table { width:100%; border-collapse:collapse; margin:10px 0; font-size:15px; }
+  th, td { border:2px solid var(--line); padding:6px 9px; text-align:left; vertical-align:top; } th { background:var(--card); }
+  .flow { display:grid; gap:0; max-width:620px; }
+  .st { border:2px solid var(--line); padding:8px 12px; background:var(--card); }
+  .st b { color:var(--accent); } .arrow { text-align:center; font-weight:700; line-height:1.2; }
+  .skip { border:2px dashed var(--line); padding:6px 12px; margin:6px 0 6px 40px; color:var(--warn); }
+  .lv { border-left:8px solid var(--ok); }
+  .note { border:2px dashed var(--line); padding:10px 14px; margin:12px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Engine Data Dummy Master Card</h1>
+  <p>PDF Master Card baru &rarr; set dummy berlevel (Inquiry, ProDev, ProCost, CO). Dibuat 14 Okt 2026, hanya situs dummy ddt*. Versi teks: <code>docs/help/dummy-mastercard-engine.md</code>. Aturan: <code>docs/PATOKAN-DATA-DUMMY.md</code>.</p>
+
+  <h2>1. Menjalankan</h2>
+  <ul>
+    <li>Layar info (jumlah set per level): <b>Developer &rsaquo; Database &rsaquo; Master Card Dummy (PDF)</b> (<code>/v2/dummy/mastercard</code>, developer saja). Menjalankan engine = perintah di bawah.</li>
+    <li>Perintah: <code>php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2 --qty=5000 --due=21</code>. Tanpa <code>--levels</code>: semua produk baru ke level Inquiry.</li>
+  </ul>
+
+  <h2>2. Alur proses</h2>
+  <div class="flow">
+    <div class="st"><b>PDF</b> di <code>docs/attachments/mastercard/</code> + gambar <code>extracted/&lt;slug nama pdf&gt;.png|jpg</code></div>
+    <div class="arrow">&darr;</div>
+    <div class="st"><b>1. Baca PDF</b> &mdash; <code>MasterCardPdfReader::read()</code>: pdftotext -layout, nilai milik label terdekat di atasnya</div>
+    <div class="arrow">&darr;</div>
+    <div class="st"><b>2. Cek produk</b> &mdash; <code>skipReason()</code></div>
+    <div class="skip">sudah ada (no. desain / kode item / produk aktif) &rarr; dilewati<br>artwork, P x L x T, ukuran pisau, atau bahan kurang &rarr; dilewati + alasan</div>
+    <div class="arrow">&darr;</div>
+    <div class="st"><b>3. Ambil level dari kuota</b> (urut berkas)</div>
+    <div class="skip">kuota habis &rarr; dilewati</div>
+    <div class="arrow">&darr;</div>
+    <div class="st lv"><b>Level 1 Inquiry</b> &mdash; <code>inquiry()</code>: kartu Collection &rarr; <code>makeInquiry</code> &rarr; flat = pisau per potong &rarr; urut bagian &rarr; Sales Confirm</div>
+    <div class="arrow">&darr;</div>
+    <div class="st lv"><b>Level 2 ProDev</b> &mdash; <code>toProdev()</code>: <code>openInProdev</code> &rarr; <code>saveLayout(confirm)</code> dari kartu &rarr; SpecEngine: BOP, BOM, tinta</div>
+    <div class="arrow">&darr;</div>
+    <div class="st lv"><b>Level 3 ProCost</b> &mdash; <code>toProcost()</code>: <code>priceAndPublish</code> (CostingEngine, harga contoh)</div>
+    <div class="arrow">&darr;</div>
+    <div class="st lv"><b>Level 4 CO</b> &mdash; <code>toCo()</code>: Quotation &rarr; WIN (Master Product) &rarr; CO: pilih qty, due date, Confirm, approval &rarr; baris CPDEL</div>
+  </div>
+  <p class="note">Set level N menjalankan level 1 sampai N lalu berhenti. Berhenti di CO Confirmed: Post to Production, WO, dan plan tidak dijalankan engine.</p>
+
+  <h2>3. Data flow: tabel dibaca dan ditulis</h2>
+  <table>
+    <tr><th>Tahap</th><th>Dibaca</th><th>Ditulis (ddt*)</th></tr>
+    <tr><td>Awal</td><td>PDF, <code>extracted/*</code>; <code>prod_master_card</code>, <code>prod_product</code> (cek ada); <code>cust_customer</code>, <code>mat_category</code>, <code>prod_process</code>, <code>ref_finishing_type</code>, <code>mat_join_type</code></td><td>-</td></tr>
+    <tr><td>1 Inquiry</td><td>kartu hasil PDF</td><td><code>prod_master_card</code>, <code>prod_master_card_file</code> (SOURCE, ARTWORK), <code>cust_customer</code> (bila baru), <code>iqp_inquiry</code>, <code>iqp_tier</code>, <code>iqp_part</code>, <code>iqp_part_material</code>, <code>iqp_part_ink</code>, <code>iqp_part_finishing</code>, <code>iqp_part_process</code>; tanda <code>stat_confirm_sales</code>; berkas <code>master-card/</code>, <code>inquiry/{part}/artwork/</code></td></tr>
+    <tr><td>2 ProDev</td><td><code>prod_machine</code>, <code>mat_plano_size</code>, <code>prod_bop_rule</code>, <code>mat_raw</code>, bagian Inquiry</td><td><code>prod_product</code> (draft), <code>prod_part</code>, <code>prod_layout_group(+_part)</code>, <code>iqp_layout</code>, <code>prod_part_process</code>, <code>prod_part_material</code>, <code>prod_part_ink</code>; <code>stat_confirm_prodev</code></td></tr>
+    <tr><td>3 ProCost</td><td><code>iqp_tier</code>, <code>iqp_part</code>, <code>mat_grammage</code></td><td><code>iqp_costing</code>, <code>iqp_costing_part</code>, <code>iqp_costing_price_tier</code>; <code>stat_confirm_procost</code>, <code>sub_state</code></td></tr>
+    <tr><td>4 CO</td><td>costing published, jabatan approver</td><td><code>quo_quotation(+_item)</code>, <code>co_order</code>, <code>co_order_item</code>, <code>co_order_delivery</code>, <code>prod_product</code> (ACTIVE), <code>prod_part_*</code>, log approval; <code>iqp_inquiry.co_id / product_id</code>, <code>prod_master_card.status = PRODUCT</code></td></tr>
+  </table>
+  <p>Pelaku: <code>yuna</code> Sales, <code>dedi</code> ProDev, <code>wiwik</code> ProCost, approver = pemegang jabatan langkah berjalan. User yang login dipulihkan setelah <code>run()</code>.</p>
+
+  <h2>4. Dari isi kartu ke data</h2>
+  <table>
+    <tr><th>Isi kartu</th><th>Menjadi</th></tr>
+    <tr><td>Dimensi P / L / T</td><td><code>dim_l / dim_w / dim_h</code> (mm), lalu <code>dieline_spec.dims</code> (tipe dari <code>MasterCardShape::suggestType</code>)</td></tr>
+    <tr><td>Ukuran Pisau, Isi dalam Satu Cetakan</td><td>ukuran datar per bagian (<code>iqp_part.flat_w/h</code>) = pisau / jumlah potong; UP dan susunan di layout ProDev</td></tr>
+    <tr><td>Ukuran Cetak</td><td>kanvas layout ProDev</td></tr>
+    <tr><td>Material, Kualitas, Ukuran Bahan</td><td><code>iqp_part_material</code> (kategori master dari <code>MasterCardService::category</code>)</td></tr>
+    <tr><td>Urutan Pekerjaan</td><td>proses Inquiry (<code>iqp_part_process</code>); BOP akhir = hasil SpecEngine</td></tr>
+    <tr><td>Cetak di mesin ...</td><td>mesin cetak layout: VERSAFIRE / HANWAY / SUNTHINK / SAKURA, selain itu Komori GL440</td></tr>
+    <tr><td>Warna Pertama / Kedua</td><td><code>iqp_part_ink</code></td></tr>
+    <tr><td>Nama berakhiran A / B / SET n / Cover</td><td>label bagian; urut COVER, lalu SET dari angka terbesar ke 1</td></tr>
+  </table>
+
+  <h2>5. Peta kode dan debug</h2>
+  <table>
+    <tr><th>Berkas</th><th>Isi</th></tr>
+    <tr><td><code>app/Services/MasterCard/MasterCardPdfReader.php</code></td><td><code>read()</code>, <code>text()</code> (pdftotext), <code>pieces()</code>, <code>colors()</code>, <code>steps()</code>, <code>sizes()</code>, <code>artwork()</code></td></tr>
+    <tr><td><code>app/Services/MasterCard/MasterCardDummyEngine.php</code></td><td><code>plan()</code>, <code>run()</code>, <code>groups()</code>, <code>skipReason()</code>, <code>one()</code>, <code>inquiry()</code>, <code>shapeParts()</code>, <code>toProdev()</code>, <code>layout()</code>, <code>press()</code>, <code>toProcost()</code>, <code>toCo()</code>, <code>approve()</code></td></tr>
+    <tr><td><code>app/Console/Commands/DummyMasterCard.php</code></td><td>opsi perintah, tabel laporan</td></tr>
+    <tr><td><code>routes/v2_dummy_mastercard.php</code>, <code>resources/views/v2/dummy-mastercard.blade.php</code></td><td>layar info jumlah set per level (dimuat dari <code>routes/web.php</code>); menu di <code>AppMenu.php</code></td></tr>
+    <tr><td>dipakai ulang</td><td><code>MasterCardService</code>, <code>MasterCardShape</code>, <code>Prodev::component()->saveLayout</code>, <code>SpecEngine::persist</code>, <code>InquiryStage</code>, <code>InquiryWriter</code>, <code>PricedDummyChain</code>, <code>CustomerOrder</code></td></tr>
+  </table>
+  <p>Cek cepat tanpa menulis (<code>php artisan tinker --env=mockup</code>):</p>
+  <pre>(new App\Services\MasterCard\MasterCardPdfReader)-&gt;read(base_path('docs/attachments/mastercard/&lt;file&gt;.pdf'));
+app(App\Services\MasterCard\MasterCardDummyEngine::class)-&gt;plan(base_path('docs/attachments/mastercard'));</pre>
+  <table>
+    <tr><th>Gejala</th><th>Penyebab</th><th>Tindakan</th></tr>
+    <tr><td><code>pdftotext gagal</code></td><td>program tidak ada di PATH</td><td>pasang xpdf / poppler atau set env <code>PDFTOTEXT_BIN</code></td></tr>
+    <tr><td>Field kosong atau salah</td><td>label formulir bergeser</td><td>lihat <code>LABELS</code> dan <code>pieces()</code> di reader, uji dengan <code>read()</code></td></tr>
+    <tr><td>"card incomplete: artwork"</td><td>gambar tidak ada di <code>extracted/</code> bernama slug PDF</td><td>taruh gambar; nama = <code>Str::slug</code> nama PDF tanpa .pdf</td></tr>
+    <tr><td>"incomplete: Customer (master)"</td><td>customer tidak ada atau placeholder kartu</td><td>isi kartu atau buat customer</td></tr>
+    <tr><td>Plan Draft berhenti terbentuk</td><td>nama pisau lebih dari 60 karakter (<code>prd_wo.dieline_ref</code>)</td><td>pendekkan nama produk</td></tr>
+    <tr><td>"tidak ada user aktif pemegang jabatan approver"</td><td>approver CO tanpa user aktif</td><td>aktifkan user pemegang jabatan</td></tr>
+  </table>
+
+  <h2>6. Cara mengubah</h2>
+  <table>
+    <tr><th>Mau</th><th>Ubah</th></tr>
+    <tr><td>Level baru</td><td>tambah ke <code>LEVELS</code>, buat <code>toNama(IqpInquiry)</code>; parsing kuota di <code>DummyMasterCard</code> dan <code>routes/v2_dummy_mastercard.php</code>, field di view</td></tr>
+    <tr><td>Syarat kartu lengkap</td><td><code>missing()</code> di engine</td></tr>
+    <tr><td>Pemetaan mesin cetak</td><td>konstanta <code>PRESS</code></td></tr>
+    <tr><td>Label kartu baru</td><td><code>LABELS</code> dan pemetaan field di <code>MasterCardPdfReader::read()</code></td></tr>
+    <tr><td>Folder lain</td><td><code>--path</code>, atau <code>$dir</code> di route</td></tr>
+  </table>
+
+  <h2>7. Menghapus hasil (tidak ada tombol; urutan aman, per inquiry)</h2>
+  <p><code>co_order_delivery</code> &rarr; <code>co_order_item</code> &rarr; <code>co_order</code> &rarr; <code>quo_quotation_item</code> &rarr; <code>quo_quotation</code> &rarr; <code>iqp_costing_*</code> &rarr; <code>prod_layout_group_part</code> &rarr; <code>prod_layout_group</code> &rarr; <code>prod_part_*</code> &rarr; <code>prod_part</code> &rarr; <code>prod_product_acc</code>, <code>prod_product</code> &rarr; <code>iqp_layout</code> &rarr; <code>iqp_part_*</code> &rarr; <code>iqp_part</code> &rarr; <code>iqp_tier</code> &rarr; <code>iqp_inquiry</code>. Kartu Collection: status kembali READY, <code>product_id</code> dan <code>inquiry_id</code> NULL. WO dari CO itu dihapus dulu (<code>prd_wo_operation*</code>, <code>prd_wo_material</code>, <code>prd_wo</code>).</p>
+</main>
+</body>
+</html>
