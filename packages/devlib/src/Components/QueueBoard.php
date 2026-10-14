@@ -24,6 +24,7 @@ class QueueBoard extends DevlibComponent
         public ?string $process = null,
         public string $machine = '',
         public string $empty = 'Nothing is queued on this machine.',
+        public bool $suggested = false,   // adds the Suggested column (rows carry 'suggested' text); only while a sequence model is active
     ) {
         // "All processes" (key '') lists every machine; "All machines" is the empty choice of each Machine dropdown
         if (! array_key_exists('', $this->processes)) {
@@ -58,7 +59,7 @@ class QueueBoard extends DevlibComponent
                     <table class="dl-table">
                         <thead><tr>
                             <th>{{ \Devlib\Lang::text('Status') }}</th><th>{{ \Devlib\Lang::text('Work Order') }}</th><th>{{ \Devlib\Lang::text('Item') }}</th><th class="num">{{ \Devlib\Lang::text('Quantity') }}</th>
-                            <th>{{ \Devlib\Lang::text('Progress') }}</th><th>{{ \Devlib\Lang::text('Start') }}</th><th>{{ \Devlib\Lang::text('End') }}</th><th>{{ \Devlib\Lang::text('Idle before') }}</th>
+                            <th>{{ \Devlib\Lang::text('Progress') }}</th><th>{{ \Devlib\Lang::text('Start') }}</th><th>{{ \Devlib\Lang::text('End') }}</th>@if ($suggested)<th>{{ \Devlib\Lang::text('Suggested') }}</th>@endif<th>{{ \Devlib\Lang::text('Idle before') }}</th>
                         </tr></thead>
                         <tbody>
                             @foreach ($rows as $r)
@@ -66,10 +67,10 @@ class QueueBoard extends DevlibComponent
                                     <td><span class="dl-queue__st dl-queue__st--{{ strtolower($r['status']) }}">{{ \Devlib\Lang::text($r['status']) }}</span></td>
                                     <td>{{ $r['wo'] }}</td><td>{{ $r['item'] }}</td><td class="num">{{ $r['qty'] }}</td>
                                     <td>@if ($r['progress'] === null)—@else<span class="dl-queue__pct"><i style="width:{{ (int) $r['progress'] }}%"></i></span> {{ (int) $r['progress'] }}%@endif</td>
-                                    <td>{{ $r['start'] }}</td><td>{{ $r['end'] }}</td><td>{{ $r['idle'] ?? '' }}</td>
+                                    <td>{{ $r['start'] }}</td><td>{{ $r['end'] }}</td>@if ($suggested)<td>{{ $r['suggested'] ?? '' }}</td>@endif<td>{{ $r['idle'] ?? '' }}</td>
                                 </tr>
                             @endforeach
-                            <tr data-q-empty hidden><td colspan="8" class="dl-table__empty">{{ \Devlib\Lang::text($empty) }}</td></tr>
+                            <tr data-q-empty hidden><td colspan="{{ $suggested ? 9 : 8 }}" class="dl-table__empty">{{ \Devlib\Lang::text($empty) }}</td></tr>
                         </tbody>
                     </table>
                 </div>

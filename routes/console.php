@@ -43,6 +43,7 @@ foreach (range(0, max(0, (int) config('ppic.default_shifts', 2) - 1)) as $shift)
     Schedule::command('ppic:auto-plan --trigger=SHIFT')->dailyAt($start->format('H:i'))->withoutOverlapping()->when($ppicReady);
 }
 Schedule::command('ppic:learn')->dailyAt('03:30')->withoutOverlapping()->when($ppicReady);
+Schedule::command('sequence:train')->dailyAt('03:45')->withoutOverlapping()->when(fn () => Schema::connection('tm2prd')->hasTable('prd_sequence_model'));
 
 // Inventory & Warehouse v2.01 (user 2026-10-10 menyetujui jadwal): rekonsiliasi nilai harian, eskalasi keputusan QC per jam, booking Hold/basi,
 // tugas hitung stok jatuh tempo, deteksi kurang kirim. Lingkungan yang belum punya tabelnya (tm2* sebelum rilis) dilewati.

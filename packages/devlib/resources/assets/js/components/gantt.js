@@ -358,7 +358,7 @@
       const wide = (t.e - t.s) * this.PX >= 150;   // a narrow bar shows only its short identity (the Work Order number), the full detail is in the tooltip
       const flags = [t.state === 'hot' ? 'is-hot' : '', t.state === 'qchold' ? 'is-qchold' : '', this.conflict(t) ? 'is-conflict' : '', dim ? 'is-dim' : '', this.hi && !dim && this.hi !== 'all' ? 'is-match' : '',
         this.changed.has(t.id) ? 'is-changed' : '', this.lockedFor(t) && t.state !== 'qchold' ? 'is-locked' : '', gates.includes('block') ? 'has-gate-block' : gates.includes('wait') ? 'has-gate-wait' : '',
-        gates.length ? 'has-gates' : '', t.clash ? 'is-clash' : '', t.previewed ? 'is-previewed' : '', t.queued ? 'is-queued' : '', t.mine ? 'is-mine' : '', t.live ? 'is-live' : '', p ? (p.checking ? 'is-checking' : 'is-pending') : ''].filter(Boolean).join(' ');
+        gates.length ? 'has-gates' : '', t.clash ? 'is-clash' : '', t.previewed ? 'is-previewed' : '', t.ghost ? 'is-ghost' : '', t.queued ? 'is-queued' : '', t.mine ? 'is-mine' : '', t.live ? 'is-live' : '', p ? (p.checking ? 'is-checking' : 'is-pending') : ''].filter(Boolean).join(' ');
       return `<div class="dl-gantt__blk dl-gantt--${esc(cls)} ${flags}"
         style="left:${(t.s - this.S) * this.PX}px;width:${Math.max(0.25, t.e - t.s) * this.PX}px" data-g2-task="${esc(t.id)}" title="${esc(t.detail || t.label)} · ${esc(this.lbl(t.s))}–${esc(this.lbl(t.e))}">
         ${setupPx > 0 ? `<span class="dl-gantt__setup" style="width:${setupPx}px">${setupPx >= 40 ? 'S ' + (+t.setup) : ''}</span>` : ''}
@@ -418,7 +418,7 @@
 
     render() {
       if (this.L && !this.pending) this.fit();
-      const vis = this.L ? this.rows.filter(r => ((this.L.machines || {})[this.fProc] || []).includes(r.key) && (!this.fRes || r.key === this.fRes))
+      const vis = this.L ? this.rows.filter(r => ((this.L.machines || {})[this.fProc] || []).includes(r.key) && (!this.fRes || r.key === this.fRes || r.ghostOf === this.fRes))
         : this.rows.filter(r => (!this.fRes || r.key === this.fRes) && (!this.fProc || this.rowTasks(r.key).some(t => t.process === this.fProc)));
       let html = this.headHtml();
       let sec = null;

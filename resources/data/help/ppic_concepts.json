@@ -545,6 +545,10 @@
       {
         "en": "Planned, not built yet: the order the officer arranges and applies will become input data for a machine learning engine that suggests the right order. Job problems and machine problems like the ones above are also part of that data.",
         "id": "Direncanakan, belum dibangun: urutan yang disusun dan di-APPLY officer akan menjadi data masukan untuk engine machine learning yang menyodorkan urutan yang benar. Masalah job dan masalah mesin seperti di atas juga menjadi bagian data itu."
+      },
+      {
+        "en": "Job order learning: the model learns the order you APPLY. Learning n / 30 counts decision pairs. Preview shows a dashed lane, Use moves jobs as Draft, Dismiss is logged. QUE shows Suggested. Problem jobs and machine trouble are context too.",
+        "id": "ML urutan job: model belajar urutan saat APPLY. Learning n / 30 = pasangan keputusan. Preview = lajur putus-putus, Use memindah job tetap Draft, Dismiss dicatat. QUE punya kolom Suggested. Job bermasalah dan mesin rusak jadi bahan belajar."
       }
     ],
     "fields": []

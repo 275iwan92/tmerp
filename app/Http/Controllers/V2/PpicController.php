@@ -28,6 +28,8 @@ use App\Services\Scheduling\Plan\GateService;
 use App\Services\Scheduling\Plan\ScheduleGuard;
 use App\Services\Scheduling\Plan\PlanChangeService;
 use App\Services\Scheduling\Plan\PlanConfirmService;
+use App\Services\Scheduling\Sequence\SequenceSuggester;
+use App\Services\Scheduling\Sequence\TraceRecorder;
 use App\Services\Scheduling\Plan\PlanEvents;
 use App\Services\Scheduling\Plan\PpicAccess;
 use App\Services\Scheduling\Plan\SheetReset;
@@ -395,6 +397,25 @@ final class PpicController extends Controller
         return ['ok' => true, 'message' => tf('Work Order applied to the live schedule: :n operations are fixed.', ['n' => $res['confirmed']])];
     }
 
+    /** Job order learning, USE: the suggested order goes onto the machine as pending moves (same path as a drag), still DRAFT; PROCESS and APPLY follow as usual. */
+    public function sequenceUse(int $wo, int $machine, PlanChangeService $changes): RedirectResponse
+    {
+        $this->schedulerOnly();
+        $res = SequenceSuggester::use($machine, $changes, $this->login());
+
+        return redirect(route('v2.screen', 'production-wo').'?id='.$wo.'&open=sim')
+            ->with('v2_flash', tf('Suggested order taken: :n jobs moved as pending changes (still Draft). Press PROCESS to plan them.', ['n' => $res['moved']]));
+    }
+
+    /** Job order learning, DISMISS: logged as SEQ_REJECT; the strip stays hidden until the arrangement changes. */
+    public function sequenceDismiss(int $wo, int $machine): RedirectResponse
+    {
+        $this->schedulerOnly();
+        SequenceSuggester::dismiss($machine, $this->login());
+
+        return redirect(route('v2.screen', 'production-wo').'?id='.$wo.'&open=sim');
+    }
+
     /** APPLY ALL WOs: every Work Order that has a Draft operation on the chosen process and machine is applied (each through applyOne). */
     public function applyAll(Request $r, PlanConfirmService $service, AutoPlanRunner $runner): JsonResponse
     {
@@ -429,6 +450,7 @@ final class PpicController extends Controller
             return redirect($form)->withErrors(['process' => t('Applied WO is locked; Undo Confirm first.')]);
         }
         // (0) pending BOP order and priority become real; (1) ENGINE BOP: the operations follow the BOP of ProDev; (2) ENGINE BOM: the material lines (officer edits and substitutes kept)
+        $pins = TraceRecorder::capturePins();   // engine placement of dragged jobs, before PROCESS clears the pending moves (job order learning)
         $changes->applyPendingHeader($model, $this->login());
         $bop = $gen->rebuildOperations($model);
         try {
@@ -441,6 +463,7 @@ final class PpicController extends Controller
         $runner->run('MANUAL', $this->login());
         $changes->clearPending();
         Ppic::forget();
+        TraceRecorder::recordTrial($wo, $pins);
         // Schedule guard (Jo 2026-10-14): every process must sit on a machine (or SUBCON / crew). Otherwise PROCESS is blocked: the hash
         // is not stored, so APPLY stays off, and the popup lists the work order, process and reason.
         if ($unscheduled = ScheduleGuard::issues($wo)) {

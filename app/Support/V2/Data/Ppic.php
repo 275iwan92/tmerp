@@ -27,6 +27,7 @@ use App\Services\Scheduling\Plan\GateService;
 use App\Services\Scheduling\Plan\PlanLoader;
 use App\Services\Scheduling\Plan\PpicSettings;
 use App\Services\Scheduling\Plan\SetupTimeEngine;
+use App\Services\Scheduling\Sequence\SequenceSuggester;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
@@ -604,6 +605,77 @@ final class Ppic
     }
 
     /**
+     * Job order learning panel of the Simulation (Jo 2026-10-14): the strip props for the machine the board shows, and, when $preview is true,
+     * the shadow lane "Preview / suggested order" added to $g (dashed bars, nothing saved). Null = no machine to talk about.
+     *
+     * @param  array<string, mixed>  $g  result of simulation(); the shadow lane is added to it by reference
+     * @return ?array<string, mixed>
+     */
+    public static function sequencePanel(array &$g, int $woId, bool $preview): ?array
+    {
+        $key = (string) ($g['linked']['machine'] ?? '');
+        if (! preg_match('/^m([0-9]+)$/', $key, $m)) {
+            return null;
+        }
+        $machine = (int) $m[1];
+        $label = (string) (collect($g['rows'])->firstWhere('key', $key)['label'] ?? $key);
+        $proc = (string) ($g['linked']['processes'][$g['linked']['process']] ?? '');
+        $sub = $label.($proc !== '' ? ' · '.$proc : '');
+        $st = SequenceSuggester::status();
+        if (! $st['active']) {
+            return ['mode' => 'learning', 'title' => 'Learning', 'subtitle' => $sub, 'value' => min($st['pairs'], $st['needed']), 'needed' => $st['needed'],
+                'note' => 'The model needs '.$st['needed'].' officer order decisions (pairs of jobs you put in an order and applied) before it suggests an order.'];
+        }
+        $s = SequenceSuggester::suggest($machine);
+        if (! $s || SequenceSuggester::dismissed($machine, $s['order'])) {
+            return null;
+        }
+        $ops = collect(self::operations())->keyBy('op_id');
+        $model = $s['model'];
+        $url = fn (string $action) => route('v2.ppic.wo.sequence.'.$action, ['wo' => $woId, 'machine' => $machine]);
+        $panel = ['mode' => 'ready', 'title' => 'Suggested order', 'subtitle' => $sub, 'items' => array_map(fn ($id) => (string) ($ops[$id]['wo_no'] ?? $id), $s['order']),
+            'note' => 'Learned from '.(int) $model->arrangements_count.' officer arrangements · matches officer '.round((float) $model->holdout_accuracy_model * 100).'% vs engine '.round((float) $model->holdout_accuracy_engine * 100).'% (last 20% of APPLYs)',
+            'previewing' => $preview, 'differs' => $s['differs'],
+            'previewUrl' => route('v2.screen', 'production-wo').'?id='.$woId.'&open=sim'.($preview ? '' : '&preview=1'),
+            'useUrl' => $s['differs'] ? $url('use') : null, 'dismissUrl' => $url('dismiss')];
+        if (! $s['differs']) {
+            $panel['note'] = 'The current order already matches the suggestion · '.$panel['note'];
+        }
+        if ($preview) {
+            $lane = 'sg'.$machine;
+            // The suggested jobs run back to back from the first slot of the current arrangement (durations are each job's own).
+            $a = $ops[$s['current'][0]]['start'];
+            foreach ($s['order'] as $k => $id) {
+                $o = $ops[$id];
+                $b = $a->addSeconds($o['finish']->getTimestamp() - $o['start']->getTimestamp());
+                $g['tasks'][] = ['id' => 'g'.$id, 'row' => $lane, 'label' => $o['wo_no'], 'short' => $o['wo_no'], 'process' => strtoupper($o['process']), 'start' => self::hm(self::hours($a)), 'end' => self::hm(self::hours($b)),
+                    'ghost' => true, 'locked' => true, 'detail' => 'Suggested #'.($k + 1).' · '.$o['wo_no'].' · '.Locale::dt($a).' → '.Locale::dt($b)];
+                $a = $b;
+            }
+            $rows = [];
+            foreach ($g['rows'] as $r) {
+                $rows[] = $r;
+                if ($r['key'] === $key) {
+                    $rows[] = ['key' => $lane, 'label' => 'Preview / suggested order', 'section' => $r['section'], 'ghostOf' => $key];
+                }
+            }
+            $g['rows'] = $rows;
+            foreach ($g['linked']['machines'] as $p => $list) {
+                $out = [];
+                foreach ($list as $mk) {
+                    $out[] = $mk;
+                    if ($mk === $key) {
+                        $out[] = $lane;
+                    }
+                }
+                $g['linked']['machines'][$p] = $out;
+            }
+        }
+
+        return $panel;
+    }
+
+    /**
      * Live Schedule monitor (read only): every operation that is CONFIRMED or running, on a Process -> Machine Gantt (All / All by default)
      * and as one detail table. Good = SUM of Production Output, Bad = SUM of its defect lines, operator from the time log.
      *
@@ -1144,7 +1216,24 @@ final class Ppic
                 'start' => Locale::dt($running && $r['actual_start'] ? $r['actual_start'] : $r['start']), 'end' => Locale::dt($r['finish']),
                 'mine' => $currentWoId !== null && $r['wo_id'] === $currentWoId, 'wo_id' => $r['wo_id'], 'seq' => $r['seq'],
                 'idle' => isset($idle[$r['op_id']]) ? MachineIdle::duration($idle[$r['op_id']]['minutes']).' · '.$idle[$r['op_id']]['reason'] : '',
+                'op_id' => $r['op_id'], 'machine_id' => $r['machine_id'],
             ];
+        }
+        // Job order learning: the Suggested column exists only while a model is ACTIVE; only Draft rows carry a value, an unchanged place shows nothing.
+        $seqActive = SequenceSuggester::active() !== null;
+        if ($seqActive) {
+            $sug = [];
+            foreach ($rows as &$row) {
+                if ($row['status'] !== 'Draft' || ! $row['machine_id']) {
+                    continue;
+                }
+                $sug[$row['machine_id']] ??= SequenceSuggester::suggest((int) $row['machine_id']);
+                $rk = $sug[$row['machine_id']]['rank'][$row['op_id']] ?? null;
+                if ($rk && $rk['suggested'] !== $rk['now']) {
+                    $row['suggested'] = '#'.$rk['suggested'].' · now #'.$rk['now'].' · differs '.($rk['suggested'] < $rk['now'] ? '▲' : '▼');
+                }
+            }
+            unset($row);
         }
         ksort($processes);
         $machines = [];
@@ -1172,7 +1261,7 @@ final class Ppic
 
         // Open WO: every process on its machine (what the Simulation row shows); otherwise the process and machine of the running job.
         return ['processes' => $processes, 'machines' => $machines, 'rows' => $rows, 'process' => $mine ? '' : ($first['process'] ?? array_key_first($processes)),
-            'machine' => $first['machine'] ?? '', 'running' => count(array_filter($rows, fn ($r) => $r['status'] === 'Running')), 'queued' => count($rows)];
+            'machine' => $first['machine'] ?? '', 'running' => count(array_filter($rows, fn ($r) => $r['status'] === 'Running')), 'queued' => count($rows), 'suggested' => $seqActive];
     }
 
     /**

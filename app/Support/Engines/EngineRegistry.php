@@ -57,6 +57,7 @@ use App\Services\Scheduling\Plan\ScheduleSolver;
 use App\Services\Scheduling\Plan\SetupTimeEngine;
 use App\Services\Scheduling\Plan\WoPlanningEnricher;
 use App\Services\Scheduling\SchedulingRuleEngine;
+use App\Services\Scheduling\Sequence\SequenceSuggester;
 use App\Services\Scheduling\WoGenerationService;
 use Assistant\Engine as AssistantEngine;
 use Devlib\Engine\EngineInspector;
@@ -1379,6 +1380,30 @@ final class EngineRegistry
                 'reads' => ['tm2prd.prd_scheduling_rule'],
                 'writes' => ['Nothing.'],
                 'used' => ['PDR Engine'],
+            ],
+            [
+                'key' => 'sequence-learning', 'name' => 'Job Order Learning (Sequence)', 'group' => 'Production', 'mode' => 'suggest',
+                'purpose' => 'Learns the order in which the officer applies jobs to the Live Schedule and suggests that order for new jobs on a machine.',
+                'class' => SequenceSuggester::class,
+                'methods' => ['suggest', 'use', 'dismiss', 'status'],
+                'inputs' => [
+                    ['machineId', 'The machine whose waiting Draft jobs are ordered.'],
+                    ['trace', 'The officer arrangement recorded at PROCESS (TRIAL, context only) and at APPLY (FINAL, the training label).'],
+                ],
+                'outputs' => [
+                    ['Suggested order', 'The Draft jobs of the machine, best first, with the place each has now.'],
+                    ['Learning state', 'Decision pairs learned against the 30 needed, and the accuracy against the engine order on the newest 20% of APPLYs.'],
+                ],
+                'steps' => [
+                    'PROCESS stores a TRIAL snapshot of the machine order; the next PROCESS replaces it. APPLY turns the last arrangement into a FINAL label.',
+                    'Six features per job: urgency (due date minus work hours), priority, duration, similarity to the job before it, material gate, wait before.',
+                    'sequence:train fits a pairwise linear ranking (logistic regression, L2) on the FINAL pairs; jobs that came from a suggestion are not used.',
+                    'The model is ACTIVE only with at least 30 pairs and a better pair accuracy than the engine order on the newest 20% of APPLYs; otherwise the screen shows Learning n / 30.',
+                    'USE moves the jobs through the same pending move as a drag and stays DRAFT; DISMISS is logged as SEQ_REJECT. A job with a problem or a machine that is down is recorded as context.',
+                ],
+                'reads' => ['tm2prd.prd_plan_trace', 'tm2prd.prd_sequence_model', 'tm2prd.prd_wo_operation'],
+                'writes' => ['tm2prd.prd_plan_trace', 'tm2prd.prd_sequence_model', 'tm2prd.prd_plan_decision (SEQ_USE, SEQ_REJECT)'],
+                'used' => ['Work Order form > Simulation and QUE'],
             ],
             [
                 'key' => 'interruption', 'name' => 'Hot Job Option Generator', 'group' => 'Production', 'mode' => 'suggest',

@@ -19,6 +19,7 @@ use App\Models\Prd\PrdPlanDecision;
 use App\Models\Prd\PrdPlanRun;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
+use App\Services\Scheduling\Sequence\TraceRecorder;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -62,7 +63,7 @@ final class PlanConfirmService
         $cal = $this->loader->calendar($now, $ops->pluck('draft_machine_id')->unique()->all());
         $shifts = max(1, (int) PpicSettings::number('lock_shifts'));
 
-        return DB::connection('tm2prd')->transaction(function () use ($ops, $cal, $shifts, $now, $run, $login, $onlyWoId) {
+        $result = DB::connection('tm2prd')->transaction(function () use ($ops, $cal, $shifts, $now, $run, $login, $onlyWoId) {
             $locked = 0;
             $woIds = [];
             // Everything the confirm is about to overwrite, so Undo can put it back.
@@ -114,6 +115,12 @@ final class PlanConfirmService
 
             return ['confirmed' => $ops->count(), 'locked' => $locked, 'run_id' => (int) $run->run_id];
         });
+        // Job order learning: the arrangement of the applied Work Order becomes the label (never fails the apply).
+        if ($onlyWoId) {
+            TraceRecorder::recordFinal($onlyWoId, $result['run_id']);
+        }
+
+        return $result;
     }
 
     /**

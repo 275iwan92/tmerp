@@ -6116,7 +6116,7 @@
     {
         "class": "App\\Services\\Scheduling\\WoGenerationService",
         "file": "app/Services/Scheduling/WoGenerationService.php",
-        "lines": 216,
+        "lines": 414,
         "entries": [
             {
                 "method": "generateFromDelivery",
@@ -6458,6 +6458,119 @@
         ],
         "used": [
             "PDR Engine"
+        ]
+    },
+    {
+        "class": "App\\Services\\Scheduling\\Sequence\\SequenceSuggester",
+        "file": "app/Services/Scheduling/Sequence/SequenceSuggester.php",
+        "lines": 137,
+        "entries": [
+            {
+                "method": "suggest",
+                "static": true,
+                "params": [
+                    {
+                        "name": "machine",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "?array",
+                "note": null
+            },
+            {
+                "method": "use",
+                "static": true,
+                "params": [
+                    {
+                        "name": "machine",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "changes",
+                        "type": "PlanChangeService",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "dismiss",
+                "static": true,
+                "params": [
+                    {
+                        "name": "machine",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "bool",
+                "note": null
+            },
+            {
+                "method": "status",
+                "static": true,
+                "params": [],
+                "returns": "array",
+                "note": null
+            }
+        ],
+        "key": "sequence-learning",
+        "name": "Job Order Learning (Sequence)",
+        "group": "Production",
+        "mode": "suggest",
+        "purpose": "Learns the order in which the officer applies jobs to the Live Schedule and suggests that order for new jobs on a machine.",
+        "inputs": [
+            [
+                "machineId",
+                "The machine whose waiting Draft jobs are ordered."
+            ],
+            [
+                "trace",
+                "The officer arrangement recorded at PROCESS (TRIAL, context only) and at APPLY (FINAL, the training label)."
+            ]
+        ],
+        "outputs": [
+            [
+                "Suggested order",
+                "The Draft jobs of the machine, best first, with the place each has now."
+            ],
+            [
+                "Learning state",
+                "Decision pairs learned against the 30 needed, and the accuracy against the engine order on the newest 20% of APPLYs."
+            ]
+        ],
+        "steps": [
+            "PROCESS stores a TRIAL snapshot of the machine order; the next PROCESS replaces it. APPLY turns the last arrangement into a FINAL label.",
+            "Six features per job: urgency (due date minus work hours), priority, duration, similarity to the job before it, material gate, wait before.",
+            "sequence:train fits a pairwise linear ranking (logistic regression, L2) on the FINAL pairs; jobs that came from a suggestion are not used.",
+            "The model is ACTIVE only with at least 30 pairs and a better pair accuracy than the engine order on the newest 20% of APPLYs; otherwise the screen shows Learning n / 30.",
+            "USE moves the jobs through the same pending move as a drag and stays DRAFT; DISMISS is logged as SEQ_REJECT. A job with a problem or a machine that is down is recorded as context."
+        ],
+        "reads": [
+            "tm2prd.prd_plan_trace",
+            "tm2prd.prd_sequence_model",
+            "tm2prd.prd_wo_operation"
+        ],
+        "writes": [
+            "tm2prd.prd_plan_trace",
+            "tm2prd.prd_sequence_model",
+            "tm2prd.prd_plan_decision (SEQ_USE, SEQ_REJECT)"
+        ],
+        "used": [
+            "Work Order form > Simulation and QUE"
         ]
     },
     {
@@ -8207,7 +8320,7 @@
     {
         "class": "App\\Services\\Scheduling\\Plan\\AutoPlanRunner",
         "file": "app/Services/Scheduling/Plan/AutoPlanRunner.php",
-        "lines": 124,
+        "lines": 162,
         "entries": [
             {
                 "method": "run",
@@ -8314,7 +8427,7 @@
     {
         "class": "App\\Services\\Scheduling\\Plan\\ScheduleSolver",
         "file": "app/Services/Scheduling/Plan/ScheduleSolver.php",
-        "lines": 426,
+        "lines": 469,
         "entries": [
             {
                 "method": "solve",
@@ -8487,7 +8600,7 @@
     {
         "class": "App\\Services\\Scheduling\\Plan\\GateService",
         "file": "app/Services/Scheduling/Plan/GateService.php",
-        "lines": 116,
+        "lines": 231,
         "entries": [
             {
                 "method": "material",
@@ -8639,7 +8752,7 @@
     {
         "class": "App\\Services\\Scheduling\\Plan\\PlanConfirmService",
         "file": "app/Services/Scheduling/Plan/PlanConfirmService.php",
-        "lines": 121,
+        "lines": 171,
         "entries": [
             {
                 "method": "confirm",
@@ -8658,6 +8771,11 @@
                     {
                         "name": "now",
                         "type": "?CarbonImmutable",
+                        "default": "null"
+                    },
+                    {
+                        "name": "onlyWoId",
+                        "type": "?int",
                         "default": "null"
                     }
                 ],
@@ -8729,7 +8847,7 @@
     {
         "class": "App\\Services\\Scheduling\\Operator\\OperatorTimerService",
         "file": "app/Services/Scheduling/Operator/OperatorTimerService.php",
-        "lines": 260,
+        "lines": 289,
         "entries": [
             {
                 "method": "act",
@@ -8782,6 +8900,11 @@
                         "name": "operator",
                         "type": "string",
                         "default": null
+                    },
+                    {
+                        "name": "defects",
+                        "type": "array",
+                        "default": "[]"
                     }
                 ],
                 "returns": "array",

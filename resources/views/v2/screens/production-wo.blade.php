@@ -4,7 +4,7 @@ Sumber hulu  : Ppic::workOrder/masterCard/bomSheet/simulation, prd_wo*, Master C
 Input        : Query ?id= (WO), ?new=1 (picker), ?open= atau ?tab= (bagian terbuka), ?layout=tabs, ?extras=1 (kartu angka + legenda Gantt di Simulation, mati secara default).
 Output       : Tampilan; aksi lewat rute v2.ppic.* (target, reorder, earliest, bom-cells, queue-move, process, apply, delete). Sheet BOP dan BOM: toolbar hanya ADD / DELETE / RESET (tanpa Search dan hitung baris; DELETE aktif setelah nomor baris diklik; RESET = ambil ulang dari engine ProDev, hanya WO Draft), teks hitam lewat token DevLib (tanpa kelas lokal). Urutan BOP dan Priority dari form ini tertunda sampai PROCESS; Earliest start = lantai waktu engine. Kolom Start dan Stop editable: Start menggeser operasi lewat engine dampak (pending), Stop mengubah target per jam (Run h mengikuti). Live Schedule kini menu sendiri (production-live).
 Dipakai oleh : Menu Planning > Work Order (v2:production-wo).
-Status       : Aktif di mockup (ddt*). Tab Bill of Material: kolom Waste dan Spill dari ProDev, bisa ditimpa officer (RESET mengembalikan); tombol Open Material Planning dan Substitute dihapus. APPLY TO LIVE SCHEDULE ada di bar atas di samping PROCESS; mati sampai PROCESS lulus dan semua bahan baku siap (Ppic::applyBlockedReason, alasan tampil). Tabel Cek ENGINE dihapus: engine bekerja di background. Pengaman jadwal: partial v2.partials.schedule-guard memunculkan popup bila ada proses tak terjadwal.
+Status       : Aktif di mockup (ddt*). Simulation: strip ML (x-dl::suggestion-strip, Learning n / 30 atau Suggested order + Preview / Use / Dismiss) dan lajur bayangan; QUE: kolom Suggested saat model ACTIVE (App\Services\Scheduling\Sequence). Tab Bill of Material: kolom Waste dan Spill dari ProDev, bisa ditimpa officer (RESET mengembalikan); tombol Open Material Planning dan Substitute dihapus. APPLY TO LIVE SCHEDULE ada di bar atas di samping PROCESS; mati sampai PROCESS lulus dan semua bahan baku siap (Ppic::applyBlockedReason, alasan tampil). Tabel Cek ENGINE dihapus: engine bekerja di background. Pengaman jadwal: partial v2.partials.schedule-guard memunculkan popup bila ada proses tak terjadwal.
 --}}
 {{-- Work Order v2 (PPIC): what scheduling knows about one Work Order. Created from Product Development data (layout, BOP, routing, BOM) by
      WoGenerationService; enriched by WoPlanningEnricher (process ids, machines that can run each step, target / waste / spoilage, setup);
@@ -301,7 +301,10 @@ Status       : Aktif di mockup (ddt*). Tab Bill of Material: kolom Waste dan Spi
         @endif
         @php $woHtml['bop'] = new \Illuminate\Support\HtmlString(ob_get_clean()); @endphp
         @php ob_start(); @endphp
-        @php $sim = Ppic::simulation($wo->wo_id); @endphp
+        @php
+            $sim = Ppic::simulation($wo->wo_id);
+            $seq = Ppic::sequencePanel($sim, $wo->wo_id, request()->boolean('preview'));
+        @endphp
             {{-- PROCESS runs the whole chain (material lines, targets and setups, gates, schedule into the Draft) once; it is lit only while something changed
                  or drags are pending. APPLY TO LIVE SCHEDULE (the only way to confirm) waits for PROCESS and fixes the whole Work Order. --}}
             @php $ps = Ppic::processState($wo->wo_id); @endphp
@@ -313,6 +316,10 @@ Status       : Aktif di mockup (ddt*). Tab Bill of Material: kolom Waste dan Spi
                     <x-dl::button icon="fa-lock" label="APPLIED" disabled />
                 @endunless
             </x-dl::action-bar>
+            @if ($seq)
+                <x-dl::suggestion-strip :mode="$seq['mode']" :title="$seq['title']" :subtitle="raw($seq['subtitle'])" :items="array_map('raw', $seq['items'] ?? [])" :note="raw($seq['note'])"
+                    :value="$seq['value'] ?? 0" :needed="$seq['needed'] ?? 0" :preview-url="$seq['previewUrl'] ?? null" :use-url="$seq['useUrl'] ?? null" :dismiss-url="$seq['dismissUrl'] ?? null" :previewing="$seq['previewing'] ?? false" />
+            @endif
             <x-dl::hint note>@t('LIVE (locked) = already applied to the live schedule. DRAFT = not applied yet: move, swap, or simulate it freely until APPLY TO LIVE SCHEDULE.')</x-dl::hint>
             <x-dl::gantt :mode-switch="false" :extras="request()->boolean('extras')" :linked="$sim['linked']" :rows="$sim['rows']" :tasks="$sim['tasks']" :categories="$sim['categories']" :origin-date="$sim['originDate']" :start="$sim['start']" :end="$sim['end']" :px-per-hour="$sim['pxPerHour']"
                 :snap="$sim['snap']" :now-at="$sim['nowAt']" :lock-until="$sim['lockUntil']" :submit-label="null"
@@ -350,7 +357,7 @@ Status       : Aktif di mockup (ddt*). Tab Bill of Material: kolom Waste dan Spi
     </x-dl::card>
         @php $woHtml['bom'] = new \Illuminate\Support\HtmlString(ob_get_clean()); @endphp
     @php $queue = Ppic::queue($wo->wo_id); ob_start(); @endphp
-        <x-dl::queue-board :processes="$queue['processes']" :machines="$queue['machines']" :rows="$queue['rows']" :process="$queue['process']" :machine="$queue['machine']" empty="Nothing is queued on this machine." />
+        <x-dl::queue-board :processes="$queue['processes']" :machines="$queue['machines']" :rows="$queue['rows']" :process="$queue['process']" :machine="$queue['machine']" :suggested="$queue['suggested'] ?? false" empty="Nothing is queued on this machine." />
     @php $woHtml['que'] = new \Illuminate\Support\HtmlString(ob_get_clean()); @endphp
     @php
         $queueNow = array_values(array_filter($queue['rows'], fn ($r) => ($queue['process'] === '' || $r['process'] === $queue['process']) && ($queue['machine'] === '' || $r['machine'] === $queue['machine'])));

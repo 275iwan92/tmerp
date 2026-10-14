@@ -3798,3 +3798,16 @@ input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--dl-ink) 7
 .dl-block legend{font-weight:800;font-size:12.5px;color:var(--dl-ink-strong);padding:0 6px}
 .dl-block:disabled{opacity:.55;background:var(--dl-surface-alt)}
 .dl-block.is-on{border-color:color-mix(in srgb,var(--dl-accent) 45%,transparent);background:color-mix(in srgb,var(--dl-accent) 5%,var(--dl-surface))}
+/* REMARK: strip usulan ML (x-dl::suggestion-strip) dan balok bayangan Preview di Gantt (task.ghost). Teks hitam; latar lavender dari token --dl-violet-soft. */
+.dl-seqstrip{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;margin:8px 0;border:1px solid var(--dl-violet-line);border-radius:var(--dl-radius);background:var(--dl-violet-soft);color:var(--dl-ink-strong)}
+.dl-seqstrip__main{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1 1 420px;min-width:0}
+.dl-seqstrip__title{color:var(--dl-ink-strong)}
+.dl-seqstrip__sub{color:var(--dl-ink)}
+.dl-seqstrip__chips{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;color:var(--dl-ink)}
+.dl-seqstrip__chip{padding:2px 8px;border:1px solid var(--dl-violet-line);border-radius:var(--dl-radius-sm);background:var(--dl-surface);font-weight:600;color:var(--dl-ink-strong)}
+.dl-seqstrip__learn{display:flex;align-items:center;gap:10px;flex:1 1 260px;min-width:200px}
+.dl-seqstrip__learn .dl-progress{flex:1}
+.dl-seqstrip__count{font-weight:700;white-space:nowrap}
+.dl-seqstrip__note{flex:1 1 100%;margin:0;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-ink)}
+.dl-seqstrip__actions{display:flex;gap:6px;margin-left:auto}
+.dl-gantt__blk.is-ghost{background:var(--dl-violet-soft);color:var(--dl-ink-strong);border:2px dashed var(--dl-violet);box-shadow:none;opacity:1}

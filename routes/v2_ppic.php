@@ -47,6 +47,8 @@ Route::prefix('v2/ppic')->name('v2.ppic.')->middleware('module:PROD')->group(fun
     Route::post('/wo/{wo}/apply', [PpicController::class, 'applyWo'])->name('wo.apply');
     Route::post('/wo/{wo}/process', [PpicController::class, 'processWo'])->name('wo.process');
     Route::post('/apply-all', [PpicController::class, 'applyAll'])->name('apply-all');
+    Route::post('/wo/{wo}/sequence/{machine}/use', [PpicController::class, 'sequenceUse'])->name('wo.sequence.use');
+    Route::post('/wo/{wo}/sequence/{machine}/dismiss', [PpicController::class, 'sequenceDismiss'])->name('wo.sequence.dismiss');
     Route::post('/pending/discard', [PpicController::class, 'discardPending'])->name('pending.discard');
     Route::post('/queue-move', [PpicController::class, 'queueMoveOp'])->name('queue-move');
     Route::post('/wo/{wo}/refresh', [PpicController::class, 'refreshWo'])->name('wo.refresh');
