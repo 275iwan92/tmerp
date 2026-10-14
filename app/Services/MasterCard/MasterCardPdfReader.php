@@ -73,6 +73,10 @@ final class MasterCardPdfReader
                 $acc[$key] = $v;
             }
         }
+        // prod_product_acc.approved_by is required; a card with ACC dates but no approver name keeps "-".
+        if ($acc && ! isset($acc['acc_by'])) {
+            $acc['acc_by'] = '-';
+        }
         [$kw, $kh] = $this->units->pair($one('Ukuran Pisau'));
         [$pw, $ph] = $this->units->pair($all('Ukuran Cetak')[0] ?? null);
 

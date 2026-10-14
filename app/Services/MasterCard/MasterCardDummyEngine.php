@@ -17,6 +17,7 @@ use App\Models\Master\CustCustomer;
 use App\Models\Master\FlowLog;
 use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdMasterCard;
+use App\Models\Master\ProdPart;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
@@ -29,6 +30,7 @@ use Database\Seeders\Concerns\PricedDummyChain;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
@@ -36,7 +38,10 @@ final class MasterCardDummyEngine
 {
     use PricedDummyChain;
 
-    public const LEVELS = ['inquiry', 'prodev', 'procost', 'co'];
+    // Chain levels carry every level behind them; 'product' is a branch: the card becomes a Master Product directly (no costing, no CO).
+    public const CHAIN = ['inquiry', 'prodev', 'procost', 'co'];
+
+    public const LEVELS = [...self::CHAIN, 'product'];
 
     // Teks kartu -> machine.legacy_machine_names (mesin cetak). Tanpa kecocokan = Komori GL440 ("Lithrone G40" / "GL440").
     private const PRESS = ['/VERSAFIRE/i' => 'VERSAFIRE', '/HANWAY/i' => 'HANWAY', '/SUNTHINK/i' => 'DIGITAL SUNTHINKS', '/SAKURA/i' => 'SAKURA'];
@@ -71,13 +76,14 @@ final class MasterCardDummyEngine
     public function counts(): array
     {
         $rows = DB::connection('tm2sdi')->table('iqp_inquiry')->where('data_origin', 'DUMMY')->where('stat_cancel', 0)
-            ->get(['stat_confirm_sales', 'stat_confirm_prodev', 'stat_confirm_procost', 'co_id']);
+            ->get(['stat_confirm_sales', 'stat_confirm_prodev', 'stat_confirm_procost', 'co_id', 'product_id']);
 
         return [
-            'inquiry' => $rows->where('stat_confirm_sales', 1)->where('stat_confirm_prodev', 0)->where('stat_confirm_procost', 0)->whereNull('co_id')->count(),
+            'inquiry' => $rows->where('stat_confirm_sales', 1)->where('stat_confirm_prodev', 0)->where('stat_confirm_procost', 0)->whereNull('co_id')->whereNull('product_id')->count(),
             'prodev' => $rows->where('stat_confirm_prodev', 1)->where('stat_confirm_procost', 0)->whereNull('co_id')->count(),
             'procost' => $rows->where('stat_confirm_procost', 1)->whereNull('co_id')->count(),
             'co' => $rows->whereNotNull('co_id')->count(),
+            'product' => $rows->where('stat_confirm_prodev', 0)->whereNull('co_id')->whereNotNull('product_id')->count(),
         ];
     }
 
@@ -110,11 +116,7 @@ final class MasterCardDummyEngine
     // Cards of one product share a design no. (or card code). Dummy databases only.
     private function groups(string $dir): array
     {
-        foreach (['tm2mst', 'tm2sdi', 'tm2prd'] as $c) {
-            if (! str_starts_with(DB::connection($c)->getDatabaseName(), 'ddt')) {
-                throw new RuntimeException('The dummy data engine only runs on ddt* databases (--env=mockup).');
-            }
-        }
+        $this->assertDummy();
         $groups = [];
         foreach (glob(rtrim($dir, '/\\').'/*.pdf') ?: [] as $pdf) {
             $d = $this->reader->read($pdf);
@@ -122,6 +124,95 @@ final class MasterCardDummyEngine
         }
 
         return $groups;
+    }
+
+    private function assertDummy(): void
+    {
+        foreach (['tm2mst', 'tm2sdi', 'tm2prd'] as $c) {
+            if (! str_starts_with(DB::connection($c)->getDatabaseName(), 'ddt')) {
+                throw new RuntimeException('The dummy data engine only runs on ddt* databases (--env=mockup).');
+            }
+        }
+    }
+
+    /**
+     * Removes everything this engine made: the Collection cards it read from PDF (source_kind PDF) and, per card, the Inquiry chain
+     * (costing, quotation, CO, delivery lines, WO, product, parts, layout, files). Customers it created stay (master data). Returns the number of inquiries removed.
+     */
+    public function reset(): int
+    {
+        $this->assertDummy();
+        $sdi = DB::connection('tm2sdi');
+        $cards = ProdMasterCard::where('source_kind', 'PDF')->get();
+        $ids = $cards->pluck('inquiry_id')->filter()
+            ->merge($sdi->table('iqp_inquiry')->whereIn('product_id', $cards->pluck('product_id')->filter()->all())->pluck('id_inquiry'))->unique();
+        foreach ($ids as $id) {
+            $this->dropInquiry((int) $id);
+        }
+        foreach ($cards as $card) {
+            Storage::disk('public')->deleteDirectory("master-card/{$card->id_master_card}");
+            $card->files()->delete();
+            $card->delete();
+        }
+
+        return $ids->count();
+    }
+
+    // Delete order follows the foreign keys: WO and delivery lines, quotation, costing, layout, product parts, inquiry parts, inquiry.
+    private function dropInquiry(int $id): void
+    {
+        $sdi = DB::connection('tm2sdi');
+        $mst = DB::connection('tm2mst');
+        $prd = DB::connection('tm2prd');
+        $inq = $sdi->table('iqp_inquiry')->where('id_inquiry', $id)->first();
+        if (! $inq) {
+            return;
+        }
+        $orders = $sdi->table('co_order_item')->where('inquiry_id', $id)->pluck('order_id')->unique();
+        $wos = $prd->table('prd_wo')->whereIn('source_co_id', $orders)->pluck('wo_id');
+        $ops = $prd->table('prd_wo_operation')->whereIn('wo_id', $wos)->pluck('operation_id');
+        foreach (['prd_wo_operation_machine', 'prd_operation_time_log', 'prd_wo_operation_output'] as $t) {
+            $prd->table($t)->whereIn('operation_id', $ops)->delete();
+        }
+        foreach (['prd_wo_operation', 'prd_wo_material', 'prd_wo'] as $t) {
+            $prd->table($t)->whereIn('wo_id', $wos)->delete();
+        }
+        $quotations = $sdi->table('quo_quotation_item')->where('inquiry_id', $id)->pluck('quotation_id')->unique();
+        $sdi->table('co_order_delivery')->whereIn('order_id', $orders)->delete();
+        $sdi->table('co_order_item')->whereIn('order_id', $orders)->delete();
+        $sdi->table('co_order')->whereIn('id_order', $orders)->delete();
+        $sdi->table('quo_quotation_item')->whereIn('quotation_id', $quotations)->delete();
+        $sdi->table('quo_quotation')->whereIn('id_quotation', $quotations)->delete();
+        $this->dropCosting($id);
+
+        $parts = $sdi->table('iqp_part')->where('inquiry_id', $id)->pluck('id_part');
+        $prodParts = $mst->table('prod_part')->where('product_id', $inq->product_id)->pluck('id_part');
+        $groups = $mst->table('prod_layout_group')->where('product_id', $inq->product_id)->pluck('id_layout_group');
+        $mst->table('prod_layout_group_part')->whereIn('id_layout_group', $groups)->delete();
+        $mst->table('prod_layout_group')->whereIn('id_layout_group', $groups)->delete();
+        foreach (['prod_part_material', 'prod_part_ink', 'prod_part_process', 'prod_part_finishing', 'prod_part_artwork', 'prod_part_attachment'] as $t) {
+            $mst->table($t)->whereIn('part_id', $prodParts)->delete();
+        }
+        $mst->table('prod_part')->whereIn('id_part', $prodParts)->update(['parent_part_id' => null]);
+        $mst->table('prod_part')->whereIn('id_part', $prodParts)->delete();
+        if ($inq->product_id) {
+            $mst->table('prod_product_acc')->where('product_id', $inq->product_id)->delete();
+            $mst->table('prod_product')->where('id_product', $inq->product_id)->delete();
+        }
+        $sdi->table('iqp_layout')->whereIn('part_id', $parts)->delete();
+        foreach (['iqp_part_material', 'iqp_part_finishing', 'iqp_part_process', 'iqp_part_ink'] as $t) {
+            $sdi->table($t)->whereIn('part_id', $parts)->delete();
+        }
+        $sdi->table('iqp_part')->whereIn('id_part', $parts)->update(['parent_part_id' => null]);
+        $sdi->table('iqp_part')->where('inquiry_id', $id)->delete();
+        $sdi->table('iqp_tier')->where('inquiry_id', $id)->delete();
+        $sdi->table('iqp_inquiry')->where('id_inquiry', $id)->delete();
+        foreach ($parts as $part) {
+            Storage::disk('public')->deleteDirectory("inquiry/{$part}");
+        }
+        foreach ($prodParts as $part) {
+            Storage::disk('public')->deleteDirectory("product/{$part}");
+        }
     }
 
     // Why a product is not built (null = it can be built).
@@ -146,8 +237,11 @@ final class MasterCardDummyEngine
         }
         $quota[$level]--;
 
+        if ($level === 'product') {
+            return ['level' => $level, 'note' => 'Master Product #'.$this->product($parts).', '.count($parts).' card(s)'];
+        }
         $inquiry = $this->inquiry($parts, $qty);
-        foreach (array_slice(self::LEVELS, 1, array_search($level, self::LEVELS, true)) as $stage) {
+        foreach (array_slice(self::CHAIN, 1, array_search($level, self::CHAIN, true)) as $stage) {
             $this->{'to'.ucfirst($stage)}($inquiry);
         }
 
@@ -180,7 +274,8 @@ final class MasterCardDummyEngine
 
     // ------------------------------------------------------------------ level 1: kartu -> Inquiry (Sales Confirm)
 
-    private function inquiry(array $parts, int $qty): IqpInquiry
+    // Part cards of one product -> Collection cards with source file and artwork, customer ensured.
+    private function cards(array $parts): array
     {
         Auth::setUser($this->user('yuna'));
         $key = $parts[0][0]['design_no'] ?: $parts[0][0]['card_code'];
@@ -193,12 +288,33 @@ final class MasterCardDummyEngine
             $card->update(['group_key' => $key, 'customer_id' => $card->customer_id ?: $this->customer((string) $d['customer_text'])]);
             $made[] = $this->cards->refresh($card);
         }
+
+        return $made;
+    }
+
+    private function inquiry(array $parts, int $qty): IqpInquiry
+    {
+        $made = $this->cards($parts);
         $this->cards->makeInquiry($made[0], ['qty' => $qty, 'deadline' => now()->addDays(7)->toDateString(), 'pic_sales' => 'Firman']);
         $inquiry = IqpInquiry::withoutGlobalScopes()->findOrFail($made[0]->refresh()->inquiry_id);
         $this->shapeParts($inquiry, collect($made));
         (new InquiryWriter($this->user('yuna')->login))->confirm($inquiry);
 
         return $inquiry->refresh();
+    }
+
+    // Branch level: the card itself becomes a Master Product (part, dieline, artwork, BOP from the card), without ProDev / ProCost / CO.
+    private function product(array $parts): int
+    {
+        $made = $this->cards($parts);
+        $product = $this->cards->makeProduct($made[0], []);
+        $inquiry = IqpInquiry::withoutGlobalScopes()->where('product_id', $product->id_product)->orderByDesc('id_inquiry')->firstOrFail();
+        $this->shapeParts($inquiry, collect($made));
+        foreach (IqpPart::where('inquiry_id', $inquiry->id_inquiry)->whereNotNull('prod_part_id')->get() as $ip) {
+            ProdPart::whereKey($ip->prod_part_id)->update(['flat_w' => $ip->flat_w, 'flat_h' => $ip->flat_h, 'flat_area' => $ip->flat_area]);
+        }
+
+        return (int) $product->id_product;
     }
 
     // Customer yang belum ada di master dibuat (izin Jo 2026-10-14), supaya kartu tidak berhenti di Incomplete.

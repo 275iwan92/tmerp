@@ -8,7 +8,7 @@
 PDF Master Card baru di `docs/attachments/mastercard/` dibaca, lalu dibuat data dummy **berlevel**: Inquiry, ProDev, ProCost, CO. Level N membawa semua level di belakangnya. Setiap set selalu punya dieline, artwork, ukuran P x L x T, dan ukuran datar (mm); kartu yang kurang tidak dibuat, alasannya dilaporkan.
 
 Menjalankan:
-- Layar: **Developer > Database > Master Card Dummy (PDF)** (`/v2/dummy/mastercard`, developer saja, hanya ddt*): info input / output (jumlah set per level) dan tombol Run tanpa isian (PDF siap dibagi bergiliran ke Inquiry, ProDev, ProCost, CO; qty 5000, due 21). Perintah di bawah = cara dari terminal dengan kuota sendiri.
+- Layar: **Developer > Database > Master Card Dummy (PDF)** (`/v2/dummy/mastercard`, developer saja, hanya ddt*): info input / output (jumlah set per level) dan tiga tombol tanpa isian: **Make Master Product** (tiap PDF siap jadi Master Product langsung dari kartu), **Make dummy data** (PDF siap dibagi bergiliran ke Inquiry, ProDev, ProCost, CO; qty 5000, due 21), dan **Reset** (hapus semua hasil engine supaya data tidak bertumpuk; perintah: `--reset`). Perintah di bawah = cara dari terminal dengan kuota sendiri.
 - Perintah: `php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2 [--qty=5000] [--due=21] [--path=docs/attachments/mastercard]`. Tanpa `--levels`: semua produk baru ke level Inquiry.
 
 ## 2. Alur proses
@@ -36,6 +36,8 @@ Berhenti di CO Confirmed. Post to Production, WO, dan plan tidak dijalankan engi
 | 2 ProDev | `prod_machine`, `mat_plano_size`, `prod_bop_rule`, `mat_raw`, bagian Inquiry | `prod_product` (draft), `prod_part`, `prod_layout_group(+_part)`, `iqp_layout`, `prod_part_process`, `prod_part_material`, `prod_part_ink`; `stat_confirm_prodev` |
 | 3 ProCost | `iqp_tier`, `iqp_part`, `mat_grammage` | `iqp_costing`, `iqp_costing_part`, `iqp_costing_price_tier`; `stat_confirm_procost`, `sub_state` |
 | 4 CO | costing published, jabatan approver | `quo_quotation(+_item)`, `co_order`, `co_order_item`, `co_order_delivery`, `prod_product` (ACTIVE), `prod_part_*`, log approval; `iqp_inquiry.co_id/product_id`, `prod_master_card.status = PRODUCT` |
+
+Cabang **product** (`--levels=...,product:n`, tombol Make Master Product): kartu -> `MasterCardService::makeProduct` -> Inquiry SUBMITTED + `ProductMasterSync` -> Master Product ACTIVE (`prod_product`, `prod_part_*`, `prod_part_artwork`), lalu ukuran datar bagian = ukuran pisau; tanpa ProDev, ProCost, Quotation, CO. Tabel: `prod_master_card(+_file)`, `iqp_inquiry`, `iqp_part_*`, `prod_product`, `prod_product_acc`, `prod_part`, `prod_part_*`.
 
 Pelaku (user dummy): `yuna` Sales, `dedi` ProDev, `wiwik` ProCost, approver = pemegang jabatan langkah berjalan. User yang login dipulihkan setelah `run()`.
 
@@ -91,6 +93,6 @@ Gejala umum:
 | Folder lain | `--path`, atau path di route layar info |
 | Qty, due date default | opsi `--qty`, `--due`; nilai awal form di view |
 
-## 7. Menghapus hasil engine (tidak ada tombol; urutan aman, per inquiry)
+## 7. Menghapus hasil engine (tombol Reset atau `--reset`; urutan yang dipakai, per inquiry)
 
-`co_order_delivery` -> `co_order_item` -> `co_order` -> `quo_quotation_item` -> `quo_quotation` -> `iqp_costing_part_coating`, `iqp_costing_part`, `iqp_costing_price_tier`, `iqp_costing` -> `prod_layout_group_part` -> `prod_layout_group` -> `prod_part_material/ink/process/finishing/artwork/attachment` -> `prod_part` -> `prod_product_acc`, `prod_product` -> `iqp_layout` -> `iqp_part_material/finishing/process/ink` -> `iqp_part` -> `iqp_tier` -> `iqp_inquiry`. Kartu Collection: set `status` kembali READY, `product_id` dan `inquiry_id` NULL. WO yang sudah dibuat dari CO itu dihapus dulu (`prd_wo_operation*`, `prd_wo_material`, `prd_wo`).
+`co_order_delivery` -> `co_order_item` -> `co_order` -> `quo_quotation_item` -> `quo_quotation` -> `iqp_costing_part_coating`, `iqp_costing_part`, `iqp_costing_price_tier`, `iqp_costing` -> `prod_layout_group_part` -> `prod_layout_group` -> `prod_part_material/ink/process/finishing/artwork/attachment` -> `prod_part` -> `prod_product_acc`, `prod_product` -> `iqp_layout` -> `iqp_part_material/finishing/process/ink` -> `iqp_part` -> `iqp_tier` -> `iqp_inquiry`. WO dari CO itu dihapus dulu (`prd_wo_operation*`, `prd_wo_material`, `prd_wo`). Reset hanya menyentuh kartu Collection bersumber PDF (`source_kind = PDF`) beserta rantainya dan berkasnya; customer yang dibuat engine tetap ada.

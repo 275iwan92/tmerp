@@ -29,7 +29,7 @@
 
   <h2>1. Menjalankan</h2>
   <ul>
-    <li>Layar: <b>Developer &rsaquo; Database &rsaquo; Master Card Dummy (PDF)</b> (<code>/v2/dummy/mastercard</code>, developer saja): info input / output (jumlah set per level) dan tombol Run tanpa isian (PDF siap dibagi bergiliran ke Inquiry, ProDev, ProCost, CO; qty 5000, due 21). Perintah di bawah = cara dari terminal dengan kuota sendiri.</li>
+    <li>Layar: <b>Developer &rsaquo; Database &rsaquo; Master Card Dummy (PDF)</b> (<code>/v2/dummy/mastercard</code>, developer saja): info input / output (jumlah set per level) dan tiga tombol tanpa isian: <b>Make Master Product</b> (tiap PDF siap jadi Master Product langsung dari kartu), <b>Make dummy data</b> (PDF siap dibagi bergiliran ke Inquiry, ProDev, ProCost, CO; qty 5000, due 21), dan <b>Reset</b> (hapus semua hasil engine supaya data tidak bertumpuk; perintah: <code>--reset</code>). Perintah di bawah = cara dari terminal dengan kuota sendiri.</li>
     <li>Perintah: <code>php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2 --qty=5000 --due=21</code>. Tanpa <code>--levels</code>: semua produk baru ke level Inquiry.</li>
   </ul>
 
@@ -64,6 +64,7 @@
     <tr><td>3 ProCost</td><td><code>iqp_tier</code>, <code>iqp_part</code>, <code>mat_grammage</code></td><td><code>iqp_costing</code>, <code>iqp_costing_part</code>, <code>iqp_costing_price_tier</code>; <code>stat_confirm_procost</code>, <code>sub_state</code></td></tr>
     <tr><td>4 CO</td><td>costing published, jabatan approver</td><td><code>quo_quotation(+_item)</code>, <code>co_order</code>, <code>co_order_item</code>, <code>co_order_delivery</code>, <code>prod_product</code> (ACTIVE), <code>prod_part_*</code>, log approval; <code>iqp_inquiry.co_id / product_id</code>, <code>prod_master_card.status = PRODUCT</code></td></tr>
   </table>
+  <p>Cabang <b>product</b> (<code>--levels=...,product:n</code>, tombol Make Master Product): kartu <p>Pelaku: <code>yuna</code>rarr; <code>MasterCardService::makeProduct</code> <p>Pelaku: <code>yuna</code>rarr; Inquiry SUBMITTED + <code>ProductMasterSync</code> <p>Pelaku: <code>yuna</code>rarr; Master Product ACTIVE (<code>prod_product</code>, <code>prod_part_*</code>, <code>prod_part_artwork</code>); ukuran datar bagian = ukuran pisau; tanpa ProDev, ProCost, Quotation, CO.</p>
   <p>Pelaku: <code>yuna</code> Sales, <code>dedi</code> ProDev, <code>wiwik</code> ProCost, approver = pemegang jabatan langkah berjalan. User yang login dipulihkan setelah <code>run()</code>.</p>
 
   <h2>4. Dari isi kartu ke data</h2>
@@ -111,8 +112,8 @@ app(App\Services\MasterCard\MasterCardDummyEngine::class)-&gt;plan(base_path('do
     <tr><td>Folder lain</td><td><code>--path</code>, atau <code>$dir</code> di route</td></tr>
   </table>
 
-  <h2>7. Menghapus hasil (tidak ada tombol; urutan aman, per inquiry)</h2>
-  <p><code>co_order_delivery</code> &rarr; <code>co_order_item</code> &rarr; <code>co_order</code> &rarr; <code>quo_quotation_item</code> &rarr; <code>quo_quotation</code> &rarr; <code>iqp_costing_*</code> &rarr; <code>prod_layout_group_part</code> &rarr; <code>prod_layout_group</code> &rarr; <code>prod_part_*</code> &rarr; <code>prod_part</code> &rarr; <code>prod_product_acc</code>, <code>prod_product</code> &rarr; <code>iqp_layout</code> &rarr; <code>iqp_part_*</code> &rarr; <code>iqp_part</code> &rarr; <code>iqp_tier</code> &rarr; <code>iqp_inquiry</code>. Kartu Collection: status kembali READY, <code>product_id</code> dan <code>inquiry_id</code> NULL. WO dari CO itu dihapus dulu (<code>prd_wo_operation*</code>, <code>prd_wo_material</code>, <code>prd_wo</code>).</p>
+  <h2>7. Menghapus hasil (tombol Reset atau <code>--reset</code>; urutan yang dipakai, per inquiry)</h2>
+  <p><code>co_order_delivery</code> &rarr; <code>co_order_item</code> &rarr; <code>co_order</code> &rarr; <code>quo_quotation_item</code> &rarr; <code>quo_quotation</code> &rarr; <code>iqp_costing_*</code> &rarr; <code>prod_layout_group_part</code> &rarr; <code>prod_layout_group</code> &rarr; <code>prod_part_*</code> &rarr; <code>prod_part</code> &rarr; <code>prod_product_acc</code>, <code>prod_product</code> &rarr; <code>iqp_layout</code> &rarr; <code>iqp_part_*</code> &rarr; <code>iqp_part</code> &rarr; <code>iqp_tier</code> &rarr; <code>iqp_inquiry</code>. WO dari CO itu dihapus dulu (<code>prd_wo_operation*</code>, <code>prd_wo_material</code>, <code>prd_wo</code>). Reset hanya menyentuh kartu Collection bersumber PDF (<code>source_kind = PDF</code>) beserta rantainya dan berkasnya; customer yang dibuat engine tetap ada.</p>
 </main>
 </body>
 </html>

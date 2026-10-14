@@ -1,9 +1,9 @@
 {{--
  REMARK
- Tujuan       : Info ringkas engine PDF Master Card -> data dummy berlevel: input apa yang dibaca, output apa yang dihasilkan, jumlah set per level, dan tombol Run.
+ Tujuan       : Info ringkas engine PDF Master Card -> data dummy berlevel: input apa yang dibaca, output apa yang dihasilkan, jumlah set per level, dan tiga tombol: Make Master Product, Make dummy data, dan Reset.
  Sumber hulu  : App\Services\MasterCard\MasterCardDummyEngine (counts, plan, run) lewat route v2.dummy.mastercard (routes/v2_dummy_mastercard.php).
  Input        : counts (inquiry, prodev, procost, co), ready / total PDF dari route; flash v2_flash / v2_error; khusus developer.
- Output       : x-dl::stat-box jumlah PDF dan set per level, x-dl::button Run (POST v2.dummy.mastercard.run). Hasil run = data di ddt*, bukan tampilan.
+ Output       : x-dl::stat-box jumlah PDF dan set per level, tiga x-dl::button: Make Master Product dan Make dummy data (POST v2.dummy.mastercard.run, mode product / dummy), Reset (POST v2.dummy.mastercard.reset). Hasil run = data di ddt*, bukan tampilan.
  Dipakai oleh : Menu Developer > Database > Master Card Dummy (PDF).
  Status       : Aktif (hanya database ddt*).
 --}}
@@ -26,19 +26,28 @@
         </x-dl::card>
 
         <x-dl::card title="Output" icon="fa-layer-group"
-            description="Dummy data in this site (mockup.test): Inquiry with dieline, artwork and sizes; ProDev layout, BOP and BOM; ProCost costing; Quotation and Customer Order. A set at a higher level carries every level behind it.">
+            description="Master Product made straight from the card, or dummy data in levels: Inquiry with dieline, artwork and sizes; ProDev layout, BOP and BOM; ProCost costing; Quotation and Customer Order. A set at a higher level carries every level behind it.">
             <x-dl::kpi-row>
+                <x-dl::stat-box label="Master Product" :value="$counts['product']" />
                 <x-dl::stat-box label="Inquiry" :value="$counts['inquiry']" />
                 <x-dl::stat-box label="ProDev" :value="$counts['prodev']" />
                 <x-dl::stat-box label="ProCost" :value="$counts['procost']" />
                 <x-dl::stat-box label="CO" :value="$counts['co']" />
             </x-dl::kpi-row>
-            <x-dl::action-form action="{{ route('v2.dummy.mastercard.run') }}">
-                <x-dl::action-bar>
-                    <x-dl::button type="submit" variant="primary" icon="fa-play" label="Run engine"
+            <x-dl::action-bar>
+                <x-dl::action-form action="{{ route('v2.dummy.mastercard.run', 'product') }}">
+                    <x-dl::button type="submit" variant="secondary" icon="fa-box" label="Make Master Product"
+                        data-dl-confirm="{{ t('Every PDF that is ready becomes a Master Product (part, dieline, artwork, BOP from the card). Continue?') }}" />
+                </x-dl::action-form>
+                <x-dl::action-form action="{{ route('v2.dummy.mastercard.run', 'dummy') }}">
+                    <x-dl::button type="submit" variant="primary" icon="fa-play" label="Make dummy data"
                         data-dl-confirm="{{ t('Every PDF that is ready is built into dummy data, spread over Inquiry, ProDev, ProCost and CO in turn. It can take about 20 seconds per product. Continue?') }}" />
-                </x-dl::action-bar>
-            </x-dl::action-form>
+                </x-dl::action-form>
+                <x-dl::action-form action="{{ route('v2.dummy.mastercard.reset') }}">
+                    <x-dl::button type="submit" variant="danger" icon="fa-rotate-left" label="Reset"
+                        data-dl-confirm="{{ t('Removes every set made by this engine (the cards read from PDF and their Inquiry, product, costing and Customer Order). Other dummy data is not touched. Continue?') }}" />
+                </x-dl::action-form>
+            </x-dl::action-bar>
         </x-dl::card>
     </x-dl::box>
 @endsection
