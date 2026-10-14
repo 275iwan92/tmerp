@@ -26,6 +26,10 @@ final class MdDigest
             return ['title' => null, 'summary' => ''];
         }
         $lines = preg_split('/\R/', (string) file_get_contents($path, false, null, 0, self::READ_BYTES)) ?: [];
+        // Front matter YAML (--- ... ---) di awal berkas bukan prosa: dilewati.
+        if (trim($lines[0] ?? '') === '---' && ($end = array_search('---', array_map('trim', array_slice($lines, 1)), true)) !== false) {
+            $lines = array_slice($lines, $end + 2);
+        }
         $title = null;
         $prose = [];
         $fence = false;

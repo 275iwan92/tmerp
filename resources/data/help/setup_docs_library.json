@@ -1,0 +1,43 @@
+[
+  {
+    "key": "setup-docs-library",
+    "type": "REPORT",
+    "module": "SETUP",
+    "title": "Old Docs Library",
+    "purpose": {
+      "en": "Find and read old, archived documents when you are stuck on a topic. They are shown like blog articles; nothing can be changed here.",
+      "id": "Cari dan baca dokumen lama yang sudah diarsipkan saat Anda butuh rujukan topik. Tampil seperti artikel blog; tidak ada yang bisa diubah di sini."
+    },
+    "keywords": "old docs, library, archive, perpustakaan, dokumen usang, arsip, cari dokumen, artikel",
+    "steps": [
+      {
+        "en": "Open Old Docs Library. Each card is one archived document with its title, path, date and a short summary.",
+        "id": "Buka Old Docs Library. Tiap kartu satu dokumen arsip dengan judul, lokasi, tanggal, dan ringkasan singkat."
+      },
+      {
+        "en": "Type a word in Search inside documents and click Search to look inside the full text; the card shows the passage that matches.",
+        "id": "Ketik kata di Search inside documents lalu klik Search untuk mencari di seluruh isi; kartu menampilkan kutipan yang cocok."
+      },
+      {
+        "en": "Use the boxes on top to narrow the list by kind, or the quick search box to filter the cards shown.",
+        "id": "Pakai kotak di atas untuk menyaring menurut jenis, atau kotak cari cepat untuk menyaring kartu yang tampil."
+      },
+      {
+        "en": "Click Read article to read the whole document; All articles brings you back to the list.",
+        "id": "Klik Read article untuk membaca seluruh dokumen; All articles membawa Anda kembali ke daftar."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Search inside documents",
+        "en": "A word or phrase searched in the title, summary and full text of every archived document.",
+        "id": "Kata atau frasa yang dicari di judul, ringkasan, dan seluruh isi tiap dokumen arsip."
+      },
+      {
+        "label": "Why",
+        "en": "The reason the document was archived, taken from the archive manifest.",
+        "id": "Alasan dokumen diarsipkan, diambil dari manifest arsip."
+      }
+    ]
+  }
+]

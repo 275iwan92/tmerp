@@ -54,9 +54,11 @@ class ReviewImport extends Command
             $refs = trim($m[4]);
             // Berkas yang sudah diarsipkan tidak punya prosa: ringkasan lama di database dipertahankan.
             $digest = MdDigest::of($m[1]);
+            // Jumlah baris dibaca dari berkasnya (tabel sumber bisa basi setelah diringkas); berkas hilang = angka tabel.
+            $lines = is_file(base_path($m[1])) ? substr_count((string) file_get_contents(base_path($m[1])), "\n") + 1 : (int) $m[2];
             $summary = $digest['summary'] !== '' ? ['title' => Str::limit((string) $digest['title'], 200, ''), 'summary' => Str::limit($digest['summary'], 600, '')] : [];
             SysMdReview::query()->updateOrCreate(['file_path' => $m[1]], $summary + [
-                'line_count' => (int) $m[2],
+                'line_count' => $lines,
                 'last_changed' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) ? $date : null,
                 'ref_count' => ctype_digit($refs) ? (int) $refs : null,
                 'proposal' => self::PROPOSAL[$m[5]] ?? 'UNSURE',
