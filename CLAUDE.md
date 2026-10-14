@@ -73,6 +73,7 @@ php artisan engine:catalog               # setelah daftar engine berubah
 - Grid: `DbGrid` + kelas turunan di `App\Support\V2\Grid`; objek DevLib di `packages/devlib`, bagian khusus di `packages/mockup-parts`.
 - `DataOriginScope` (web) menyembunyikan DUMMY/LEGACY sesuai setelan admin; console/test melihat semua.
 - Peta lengkap dokumen: `docs/index_master.md`, `docs/md_for_systems/uistandardindex.md`, `docs/claude_docs_reference.md`; alur vital Inquiry/ProDev/ProCost/Quotation/CO/CPDEL: `docs/claude_vital_flows.md` (WAJIB dibaca sebelum menyentuhnya).
+- Dokumen usang dicari per topik (isi lengkap tersimpan di `sys_md_library`): `php artisan md:library search "kata kunci" --env=mockup`, baca dengan `md:library show <id>`; tambah arsip baru: `md:library add` setelah memindah berkas ke `tmerp_unused`.
 
 ## 7. Cara kerja
 1. Baca dokumen/DDL dulu, jangan menebak kolom. Ragu atau >1 tafsir: sebut opsi; ambiguitas berbahaya (sulit dibalik, arsitektural, lintas modul) = berhenti dan tanya.

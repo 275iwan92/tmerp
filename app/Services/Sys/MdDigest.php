@@ -4,7 +4,7 @@
  * REMARK
  * Tujuan       : Ringkasan otomatis sebuah berkas .md (judul + 2-3 kalimat pembuka) untuk kartu MD Review, tanpa AI dan tanpa tabel baru.
  * Sumber hulu  : Berkas .md di repo (path relatif dari sys_md_review.file_path).
- * Input        : path relatif berkas; jumlah kalimat dan batas karakter.
+ * Input        : path relatif repo (atau path absolut folder arsip); jumlah kalimat dan batas karakter.
  * Output       : ['title' => judul H1 atau null, 'summary' => kalimat pembuka, '' bila berkas tidak ada atau tanpa prosa].
  * Dipakai oleh : App\Support\V2\Grid\Setup\MdReviewLookup::posts().
  * Status       : Aktif.
@@ -21,7 +21,7 @@ final class MdDigest
     /** @return array{title: ?string, summary: string} */
     public static function of(string $relPath, int $sentences = 3, int $maxChars = 520): array
     {
-        $path = base_path($relPath);
+        $path = is_file($relPath) ? $relPath : base_path($relPath);
         if (! is_file($path)) {
             return ['title' => null, 'summary' => ''];
         }

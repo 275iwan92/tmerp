@@ -3,7 +3,7 @@
 /*
  * REMARK
  * Tujuan       : Layar Setup > Others > MD Review: Jo membaca ringkasan tiap berkas .md (kartu blog) lalu memutuskan Keep / Condense / Discard di samping usulan Claude.
- * Sumber hulu  : tm2sys.sys_md_review (diisi php artisan review:import dari docs/ringkas/md_review_tabel.md); ringkasan kartu dari MdDigest.
+ * Sumber hulu  : tm2sys.sys_md_review (diisi php artisan review:import dari docs/ringkas/md_review_tabel.md); ringkasan kartu = kolom title + summary (diisi review:import dari MdDigest, 2026-10-14).
  * Input        : Pilihan Decision per berkas (tombol besar di kartu); tombol Process with Claude di header layar.
  * Output       : decision, decided_by, decided_at; antrean sys_review_request (scope MD) untuk php artisan review:requests.
  * Dipakai oleh : Menu SET_MD_REVIEW (v2:setup-md-review).
@@ -63,7 +63,8 @@ class MdReviewLookup extends ReviewLookup
     public function posts(): array
     {
         return $this->query()->limit($this->limit)->get()->map(function (SysMdReview $m) {
-            $digest = MdDigest::of($m->file_path);
+            // Ringkasan dibaca dari database (diisi review:import); berkas dibuka hanya bila belum diimpor.
+            $digest = $m->summary !== null ? ['title' => $m->title, 'summary' => $m->summary] : MdDigest::of($m->file_path);
             $facts = $m->line_count ? tf($m->line_count === 1 ? ':lines line' : ':lines lines', ['lines' => $m->line_count]) : t('File no longer exists');
             $facts .= $m->last_changed ? ' · '.tf('changed :date', ['date' => Locale::date($m->last_changed)]) : '';
             $facts .= $m->ref_count !== null ? ' · '.tf($m->ref_count === 1 ? ':n reference' : ':n references', ['n' => $m->ref_count]) : '';

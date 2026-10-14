@@ -18,32 +18,32 @@
 | 1 | `docs/audit_input_report_lookup_2026_10_02.md` | 287 | 2026-10-07 | 2 | **BUANG** | Audit sekali jalan 02-Okt; urutan perbaikannya sudah dikerjakan (dugaan, cek dulu) | |
 | 2 | `docs/claude_md_archive_2026_10_07.md` | 59 | 2026-10-07 | 1 | **BUANG** | Arsip bagian CLAUDE.md yang sudah usang (status Tier 3A) | |
 | 3 | `docs/help_writing_findings_2026_10_02.md` | 65 | 2026-10-02 | 0 | **BUANG** | Temuan sekali jalan saat menulis Help; tidak dirujuk berkas lain (dugaan) | |
-| 4 | `docs/md_for_systems/attendancepayroll_tier4.md` | 94 | 2026-09-22 | 1 | **BUANG** | Spec UI v1; layar sudah v2 (perlu cek) | |
+| 4 | `docs/md_for_systems/attendancepayroll_tier4.md` | 94 | 2026-09-22 | 1 | **BUANG** | Spec UI v1; layar sudah v2 (perlu cek); SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
 | 5 | `docs/md_for_systems/customerinvoice_review.md` | 325 | 2026-10-02 | 7 | **BUANG** | Dokumen review untuk user sudah dijalankan (dugaan) | |
 | 6 | `docs/md_for_systems/flowengine_tier4.md` | 154 | 2026-09-22 | 3 | **BUANG** | Tier 4 = spec UI v1, polanya paling cepat usang | |
 | 7 | `docs/md_for_systems/inventoryreport_review.md` | 108 | 2026-10-03 | 3 | **BUANG** | Dokumen review untuk user, laporan sudah terpasang (dugaan) | |
 | 8 | `docs/md_for_systems/masteremployee_tier4.md` | 257 | 2026-09-22 | 1 | **BUANG** | Wireframe UI v1; profil kini v2 | |
-| 9 | `docs/md_for_systems/masterproduct_tier4.md` | 53 | 2026-09-22 | 2 | **BUANG** | Tier 4 = spec UI v1 | |
-| 10 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier1.md` | 79 | 2026-09-22 | 3 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat) | |
-| 11 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier2.md` | 72 | 2026-09-22 | 3 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat) | |
-| 12 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier3.md` | 102 | 2026-09-22 | 3 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat) | |
-| 13 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier4.md` | 22 | 2026-09-22 | 1 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat) | |
-| 14 | `docs/md_for_systems/production_scheduling_tier4.md` | 175 | 2026-09-22 | 12 | **BUANG** | Tier 4 = spec UI v1; layar PPIC sudah dibangun ulang | |
-| 15 | `docs/md_for_systems/recruitment_tier4.md` | 143 | 2026-09-22 | 22 | **BUANG** | Tier 4 = spec UI v1 | |
+| 9 | `docs/md_for_systems/masterproduct_tier4.md` | 53 | 2026-09-22 | 2 | **BUANG** | Tier 4 = spec UI v1; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 10 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier1.md` | 79 | 2026-09-22 | 3 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat); SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 11 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier2.md` | 72 | 2026-09-22 | 3 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat); SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 12 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier3.md` | 102 | 2026-09-22 | 3 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat); SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 13 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier4.md` | 22 | 2026-09-22 | 1 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat); SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 14 | `docs/md_for_systems/production_scheduling_tier4.md` | 175 | 2026-09-22 | 12 | **BUANG** | Tier 4 = spec UI v1; layar PPIC sudah dibangun ulang; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 15 | `docs/md_for_systems/recruitment_tier4.md` | 143 | 2026-09-22 | 22 | **BUANG** | Tier 4 = spec UI v1; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
 | 16 | `docs/md_for_systems/selfservice_panduan.md` | 238 | 2026-09-22 | 3 | **BUANG** | Panduan profil v1; Edit profile kini objek DevLib (perlu cek) | |
-| 17 | `docs/md_for_systems/warehouse_review.md` | 0 | - | - | **BUANG** | Sudah dihapus di working tree (belum di-commit); rujukan di rulebook A.22 putus | |
-| 18 | `docs/md_inventory.md` | 303 | 2026-10-07 | 1 | **BUANG** | Digantikan tabel review ini; angkanya sudah usang | |
-| 19 | `docs/md_pasti_usang.md` | 21 | 2026-10-07 | 0 | **BUANG** | Digantikan tabel review ini; path-nya sudah salah | |
-| 20 | `docs/ringkasanstatus.md` | 297 | 2026-10-05 | 3 | **BUANG** | Menandai diri BASI (snapshot 16-Sep, era v1); diganti backlog + LOG_JOB_DONE | |
-| 21 | `docs/usang_untuk_dipindah/Blueprint_Arsitektur_dan_Enterprise_Resource_Planning__ERP__Industri_Offset_Printing_dan_Packaging.md` | 241 | 2026-10-07 | 0 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
-| 22 | `docs/usang_untuk_dipindah/System Architecture & Specification Blueprint Offset Printing and Packaging.md` | 776 | 2026-10-07 | 0 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
-| 23 | `docs/usang_untuk_dipindah/catatanauditmenyeluruh.md` | 73 | 2026-10-07 | 3 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
-| 24 | `docs/usang_untuk_dipindah/checklistmockuperp.md` | 287 | 2026-10-07 | 20 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
-| 25 | `docs/usang_untuk_dipindah/dispatch_tier4.md` | 147 | 2026-10-07 | 7 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
-| 26 | `docs/usang_untuk_dipindah/procurement_tier4.md` | 255 | 2026-10-07 | 3 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
-| 27 | `docs/usang_untuk_dipindah/security_brief.md` | 174 | 2026-10-07 | 3 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
-| 28 | `docs/usang_untuk_dipindah/telma_onboarding.md` | 226 | 2026-10-07 | 1 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
-| 29 | `docs/usang_untuk_dipindah/themestandard.md` | 197 | 2026-10-07 | 10 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus | |
+| 17 | `docs/md_for_systems/warehouse_review.md` | 0 | - | - | **BUANG** | Sudah dihapus di working tree (belum di-commit); rujukan di rulebook A.22 putus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 18 | `docs/md_inventory.md` | 303 | 2026-10-07 | 1 | **BUANG** | Digantikan tabel review ini; angkanya sudah usang; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 19 | `docs/md_pasti_usang.md` | 21 | 2026-10-07 | 0 | **BUANG** | Digantikan tabel review ini; path-nya sudah salah; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 20 | `docs/ringkasanstatus.md` | 297 | 2026-10-05 | 3 | **BUANG** | Menandai diri BASI (snapshot 16-Sep, era v1); diganti backlog + LOG_JOB_DONE; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 21 | `docs/usang_untuk_dipindah/Blueprint_Arsitektur_dan_Enterprise_Resource_Planning__ERP__Industri_Offset_Printing_dan_Packaging.md` | 241 | 2026-10-07 | 0 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 22 | `docs/usang_untuk_dipindah/System Architecture & Specification Blueprint Offset Printing and Packaging.md` | 776 | 2026-10-07 | 0 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 23 | `docs/usang_untuk_dipindah/catatanauditmenyeluruh.md` | 73 | 2026-10-07 | 3 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 24 | `docs/usang_untuk_dipindah/checklistmockuperp.md` | 287 | 2026-10-07 | 20 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 25 | `docs/usang_untuk_dipindah/dispatch_tier4.md` | 147 | 2026-10-07 | 7 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 26 | `docs/usang_untuk_dipindah/procurement_tier4.md` | 255 | 2026-10-07 | 3 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 27 | `docs/usang_untuk_dipindah/security_brief.md` | 174 | 2026-10-07 | 3 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 28 | `docs/usang_untuk_dipindah/telma_onboarding.md` | 226 | 2026-10-07 | 1 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
+| 29 | `docs/usang_untuk_dipindah/themestandard.md` | 197 | 2026-10-07 | 10 | **BUANG** | Sudah dipindah ke folder usang (md_pasti_usang); menunggu OK Jo untuk hapus; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
 | 30 | `docs/componentstandard.md` | 156 | 2026-09-23 | 15 | **RAGU** | Standar komponen v1 (x-form, x-grid); v2 memakai DevLib; hapus bila v1 diarsipkan | |
 | 31 | `docs/md_for_systems/FORM_UI_STANDARD.md` | 358 | 2026-09-22 | 29 | **RAGU** | Standar UI v1; aturan bisnisnya sudah di rulebook, DevLib menggantikan komponen; ringkas jadi satu standar bila v1 diarsipkan | |
 | 32 | `docs/md_for_systems/customer_fix_nav_address.md` | 241 | 2026-09-22 | 6 | **RAGU** | FIX SPEC sekali jalan 22-Sep untuk Master Customer; cek sudah dikerjakan | |
@@ -76,17 +76,17 @@
 | 59 | `docs/md_for_systems/TIER_1_ATTENDANCE.md` | 967 | 2026-09-22 | 7 | **RINGKAS** | 967 baris; kebutuhan presensi masih benar, ringkas | |
 | 60 | `docs/md_for_systems/customerinvoice_plan.md` | 424 | 2026-10-02 | 6 | **RINGKAS** | Rencana yang sudah dibangun; sisakan tabel dan layar, buang rencana | |
 | 61 | `docs/md_for_systems/downpayment_tier1-4.md` | 226 | 2026-10-02 | 12 | **RINGKAS** | Butir LOCKED lama digantikan A.21; ringkas ke yang masih berlaku | |
-| 62 | `docs/md_for_systems/flows/flow_finance_accounting.md` | 35 | 2026-10-02 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 63 | `docs/md_for_systems/flows/flow_hrm.md` | 30 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 64 | `docs/md_for_systems/flows/flow_inquiry_product.md` | 75 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 65 | `docs/md_for_systems/flows/flow_inventory.md` | 52 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 66 | `docs/md_for_systems/flows/flow_master_data.md` | 38 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 67 | `docs/md_for_systems/flows/flow_procurement.md` | 30 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 68 | `docs/md_for_systems/flows/flow_production_scheduling.md` | 31 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 69 | `docs/md_for_systems/flows/flow_recruitment_internal.md` | 54 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 70 | `docs/md_for_systems/flows/flow_recruitment_portal_public.md` | 65 | 2026-09-22 | 2 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 71 | `docs/md_for_systems/flows/flow_sales_order_delivery.md` | 66 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 72 | `docs/md_for_systems/flows/flow_system_setup.md` | 97 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 62 | `docs/md_for_systems/flows/flow_finance_accounting.md` | 35 | 2026-10-02 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 63 | `docs/md_for_systems/flows/flow_hrm.md` | 30 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 64 | `docs/md_for_systems/flows/flow_inquiry_product.md` | 75 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 65 | `docs/md_for_systems/flows/flow_inventory.md` | 52 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 66 | `docs/md_for_systems/flows/flow_master_data.md` | 38 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 67 | `docs/md_for_systems/flows/flow_procurement.md` | 30 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 68 | `docs/md_for_systems/flows/flow_production_scheduling.md` | 31 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 69 | `docs/md_for_systems/flows/flow_recruitment_internal.md` | 54 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 70 | `docs/md_for_systems/flows/flow_recruitment_portal_public.md` | 65 | 2026-09-22 | 2 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 71 | `docs/md_for_systems/flows/flow_sales_order_delivery.md` | 66 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
+| 72 | `docs/md_for_systems/flows/flow_system_setup.md` | 97 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; SELESAI 2026-10-14: digabung ke flows.md, asli diarsipkan | |
 | 73 | `docs/md_for_systems/inventorywarehouse_v201_phase1_plan.md` | 212 | 2026-10-08 | 3 | **RINGKAS** | Rencana Fase 1; gabung ke technical_plan | |
 | 74 | `docs/md_for_systems/inventorywarehouse_v201_references.md` | 229 | 2026-10-08 | 2 | **RINGKAS** | Referensi riset; ringkas ke daftar sumber | |
 | 75 | `docs/md_for_systems/openingboard_references.md` | 105 | 2026-10-02 | 2 | **RINGKAS** | Referensi ERP lain untuk widget; ringkas ke daftar sumber | |

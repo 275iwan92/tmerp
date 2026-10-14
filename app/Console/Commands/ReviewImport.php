@@ -5,7 +5,7 @@
  * Tujuan       : Mengisi (atau menyegarkan) data layar MD Review dan Old Stories Review dari dua berkas hasil kerja Claude, tanpa menghapus keputusan Jo.
  * Sumber hulu  : docs/ringkas/md_review_tabel.md (tabel berkas + usulan) dan docs/ringkas/cerita_lama_penuh.md (kutipan pesan Jo dari riwayat sesi).
  * Input        : --md=<path> --stories=<path> (bawaan: berkas di docs/ringkas); --env=mockup untuk database ddt*.
- * Output       : Baris sys_md_review (kunci file_path) dan sys_story_review (kunci tanggal + sesi + awal pesan); kolom decision tidak disentuh.
+ * Output       : Baris sys_md_review (kunci file_path; title + summary dari MdDigest, 2026-10-14) dan sys_story_review (kunci tanggal + sesi + awal pesan); kolom decision tidak disentuh.
  * Dipakai oleh : Dijalankan Claude setelah migrasi 2026_10_13_000600; ulangi bila berkas sumber diperbarui.
  * Status       : Aktif (ddt*).
  */
@@ -14,6 +14,7 @@ namespace App\Console\Commands;
 
 use App\Models\Sys\SysMdReview;
 use App\Models\Sys\SysStoryReview;
+use App\Services\Sys\MdDigest;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -51,7 +52,10 @@ class ReviewImport extends Command
             }
             $date = trim($m[3]);
             $refs = trim($m[4]);
-            SysMdReview::query()->updateOrCreate(['file_path' => $m[1]], [
+            // Berkas yang sudah diarsipkan tidak punya prosa: ringkasan lama di database dipertahankan.
+            $digest = MdDigest::of($m[1]);
+            $summary = $digest['summary'] !== '' ? ['title' => Str::limit((string) $digest['title'], 200, ''), 'summary' => Str::limit($digest['summary'], 600, '')] : [];
+            SysMdReview::query()->updateOrCreate(['file_path' => $m[1]], $summary + [
                 'line_count' => (int) $m[2],
                 'last_changed' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) ? $date : null,
                 'ref_count' => ctype_digit($refs) ? (int) $refs : null,
