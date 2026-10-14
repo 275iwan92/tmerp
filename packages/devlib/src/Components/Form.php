@@ -227,7 +227,7 @@ class Form extends DevlibComponent
                         @endforeach
                         @if (! $panelActions() && isset($special)){{ $special }}@endif
                         <span class="dl-form__sep"></span>
-                        <x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$back" data-f-act="back" />
+                        <x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$back" data-f-act="back" data-dl-back />
                     </div>
                 @elseif ($title !== '')
                     <div class="dl-form__head"><div class="dl-form__title">{{ $title }}</div>@if ($mode === 'view')<x-dl::button variant="secondary" size="sm" icon="edit" label="Edit" data-f-edit />@endif</div>

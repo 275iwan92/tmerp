@@ -234,7 +234,7 @@
         case 'identity': {
           const name = String(v || '?'), w = name.trim().split(/\s+/), ini = (w[0][0] + (w[1] ? w[1][0] : '')).toUpperCase();
           let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360;
-          return `<td><span class="dl-avatar-id">${c.avatar === false ? '' : `<span class="dl-avatar-id__pic" style="--h:${h}">${esc(ini)}</span>`}<span class="dl-avatar-id__txt"><b>${esc(name)}</b>${c.code ? `<small>${esc(this.val(r, c.code))}</small>` : ''}</span></span></td>`;
+          return `<td><span class="dl-avatar-id${c.lead ? ' dl-avatar-id--lead' : ''}">${c.avatar === false ? '' : `<span class="dl-avatar-id__pic" style="--h:${h}">${esc(ini)}</span>`}<span class="dl-avatar-id__txt"><b>${esc(name)}</b>${c.code ? `<small>${esc(this.val(r, c.code))}</small>` : ''}</span></span></td>`;
         }
         // Persegi dokumen (Grid Transactional, user 2026-10-02): nomor dokumen di atas, nama pihak ('party') di bawah.
         // Warna = satu dari 8 gradasi pilihan, dihitung dari nama pihak supaya pihak yang sama selalu berwarna sama.
@@ -256,7 +256,11 @@
         case 'rating': return `<td class="dl-grid__stars" title="${esc(v)} / 5">${[1, 2, 3, 4, 5].map(i => `<i class="fa-solid fa-star ${i <= Math.round(+v || 0) ? 'is-on' : ''}"></i>`).join('')}</td>`;
         case 'spark': { const d = (Array.isArray(v) ? v : []).map(Number); if (d.length < 2) return '<td></td>'; const mn = Math.min(...d), mx = Math.max(...d); const pts = d.map((y, i) => `${(i / (d.length - 1) * 80).toFixed(1)},${(22 - (mx > mn ? (y - mn) / (mx - mn) : .5) * 20).toFixed(1)}`).join(' '); return `<td><svg class="dl-grid__spark ${d[d.length - 1] < d[0] ? 'is-down' : ''}" viewBox="0 0 80 24"><polyline points="${pts}"/></svg></td>`; }
         case 'button': return `<td><button type="button" class="dl-btn dl-btn--secondary dl-btn--sm" data-g-action="${esc(c.action || c.key)}">${esc(c.text || c.label)}</button></td>`;
-        default: return `<td><div class="dl-grid__txt">${esc(this.fmtCell(c, v))}</div></td>`;
+        default: {
+        // 'url' pada kolom teks / daftar: isi sel menjadi tautan ({id} = kunci baris); sel kosong tampil "+" supaya tetap bisa diklik.
+        const txt = esc(this.fmtCell(c, v)), href = c.url ? esc(c.url.replace('{id}', encodeURIComponent(r[this.cfg.rowKey]))) : null;
+        return `<td><div class="dl-grid__txt${c.list ? ' dl-grid__txt--list' : ''}">${href ? `<a class="dl-grid__link dl-grid__link--text" href="${href}" data-g-link="${esc(c.key)}">${txt || '+'}</a>` : txt}</div></td>`;
+      }
       }
     }
 

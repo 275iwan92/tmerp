@@ -53,6 +53,7 @@ final class Grids
         Prod\ProcessGrid::class,
         Prod\RoutingTemplateGrid::class,
         Prod\CrewGrid::class,
+        Prod\CrewMachineGrid::class,
         Prod\ScrapTypeGrid::class,
         Prod\ToolingLookup::class,
         Prod\WaitRuleLookup::class,

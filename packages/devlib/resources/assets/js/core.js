@@ -562,6 +562,9 @@ window.Devlib = window.Devlib || {};
     else if (lm?.dlComponent) lm.dlComponent.goTo(msg.path, msg.leaf);
   });
 
+  // Form berpenanda data-dl-autosubmit: mengubah satu isian langsung mengirim form (mis. pilihan pola pada panel mesin).
+  document.addEventListener('change', e => { const f = e.target.closest('form[data-dl-autosubmit]'); if (f) f.requestSubmit(); });
+
   // Pintasan keyboard: tombol ber-data-dl-key (preset Simpan = Ctrl+S, Baru = Alt+N), '?' = daftar pintasan.
   const keyName = e => [e.ctrlKey || e.metaKey ? 'ctrl' : '', e.altKey ? 'alt' : '', e.shiftKey ? 'shift' : '', e.key.toLowerCase()].filter(Boolean).join('+');
   const visible = el => el.offsetParent !== null && !el.disabled;
@@ -690,6 +693,7 @@ window.Devlib = window.Devlib || {};
     const names = new Set($$(form, '[name]').filter(e => !e.closest('[data-l-inputs]')).map(e => e.name).filter(n => n && n !== '_token' && !n.includes('[') && !n.endsWith('_country') && !n.endsWith('_dial')));
     names.forEach(n => { if (n in data) setField(form, n, data[n]); else if (clear) setField(form, n, n.endsWith('_ppn') ? true : n.endsWith('_discount') ? '0' : ''); });
     $$(form, '[data-dl-lines]').forEach(l => { if (l.dlLines && (clear || l.dataset.name in data)) l.dlLines.set(data[l.dataset.name] || []); });
+    $$(form, '[data-dl-members]').forEach(m => m.dlMembers?.reset());
     $$(form, '.dl-field.is-invalid').forEach(f => { f.classList.remove('is-invalid'); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = ''; });
     dirtyForms.delete(form); form.classList.remove('is-dirty');
   }

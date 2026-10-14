@@ -82,6 +82,15 @@ final class AppMenu
         return $modules;
     }
 
+    // Nama modul seperti tampil di Layer Menu (sys_app_menu), supaya breadcrumb layar memakai label yang sama dan tautannya
+    // bisa membuka cabang menu itu (mis. kode PROD = "Manufacture", bukan "Production" dari katalog layar). null = tidak ada.
+    public static function moduleLabel(string $code): ?string
+    {
+        $m = SysAppMenu::query()->where('menu_type', 'module')->where('code', $code)->first();
+
+        return $m ? self::label($m) : null;
+    }
+
     // Column arrives with a migration; the live site (tm2sys) may not have it yet.
     private static function hasHideFlag(): bool
     {

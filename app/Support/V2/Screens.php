@@ -152,6 +152,7 @@ final class Screens
                     $it('production-scheduling', ['PPIC Workspace', 'fa-solid fa-chart-gantt', 'v2 baru: PPIC (engine Draft + Confirm officer) -- Gantt, Kanban, Calendar, Grid, Monitoring', 'ppic_sched_gantt.jpg']),
                     $it('production-wo', ['Work Order (PPIC)', 'fa-solid fa-clipboard-list', 'v2 baru: Work Order dari ProDev (BOP, routing, BOM, mesin yang bisa antre)', 'ppic_wo_detail.jpg']),
                     $it('production-live', ['Live Schedule', 'fa-solid fa-chart-gantt', 'v2 baru: pemantauan read-only jadwal yang berlaku (operasi CONFIRMED / berjalan) per proses dan mesin, plus rincian good, bad, status, operator', null]),
+                    $it('crew-form', ['Assign Crew Form', 'fa-solid fa-people-group', 'v2 baru: crew per mesin SBU Offset (nama = nickname + indeks, maks 4), periode dari-sampai, anggota maks 10 dari karyawan produksi, shift dari Master Shift', null]),
                     $it('production-learning', ['Learning Changes', 'fa-solid fa-graduation-cap', 'v2 baru: nilai changeover Assumed dikoreksi dari waktu setup nyata, tiap perubahan tercatat dan bisa dikembalikan', null]),
                 ]],
                 ['label' => 'Entry OUTPUT', 'items' => [

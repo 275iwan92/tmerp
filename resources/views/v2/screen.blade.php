@@ -23,7 +23,7 @@ Status       : Aktif.
     <x-dl::box class="dl-cat">
         <x-dl::box @class(['dl-cat__nav', 'has-actions' => \App\Support\V2\Crumb::actionsHtml() !== null])>
             {{-- Modul/Grup = buka Layer Menu di cabang itu; nama layar = kembali ke grid (DevLib Breadcrumb menu + current). --}}
-            <x-dl::breadcrumb menu :items="[t($screen['module']) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]"
+            <x-dl::breadcrumb menu :items="[(\App\Support\V2\AppMenu::moduleLabel($screen['module_code'] ?? '') ?? t($screen['module'])) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]"
                 :current="\App\Support\V2\Crumb::current()" />
             @if (\App\Support\V2\Crumb::statusHtml() !== null)<x-dl::box class="dl-cat__status">{!! \App\Support\V2\Crumb::statusHtml() !!}</x-dl::box>@endif
             @if (\App\Support\V2\Crumb::actionsHtml() !== null)<x-dl::box class="dl-cat__actions">{!! \App\Support\V2\Crumb::actionsHtml() !!}</x-dl::box>@endif

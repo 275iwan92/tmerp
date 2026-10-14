@@ -1,4 +1,11 @@
-/* DevLib · Form */
+/* REMARK
+ * Tujuan       : Perilaku x-dl::form: validasi wajib, aksi panel (Undo, Delete, Confirm, Cancel, dst) dengan konfirmasi, mode view, QR isian.
+ * Sumber hulu  : Devlib\Components\Form (data-dl-form, data-f-act, data-f-fs), tanda is-dirty dari dirty-guard core.js.
+ * Input        : klik tombol panel (data-f-act), submit form, klik Edit / Cancel pada mode view.
+ * Output       : kirim form dengan _action=<aksi>, event dl:form-action / dl:form-submit, tombol Undo mati selama form belum diubah.
+ * Dipakai oleh : semua x-dl::form (layar v2, demo devlib.test).
+ * Status       : Aktif.
+ */
 (function (Devlib) {
   'use strict';
   const {$, $$, showQr, toast, confirmBox, layer, closeLayer, dirtyForms, fillForm, hasValue, T, Tf, esc} = Devlib.h;
@@ -34,6 +41,13 @@
         if (act && act !== 'save') return this.act(act);
         if (e.target.closest('[data-f-cancel]') && this.snapshot) { fillForm(this.el, this.snapshot, false); this.snapshot = null; this.setView(true); toast(T('f_changes_discarded')); }
       });
+      // Undo hanya berarti bila ada perubahan: tombol mati selama form belum diubah (tanda is-dirty; hanya bila form dijaga dirty-guard).
+      const undoBtn = this.el.hasAttribute('data-dl-guard') ? this.el.querySelector('[data-f-act="undo"]') : null;
+      if (undoBtn) {
+        const sync = () => { undoBtn.disabled = !this.el.classList.contains('is-dirty'); };
+        new MutationObserver(sync).observe(this.el, {attributes: true, attributeFilter: ['class']});
+        sync();
+      }
       this.extra = this.el.querySelector('[data-dl-form-extra]');
       if (!this.extra) return;
       this.extra.addEventListener('click', () => {
