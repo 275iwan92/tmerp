@@ -232,6 +232,7 @@ final class Catalog
                     'sf-pallet-label' => $page('Pallet Label', 'fa-solid fa-pallet', ['pallet-label' => ['Pallet label desk: receipt notice or building picker, colour guide, one stock position (new pallets, relabel after use, print again), label work list and the pallets of the building', ['MockupParts\\Components\\Inv\\PalletLabel']]]),
                     'sf-scan-track' => $page('Track via QR / Barcode', 'fa-solid fa-magnifying-glass-location', ['scan-track' => ['Scan box, then one result: not found, stock transfer, pallet, bin or item', ['MockupParts\\Components\\Inv\\ScanTrack']]]),
                     'sf-material-planning' => $page('Material Planning and Booking', 'fa-solid fa-boxes-packing', ['material-planning' => ['Material Planning (MRP) desk and Material Booking desk: shortcuts, state message, Create PR / Pick Item cards around the grid of the screen', ['MockupParts\\Components\\Planning\\MaterialPlan', 'MockupParts\\Components\\Planning\\MaterialBooking']]]),
+                    'sf-crew-form' => $page('Assign Crew (one machine, a box per shift)', 'fa-solid fa-people-group', ['crew-form' => ['Assign Crew form: period, then one crew box per Master Shift with a Shift dropdown (swap), crew name, people and roles', ['MockupParts\Components\Production\CrewForm']]]),
                 ]],
             // Daftar ENGINE aplikasi (user 2026-10-02): kegunaan, input, output, cara kerja. Isinya dibuat tmerp
             // (`php artisan engine:catalog` -> resources/data/v2/engines.json), objeknya x-dl::engine-catalog.
@@ -288,6 +289,7 @@ final class Catalog
                 'field-radio' => ['Radio', $f('Radio')], 'field-checkboxes' => ['Checkboxes', $f('Checkboxes')], 'field-checkbox' => ['Checkbox', $f('Checkbox')],
                 'field-toggle' => ['Toggle', $f('Toggle')], 'field-toggle-group' => ['Toggle Group', $f('ToggleGroup')], 'field-color' => ['Color', $f('Color')],
                 'code-chain' => ['Code Chain (linked dropdowns that build a code)', $c('CodeChain'), 'wide'], 'pick-matrix' => ['Pick Matrix (pilih pemenang per baris)', $c('PickMatrix'), 'wide'],
+                'member-list' => ['Member List (people + role, Add / Remove, limited rows)', $c('MemberList'), 'rw'],
             ]],
             'p2-files' => ['Files', 'fa-solid fa-paperclip', ['field-upload' => ['Upload', $f('Upload')], 'field-signature' => ['Signature', $f('Signature')]]],
             'p2-buttons' => ['Button', 'fa-solid fa-hand-pointer', [
