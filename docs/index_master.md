@@ -238,21 +238,13 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 
 ---
 
-## 4. UI/UX STANDARISASI & KATALOG KOMPONEN (docs/uistandard/, 6 file)
+## 4. UI/UX STANDARISASI & KATALOG KOMPONEN (satu berkas: docs/md_for_systems/ui_standard_v1.md)
 
 | File | Deskripsi |
 |---|---|
-| `uistandard_component_catalog_index.md` | **Mulai dari sini** — indeks konsolidasi seluruh komponen + cross-ref ke dokumen standar existing. |
-| `uistandard_component_form.md` | Komponen `components/form/*` (input, select, textarea, checkbox, toggle, badge, date-picker). |
-| `uistandard_component_grid.md` | Komponen `components/grid/*` (stat box, identity cell, action icon, toolbar, modal kolom/sort, pagination, spreadsheet-table). |
-| `uistandard_component_print.md` | Komponen `components/print/*` (dokumen cetak "Nota"). |
-| `uistandard_component_gantt_kanban.md` | Komponen `components/gantt/*`. Kanban belum punya komponen reusable. |
-| `uistandard_component_other.md` | Komponen `components/{alert,auth,inquiry,org-chart,prodev}/*`. |
+| `ui_standard_v1.md` | Standar UI layar v1 (grid, form, komponen, cetak, menu, gantt, kanban, spreadsheet, report). Disarikan 2026-10-14 dari 15 berkas; katalog komponen kini = `resources/views/components/_manifest.yaml`. |
 
-**Dokumen standar konsep (existing, sudah ada sebelum sesi ini — TIDAK diduplikasi, cuma di-cross-reference)**:
-`griduistandard.md`, `printnotastandard.md`, `ganttboardstandard.md`, `kanbanboardstandard.md`,
-`spreadsheetgridstandard.md`, `admindashboardstandard.md`, `configurationstandard.md`,
-`sidebarmenustandard.md`, `FORM_UI_STANDARD.md`, `uistandardindex.md` (peta lengkap kapan pakai standar yang mana).
+`admindashboardstandard.md` dan `configurationstandard.md` tidak termasuk (Filament bukan arah; konfigurasi = Setup v2).
 
 ---
 

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    // Berkas docs/ yang diarsipkan 2026-10-14 (kelompok usang + Tier 4 v1 + 11 flow v1 + 4 buangan Jo 13-Okt).
+    // Berkas docs/ yang diarsipkan 2026-10-14 (kelompok usang + Tier 4 v1 + 11 flow v1 + 4 buangan Jo 13-Okt + 15 standar UI v1 digabung ke ui_standard_v1.md).
     private const FILES = [
         'Blueprint_Arsitektur_dan_Enterprise_Resource_Planning__ERP__Industri_Offset_Printing_dan_Packaging.md',
         'System Architecture & Specification Blueprint Offset Printing and Packaging.md',
@@ -27,6 +27,10 @@ return new class extends Migration
         'flow_master_data.md', 'flow_procurement.md', 'flow_production_scheduling.md', 'flow_recruitment_internal.md',
         'flow_recruitment_portal_public.md', 'flow_sales_order_delivery.md', 'flow_system_setup.md',
         'flowengine_tier4.md', 'customerinvoice_review.md', 'claude_md_archive_2026_10_07.md', 'help_writing_findings_2026_10_02.md',
+        'componentstandard.md', 'FORM_UI_STANDARD.md', 'ganttboardstandard.md', 'griduistandard.md', 'kanbanboardstandard.md',
+        'printnotastandard.md', 'reportstandard.md', 'sidebarmenustandard.md', 'spreadsheetgridstandard.md',
+        'uistandard_component_catalog_index.md', 'uistandard_component_form.md', 'uistandard_component_gantt_kanban.md',
+        'uistandard_component_grid.md', 'uistandard_component_other.md', 'uistandard_component_print.md',
     ];
 
     public function up(): void

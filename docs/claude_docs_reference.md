@@ -43,14 +43,7 @@
   hanya lewat `App\Support\V2\Data\Labels`; approval transfer = modul flow `TF`, bawaan mati. Terpasang di ddt DAN tm2
   (2026-10-03, bagian 14.8): menu lewat migration `2026_10_03_000010`, gedung nyata tm2 `WarehouseBuildingSeeder`, data
   contoh hanya ddt (`UatWarehouseSeeder`); approval TF di tm2 menunggu Setting Approval (`StockTransferApprovalSeeder`).
-- `componentstandard.md` — **wajib dibaca sebelum menulis markup layar apa
-  pun** (keputusan user 2026-09-23): komponen UI berlapis & object oriented —
-  token `@theme` → primitive `app/View/Components/Ui/*` (`x-ui.button`,
-  `badge`, `card`, `tabs`, `table`, `modal`, ...; turunan `UiComponent`,
-  palet `Tone`) → komposit `x-form/x-grid` → layar. Ubah induk = semua ikut.
-  Dilarang `<button class>`/hex/`fixed inset-0`/`<table class>` mentah di
-  halaman baru; `UiRatchetTest` menjaga angkanya tidak naik. Migrasi layar lama
-  (termasuk zona beku §6B) = kulit saja, esensi wajib dibuktikan sama (§6 dok).
+- `ui_standard_v1.md` — **standar UI layar v1 dalam satu berkas** (grid, form, komponen OOP, cetak Nota, menu sidebar, Gantt, Kanban, spreadsheet grid, report 4 level); nomor § grid asli dipertahankan untuk komentar kode yang menyebut `griduistandard.md §n`. Layar v2 = objek DevLib (`_manifest.yaml`, rulebook C). Asli: `md:library search "grid"`.
 - `globalarchitecture_tier0.md` — arsitektur global, keputusan LOCKED.
 - `inquiryproduct_tier1.md` — alur & proses inquiry (aktor, state, aturan bisnis).
 - `inquiryproduct_tier2.md` — business logic, state machine, pseudocode HPP.
@@ -59,37 +52,8 @@
 - Mockup Tier 4 (HTML/CSS) — acuan UI: `inquiry_new/recalc/revise.html`,
   `inquiry_costing_*.html`, `inquiry_proof.html`, `inquiry_quotation.html`,
   `product_costing.html`, `*_nota_*.html`.
-- `griduistandard.md` — **wajib dibaca sebelum bikin/ubah grid apa pun**
-  (Master maupun worklist/transaksi): tanpa header halaman, kotak statistik
-  pastel, kolom identitas avatar+nama+kode, klik 2x buka detail, toolbar
-  minimal. Kolom Aksi: grid Master = Edit+Toggle-aktif; grid non-Master =
-  Buka + Confirm kondisional (tidak pernah toggle aktif/nonaktif).
-- `sidebarmenustandard.md` — **wajib dibaca sebelum menata menu
-  `sys_app_menu`/sidebar modul apa pun**: selalu ada grup input & grup
-  "Laporan" (label ringkas, tanpa kata "Laporan" berulang di item-nya),
-  nama item laporan ikut `#[Title]` layar aslinya, grup sidebar otomatis
-  collapsible (tak perlu kerjaan tambahan).
-- `ganttboardstandard.md` — **wajib dibaca sebelum bikin/ubah layar Gantt
-  apa pun** (jadwal resource×waktu dengan drag/resize, mis. Scheduling Board):
-  komponen reusable `resources/views/components/gantt/{board,row,task-block}
-  .blade.php`, kontrak Row/Block VM, Alpine store `gantt` untuk highlight
-  lintas-boundary. Gotcha wajib: jangan tulis nama tag komponen berkurung
-  sudut (`<x-...>`) di dalam komentar mana pun — Blade tag compiler ikut
-  mengompilasinya dan merusak file.
-- `kanbanboardstandard.md` — **wajib dibaca sebelum bikin/ubah layar Kanban
-  apa pun** (kolom kategori/status diskrit, kartu drag-drop antar kolom,
-  mis. Pipeline Board, Monitoring Dashboard): pola `x-data="{draggedId}"` +
-  `dragover.prevent`/`drop`, validasi bisnis WAJIB di server (DB = satu-
-  satunya sumber kebenaran posisi kartu, drag di layar cuma usulan sampai
-  re-render), tombol aksi non-drag selalu tersedia sbg fallback.
 - `docs/qc_feedback.md` — **tempat user tulis hasil QC/revisi/bug setelah cek aplikasi sendiri di browser** (Claude Code tidak bisa login browser otomatis, lihat §7). Cek file ini kalau user minta "cek qc_feedback" / "kerjakan yang belum" — proses entry di bagian "Belum Dikerjakan", pindahkan ke "Selesai" (isi Perbaikan+tanggal) atau "Ditutup" (kalau ternyata bukan bug) setelah selesai, jangan hapus entry.
 - `docs/attachments/` — folder tempat menaruh **form manual (kertas/scan) & file Excel yang SAAT INI benar-benar dipakai** di lapangan, dijadikan acuan sebelum membangun/mengubah layar terkait (jangan menebak field, cek dulu ke sini kalau ada dokumen relevan). **Daftar isi lengkap: `docs/attachments_index.md`** — cek/update file itu setiap ada attachment baru ditambah/dipakai, jangan baca ulang seluruh folder dari nol tiap sesi.
-- `printnotastandard.md` — **wajib dibaca sebelum bikin/ubah layar cetak
-  dokumen transaksi (Nota)** — kop+parties+signature+footer, beda dari
-  laporan tabel (`FORM_UI_STANDARD.md`): komponen reusable
-  `resources/views/components/print/{document,sheet,header,parties,party,
-  section,signatures,signature,footer}.blade.php`, tema warna per dokumen
-  via prop `theme`. Gotcha sama seperti `ganttboardstandard.md` §8.
 - `production_scheduling_wo_generation_delta.md` — **wajib dibaca sebelum
   menyentuh alur generate WO / layar Worklist WO-Detail-Monitoring** —
   delta atas `production_scheduling_tier1-4.md` (LOCKED, tidak direvisi):
@@ -101,15 +65,5 @@
   berlaku lagi**: user 2026-09-30 memutuskan Filament bukan arah ke depan
   (jangan bangun/pindahkan modul ke Filament; v2 DevLib yang menggantikan).
   Dokumennya diarsipkan 2026-10-02 ke `C:\Users\iwanp\tmerp_unused\`.
-- `spreadsheetgridstandard.md` — **wajib dibaca sebelum bikin/ubah grid
-  spreadsheet-editable apa pun** (klik sel langsung edit, drag-fill AutoFill
-  copy nilai ke bawah, "+ Baris" langsung dari tabel, simpan batch lewat
-  "Simpan Semua") — pola TERPISAH dari `griduistandard.md`, opt-in HANYA
-  utk master kecil/kolom scalar (pilot: Master Currency, list Satuan Master
-  UOM). Adopsi perilaku AutoFill DataTables.net versi ringan buatan sendiri
-  (Alpine+Livewire, keputusan user 2026-08-30) — DataTables Editor asli
-  (dibutuhkan utk inline-edit sungguhan) berbayar & belum ada license key,
-  DataTables juga bentrok arsitektur dgn cara Livewire re-render DOM tabel.
-
 ---
 
