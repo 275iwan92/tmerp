@@ -716,6 +716,12 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     - **tmerp.test**: boleh selama UAT belum dimulai (user 2026-10-14: *"stage saat ini di tmerp masih jauh dari UAT jadi juga masih boleh"*); dilarang setelah UAT berjalan.
     - Tetap berlaku: tidak memakai `employee_id=1`, tidak mengetik password akun nyata Jo atau layanan lain.
 
+23. **[2026-10-14] DevLib hanya bentuk; bila perlu data, pakai XML.**
+    > User 2026-10-14: *"benar di devlib hanya bentuknya saja dan pakai xml kalau mau pakai data"*.
+    - Demo di devlib.test menampilkan **bentuk** objek dengan data contoh statis; tidak membaca database bisnis (`tm2*` / `ddt*`).
+    - Bila demo perlu data lebih banyak, datanya ditulis sebagai berkas **XML** di folder data DevLib, bukan tabel database atau JSON baru.
+    - Sisa lama: `devlib/resources/data/warehouse-desk.json` (JSON) dipindah ke XML saat demo itu disentuh berikutnya.
+
 ## E. Help & Asisten AI
 
 1. **Setiap layar input dan laporan wajib punya Help (2026-10-02)**, tiga hal terpisah: **untuk apa** layar / laporan itu
@@ -886,3 +892,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-14 | A.27: **Assign Crew hanya untuk mesin dulu** (user) — stasiun kerja manual dan anggota borongan ditunda karena satu crew manual hanya satu orang dan terlalu ribet. |
 | 2026-10-14 | Arsip: `customerinvoice_review.md`, `flowengine_tier4.md`, `claude_md_archive_2026_10_07.md`, `help_writing_findings_2026_10_02.md` dibuang atas keputusan Jo di layar MD Review (13-Okt); isinya tersimpan di `sys_md_library` (`php artisan md:library search "customer invoice review"`). Rujukan ke `customerinvoice_review.md` di A.21 menunjuk ke arsip itu; butir pertanyaan terbukanya kini di `customerinvoice_accounting.md` dan `backlog07_finance_accounting.md`. |
 | 2026-10-14 | D.22: **uji mandiri lewat login admin di devlib.test dan mockup.test** (user: "HARUS bisa menguji mandiri via user admin di devlib.test ... Begitu pula di mockup.test. YANG TIDAK BOLEH adalah tmerp setelah proses UAT berjalan") — dicatat di CLAUDE.md butir 8. |
+| 2026-10-14 | D.23: **DevLib hanya bentuk; bila perlu data, pakai XML** (user: "di devlib hanya bentuknya saja dan pakai xml kalau mau pakai data"). |

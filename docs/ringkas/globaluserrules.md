@@ -116,6 +116,7 @@
 20. Identitas agen menurut hari: Senin-Selasa Iwan, Rabu-Sabtu Jo; trailer commit `Agent:`.
 21. **Standar kode:** OO + DevLib dulu; sederhana; REMARK enam butir + `docs/SCREEN-INDEX.md`; tanpa dead code (buktikan lewat grep, hapus, bukan komentar).
 22. Uji mandiri sebagai user `admin` di devlib.test dan mockup.test (login di browser uji boleh); tmerp.test boleh selama UAT belum dimulai (sekarang masih jauh), dilarang setelah UAT berjalan.
+23. DevLib hanya menampilkan bentuk (data contoh statis); bila perlu data, pakai berkas XML, bukan database bisnis atau JSON baru.
 
 ## E. Help dan asisten AI
 
