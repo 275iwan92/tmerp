@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Mesin ProDev: menurunkan BOP dan BOM dari data Inquiry/ProDev; processOfBom menautkan tiap bahan ke proses BOP-nya.
+ * Sumber hulu  : iqp_part dan prod_part (Inquiry sync), prod_bop_rule, prod_layout_group, master bahan (mat_raw, mat_category).
+ * Input        : ProdPart + IqpPart + jumlah order WO (forWorkOrder).
+ * Output       : bop[] dan bom[] (nama dari jalur kategori bila material belum dipilih, qty_need dan uom), warnings.
+ * Dipakai oleh : WoGenerationService (membuat WO), ProDev canvas, Ppic.
+ * Status       : Aktif; engine beku untuk ProDev: jangan ubah alur tanpa izin Jo.
+ */
+
 namespace App\Services\ProDev;
 
 use App\Models\Master\ProdMachine;
@@ -937,10 +947,20 @@ class SpecEngine
 
         $bom = $mst->table('prod_part_material as pm')
             ->leftJoin('mat_raw as r', 'r.material_id', '=', 'pm.material_id')
-            ->where('pm.part_id', $part->id_part)->where('pm.source', '<>', 'ENGINE')
+            ->where('pm.part_id', $part->id_part)->whereNotIn('pm.source', ['ENGINE', 'INQUIRY'])
             ->orderBy('pm.layer_seq')
-            ->get(['pm.rawmat_type', 'pm.material_id', 'r.material_name', 'pm.gram_weight', 'pm.size_p', 'pm.size_l',
+            ->get(['pm.rawmat_type', 'pm.material_id', 'pm.category_id', 'pm.role', 'r.material_name', 'pm.gram_weight', 'pm.size_p', 'pm.size_l',
                 'pm.qty_per_sheet', 'pm.uom', 'pm.is_primary', 'pm.note', 'pm.source']);
+        // Material not chosen yet (only category + gsm + size from the Inquiry): the row is named by its category path, so it is never lost.
+        $cat = $mst->table('mat_category')->get(['id_category', 'parent_id', 'category_name'])->keyBy('id_category');
+        $path = function (?int $id) use ($cat): ?string {
+            $names = [];
+            for ($n = $id ? $cat->get($id) : null; $n; $n = $n->parent_id ? $cat->get($n->parent_id) : null) {
+                array_unshift($names, $n->category_name);
+            }
+
+            return $names ? implode(' › ', $names) : null;
+        };
 
         $inks = $mst->table('prod_part_ink')
             ->where('part_id', $part->id_part)->where('source', '<>', 'ENGINE')
@@ -960,7 +980,8 @@ class SpecEngine
             'bom' => $bom->isEmpty() ? null : [
                 'source' => $bom->contains('source', 'OVERRIDE') ? 'OVERRIDE' : 'MANUAL',
                 'rows' => $bom->map(fn ($r) => [
-                    'role' => $r->rawmat_type, 'material_id' => $r->material_id, 'name' => $r->material_name,
+                    'role' => $r->rawmat_type ?: ($r->is_primary ? 'KERTAS PLANO' : 'SHEET'), 'material_id' => $r->material_id,
+                    'name' => $r->material_name ?: ($path($r->category_id ? (int) $r->category_id : null) ?? ''),
                     'gsm' => $r->gram_weight, 'size_p' => $r->size_p, 'size_l' => $r->size_l,
                     'qty_per_sheet' => $r->qty_per_sheet, 'uom' => $r->uom, 'primary' => (bool) $r->is_primary, 'note' => $r->note,
                 ])->all(),
@@ -973,6 +994,41 @@ class SpecEngine
     }
 
     // ===================== UNTUK WORK ORDER =====================
+
+    /**
+     * The BOP process that uses each BOM line, derived from the same BOP rules that produced the lines:
+     * a material rule belongs to the nearest process rule above it (same finishing type). Paper plano goes to the first BOP
+     * step, the laminated sheet to the step that carries "LEM LAMINASI BAHAN". Unknown = null (shown as a dash).
+     *
+     * @param  list<array>  $bom
+     * @param  list<array>  $bop
+     * @return array<int, ?int> bom index => process id
+     */
+    public function processOfBom(array $bom, array $bop): array
+    {
+        $rules = DB::connection('tm2mst')->table('prod_bop_rule')->orderBy('step_seq')->get(['step_seq', 'process_id', 'material_role', 'finishing_type_id']);
+        $steps = $rules->whereNotNull('process_id');
+        $ownerOf = function ($rule) use ($steps) {
+            return $steps->filter(fn ($s) => $s->step_seq <= $rule->step_seq
+                && ($rule->finishing_type_id === null ? $s->finishing_type_id === null : $s->finishing_type_id == $rule->finishing_type_id))->last()?->process_id;
+        };
+        $first = $bop[0]['process_id'] ?? null;
+        $out = [];
+        foreach ($bom as $i => $b) {
+            $role = (string) ($b['role'] ?? '');
+            $ft = $b['finishing_type_id'] ?? null;
+            $rule = $rules->first(fn ($r) => $r->material_role === $role && ($ft === null || $r->finishing_type_id == $ft))
+                ?? $rules->first(fn ($r) => $r->material_role === $role);
+            $out[$i] = match (true) {
+                (bool) $rule => $ownerOf($rule) ? (int) $ownerOf($rule) : null,
+                in_array($role, ['KERTAS PLANO', 'SUBSTRATE'], true) => $first ? (int) $first : null,
+                $role === 'SHEET' => ($lam = $rules->first(fn ($r) => $r->material_role === 'LEM LAMINASI BAHAN')) && $ownerOf($lam) ? (int) $ownerOf($lam) : null,
+                default => null,
+            };
+        }
+
+        return $out;
+    }
 
     /**
      * BOP & BOM siap pakai untuk Work Order dengan qty order WO itu (BACKLOG
@@ -1007,6 +1063,10 @@ class SpecEngine
             'upCount' => (int) ($layout->up_count ?? $group->up_count ?? 0),
             'orderQty' => (int) ceil($orderQty),
         ];
+        $upKnown = $ctx['upCount'] > 0;
+        if (! $upKnown) {
+            $ctx['upCount'] = 1;
+        }
 
         $saved = $this->saved($part);
         $overrides = collect(self::SECTIONS)
@@ -1016,11 +1076,19 @@ class SpecEngine
 
         $r = $this->generate($part, $iqp, $ctx, $overrides);
 
+        $bop = $r['override']['bop'] ?? $r['bop'];
+        $bom = ($r['override']['bom'] ?: null) ?? $r['bom'];
+        // Each BOM line carries the BOP process that consumes it (WoGenerationService::writeBom reads process_id as given).
+        $of = $this->processOfBom($bom, $bop);
+        foreach ($bom as $i => $line) {
+            $bom[$i]['process_id'] = $line['process_id'] ?? ($of[$i] ?? null);
+        }
+
         return [
-            'bop' => $r['override']['bop'] ?? $r['bop'],
-            'bom' => $r['override']['bom'] ?? $r['bom'],
-            'warnings' => array_merge(...array_values($r['warnings'])),
-            'layout' => $ctx['upCount'] ? $ctx : null,
+            'bop' => $bop,
+            'bom' => $bom,
+            'warnings' => array_merge(...array_values($r['warnings'])) + ($upKnown ? [] : ['ups' => 'Layout ProDev belum ada: 1 up per lembar diasumsikan untuk kebutuhan bahan.']),
+            'layout' => $upKnown ? $ctx : null,
         ];
     }
 
