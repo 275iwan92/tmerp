@@ -4,7 +4,7 @@ Sumber hulu  : Ppic::workOrder/masterCard/bomSheet/simulation, prd_wo*, Master C
 Input        : Query ?id= (WO), ?new=1 (picker), ?open= atau ?tab= (bagian terbuka), ?layout=tabs, ?extras=1 (kartu angka + legenda Gantt di Simulation, mati secara default).
 Output       : Tampilan; aksi lewat rute v2.ppic.* (target, reorder, earliest, bom-cells, queue-move, process, apply, delete). Sheet BOP dan BOM: toolbar hanya ADD / DELETE / RESET (tanpa Search dan hitung baris; DELETE aktif setelah nomor baris diklik; RESET = ambil ulang dari engine ProDev, hanya WO Draft), teks hitam lewat token DevLib (tanpa kelas lokal). Urutan BOP dan Priority dari form ini tertunda sampai PROCESS; Earliest start = lantai waktu engine. Kolom Start dan Stop editable: Start menggeser operasi lewat engine dampak (pending), Stop mengubah target per jam (Run h mengikuti). Live Schedule kini menu sendiri (production-live).
 Dipakai oleh : Menu Planning > Work Order (v2:production-wo).
-Status       : Aktif di mockup (ddt*). Tab Bill of Material: kolom Waste dan Spill dari ProDev, bisa ditimpa officer (RESET mengembalikan); tombol Open Material Planning dan Substitute dihapus. APPLY TO LIVE SCHEDULE ada di bar atas di samping PROCESS; mati sampai PROCESS lulus dan semua bahan baku siap (Ppic::applyBlockedReason, alasan tampil). Tabel Cek ENGINE dihapus: engine bekerja di background.
+Status       : Aktif di mockup (ddt*). Tab Bill of Material: kolom Waste dan Spill dari ProDev, bisa ditimpa officer (RESET mengembalikan); tombol Open Material Planning dan Substitute dihapus. APPLY TO LIVE SCHEDULE ada di bar atas di samping PROCESS; mati sampai PROCESS lulus dan semua bahan baku siap (Ppic::applyBlockedReason, alasan tampil). Tabel Cek ENGINE dihapus: engine bekerja di background. Pengaman jadwal: partial v2.partials.schedule-guard memunculkan popup bila ada proses tak terjadwal.
 --}}
 {{-- Work Order v2 (PPIC): what scheduling knows about one Work Order. Created from Product Development data (layout, BOP, routing, BOM) by
      WoGenerationService; enriched by WoPlanningEnricher (process ids, machines that can run each step, target / waste / spoilage, setup);
@@ -24,6 +24,7 @@ Status       : Aktif di mockup (ddt*). Tab Bill of Material: kolom Waste dan Spi
 
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
+@if ($d)@include('v2.partials.schedule-guard', ['guardWo' => $id])@endif
 
 @if (! $d && ! request()->boolean('new'))
     {{-- 1. Grid of Work Orders; New leads to the picker (what is to be processed). --}}

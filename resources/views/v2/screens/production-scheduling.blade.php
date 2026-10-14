@@ -35,6 +35,7 @@
 
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
+@include('v2.partials.schedule-guard')
 
 <x-dl::card title="PPIC Workspace" description="The engines plan automatically and leave a Draft. Review what needs attention, give priority if needed, then Confirm the plan.">
     <x-dl::kpi-row>

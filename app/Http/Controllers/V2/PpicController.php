@@ -7,7 +7,7 @@
  * Input        : Request POST/JSON dari layar production-wo, ppic-color-sequence, production-scheduling, production-operator.
  * Output       : Redirect + flash, atau JSON {rows, saved} / {error}. Menulis prd_wo (termasuk earliest_start dan pending_header), prd_wo_operation, prd_wo_material, prd_plan_decision, hasil + log timer operator; keputusan SHEET_RESET, MATERIAL_PROCESS. Tombol lama Reset to ProDev order dan Reset to engine quantities sudah dihapus (digantikan RESET).
  * Dipakai oleh : routes/v2_ppic.php (nama rute v2.ppic.*), resources/views/v2/screens/production-wo.blade.php.
- * Status       : Aktif di mockup (database ddt*). Engine penjadwalan tetap sumber keputusan; controller hanya meneruskan.
+ * Status       : Aktif di mockup (database ddt*). Engine penjadwalan tetap sumber keputusan; controller hanya meneruskan. Pengaman jadwal: PROCESS diblok dan APPLY / APPLY ALL ditolak bila ada proses tak terjadwal (ScheduleGuard).
  */
 
 declare(strict_types=1);
@@ -25,6 +25,7 @@ use App\Services\Scheduling\Learning\LearningEngine;
 use App\Services\Scheduling\Operator\OperatorTimerService;
 use App\Services\Scheduling\Plan\AutoPlanRunner;
 use App\Services\Scheduling\Plan\GateService;
+use App\Services\Scheduling\Plan\ScheduleGuard;
 use App\Services\Scheduling\Plan\PlanChangeService;
 use App\Services\Scheduling\Plan\PlanConfirmService;
 use App\Services\Scheduling\Plan\PlanEvents;
@@ -377,6 +378,9 @@ final class PpicController extends Controller
         if (! $d) {
             return ['ok' => false, 'message' => t('Work Order not found.')];
         }
+        if ($unscheduled = ScheduleGuard::issues($wo)) {
+            return ['ok' => false, 'message' => t('Rejected').': '.ScheduleGuard::line($unscheduled)];
+        }
         $check = Ppic::engineCheck($d['ops']);
         if (! $check['ok']) {
             return ['ok' => false, 'message' => t('Rejected').': '.$check['reason']];
@@ -436,6 +440,13 @@ final class PpicController extends Controller
         $gates->apply($model->fresh());
         $runner->run('MANUAL', $this->login());
         $changes->clearPending();
+        Ppic::forget();
+        // Schedule guard (Jo 2026-10-14): every process must sit on a machine (or SUBCON / crew). Otherwise PROCESS is blocked: the hash
+        // is not stored, so APPLY stays off, and the popup lists the work order, process and reason.
+        if ($unscheduled = ScheduleGuard::issues($wo)) {
+            return redirect($form)
+                ->withErrors(['process' => tf('PROCESS blocked: :n process(es) are not scheduled. :lines', ['n' => count($unscheduled), 'lines' => ScheduleGuard::line($unscheduled)])]);
+        }
         $model->forceFill(['process_hash' => Ppic::fingerprint($wo), 'processed_at' => now()])->save();
         Ppic::forget();
 
