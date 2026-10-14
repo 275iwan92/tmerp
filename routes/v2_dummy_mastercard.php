@@ -5,7 +5,7 @@
  * Tujuan       : Layar info Master Card Dummy (menu Developer > Database) dan tiga tombol engine: Make Master Product, Make dummy data (berlevel), dan Reset (hapus hasil engine).
  * Sumber hulu  : App\Services\MasterCard\MasterCardDummyEngine (counts, plan, run); folder docs/attachments/mastercard.
  * Input        : GET tanpa parameter; POST /{mode} tanpa isian: product = tiap PDF siap jadi Master Product; dummy = dibagi bergiliran ke level Inquiry, ProDev, ProCost, CO (qty 5000, due 21 hari).
- * Output       : Halaman v2.dummy-mastercard (jumlah PDF dan set per level) + pesan hasil. Data dummy ditulis engine hanya ke ddt*.
+ * Output       : Halaman v2.dummy-mastercard (status tiap PDF dan jumlah set per level) + pesan hasil. Data dummy ditulis engine hanya ke ddt*.
  * Dipakai oleh : Menu Developer > Database > Master Card Dummy (PDF) (App\Support\V2\AppMenu).
  * Status       : Aktif; developer saja, hanya situs dummy ddt*. File sendiri (dimuat routes/web.php) supaya tidak bercampur dengan v2.php.
  */
@@ -22,9 +22,8 @@ Route::prefix('v2/dummy/mastercard')->group(function () {
     Route::get('/', function () use ($guard, $dir) {
         $guard();
         $engine = app(MasterCardDummyEngine::class);
-        $plan = collect($engine->plan($dir));
 
-        return view('v2.dummy-mastercard', ['counts' => $engine->counts(), 'ready' => $plan->where('status', 'ready')->count(), 'total' => $plan->count()]);
+        return view('v2.dummy-mastercard', ['plan' => $engine->plan($dir), 'counts' => $engine->counts()]);
     })->name('v2.dummy.mastercard');
 
     // Reset: removes everything the engine made (cards read from PDF and their Inquiry / product / CO chain), so data does not pile up.

@@ -1,9 +1,9 @@
 {{--
  REMARK
- Tujuan       : Info ringkas engine PDF Master Card -> data dummy berlevel: input apa yang dibaca, output apa yang dihasilkan, jumlah set per level, dan tiga tombol: Make Master Product, Make dummy data, dan Reset.
- Sumber hulu  : App\Services\MasterCard\MasterCardDummyEngine (counts, plan, run) lewat route v2.dummy.mastercard (routes/v2_dummy_mastercard.php).
- Input        : counts (inquiry, prodev, procost, co), ready / total PDF dari route; flash v2_flash / v2_error; khusus developer.
- Output       : x-dl::stat-box jumlah PDF dan set per level, tiga x-dl::button: Make Master Product dan Make dummy data (POST v2.dummy.mastercard.run, mode product / dummy), Reset (POST v2.dummy.mastercard.reset). Hasil run = data di ddt*, bukan tampilan.
+ Tujuan       : Status tiap PDF Master Card (siap / sudah ada / kurang apa), jumlah set dummy di tiap level (Master Product, Inquiry, ProDev, ProCost, CO), dan tiga tombol engine.
+ Sumber hulu  : App\Services\MasterCard\MasterCardDummyEngine (counts, plan, run, reset) lewat routes/v2_dummy_mastercard.php.
+ Input        : plan (design, name, cards, status), counts (product, inquiry, prodev, procost, co) dari route; flash v2_flash / v2_error; khusus developer.
+ Output       : x-dl::table status PDF, x-dl::stat-box per level, tiga x-dl::button: Make Master Product, Make dummy data (POST v2.dummy.mastercard.run, mode product / dummy), Reset (POST v2.dummy.mastercard.reset). Hasil = data di ddt*.
  Dipakai oleh : Menu Developer > Database > Master Card Dummy (PDF).
  Status       : Aktif (hanya database ddt*).
 --}}
@@ -17,16 +17,13 @@
             <x-dl::alert tone="danger" :message="raw(session('v2_error'))" />
         @endif
 
-        <x-dl::card title="Input" icon="fa-file-pdf"
-            description="Master Card PDF in docs/attachments/mastercard, with the card picture in the extracted folder next to it. The engine reads the card text (size P x L x T, knife, material, colours, finishing, process, dates) and the master data (customer, material, process, machine).">
-            <x-dl::kpi-row>
-                <x-dl::stat-box label="PDF in folder" :value="$total" />
-                <x-dl::stat-box label="Ready to build" :value="$ready" />
-            </x-dl::kpi-row>
+        <x-dl::card title="Master Card PDF" icon="fa-file-pdf"
+            description="PDF in docs/attachments/mastercard (card picture in the extracted folder next to it). The status is computed when this screen opens; nothing is written.">
+            <x-dl::table :columns="['design' => 'Design', 'name' => 'Product', 'cards' => 'Cards', 'status' => 'Status']"
+                :rows="array_map(fn ($p) => ['design' => raw($p['design'] ?? '-'), 'name' => raw($p['name']), 'cards' => $p['cards'], 'status' => raw($p['status'] === 'ready' ? t('Ready to build') : t($p['status']))], $plan)"
+                empty="No Master Card PDF found." source="docs/attachments/mastercard/*.pdf" />
         </x-dl::card>
-
-        <x-dl::card title="Output" icon="fa-layer-group"
-            description="Master Product made straight from the card, or dummy data in levels: Inquiry with dieline, artwork and sizes; ProDev layout, BOP and BOM; ProCost costing; Quotation and Customer Order. A set at a higher level carries every level behind it.">
+        <x-dl::card title="Dummy sets now" icon="fa-layer-group">
             <x-dl::kpi-row>
                 <x-dl::stat-box label="Master Product" :value="$counts['product']" />
                 <x-dl::stat-box label="Inquiry" :value="$counts['inquiry']" />
