@@ -76,17 +76,17 @@
 | 59 | `docs/md_for_systems/TIER_1_ATTENDANCE.md` | 967 | 2026-09-22 | 7 | **RINGKAS** | 967 baris; kebutuhan presensi masih benar, ringkas | |
 | 60 | `docs/md_for_systems/customerinvoice_plan.md` | 424 | 2026-10-02 | 6 | **RINGKAS** | Rencana yang sudah dibangun; sisakan tabel dan layar, buang rencana | |
 | 61 | `docs/md_for_systems/downpayment_tier1-4.md` | 226 | 2026-10-02 | 12 | **RINGKAS** | Butir LOCKED lama digantikan A.21; ringkas ke yang masih berlaku | |
-| 62 | `docs/md_for_systems/flows/flow_finance_accounting.md` | 35 | 2026-10-02 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 63 | `docs/md_for_systems/flows/flow_hrm.md` | 30 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 64 | `docs/md_for_systems/flows/flow_inquiry_product.md` | 75 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 65 | `docs/md_for_systems/flows/flow_inventory.md` | 52 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 66 | `docs/md_for_systems/flows/flow_master_data.md` | 38 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 67 | `docs/md_for_systems/flows/flow_procurement.md` | 30 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 68 | `docs/md_for_systems/flows/flow_production_scheduling.md` | 31 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 69 | `docs/md_for_systems/flows/flow_recruitment_internal.md` | 54 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 70 | `docs/md_for_systems/flows/flow_recruitment_portal_public.md` | 65 | 2026-09-22 | 2 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 71 | `docs/md_for_systems/flows/flow_sales_order_delivery.md` | 66 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
-| 72 | `docs/md_for_systems/flows/flow_system_setup.md` | 97 | 2026-09-22 | 1 | **RINGKAS** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 62 | `docs/md_for_systems/flows/flow_finance_accounting.md` | 35 | 2026-10-02 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 63 | `docs/md_for_systems/flows/flow_hrm.md` | 30 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 64 | `docs/md_for_systems/flows/flow_inquiry_product.md` | 75 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 65 | `docs/md_for_systems/flows/flow_inventory.md` | 52 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 66 | `docs/md_for_systems/flows/flow_master_data.md` | 38 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 67 | `docs/md_for_systems/flows/flow_procurement.md` | 30 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 68 | `docs/md_for_systems/flows/flow_production_scheduling.md` | 31 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 69 | `docs/md_for_systems/flows/flow_recruitment_internal.md` | 54 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 70 | `docs/md_for_systems/flows/flow_recruitment_portal_public.md` | 65 | 2026-09-22 | 2 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 71 | `docs/md_for_systems/flows/flow_sales_order_delivery.md` | 66 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
+| 72 | `docs/md_for_systems/flows/flow_system_setup.md` | 97 | 2026-09-22 | 1 | **SELESAI 2026-10-14 (digabung ke flows.md, asli diarsipkan)** | Alur satu modul 30-100 baris; gabung 11 berkas jadi satu flows.md | |
 | 73 | `docs/md_for_systems/inventorywarehouse_v201_phase1_plan.md` | 212 | 2026-10-08 | 3 | **RINGKAS** | Rencana Fase 1; gabung ke technical_plan | |
 | 74 | `docs/md_for_systems/inventorywarehouse_v201_references.md` | 229 | 2026-10-08 | 2 | **RINGKAS** | Referensi riset; ringkas ke daftar sumber | |
 | 75 | `docs/md_for_systems/openingboard_references.md` | 105 | 2026-10-02 | 2 | **RINGKAS** | Referensi ERP lain untuk widget; ringkas ke daftar sumber | |

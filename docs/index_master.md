@@ -211,22 +211,11 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 
 ---
 
-## 2. FLOW MODUL (docs/flows/, 12 file)
+## 2. FLOW MODUL (satu berkas: docs/md_for_systems/flows.md)
 
 | File | Deskripsi |
 |---|---|
-| `flow_system_setup.md` | Registrasi & login, keamanan akun, administrasi Security/Configuration, Help Center, notifikasi, self-service. |
-| `flow_recruitment_portal_public.md` | Kandidat publik: landing sampai sync data lamaran ke tm2hrr internal. |
-| `flow_recruitment_internal.md` | Rekrutmen internal: Requisition sampai Provisioning ke ERP. |
-| `flow_inquiry_product.md` | Hub sampai HPP published & Nota, 3 doc-type, titik masuk ProDev/Costing/Quotation. |
-| `flow_sales_order_delivery.md` | Inquiry berharga sampai Surat Jalan diterima customer. |
-| `flow_finance_accounting.md` | Setup COA, jurnal Kas & Bank, tagihan uang muka customer. |
-| `flow_hrm.md` | Struktur Organisasi, Shift Roster, approval Cuti/Koreksi Data. |
-| `flow_inventory.md` | Stock In dari Purchase Receive sampai Laporan (Master Stock/Slow Moving). |
-| `flow_master_data.md` | Kelompok master & konsumsi lintas modul (bukan alur linear). |
-| `flow_production_scheduling.md` | ProDev (imposition) -> Master Card -> WO auto-generate -> Scheduling -> Monitoring. |
-| `flow_procurement.md` | PR -> PQ -> PO -> PRT -> PV, approval merged-into-entry, Laporan Outstanding. |
-| `flow_admin_dashboard_filament.md` | Migrasi bertahap shell lama -> Filament /admin, auth bridge, pola Cluster->Resource->Page. |
+| `flows.md` | Aturan alur tahan lama per modul (Sales, Production, Procurement, Inventory, Finance, HRM, Recruitment, Sistem, Master Data). Disarikan 2026-10-14 dari 11 `flow_*.md` v1 yang kini diarsipkan. |
 
 ---
 
