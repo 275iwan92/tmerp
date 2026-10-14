@@ -5,7 +5,7 @@
  * Tujuan       : Membuat WO dari baris kirim CPDEL (1 part = 1 WO) beserta operasi dan baris bahan; regenerateBom untuk WO DRAFT.
  * Sumber hulu  : co_order_delivery, iqp_inquiry/iqp_part, SpecEngine::forWorkOrder.
  * Input        : CoOrderDelivery (generateFromDelivery) atau PrdWo DRAFT (regenerateBom).
- * Output       : prd_wo, prd_wo_operation (proses+mesin), prd_wo_material (process_id, qty_required, qty_standar); rebuildOperations = ENGINE BOP untuk PROCESS (operasi mengikuti BOP sekarang, penempatan/progres dipertahankan).
+ * Output       : prd_wo, prd_wo_operation (proses+mesin), prd_wo_material (process_id, qty_required, qty_standar, waste_engine_qty/spill_engine_qty dari langkah BOP bila satuannya sama; timpaan officer waste_override_qty/spill_override_qty dipertahankan); rebuildOperations = ENGINE BOP untuk PROCESS (operasi mengikuti BOP sekarang, penempatan/progres dipertahankan).
  * Dipakai oleh : PpicController::createWo, Cpdel::post.
  * Status       : Aktif di mockup. Override Required/Release milik officer dan process_id baris (bila engine tidak memberi) dipertahankan saat regenerateBom; engineBomCount = jumlah baris BOM engine sekarang (RESET BOM menolak bila 0).
  */
@@ -283,8 +283,11 @@ class WoGenerationService
         $subst = $wo->materials()->where('is_substituted', true)->get()->keyBy(fn ($m) => $m->material_role.'|'.$m->material_name);
         // The BOP process of a line is kept when the engine gives none now (ATTENTION-ENGINE-01): same role + name keeps the process it had.
         $process = $wo->materials()->whereNotNull('process_id')->get()->mapWithKeys(fn ($m) => [$m->material_role.'|'.$m->material_name => $m->process_id])->all();
+        // The officer's Waste / Spill overrides survive too (RESET clears them before the rebuild).
+        $wasteKept = $wo->materials()->where(fn ($q) => $q->whereNotNull('waste_override_qty')->orWhereNotNull('spill_override_qty'))->get()
+            ->keyBy(fn ($m) => $m->material_role.'|'.$m->material_name);
 
-        return DB::connection('tm2prd')->transaction(function () use ($wo, $spec, $needed, $kept, $subst, $process) {
+        return DB::connection('tm2prd')->transaction(function () use ($wo, $spec, $needed, $kept, $subst, $process, $wasteKept) {
             // only the engine's own lines are rebuilt; lines the officer added stay
             $wo->materials()->whereNotIn('detail_id', Ppic::addedRows((int) $wo->wo_id, 'MAT'))->delete();
             $n = $this->writeBom($wo, $spec['bom'], $needed);
@@ -292,6 +295,7 @@ class WoGenerationService
                 if ($m->process_id === null && isset($process[$m->material_role.'|'.$m->material_name])) {
                     $m->forceFill(['process_id' => $process[$m->material_role.'|'.$m->material_name]])->save();
                 }
+                $this->writeWasteSpill($wo, $m, $wasteKept->get($m->material_role.'|'.$m->material_name));
                 if ($k = $kept->get($m->material_role.'|'.$m->material_name)) {
                     $m->forceFill(['qty_required' => $k->qty_required, 'override_reason' => $k->override_reason])->save();
                 }
@@ -304,6 +308,24 @@ class WoGenerationService
 
             return $n;
         });
+    }
+
+    /**
+     * Waste and Spill of a BOM line, as ProDev gave them: the Waste (waste_qty) and Spill (tolerance_qty) of the BOP step of the line's
+     * process, copied only when that step counts in the same unit as the line (a line in KG against a step in LBR gets none: no conversion
+     * is invented). Required already carries them (ProDev counts print sheets with waste and tolerance), so they are shown, not added again.
+     * The officer's override (if any) is kept; the engine value is refreshed each time.
+     */
+    private function writeWasteSpill(PrdWo $wo, PrdWoMaterial $m, ?PrdWoMaterial $kept): void
+    {
+        $op = $m->process_id ? PrdWoOperation::where('wo_id', $wo->wo_id)->where('process_id', $m->process_id)->orderBy('seq_no')->first() : null;
+        $same = fn (?string $uom) => $op && $m->uom && strtoupper((string) $uom) === strtoupper((string) $m->uom);
+        $m->forceFill([
+            'waste_engine_qty' => $op && $op->waste_qty !== null && $same($op->waste_uom) ? $op->waste_qty : null,
+            'spill_engine_qty' => $op && $op->tolerance_qty !== null && $same($op->tolerance_uom) ? $op->tolerance_qty : null,
+            'waste_override_qty' => $kept?->waste_override_qty,
+            'spill_override_qty' => $kept?->spill_override_qty,
+        ])->save();
     }
 
     /**

@@ -4,7 +4,7 @@ Sumber hulu  : Ppic::workOrder/masterCard/bomSheet/simulation, prd_wo*, Master C
 Input        : Query ?id= (WO), ?new=1 (picker), ?open= atau ?tab= (bagian terbuka), ?layout=tabs, ?extras=1 (kartu angka + legenda Gantt di Simulation, mati secara default).
 Output       : Tampilan; aksi lewat rute v2.ppic.* (target, reorder, earliest, bom-cells, queue-move, process, apply, delete). Sheet BOP dan BOM: toolbar hanya ADD / DELETE / RESET (tanpa Search dan hitung baris; DELETE aktif setelah nomor baris diklik; RESET = ambil ulang dari engine ProDev, hanya WO Draft), teks hitam lewat token DevLib (tanpa kelas lokal). Urutan BOP dan Priority dari form ini tertunda sampai PROCESS; Earliest start = lantai waktu engine. Kolom Start dan Stop editable: Start menggeser operasi lewat engine dampak (pending), Stop mengubah target per jam (Run h mengikuti). Live Schedule kini menu sendiri (production-live).
 Dipakai oleh : Menu Planning > Work Order (v2:production-wo).
-Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja di background.
+Status       : Aktif di mockup (ddt*). Tab Bill of Material: kolom Waste dan Spill dari ProDev, bisa ditimpa officer (RESET mengembalikan); tombol Open Material Planning dan Substitute dihapus. APPLY TO LIVE SCHEDULE ada di bar atas di samping PROCESS; mati sampai PROCESS lulus dan semua bahan baku siap (Ppic::applyBlockedReason, alasan tampil). Tabel Cek ENGINE dihapus: engine bekerja di background.
 --}}
 {{-- Work Order v2 (PPIC): what scheduling knows about one Work Order. Created from Product Development data (layout, BOP, routing, BOM) by
      WoGenerationService; enriched by WoPlanningEnricher (process ids, machines that can run each step, target / waste / spoilage, setup);
@@ -130,6 +130,10 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
                 @endif
             </x-dl::form.row>
         @endforeach
+        @php $applyWhy = $editable ? Ppic::applyBlockedReason($wo->wo_id, $ops) : null; @endphp
+        @if ($applyWhy)
+            <x-dl::alert tone="warn" :message="raw(t('APPLY TO LIVE SCHEDULE is off').': '.$applyWhy)" />
+        @endif
         @if ($blocked->isNotEmpty())
             <x-dl::alert tone="danger" :message="raw(t('Blocked').': '.$blocked->pluck('gate_note')->filter()->unique()->implode(' · '))" />
         @elseif ($waiting->isNotEmpty())
@@ -151,6 +155,12 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
                 <x-dl::action-form action="{{ route('v2.ppic.wo.process', $wo->wo_id) }}"><x-dl::button size="sm" variant="secondary" icon="fa-gears" :label="'PROCESS ('.$topPs['n'].')'" type="submit" /></x-dl::action-form>
             @else
                 <x-dl::button size="sm" variant="secondary" icon="fa-gears" label="PROCESS" disabled />
+            @endif
+            {{-- APPLY TO LIVE SCHEDULE sits beside PROCESS and stays off until PROCESS passed (material ready, no blocked gate); the reason is shown. --}}
+            @if ($applyWhy)
+                <x-dl::button size="sm" icon="fa-check" label="APPLY TO LIVE SCHEDULE" disabled :title="raw($applyWhy)" />
+            @else
+                <x-dl::action-form action="{{ route('v2.ppic.wo.apply', $wo->wo_id) }}"><x-dl::button size="sm" icon="fa-check" label="APPLY TO LIVE SCHEDULE" type="submit" /></x-dl::action-form>
             @endif
         @endif
         @if ($editable)
@@ -298,13 +308,9 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
                 @if ($editable && $ps['pending'] > 0)
                     <x-dl::action-form action="{{ route('v2.ppic.pending.discard', ['wo' => $wo->wo_id]) }}"><x-dl::button variant="link" label="Discard pending changes" type="submit" /></x-dl::action-form>
                 @endif
-                @if ($editable && ! $ps['needed'])
-                    <x-dl::action-form action="{{ route('v2.ppic.wo.apply', $wo->wo_id) }}"><x-dl::button icon="fa-check" label="APPLY TO LIVE SCHEDULE" type="submit" /></x-dl::action-form>
-                @elseif ($editable)
-                    <x-dl::button icon="fa-check" label="APPLY TO LIVE SCHEDULE" disabled />
-                @else
+                @unless ($editable)
                     <x-dl::button icon="fa-lock" label="APPLIED" disabled />
-                @endif
+                @endunless
             </x-dl::action-bar>
             <x-dl::hint note>@t('LIVE (locked) = already applied to the live schedule. DRAFT = not applied yet: move, swap, or simulate it freely until APPLY TO LIVE SCHEDULE.')</x-dl::hint>
             <x-dl::gantt :mode-switch="false" :extras="request()->boolean('extras')" :linked="$sim['linked']" :rows="$sim['rows']" :tasks="$sim['tasks']" :categories="$sim['categories']" :origin-date="$sim['originDate']" :start="$sim['start']" :end="$sim['end']" :px-per-hour="$sim['pxPerHour']"
@@ -327,6 +333,8 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
                 ['key' => 'material', 'label' => 'Material', 'lockSaved' => true, 'required' => true, 'width' => '320px'],
                 ['key' => 'role', 'label' => 'Role', 'type' => 'select', 'options' => array_combine(Ppic::materialRoles(), Ppic::materialRoles()), 'lockSaved' => true, 'required' => true, 'width' => '150px'],
                 ['key' => 'required', 'label' => 'Required', 'type' => 'number', 'decimals' => 2, 'width' => '110px'],
+                ['key' => 'waste', 'label' => 'Waste', 'type' => 'number', 'decimals' => 2, 'width' => '90px'],
+                ['key' => 'spill', 'label' => 'Spill', 'type' => 'number', 'decimals' => 2, 'width' => '90px'],
                 ['key' => 'uom', 'label' => 'Unit', 'readonly' => true, 'width' => '60px'],
                 ['key' => 'onhand', 'label' => 'On hand', 'readonly' => true, 'width' => '90px'],
                 ['key' => 'available', 'label' => 'Available', 'readonly' => true, 'width' => '90px'],
@@ -334,14 +342,10 @@ Status       : Aktif di mockup (ddt*). Tabel Cek ENGINE dihapus: engine bekerja 
                 ['key' => 'purchase', 'label' => 'Purchase', 'type' => 'number', 'decimals' => 2, 'width' => '110px'],
             ]" />
         @else
-            <x-dl::table :columns="['process' => 'Process', 'material' => 'Material', 'role' => 'Role', 'required' => 'Required', 'uom' => 'Unit', 'onhand' => 'On hand', 'available' => 'Available', 'release' => 'Release', 'purchase' => 'Purchase']" empty="No material lines." :source="$src"
-                :rows="array_map(fn ($m) => ['process' => raw($procName[$m['process']] ?? ($m['process'] === '' ? t('Process not set') : $m['process'])), 'material' => raw($m['material']), 'role' => raw($m['role']), 'required' => Locale::decimal($m['required'], 2), 'uom' => raw($m['uom']),
+            <x-dl::table :columns="['process' => 'Process', 'material' => 'Material', 'role' => 'Role', 'required' => 'Required', 'waste' => 'Waste', 'spill' => 'Spill', 'uom' => 'Unit', 'onhand' => 'On hand', 'available' => 'Available', 'release' => 'Release', 'purchase' => 'Purchase']" empty="No material lines." :source="$src"
+                :rows="array_map(fn ($m) => ['process' => raw($procName[$m['process']] ?? ($m['process'] === '' ? t('Process not set') : $m['process'])), 'material' => raw($m['material']), 'role' => raw($m['role']), 'required' => Locale::decimal($m['required'], 2), 'waste' => $m['waste'] !== null ? Locale::decimal($m['waste'], 2) : '—', 'spill' => $m['spill'] !== null ? Locale::decimal($m['spill'], 2) : '—', 'uom' => raw($m['uom']),
                     'onhand' => $m['onhand'], 'available' => $m['available'], 'release' => Locale::decimal($m['release'], 2), 'purchase' => Locale::decimal($m['purchase'], 2)], $bomRows)" />
         @endif
-        <x-dl::action-bar>
-            <x-dl::button variant="secondary" icon="fa-boxes-stacked" label="Open Material Planning" :href="route('v2.screen', 'material-planning')" />
-            <x-dl::button variant="secondary" icon="fa-right-left" label="Substitute material" :href="route('production.wo.entry', $wo->wo_id)" />
-        </x-dl::action-bar>
     </x-dl::card>
         @php $woHtml['bom'] = new \Illuminate\Support\HtmlString(ob_get_clean()); @endphp
     @php $queue = Ppic::queue($wo->wo_id); ob_start(); @endphp

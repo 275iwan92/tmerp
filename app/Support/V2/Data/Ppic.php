@@ -7,7 +7,7 @@
  * Input        : Id WO atau daftar operasi; cache per request (Ppic::forget() bila data berubah).
  * Output       : Array siap tampil: operations(), gantt(), simulation()/linkedBoard(), live() (monitor Live Schedule), rowKey() (baris Gantt: mesin, atau SUBCON per proses; tanpa konsep crew), queue() (antrean per proses per mesin, dengan jeda "Idle before" dan alasannya dari MachineIdle), masterCard(), bomSheet(), bopSheet(), stockOf().
  * Dipakai oleh : PpicController, layar production-wo, ppic-color-sequence, production-scheduling.
- * Status       : Aktif di mockup (ddt*). Hanya membaca; tidak menulis database.
+ * Status       : Aktif di mockup (ddt*). Hanya membaca; tidak menulis database. bomSheet(): kolom waste/spill (timpaan officer atau nilai ProDev). applyBlockedReason(): alasan APPLY mati (belum PROCESS, bahan kurang, gerbang BLOCK).
  */
 
 declare(strict_types=1);
@@ -17,6 +17,7 @@ namespace App\Support\V2\Data;
 use App\Models\Master\ProdMasterCard;
 use App\Models\Master\ProdPart;
 use App\Models\Prd\PrdPlanRun;
+use App\Models\Prd\PrdWo;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\MasterCard\MasterCardShape;
 use App\Services\Scheduling\Operator\OperatorTimerService;
@@ -1078,14 +1079,22 @@ final class Ppic
             $req = (float) $m->qty_required;
             $avail = (float) ($stock[$m->material_id]['available'] ?? 0);
             $rel = GateService::release($m->qty_release !== null ? (float) $m->qty_release : null, $avail);
+            // Waste / Spill: the officer's override, else the ProDev value (null = ProDev gave none in this unit).
+            $waste = $m->waste_override_qty ?? $m->waste_engine_qty;
+            $spill = $m->spill_override_qty ?? $m->spill_engine_qty;
+            $wasteEdited = $m->waste_override_qty !== null && abs((float) $m->waste_override_qty - (float) $m->waste_engine_qty) > 0.00005;
+            $spillEdited = $m->spill_override_qty !== null && abs((float) $m->spill_override_qty - (float) $m->spill_engine_qty) > 0.00005;
+            $mark = ($wasteEdited || $spillEdited) ? ' ✎ waste/spill edited (ProDev: '.Locale::decimal((float) $m->waste_engine_qty, 2).' / '.Locale::decimal((float) $m->spill_engine_qty, 2).')' : '';
 
             return [
                 'id' => (int) $m->detail_id,
                 'order' => $m->process_id ? ($opSeq[$m->process_id] ?? 9999) : 99999,
                 'process' => $m->process_id && isset($opSeq[$m->process_id]) ? (string) $m->process_id : ($m->process_id ? (string) ($names[$m->process_id] ?? '—').' (not in this BOP)' : ''),
-                'material' => (string) $m->material_name.(in_array((int) $m->detail_id, $added, true) ? ' ✚ added' : ($m->override_reason !== null ? ' ✎ edited (engine: '.Locale::decimal((float) $m->qty_standar, 2).')' : '')),
+                'material' => (string) $m->material_name.(in_array((int) $m->detail_id, $added, true) ? ' ✚ added' : ($m->override_reason !== null ? ' ✎ edited (engine: '.Locale::decimal((float) $m->qty_standar, 2).')' : '')).$mark,
                 'role' => (string) $m->material_role,
                 'required' => round($req, 2),
+                'waste' => $waste !== null ? round((float) $waste, 2) : null,
+                'spill' => $spill !== null ? round((float) $spill, 2) : null,
                 'uom' => (string) $m->uom,
                 'onhand' => isset($stock[$m->material_id]) ? Locale::decimal($stock[$m->material_id]['onhand'], 2) : '—',
                 'available' => isset($stock[$m->material_id]) ? Locale::decimal($stock[$m->material_id]['available'], 2) : '—',
@@ -1180,7 +1189,7 @@ final class Ppic
             return '';
         }
         $ops = $prd->table('prd_wo_operation')->where('wo_id', $woId)->orderBy('seq_no')->get(['process_id', 'seq_no', 'rate_band_value', 'qty', 'waste_qty'])->map(fn ($o) => (array) $o)->all();
-        $mats = $prd->table('prd_wo_material')->where('wo_id', $woId)->orderBy('detail_id')->get(['material_id', 'qty_required', 'qty_release', 'qty_purchase', 'is_substituted', 'substitute_material_id'])->map(fn ($o) => (array) $o)->all();
+        $mats = $prd->table('prd_wo_material')->where('wo_id', $woId)->orderBy('detail_id')->get(['material_id', 'qty_required', 'qty_release', 'qty_purchase', 'is_substituted', 'substitute_material_id', 'waste_override_qty', 'spill_override_qty'])->map(fn ($o) => (array) $o)->all();
         $subs = $prd->table('prd_wo_material_substitution')->where('wo_id', $woId)->where('is_active', 1)->orderBy('id')
             ->get(['original_rawmat_id', 'substitute_rawmat_id', 'approval_status'])->map(fn ($o) => (array) $o)->all();
         $src = [];
@@ -1234,6 +1243,27 @@ final class Ppic
         $status = DB::connection('tm2prd')->table('prd_wo')->whereIn('wo_id', array_keys($out))->pluck('wo_status', 'wo_id');
 
         return array_values(array_filter($out, fn ($x) => in_array($status[$x['wo_id']] ?? '', ['DRAFT', 'SIMULATED'], true)));
+    }
+
+    /**
+     * Why APPLY TO LIVE SCHEDULE is not allowed yet (null = allowed): not PROCESSed (or data changed after it), raw material not ready (the
+     * material gate's own shortage list), and, when $ops is given, a blocked gate or no machine slot (engineCheck). Rules from Jo 2026-10-14.
+     */
+    public static function applyBlockedReason(int $woId, ?array $ops = null): ?string
+    {
+        $state = self::processState($woId);
+        if ($state['needed']) {
+            $never = DB::connection('tm2prd')->table('prd_wo')->where('wo_id', $woId)->value('process_hash') === null;
+
+            return t($never || $state['pending'] > 0 ? 'Click PROCESS first.' : 'Data changed, click PROCESS again.');
+        }
+        $wo = PrdWo::find($woId);
+        if ($wo && ($short = app(GateService::class)->materialShortages($wo))) {
+            return tf('Material is not ready, so it cannot be applied: :lines', ['lines' => raw(GateService::shortageText($short))]);
+        }
+        $check = $ops === null ? ['ok' => true] : self::engineCheck($ops);
+
+        return $check['ok'] ? null : t('Rejected').': '.$check['reason'];
     }
 
     /** The order / priority change of a Work Order that waits for PROCESS: ['order' => ['ids', 'reason'], 'priority' => ['kind', 'reason']]. @return array<string, array<string, mixed>> */

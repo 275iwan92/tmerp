@@ -367,6 +367,9 @@ final class PpicController extends Controller
         if (! in_array($model->wo_status, ['DRAFT', 'SIMULATED'], true)) {
             return ['ok' => false, 'message' => t('Applied WO is locked; Undo Confirm first.')];
         }
+        if ($why = Ppic::applyBlockedReason($wo)) {
+            return ['ok' => false, 'message' => $why];
+        }
         // The engines run again against the schedule in force NOW (another Work Order may have been applied since this one was drafted).
         $runner->run('MANUAL', $this->login());
         Ppic::forget();
@@ -928,7 +931,7 @@ final class PpicController extends Controller
             if (! $line || ! $was) {
                 return response()->json(['error' => t('Material line not found.')], 422);
             }
-            foreach (['required', 'release', 'purchase'] as $k) {
+            foreach (['required', 'release', 'purchase', 'waste', 'spill'] as $k) {
                 if (isset($c[$k]) && $c[$k] !== '' && (! is_numeric($c[$k]) || (float) $c[$k] < 0)) {
                     return response()->json(['error' => t(ucfirst($k)).': '.t('must be a number of 0 or more.')], 422);
                 }
@@ -942,7 +945,16 @@ final class PpicController extends Controller
                 $procSet[] = [$line, $pid];
             }
             $moved = fn (string $k) => isset($c[$k]) && $c[$k] !== '' && abs((float) $c[$k] - (float) $was[$k]) > 0.0049;
-            $req = $moved('required') ? (float) $c['required'] : (float) $was['required'];
+            // Waste / Spill typed by the officer: kept as an override of the ProDev value; Required (which already carries them) moves by the same difference.
+            $ov = [];
+            $shift = 0.0;
+            foreach (['waste', 'spill'] as $k) {
+                if ($moved($k)) {
+                    $ov[$k.'_override_qty'] = round((float) $c[$k], 4);
+                    $shift += (float) $c[$k] - (float) ($was[$k] ?? 0);
+                }
+            }
+            $req = $moved('required') ? (float) $c['required'] : (float) $was['required'] + $shift;
             $rel = (float) $was['release'];
             if ($moved('release') && $moved('purchase') && abs(GateService::purchase($req, (float) $c['release']) - (float) $c['purchase']) > 0.0149) {
                 return response()->json(['error' => t('Purchase must be Required minus Release.')], 422);
@@ -959,7 +971,7 @@ final class PpicController extends Controller
             $rel = max(0.0, min($rel, $avail));
             $defaultRel = $avail;
             $differs = abs($req - (float) $line->qty_standar) > 0.00005 || abs($rel - $defaultRel) > 0.00005;
-            $changes[] = [$line, round($req, 4), round($rel, 4), $differs];
+            $changes[] = [$line, round($req, 4), round($rel, 4), $differs, $ov];
         }
         $reason = trim((string) $r->input('reason', ''));
         if ($reason === '' && collect($changes)->contains(fn ($x) => $x[3])) {
@@ -970,8 +982,15 @@ final class PpicController extends Controller
                 $line->forceFill(['process_id' => $pid])->save();
                 PrdPlanDecision::create(['actor' => $this->login(), 'event' => 'MATERIAL_PROCESS', 'old_value' => mb_substr((string) $line->material_name, 0, 190), 'new_value' => (string) $pid, 'reason' => 'Process chosen by the officer']);
             }
-            foreach ($changes as [$line, $req, $rel, $differs]) {
+            foreach ($changes as [$line, $req, $rel, $differs, $ov]) {
                 $old = (float) $line->qty_required;
+                // an override equal to the ProDev value is no override
+                foreach (['waste', 'spill'] as $k) {
+                    if (isset($ov[$k.'_override_qty']) && abs($ov[$k.'_override_qty'] - (float) $line->{$k.'_engine_qty'}) < 0.00005) {
+                        $ov[$k.'_override_qty'] = null;
+                    }
+                }
+                $line->forceFill($ov);
                 $line->forceFill($differs
                     ? ['qty_required' => $req, 'qty_release' => $rel, 'qty_purchase' => round(GateService::purchase($req, $rel), 4), 'override_reason' => mb_substr($reason, 0, 190)]
                     : ['qty_required' => $req, 'qty_release' => null, 'qty_purchase' => null, 'override_reason' => null])->save();

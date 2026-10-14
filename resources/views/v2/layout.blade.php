@@ -15,6 +15,7 @@
     <title>{{ $title ?? 'DevLib' }} — TELASIH MAKMUR</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ \Devlib\DevlibServiceProvider::asset('devlib.css') }}">
+    <link rel="stylesheet" href="{{ \Devlib\DevlibServiceProvider::asset('envbadge.css') }}">
     <x-dl::theme-boot />
     <link rel="stylesheet" href="{{ \MockupParts\MockupPartsServiceProvider::asset('mockup-parts.css') }}">
     <script src="{{ \Devlib\DevlibServiceProvider::asset('devlib.js') }}" defer></script>

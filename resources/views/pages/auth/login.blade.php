@@ -248,6 +248,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
 
                     <div class="divider"><span>atau</span></div>
                     <div class="reg">Belum punya akun? <a href="{{ route('register', ['lang' => $lang]) }}">Daftar</a></div>
+                    <x-dl::env-badge part="where" variant="login" />
 
                     {{-- Akun UAT: daftar dari .env.mockup (UAT_ACCOUNTS), klik baris = login & password terisi.
                          Hanya tampil di mockup.test; tmerp.test live tidak menampilkannya. --}}

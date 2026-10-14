@@ -314,6 +314,7 @@ class WoEngineVerifyTest extends TestCase
     {
         $op = PrdWoOperation::where('plan_status', 'DRAFT')->where('draft_machine_id', '>', 0)
             ->whereHas('wo', fn ($q) => $q->whereIn('wo_status', ['DRAFT', 'SIMULATED']))->orderBy('operation_id')->first();
+        DB::connection('tm2prd')->table('prd_wo_material')->where('wo_id', (int) $op->wo_id)->update(['qty_required' => 0]); // material ready: APPLY needs it
         app(PlanConfirmService::class)->confirm((int) Ppic::draftRun()->run_id, 'test', null, (int) $op->wo_id);
         $before = collect($this->placed())->filter(fn ($p) => $p['wo'] === (int) $op->wo_id)->map(fn ($p) => [$p['machine'], $p['start']->toIso8601String()])->all();
         app(AutoPlanRunner::class)->run('EVENT', 'test');
@@ -426,6 +427,7 @@ class WoEngineVerifyTest extends TestCase
             ->whereHas('wo', fn ($q) => $q->whereIn('wo_status', ['DRAFT', 'SIMULATED']))->orderBy('operation_id')->first();
         $woId = (int) $op->wo_id;
         $svc = app(PlanConfirmService::class);
+        DB::connection('tm2prd')->table('prd_wo_material')->where('wo_id', $woId)->update(['qty_required' => 0]); // material ready: APPLY needs it
         $res = $svc->confirm((int) Ppic::draftRun()->run_id, 'test', null, $woId);
         $this->assertSame('SCHEDULED', PrdWo::find($woId)->wo_status);
         $svc->undo($res['run_id'], 'test');

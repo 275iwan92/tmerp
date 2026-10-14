@@ -5,7 +5,6 @@ namespace App\Models\Prd;
 use Illuminate\Database\Eloquent\Model;
 
 // MPS baru: forecast per customer x product x bulan. CO customer+product di bulan yang sama memakan forecast ini.
-// (prd_mts_forecast = engine lama yang diarsipkan, tidak dipakai.)
 class PrdDemandForecast extends Model
 {
     protected $connection = 'tm2prd';

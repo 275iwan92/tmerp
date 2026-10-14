@@ -7,6 +7,7 @@
  * Input        : run id, login, id WO opsional.
  * Output       : Operasi CONFIRMED (jendela beku dikunci), run CONFIRMED untuk Undo.
  * Dipakai oleh : PpicController::applyWo dan confirm.
+ * Gerbang APPLY    : satu WO hanya boleh APPLY bila semua bahan baku siap (GateService::materialShortages); belum siap = DomainException.
  * Status       : Aktif di mockup.
  */
 
@@ -27,7 +28,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class PlanConfirmService
 {
-    public function __construct(private readonly PlanLoader $loader) {}
+    public function __construct(private readonly PlanLoader $loader, private readonly GateService $gates) {}
 
     /** @return array{confirmed: int, locked: int, run_id: int} */
     public function confirm(int $runId, string $login, ?CarbonImmutable $now = null, ?int $onlyWoId = null): array
@@ -42,6 +43,10 @@ final class PlanConfirmService
             ->when($onlyWoId, fn ($q) => $q->where('wo_id', $onlyWoId))->get();
         if ($onlyWoId && $ops->isEmpty()) {
             throw new \DomainException('This Work Order has no Draft operations to confirm.');
+        }
+        // One job is applied only when ALL its raw material is ready (Jo 2026-10-14): same shortage list the material gate and the BOM sheet use.
+        if ($onlyWoId && ($wo = PrdWo::find($onlyWoId)) && ($short = $this->gates->materialShortages($wo))) {
+            throw new \DomainException(tf('Material is not ready, so it cannot be applied: :lines', ['lines' => GateService::shortageText($short)]));
         }
         // Safety net: a Draft can be older than the schedule in force. Never let a confirm double-book a machine.
         foreach ($ops as $op) {

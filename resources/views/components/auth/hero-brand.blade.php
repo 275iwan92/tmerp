@@ -12,5 +12,5 @@
             <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" class="w-full h-full object-cover rounded-xl">
         @endif
     </span>
-    <div><b>{{ $brandName }}</b>@if ($brandTagline)<span>{{ $brandTagline }}</span>@endif</div>
+    <div><b>{{ $brandName }}<x-dl::env-badge part="title" variant="title" /></b>@if ($brandTagline)<span>{{ $brandTagline }}</span>@endif</div>
 </div>

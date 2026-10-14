@@ -29,6 +29,7 @@ class PrdWoMaterial extends Model
         'wo_id', 'seq_no', 'material_id', 'material_role', 'process_id', 'material_name', 'uom', 'qty_required', 'qty_standar', 'qty_release', 'qty_purchase', 'override_reason',
         'is_substituted', 'substitute_material_id', 'substitute_reason',
         'substitute_approved_by', 'substitute_approved_at', 'cutting_yield_waste_qty',
+        'waste_engine_qty', 'spill_engine_qty', 'waste_override_qty', 'spill_override_qty',
         'material_needed_by', 'created_by', 'updated_by',
     ];
 

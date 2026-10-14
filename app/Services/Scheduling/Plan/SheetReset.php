@@ -55,7 +55,7 @@ final class SheetReset
             $lines = PrdWoMaterial::where('wo_id', $id)->get();
 
             return ['restored' => $restored, 'dropped' => $lines->whereIn('detail_id', $added)->count(), 'untouched' => 0, 'engine_rows' => $this->gen->engineBomCount($wo),
-                'values' => $lines->whereNotIn('detail_id', $added)->whereNotNull('override_reason')->count()];
+                'values' => $lines->whereNotIn('detail_id', $added)->filter(fn ($l) => $l->override_reason !== null || $l->waste_override_qty !== null || $l->spill_override_qty !== null)->count()];
         }
         $ops = PrdWoOperation::where('wo_id', $id)->get();
         $added = Ppic::addedRows($id, 'OP');
@@ -87,7 +87,7 @@ final class SheetReset
             $prd->transaction(function () use ($wo, $id) {
                 $this->retire(['ROW_ADDED', 'ROW_DELETED'], fn ($q) => $q->where('old_value', 'like', '{"wo":'.$id.',"kind":"MAT"%'));
                 // edited Required / Release go back to the engine's numbers; the regeneration then writes every line again
-                PrdWoMaterial::where('wo_id', $id)->update(['override_reason' => null, 'qty_release' => null, 'qty_purchase' => null]);
+                PrdWoMaterial::where('wo_id', $id)->update(['override_reason' => null, 'qty_release' => null, 'qty_purchase' => null, 'waste_override_qty' => null, 'spill_override_qty' => null]);
                 $this->gen->regenerateBom($wo);
             });
         } else {

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\SupSupplier;
 use App\Models\Prd\PrdBreakdownEvent;
-use App\Models\Prd\PrdMtsForecast;
 use App\Models\Prd\PrdSchedulingRule;
 use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWo;

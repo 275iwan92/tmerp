@@ -46,6 +46,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Layar v2 (objek DevLib + mockup-parts): tooltip sumber data & Lookup master yang dipilih di layar.
         Src::$resolver = \App\Support\V2\Src::of(...);
+        // x-dl::env-badge texts (empty on the live site): title suffix of the logo (ERP TM - mockup ver 0.20), host / IP under the user name.
+        $this->app->bind('devlib.env_title', fn () => \App\Support\EnvBadge::title());
+        $this->app->bind('devlib.env_where', fn () => \App\Support\EnvBadge::where());
         Lookups::register();
 
         // PPIC: a machine going down or coming back makes the engines prepare a new Draft plan (App\Services\Scheduling\Plan\PlanEvents).

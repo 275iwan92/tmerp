@@ -23,6 +23,10 @@
         "id": "Klik dua kali sebuah WO untuk membuka WO Detail. Ada tiga tab: Master Card, Bill of Process (urutan proses) dan Bill of Material (bahan)."
       },
       {
+        "en": "In Bill of Material, Waste and Spill come from ProDev. The officer may overwrite them; Required moves by the same difference and the line is marked. RESET brings the ProDev values back, and the material buttons are gone.",
+        "id": "Di Bill of Material, Waste dan Spill diambil dari ProDev. Officer boleh menimpanya; Required bergeser sebesar selisih dan baris diberi tanda. RESET mengembalikan nilai ProDev. Tombol Open Material Planning dan Substitute sudah tidak ada."
+      },
+      {
         "en": "While the WO is Draft or Simulated, edit the Bill of Process: add or remove process rows, choose machine or manual, operator, estimated start and end, target speed, spoilage and waste. After that the steps are locked.",
         "id": "Selama WO masih Draft atau Simulated, ubah Bill of Process: tambah atau hapus baris proses, pilih mesin atau manual, operator, estimasi mulai dan selesai, target kecepatan, spoilage dan waste. Setelah itu urutan dikunci."
       },

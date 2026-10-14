@@ -101,7 +101,7 @@ class LayerMenu extends DevlibComponent
             <aside {{ $attributes->class('dl-lm') }} {!! $dl() !!} data-dl-layer-menu data-id="{{ $id }}" data-active="{{ $active }}" data-counts="{{ $counts ? 1 : 0 }}" data-root="{{ \Devlib\Lang::text($rootCaption) }}" data-dock="{{ $dock }}" data-tree="{{ $views ? '[]' : json_encode($tree()) }}" data-views="{{ json_encode($viewData()) }}" data-view="{{ $initialView }}">
                 <div class="dl-lm__head" @if ($home) data-lm-home role="button" tabindex="0" title="{{ \Devlib\Lang::text('Opening screen (closes all tabs)') }}" @endif>
                     <span class="dl-logo-badge dl-logo-badge--sm">@if ($logo)<img src="{{ $logo }}" alt="{{ $title }}">@endif</span>
-                    <span class="dl-lm__brand"><b>{{ $title }}</b>@if ($tagline)<small class="dl-lm__tag" data-lm-tag>{{ $tagline }}</small>@endif<small data-lm-mode hidden></small></span>
+                    <span class="dl-lm__brand"><b>{{ $title }}<x-dl::env-badge part="title" variant="title" /></b>@if ($tagline)<small class="dl-lm__tag" data-lm-tag>{{ $tagline }}</small>@endif<small data-lm-mode hidden></small></span>
                 </div>
                 <div class="dl-lm__bar">
                     <span class="dl-lm__views" data-lm-views role="group" aria-label="{{ \Devlib\Lang::text('Choose a menu') }}" hidden></span>
@@ -145,7 +145,7 @@ class LayerMenu extends DevlibComponent
                         {{-- Avatar + nama = satu-satunya pintu Profile: klik = buka, klik lagi = tutup (user 2026-10-03). --}}
                         <button type="button" class="dl-lm__userbtn" data-lm-user title="{{ \Devlib\Lang::text('Profile') }}" aria-label="{{ \Devlib\Lang::text('Profile') }}" aria-expanded="false">
                             <span class="dl-lm__avatar">{{ $initials() }}<em class="dl-lm__dot-badge" data-lm-unread="avatar" hidden></em></span>
-                            <span class="dl-lm__user"><b>{{ $user }}</b>@if ($role)<small>{{ $role }}</small>@endif</span>
+                            <span class="dl-lm__user"><b>{{ $user }}</b>@if ($role)<small>{{ $role }}</small>@endif<x-dl::env-badge part="where" /></span>
                         </button>
                     </div>
                 @endif

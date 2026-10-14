@@ -1,0 +1,6 @@
+/* REMARK: teks lingkungan x-dl::env-badge; berkas kecil sendiri agar halaman login (tanpa devlib.css) memakai objek yang sama.
+   title = akhiran judul logo (mewarisi warna judul, sedikit lebih kecil); side = baris host/IP terang di sidebar gelap (token --dl-side-ink);
+   login = hitam di panel terang. Tanpa pil, latar, bingkai, atau opacity. */
+.dl-envbadge{display:block;font-size:calc(10.5px * var(--dl-font-scale,1));font-weight:600;line-height:1.3;white-space:normal;overflow-wrap:anywhere;color:var(--dl-side-ink)}
+.dl-envbadge--title{display:inline;font-size:.8em;font-weight:inherit;color:inherit;white-space:nowrap}
+.dl-envbadge--login{color:var(--dl-ink-strong);text-align:center;margin:8px 0 0}

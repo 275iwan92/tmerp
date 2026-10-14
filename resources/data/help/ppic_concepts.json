@@ -511,8 +511,12 @@
     "keywords": "planning produksi, production planning, simulation, simulasi, live schedule, apply, draft, live, job bermasalah, mesin rusak, mesin macet, laminasi, tukar urutan, machine learning, urutan job, held job, officer",
     "steps": [
       {
-        "en": "The whole flow is drawn in Help > Application's Flow > Production Planning flow: the officer arranges in Simulation, materials ready?, APPLY to Live, live order recorded, ML learns, ML suggests; side path for a problem job or machine.",
-        "id": "Seluruh alur digambar di Help > Application's Flow > Production Planning flow: officer menyusun di Simulation, bahan siap?, APPLY ke Live, urutan live dicatat, ML belajar, ML memberi usulan; jalur samping job bermasalah atau mesin rusak."
+        "en": "The whole flow, with the table where each step is stored, is drawn in Help > Application's Flow > Production Planning flow: arrange in Simulation, PROCESS, APPLY to Live, then the machine learning learns and suggests the order.",
+        "id": "Seluruh alur beserta tabel penyimpanan tiap langkah digambar di Help > Application's Flow > Production Planning flow: susun di Simulation, PROCESS, APPLY ke Live, lalu machine learning belajar dan menyodorkan urutan."
+      },
+      {
+        "en": "The APPLY TO LIVE SCHEDULE button sits beside PROCESS and turns on only after PROCESS passed, with all raw material ready. Otherwise it stays off and shows why; APPLY ALL skips the Work Orders that are not ready and lists them.",
+        "id": "Tombol APPLY TO LIVE SCHEDULE ada di samping PROCESS dan baru aktif setelah PROCESS lulus dan semua bahan baku siap. Bila belum, tombol mati dan alasannya tampil; APPLY ALL melewati Work Order yang belum siap dan mencantumkannya."
       },
       {
         "en": "Simulation shows the whole schedule. A bar tagged LIVE is already applied to the Live Schedule and locked. A bar tagged DRAFT is not applied yet and is free to simulate.",

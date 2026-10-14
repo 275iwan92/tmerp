@@ -20,7 +20,6 @@ use App\Services\Scheduling\Plan\PlanChangeService;
 use App\Services\Scheduling\Plan\PlanConfirmService;
 use App\Support\V2\Data\Ppic;
 use Carbon\CarbonImmutable;
-use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -86,8 +85,8 @@ class WoProcessApplyTest extends TestCase
             return collect(Ppic::bopSheet($wo))->firstWhere('id', $op->operation_id)['start'];
         };
         $moved = PrdWoOperation::find($op->operation_id);
-        $this->assertSame(Locale::dt($moved->draft_start), $bopStart());
-        $this->assertNotSame(Locale::dt($before[1].':00'), $bopStart());
+        $this->assertSame($moved->draft_start->format('Y-m-d H:i:s'), $bopStart());
+        $this->assertNotSame($before[1].':00', $bopStart());
         $st = Ppic::processState($wo);
         $this->assertSame(1, $st['pending']);
         $this->assertTrue($st['needed']);
@@ -95,7 +94,7 @@ class WoProcessApplyTest extends TestCase
         $back = PrdWoOperation::find($op->operation_id);
         $this->assertSame($before, [(int) $back->draft_machine_id, $back->draft_start->format('Y-m-d H:i')]);
         $this->assertSame(0, Ppic::processState($wo)['pending']);
-        $this->assertSame(Locale::dt($back->draft_start), $bopStart());
+        $this->assertSame($back->draft_start->format('Y-m-d H:i:s'), $bopStart());
     }
 
     public function test_apply_fixes_every_operation_and_the_engine_does_not_move_them(): void
@@ -103,6 +102,7 @@ class WoProcessApplyTest extends TestCase
         $op = $this->draftOp();
         $wo = (int) $op->wo_id;
         $run = Ppic::draftRun();
+        DB::connection('tm2prd')->table('prd_wo_material')->where('wo_id', $wo)->update(['qty_required' => 0]); // material ready: APPLY needs it
         app(PlanConfirmService::class)->confirm((int) $run->run_id, 'test', null, $wo);
 
         $ops = PrdWoOperation::where('wo_id', $wo)->get();
