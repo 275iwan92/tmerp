@@ -498,5 +498,47 @@
       }
     ],
     "fields": []
+  },
+  {
+    "key": "guide-ppic-planning-live-draft",
+    "type": "GUIDE",
+    "module": "PROD",
+    "title": "Production Planning: Live and Draft Jobs, Problem Jobs and the Officer's Order",
+    "purpose": {
+      "en": "How the officer arranges jobs in Simulation, what LIVE and DRAFT mean, what the engine does when a job or a machine has a problem, and the planned machine learning that will suggest the right order from the officer's arrangement.",
+      "id": "Cara officer menyusun job di Simulation, arti LIVE dan DRAFT, apa yang dilakukan engine bila job atau mesin bermasalah, dan machine learning yang direncanakan untuk menyodorkan urutan yang benar dari susunan officer."
+    },
+    "keywords": "planning produksi, production planning, simulation, simulasi, live schedule, apply, draft, live, job bermasalah, mesin rusak, mesin macet, laminasi, tukar urutan, machine learning, urutan job, held job, officer",
+    "steps": [
+      {
+        "en": "Simulation shows the whole schedule. A bar tagged LIVE is already applied to the Live Schedule and locked. A bar tagged DRAFT is not applied yet and is free to simulate.",
+        "id": "Simulation menampilkan seluruh jadwal. Bar bertanda LIVE sudah di-APPLY ke Live Schedule dan terkunci. Bar bertanda DRAFT belum di-APPLY dan bebas disimulasikan."
+      },
+      {
+        "en": "The officer may swap the order of every DRAFT Work Order freely and simulate as often as wanted: drag a bar, read the impact, add it to the pending changes with a reason. Nothing becomes real before PROCESS and APPLY TO LIVE SCHEDULE.",
+        "id": "Officer bebas menukar urutan semua Work Order DRAFT dan boleh mensimulasikan sesuka hati: geser bar, baca dampaknya, tambahkan ke perubahan tertunda dengan alasan. Tidak ada yang menjadi nyata sebelum PROCESS dan APPLY TO LIVE SCHEDULE."
+      },
+      {
+        "en": "APPLY TO LIVE SCHEDULE fixes the open Work Order and locks all its operations. APPLY ALL WOs does it for every Work Order on the chosen process and machine. An applied Work Order is not dragged any more; use Undo Confirm first.",
+        "id": "APPLY TO LIVE SCHEDULE mengunci Work Order yang dibuka beserta semua operasinya. APPLY ALL WOs melakukannya untuk setiap Work Order pada proses dan mesin yang dipilih. Work Order yang sudah di-APPLY tidak bisa digeser; gunakan Undo Confirm dulu."
+      },
+      {
+        "en": "A job with a problem does not hold the machine. A Confirmed job that has not started, with a blocked gate or material arriving after its slot, is skipped: the engine pulls the next ready job into the slot.",
+        "id": "Job yang bermasalah tidak menahan mesin. Job Confirmed yang belum mulai, dengan gerbang terblokir atau bahan datang setelah slotnya, dilewati: engine menarik job siap berikutnya ke slot itu."
+      },
+      {
+        "en": "The job with the problem gets a new place in the Draft. The officer decides at Confirm whether to keep that proposal. Gaps that remain are explained in the Idle before column of QUE.",
+        "id": "Job yang bermasalah mendapat tempat baru di Draft. Officer memutuskan saat Confirm apakah usulan itu dipakai. Jeda yang tersisa dijelaskan di kolom Idle before pada QUE."
+      },
+      {
+        "en": "A machine that is down or in maintenance, for example the laminating machine jams or breaks, takes no new work. The plan goes around it and a locked job on it is proposed a new place in the Draft.",
+        "id": "Mesin yang rusak atau sedang maintenance, misalnya mesin laminasi macet atau rusak, tidak menerima kerja baru. Rencana berjalan mengitarinya dan job terkunci di mesin itu diusulkan tempat baru di Draft."
+      },
+      {
+        "en": "Planned, not built yet: the order the officer arranges and applies will become input data for a machine learning engine that suggests the right order. Job problems and machine problems like the ones above are also part of that data.",
+        "id": "Direncanakan, belum dibangun: urutan yang disusun dan di-APPLY officer akan menjadi data masukan untuk engine machine learning yang menyodorkan urutan yang benar. Masalah job dan masalah mesin seperti di atas juga menjadi bagian data itu."
+      }
+    ],
+    "fields": []
   }
 ]
