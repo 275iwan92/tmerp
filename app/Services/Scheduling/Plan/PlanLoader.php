@@ -126,6 +126,11 @@ final class PlanLoader
         // Confirmed and locked on a machine that is down now: the engine proposes a new place in the Draft (the officer decides at Confirm).
         $wasDown = $op->plan_status === 'CONFIRMED' && $op->is_locked && in_array((int) $op->machine_id, $down, true)
             && ! in_array($op->task_status, array_merge(self::DONE, self::WORKING), true);
+        // Confirmed but not started, and its gate is blocked or waits for material later than its slot: the job has a problem, so it
+        // does not hold the machine; the engine pulls the next ready job into the slot and re-proposes this one in the Draft (officer decides at Confirm).
+        $held = $op->plan_status === 'CONFIRMED' && $op->is_locked && ! in_array($op->task_status, array_merge(self::DONE, self::WORKING), true)
+            && (in_array('BLOCK', [$op->gate_material, $op->gate_tooling, $op->gate_artwork], true)
+                || ($op->material_ready_at && $op->target_start && CarbonImmutable::parse($op->material_ready_at)->greaterThan(CarbonImmutable::parse($op->target_start))));
         $stageName = strtoupper((string) ($stage[$op->process_id]->process_stage ?? 'PRESS'));
         $isDie = str_starts_with(strtoupper((string) ($stage[$op->process_id]->process_name ?? $op->process_name)), 'PLONG');
         $candidates = [];
@@ -165,7 +170,7 @@ final class PlanLoader
             id: (int) $op->operation_id, woId: (int) $wo->wo_id, seq: (int) $op->seq_no, processName: (string) $op->process_name, stage: $stageName,
             qtyIn: (float) $op->qty, candidates: $candidates, facts: $facts, waitAfterMinutes: $wait,
             minStart: $this->floor($op->material_ready_at, $wo->earliest_start),
-            gate: $gate, gateNote: $op->gate_note, fixed: $wasDown ? null : $this->fixed($op, $now), kind: $kind, leadDays: (int) ($stage[$op->process_id]->subcon_lead_days ?? 3), wasDown: $wasDown,
+            gate: $gate, gateNote: $op->gate_note, fixed: $wasDown || $held ? null : $this->fixed($op, $now), kind: $kind, leadDays: (int) ($stage[$op->process_id]->subcon_lead_days ?? 3), wasDown: $wasDown,
         );
     }
 
