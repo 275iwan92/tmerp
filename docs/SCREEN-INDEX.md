@@ -33,7 +33,7 @@
 | Setup > Others > Old Stories Review | `v2:setup-story-review` | Gaya blog (`x-dl::review-feed`): satu kartu per pesan lama Jo, dibaca utuh, tombol besar Adopt / Later / Ignore yang langsung tersimpan; tombol Process with Claude mengantre | `StoryReviewLookup` (`sys_story_review`) | tampil |
 | Setup > Help and Support > Help Topics / Help Lines | `v2:setup-help-topics`, `v2:setup-help-lines` | Isi bantuan | tampil |
 | Help & support (F1) > Help Topics | `v2.help`, `resources/views/v2/screens/help.blade.php`, objek `x-dl::help-map` (`App\Support\V2\HelpMap`) | Peta menu Modul > Grup > Layar + panduan layar terpilih; filter modul / jenis / belum ada panduan / cari; F1 membuka panduan layar aktif (`?topic=<slug>`) | tampil |
-| Help & support > Application's Flow | `v2.help?tab=flow`, `help.blade.php` | Peta Alur besar tmerp: gambar Jo + tabel bacaan, prompt, celah (TERBACA/DUGAAN), di atas Flows SALES/COSTING | tampil |
+| Help & support > Application's Flow | `v2.help?tab=flow`, `help.blade.php` | Peta Alur besar tmerp: gambar Jo + tabel bacaan, prompt, celah (TERBACA/DUGAAN); kartu "Production Planning flow" (public/images/planning-produksi/alur-planning-produksi.svg, 6 langkah + jalur job bermasalah/mesin rusak); di atas Flows SALES/COSTING | tampil |
 | Setup > Menu > Menu Setup | `v2:menu-setup` | Atur menu v2 (termasuk hide_in_menu) | tampil |
 
 ## Komponen DevLib yang dipakai Form WO

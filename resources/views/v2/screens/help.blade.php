@@ -1,5 +1,5 @@
 {{-- REMARK
-     Tujuan: pusat bantuan (F1): peta menu + panduan per layar, pedoman, alur (Peta Alur besar + Flows), tiket.
+     Tujuan: pusat bantuan (F1): peta menu + panduan per layar, pedoman, alur (Peta Alur besar + alur Planning Produksi + Flows), tiket.
      Sumber hulu: sys_app_menu (lewat App\Support\V2\HelpMap), sys_help_topic / sys_help_line, App\Support\V2\Flows, sys_support_ticket;
      gambar Peta Alur di public/images/peta-alur/ (docs/attachments/peta-alur/).
      Input: ?tab=topics|guide|flow|tickets, ?topic=<slug layar> (dikirim Shell saat F1 dari layar aktif).
@@ -124,7 +124,10 @@
             @endphp
             <x-dl::card title="Big flow map" description="From Inquiry to Customer Invoice, as drawn by Jo. Scroll sideways on a narrow screen." icon="fa-map">
                 <x-dl::alert tone="info" :message="raw($legend)" />
-                <x-dl::box class="mp-flowmap"><x-dl::media src="{{ asset(\'images/peta-alur/flow-besar-tmerp-final.png\') }}" alt="Flow besar tmerp: Inquiry, IQ PROD, PRO DEV, PRO COST, QUO, BOP, BOM, Booking, MRP, PR, PO, PV, Customer, CO, Ship Schedule, WO, Engine, Gantt, Reschedule, Master Card, QC, Warehouse Product, Delivery, Customer Invoice" /></x-dl::box>
+                <x-dl::box class="mp-flowmap"><x-dl::media src="{{ asset('images/peta-alur/flow-besar-tmerp-final.png') }}" alt="Flow besar tmerp: Inquiry, IQ PROD, PRO DEV, PRO COST, QUO, BOP, BOM, Booking, MRP, PR, PO, PV, Customer, CO, Ship Schedule, WO, Engine, Gantt, Reschedule, Master Card, QC, Warehouse Product, Delivery, Customer Invoice" /></x-dl::box>
+            </x-dl::card>
+            <x-dl::card title="Production Planning flow" description="From the officer's arrangement in Simulation to the order suggested by machine learning; a problem job or a machine that jams or breaks makes the Live Schedule take the next ready job." icon="fa-route">
+                <x-dl::box><x-dl::media src="{{ asset('images/planning-produksi/alur-planning-produksi.svg') }}" alt="Alur Planning Produksi: 1. Officer menyusun di Simulation, tukar urutan bebas untuk job DRAFT. 2. Bahan baku siap? Semua bahan job harus tersedia, kalau tidak ditolak. 3. APPLY ke Live: job jadi LIVE, terkunci, tidak bisa digeser lagi. 4. Urutan live dicatat: posisi tiap job di antrean mesin saat APPLY. 5. ML belajar: mempelajari pola urutan buatan officer. 6. ML beri usulan: baris usulan di Simulation dan QUE, officer boleh menolak usulan atau memakainya. Jalur samping: job bermasalah atau mesin jam atau rusak, contoh laminasi, Live Schedule mengambil job berikutnya yang siap, mesin tetap jalan, dan kejadian itu juga dicatat jadi bahan ML." /></x-dl::box>
             </x-dl::card>
             <x-dl::card title="Line by line" icon="fa-bezier-curve">
                 <x-dl::table :columns="['a' => 'Line', 'b' => 'From', 'c' => 'To', 'd' => 'Status']" :rows="$keys($lines)" />

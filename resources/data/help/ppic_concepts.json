@@ -511,6 +511,10 @@
     "keywords": "planning produksi, production planning, simulation, simulasi, live schedule, apply, draft, live, job bermasalah, mesin rusak, mesin macet, laminasi, tukar urutan, machine learning, urutan job, held job, officer",
     "steps": [
       {
+        "en": "The whole flow is drawn in Help > Application's Flow > Production Planning flow: the officer arranges in Simulation, materials ready?, APPLY to Live, live order recorded, ML learns, ML suggests; side path for a problem job or machine.",
+        "id": "Seluruh alur digambar di Help > Application's Flow > Production Planning flow: officer menyusun di Simulation, bahan siap?, APPLY ke Live, urutan live dicatat, ML belajar, ML memberi usulan; jalur samping job bermasalah atau mesin rusak."
+      },
+      {
         "en": "Simulation shows the whole schedule. A bar tagged LIVE is already applied to the Live Schedule and locked. A bar tagged DRAFT is not applied yet and is free to simulate.",
         "id": "Simulation menampilkan seluruh jadwal. Bar bertanda LIVE sudah di-APPLY ke Live Schedule dan terkunci. Bar bertanda DRAFT belum di-APPLY dan bebas disimulasikan."
       },
