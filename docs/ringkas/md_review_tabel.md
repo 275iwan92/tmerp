@@ -15,14 +15,14 @@
 
 | # | Berkas | Baris | Ubah terakhir | Rujukan | Usulan | Alasan | Keputusan Jo |
 |---|---|---|---|---|---|---|---|
-| 1 | `docs/audit_input_report_lookup_2026_10_02.md` | 287 | 2026-10-07 | 2 | **BUANG** | Audit sekali jalan 02-Okt; urutan perbaikannya sudah dikerjakan (dugaan, cek dulu) | |
-| 2 | `docs/claude_md_archive_2026_10_07.md` | 59 | 2026-10-07 | 1 | **BUANG** | Arsip bagian CLAUDE.md yang sudah usang (status Tier 3A) | |
-| 3 | `docs/help_writing_findings_2026_10_02.md` | 65 | 2026-10-02 | 0 | **BUANG** | Temuan sekali jalan saat menulis Help; tidak dirujuk berkas lain (dugaan) | |
+| 1 | `docs/audit_input_report_lookup_2026_10_02.md` | 287 | 2026-10-07 | 2 | **BUANG** | Audit sekali jalan 02-Okt; urutan perbaikannya sudah dikerjakan (dugaan, cek dulu); SELESAI 2026-10-14: sesuai keputusan Jo 13-Okt | |
+| 2 | `docs/claude_md_archive_2026_10_07.md` | 59 | 2026-10-07 | 1 | **BUANG** | Arsip bagian CLAUDE.md yang sudah usang (status Tier 3A); SELESAI 2026-10-14: sesuai keputusan Jo 13-Okt | |
+| 3 | `docs/help_writing_findings_2026_10_02.md` | 65 | 2026-10-02 | 0 | **BUANG** | Temuan sekali jalan saat menulis Help; tidak dirujuk berkas lain (dugaan); SELESAI 2026-10-14: sesuai keputusan Jo 13-Okt | |
 | 4 | `docs/md_for_systems/attendancepayroll_tier4.md` | 94 | 2026-09-22 | 1 | **BUANG** | Spec UI v1; layar sudah v2 (perlu cek); SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
-| 5 | `docs/md_for_systems/customerinvoice_review.md` | 325 | 2026-10-02 | 7 | **BUANG** | Dokumen review untuk user sudah dijalankan (dugaan) | |
-| 6 | `docs/md_for_systems/flowengine_tier4.md` | 154 | 2026-09-22 | 3 | **BUANG** | Tier 4 = spec UI v1, polanya paling cepat usang | |
-| 7 | `docs/md_for_systems/inventoryreport_review.md` | 108 | 2026-10-03 | 3 | **BUANG** | Dokumen review untuk user, laporan sudah terpasang (dugaan) | |
-| 8 | `docs/md_for_systems/masteremployee_tier4.md` | 257 | 2026-09-22 | 1 | **BUANG** | Wireframe UI v1; profil kini v2 | |
+| 5 | `docs/md_for_systems/customerinvoice_review.md` | 325 | 2026-10-02 | 7 | **BUANG** | Dokumen review untuk user sudah dijalankan (dugaan); SELESAI 2026-10-14: sesuai keputusan Jo 13-Okt | |
+| 6 | `docs/md_for_systems/flowengine_tier4.md` | 154 | 2026-09-22 | 3 | **BUANG** | Tier 4 = spec UI v1, polanya paling cepat usang; SELESAI 2026-10-14: sesuai keputusan Jo 13-Okt | |
+| 7 | `docs/md_for_systems/inventoryreport_review.md` | 108 | 2026-10-03 | 3 | **BUANG** | Dokumen review untuk user, laporan sudah terpasang (dugaan); SELESAI 2026-10-14: sesuai keputusan Jo 13-Okt | |
+| 8 | `docs/md_for_systems/masteremployee_tier4.md` | 257 | 2026-09-22 | 1 | **BUANG** | Wireframe UI v1; profil kini v2; SELESAI 2026-10-14: sesuai keputusan Jo 13-Okt | |
 | 9 | `docs/md_for_systems/masterproduct_tier4.md` | 53 | 2026-09-22 | 2 | **BUANG** | Tier 4 = spec UI v1; SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
 | 10 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier1.md` | 79 | 2026-09-22 | 3 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat); SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |
 | 11 | `docs/md_for_systems/payroll_timeattendance/attendancepayroll_tier2.md` | 72 | 2026-09-22 | 3 | **BUANG** | Salinan lebih pendek dari attendancepayroll_tier* di folder induk (duplikat); SELESAI 2026-10-14: diarsipkan, isi ada di md:library | |

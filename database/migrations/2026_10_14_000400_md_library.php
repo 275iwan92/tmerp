@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    // Berkas docs/ yang diarsipkan 2026-10-14 (kelompok usang + Tier 4 v1 + 11 flow v1).
+    // Berkas docs/ yang diarsipkan 2026-10-14 (kelompok usang + Tier 4 v1 + 11 flow v1 + 4 buangan Jo 13-Okt).
     private const FILES = [
         'Blueprint_Arsitektur_dan_Enterprise_Resource_Planning__ERP__Industri_Offset_Printing_dan_Packaging.md',
         'System Architecture & Specification Blueprint Offset Printing and Packaging.md',
@@ -26,6 +26,7 @@ return new class extends Migration
         'recruitment_tier4.md', 'flow_finance_accounting.md', 'flow_hrm.md', 'flow_inquiry_product.md', 'flow_inventory.md',
         'flow_master_data.md', 'flow_procurement.md', 'flow_production_scheduling.md', 'flow_recruitment_internal.md',
         'flow_recruitment_portal_public.md', 'flow_sales_order_delivery.md', 'flow_system_setup.md',
+        'flowengine_tier4.md', 'customerinvoice_review.md', 'claude_md_archive_2026_10_07.md', 'help_writing_findings_2026_10_02.md',
     ];
 
     public function up(): void
