@@ -69,7 +69,8 @@ final class MasterCardDummyEngine
     }
 
     /**
-     * Dummy sets now in the database, by the furthest document each one reached: Inquiry confirmed by Sales, ProDev, ProCost, Quotation, CO;
+     * Dummy sets now in the database, by the furthest document each one reached: Inquiry confirmed by Sales, ProDev, ProCost, Quotation,
+     * Customer Order, CPDEL (delivery lines of a Confirmed CO), Post to Production (a line posted, WO born), PPIC plan (a WO operation planned).
      * 'product' = made straight into a Master Product (no ProDev, no CO).
      *
      * @return array<string,int>
@@ -82,12 +83,29 @@ final class MasterCardDummyEngine
         $quoted = $sdi->table('quo_quotation_item')->whereIn('inquiry_id', $rows->pluck('id_inquiry'))->pluck('inquiry_id')->flip();
         $open = $rows->whereNull('co_id');
 
+        // Cross-database facts are read apart and matched here (no joins across connections).
+        $orders = $rows->whereNotNull('co_id')->pluck('co_id');
+        $confirmed = $sdi->table('co_order')->whereIn('id_order', $orders)->where('doc_status', 'CONFIRMED')->pluck('id_order')->flip();
+        $lines = $sdi->table('co_order_delivery')->whereIn('order_id', $orders)->get(['order_id', 'posted_at'])->groupBy('order_id');
+        $wos = DB::connection('tm2prd')->table('prd_wo')->whereIn('source_co_id', $orders)->where('wo_status', '!=', 'CANCELLED')->pluck('wo_id', 'source_co_id');
+        $planned = DB::connection('tm2prd')->table('prd_wo_operation')->whereIn('wo_id', $wos->values())->whereNotNull('draft_start')->pluck('wo_id')->flip();
+        $stage = fn ($co) => match (true) {
+            $wos->filter(fn ($wo, $order) => $order === $co && isset($planned[$wo]))->isNotEmpty() => 'plan',
+            ($lines[$co] ?? collect())->whereNotNull('posted_at')->isNotEmpty() => 'post',
+            isset($confirmed[$co]) && isset($lines[$co]) => 'cpdel',
+            default => 'co',
+        };
+        $byStage = $orders->map($stage)->countBy();
+
         return [
             'inquiry' => $open->where('stat_confirm_sales', 1)->where('stat_confirm_prodev', 0)->where('stat_confirm_procost', 0)->whereNull('product_id')->count(),
             'prodev' => $open->where('stat_confirm_prodev', 1)->where('stat_confirm_procost', 0)->count(),
             'procost' => $open->where('stat_confirm_procost', 1)->reject(fn ($r) => isset($quoted[$r->id_inquiry]))->count(),
             'quotation' => $open->filter(fn ($r) => isset($quoted[$r->id_inquiry]))->count(),
-            'co' => $rows->whereNotNull('co_id')->count(),
+            'co' => $byStage['co'] ?? 0,
+            'cpdel' => $byStage['cpdel'] ?? 0,
+            'post' => $byStage['post'] ?? 0,
+            'plan' => $byStage['plan'] ?? 0,
             'product' => $open->where('stat_confirm_prodev', 0)->whereNotNull('product_id')->count(),
         ];
     }

@@ -39,6 +39,8 @@ Berhenti di CO Confirmed. Post to Production, WO, dan plan tidak dijalankan engi
 
 Cabang **product** (`--levels=...,product:n`, tombol Make Master Product): kartu -> `MasterCardService::makeProduct` -> Inquiry SUBMITTED + `ProductMasterSync` -> Master Product ACTIVE (`prod_product`, `prod_part_*`, `prod_part_artwork`), lalu ukuran datar bagian = ukuran pisau; tanpa ProDev, ProCost, Quotation, CO. Tabel: `prod_master_card(+_file)`, `iqp_inquiry`, `iqp_part_*`, `prod_product`, `prod_product_acc`, `prod_part`, `prod_part_*`.
 
+Hitungan layar (`counts()`): Inquiry Product / Product Development / Product Costing / Quotation = set yang berhenti di tahap itu; Customer Order = CO belum punya baris CPDEL Confirmed; CPDEL = CO Confirmed dengan baris kirim belum di-Post; Post to Production = ada baris di-Post (WO lahir); PPIC: Production Plan = WO punya operasi terjadwal; Master Product = produk langsung dari kartu.
+
 Pelaku (user dummy): `yuna` Sales, `dedi` ProDev, `wiwik` ProCost, approver = pemegang jabatan langkah berjalan. User yang login dipulihkan setelah `run()`.
 
 ## 4. Aturan data dari kartu

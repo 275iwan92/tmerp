@@ -2,7 +2,7 @@
  REMARK
  Tujuan       : Status tiap PDF Master Card (siap / sudah ada / kurang apa), jumlah set dummy di tiap level (Master Product, Inquiry, ProDev, ProCost, CO), dan tiga tombol engine.
  Sumber hulu  : App\Services\MasterCard\MasterCardDummyEngine (counts, plan, run, reset) lewat routes/v2_dummy_mastercard.php.
- Input        : plan (design, name, cards, status), counts (inquiry, prodev, procost, quotation, co, product) dari route; flash v2_flash / v2_error; khusus developer.
+ Input        : plan (design, name, cards, status), counts (inquiry, prodev, procost, quotation, co, cpdel, post, plan, product) dari route; flash v2_flash / v2_error; khusus developer.
  Output       : x-dl::table status PDF, x-dl::progress (jumlah + batang) per dokumen dalam kartu per kelompok, tiga x-dl::button: Make Master Product, Make dummy data (POST v2.dummy.mastercard.run, mode product / dummy), Reset (POST v2.dummy.mastercard.reset). Hasil = data di ddt*.
  Dipakai oleh : Menu Developer > Database > Master Card Dummy (PDF).
  Status       : Aktif (hanya database ddt*).
@@ -27,7 +27,8 @@
             $max = max(1, ...array_values($counts));
             $groups = [
                 'Product setup' => ['Inquiry Product' => 'inquiry', 'Product Development' => 'prodev', 'Product Costing' => 'procost'],
-                'Sales' => ['Quotation' => 'quotation', 'Customer Order' => 'co'],
+                'Sales' => ['Quotation' => 'quotation', 'Customer Order' => 'co', 'CPDEL' => 'cpdel'],
+                'Production' => ['Post to Production' => 'post', 'PPIC: Production Plan' => 'plan'],
                 'Master' => ['Master Product' => 'product'],
             ];
         @endphp
