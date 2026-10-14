@@ -38,7 +38,7 @@
 | Help & support (F1) > Help Topics | `v2.help`, `resources/views/v2/screens/help.blade.php`, objek `x-dl::help-map` (`App\Support\V2\HelpMap`) | Peta menu Modul > Grup > Layar + panduan layar terpilih; filter modul / jenis / belum ada panduan / cari; F1 membuka panduan layar aktif (`?topic=<slug>`) | tampil |
 | Help & support > Application's Flow | `v2.help?tab=flow`, `help.blade.php` | Peta Alur besar tmerp: gambar Jo + tabel bacaan, prompt, celah (TERBACA/DUGAAN); kartu "Production Planning flow" (public/images/planning-produksi/alur-planning-produksi.svg, 6 langkah + jalur job bermasalah/mesin rusak); di atas Flows SALES/COSTING | tampil |
 | Setup > Menu > Menu Setup | `v2:menu-setup` | Atur menu v2 (termasuk hide_in_menu) | tampil |
-| Developer > Database > Master Card Dummy (PDF) | `v2.dummy.mastercard`, `routes/v2_dummy_mastercard.php`, `resources/views/v2/dummy-mastercard.blade.php`, engine `AppServicesMasterCardMasterCardDummyEngine` (+ `MasterCardPdfReader`, perintah `dummy:mastercard`) | Jumlah set dummy per level (Inquiry, ProDev, ProCost, CO), PDF siap dibuat, dan tombol Run engine (jumlah set baru per level, qty, due); Alur: `docs/help/dummy-mastercard-engine.md` | tampil (developer, hanya ddt*) |
+| Developer > Database > Master Card Dummy (PDF) | `v2.dummy.mastercard`, `routes/v2_dummy_mastercard.php`, `resources/views/v2/dummy-mastercard.blade.php`, engine `AppServicesMasterCardMasterCardDummyEngine` (+ `MasterCardPdfReader`, perintah `dummy:mastercard`) | Info ringkas: input (PDF dan yang dibaca), output (jumlah set per level), tombol Run tanpa isian (PDF siap dibagi bergiliran ke 4 level); Alur: `docs/help/dummy-mastercard-engine.md` | tampil (developer, hanya ddt*) |
 
 ## Komponen DevLib yang dipakai Form WO
 
