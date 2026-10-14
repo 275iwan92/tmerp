@@ -1118,8 +1118,8 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-grid__table th.is-sorted i{opacity:1}
 .dl-grid__table td{padding:var(--dl-grid-pad) 10px;border-bottom:1px solid var(--dl-border-soft);color:var(--dl-ink);vertical-align:middle}
 .dl-grid__txt{max-width:320px}
-/* list = kolom daftar: satu isi per baris (teks dipisah baris baru), semua tampil tanpa dipotong, tinggi baris menyesuaikan; lebar sedang tetap. */
-.dl-grid .dl-grid__txt.dl-grid__txt--list,.dl-grid.is-clamped .dl-grid__txt.dl-grid__txt--list{display:block;width:170px;max-width:170px;white-space:pre-line;overflow:visible;text-overflow:clip;-webkit-line-clamp:unset;line-clamp:unset}
+/* list = kolom daftar: satu isi per baris (teks dipisah baris baru), tiap isi utuh satu baris (tidak terbungkus), lebar kolom mengikuti isi terpanjang. */
+.dl-grid .dl-grid__txt.dl-grid__txt--list,.dl-grid.is-clamped .dl-grid__txt.dl-grid__txt--list{display:block;width:max-content;max-width:none;white-space:pre;overflow:visible;text-overflow:clip;-webkit-line-clamp:unset;line-clamp:unset}
 /* grid dengan kolom daftar tidak melebar ke seluruh lebar: setiap kolom secukup isinya, sisa ruang dibiarkan kosong. */
 .dl-grid .dl-grid__table:has(.dl-grid__txt--list){width:max-content;min-width:0}
 .dl-grid__date{white-space:nowrap}
@@ -3771,6 +3771,13 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-rfeed__text{white-space:pre-line}
 .dl-rfeed__note{font-size:calc(19px * var(--dl-font-scale));padding:12px 16px;background:var(--dl-accent-soft);border-radius:var(--dl-radius)}
 .dl-rfeed__body.dl-prose{max-width:none;margin:18px 0 0;padding:0;font-size:calc(21px * var(--dl-font-scale));line-height:1.75;color:var(--dl-ink)}
+.dl-rfeed__body table{display:block;max-width:100%;overflow-x:auto}
+.dl-rfeed__body td,.dl-rfeed__body th{overflow-wrap:normal;word-break:normal;min-width:5em}
+.dl-rfeed__body pre{max-width:100%;overflow-x:auto}
+.dl-rfeed__more{margin:22px 0 0}
+.dl-rfeed__readmore{font-size:calc(19px * var(--dl-font-scale));font-weight:700;color:var(--dl-navy);text-decoration:underline;text-underline-offset:4px}
+.dl-rfeed__readmore:hover{color:var(--dl-accent)}
+.dl-rfeed__readmore:focus-visible{outline:3px solid var(--dl-accent);outline-offset:2px}
 .dl-rfeed__post footer{margin-top:26px;padding-top:20px;border-top:1px solid var(--dl-border-hover)}
 .dl-rfeed__choose{display:flex;flex-wrap:wrap;gap:12px}
 .dl-rfeed__btn{flex:1 1 150px;min-height:58px;padding:10px 22px;border:3px solid var(--dl-ink-strong);border-radius:var(--dl-radius-lg);background:var(--dl-surface);color:var(--dl-ink-strong);font:inherit;font-size:calc(21px * var(--dl-font-scale));font-weight:800;cursor:pointer}
@@ -3837,7 +3844,7 @@ input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--dl-ink) 7
 @media (max-width:560px){.dl-members__row{grid-template-columns:2rem 1fr auto}.dl-members__role{grid-column:2/4}}
 
 /* Kolom teks di grid (satu isi per baris), hint miring, tombol langsung di baris form, nilai tampil polos. */
-.dl-grid__link--text{white-space:pre-line;font-variant-numeric:normal;color:var(--dl-ink-strong);display:block;min-width:2rem}
+.dl-grid__link--text{white-space:pre;font-variant-numeric:normal;color:var(--dl-ink-strong);display:block;min-width:2rem}
 .dl-hint--italic{font-style:italic}
 .dl-form__row > .dl-btn{align-self:end;justify-self:start}
 .dl-display--plain,.dl-display--plain .dl-display{border-bottom:0}
