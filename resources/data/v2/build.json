@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-10 10:27",
+    "generated": "2026-10-16 17:30",
     "database": "ddtsys",
     "totals": {
-        "objects": 152,
-        "modules": 11,
-        "modules_done": 8,
-        "screens": 280,
-        "v2": 273,
+        "objects": 170,
+        "modules": 9,
+        "modules_done": 6,
+        "screens": 289,
+        "v2": 282,
         "v1": 5,
         "not_built": 2,
-        "waiting_qc": 277,
+        "waiting_qc": 286,
         "locked": 1,
-        "forms": 111,
-        "grids": 99,
+        "forms": 114,
+        "grids": 105,
         "reports": 70,
-        "grid_classes": 174,
-        "lookups": 45,
-        "report_grids": 49,
-        "engines": 58,
-        "engine_groups": 13,
-        "tables": 408,
+        "grid_classes": 180,
+        "lookups": 52,
+        "report_grids": 47,
+        "engines": 61,
+        "engine_groups": 14,
+        "tables": 424,
         "databases": 10,
-        "models": 361,
-        "migrations": 588,
-        "tests": 154,
-        "dictionary": 12255,
+        "models": 376,
+        "migrations": 628,
+        "tests": 191,
+        "dictionary": 13803,
         "languages": 4,
-        "commits": "1263",
+        "commits": "1382",
         "since": "2026-08-06"
     },
     "modules": [
@@ -38,9 +38,9 @@
             "not_built": 0,
             "waiting_qc": 45,
             "locked": 1,
-            "form": 23,
+            "form": 22,
             "grid": 8,
-            "report": 15
+            "report": 16
         },
         {
             "label": "Management Reports",
@@ -68,50 +68,26 @@
         },
         {
             "label": "Inventory",
-            "total": 56,
-            "v2": 56,
+            "total": 74,
+            "v2": 74,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 56,
+            "waiting_qc": 74,
             "locked": 0,
-            "form": 24,
-            "grid": 7,
-            "report": 25
+            "form": 33,
+            "grid": 13,
+            "report": 28
         },
         {
-            "label": "Warehouse",
-            "total": 18,
-            "v2": 18,
+            "label": "Manufacture",
+            "total": 43,
+            "v2": 43,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 18,
+            "waiting_qc": 43,
             "locked": 0,
-            "form": 9,
-            "grid": 6,
-            "report": 3
-        },
-        {
-            "label": "Production",
-            "total": 24,
-            "v2": 24,
-            "v1": 0,
-            "not_built": 0,
-            "waiting_qc": 24,
-            "locked": 0,
-            "form": 7,
-            "grid": 16,
-            "report": 1
-        },
-        {
-            "label": "Maintenance",
-            "total": 17,
-            "v2": 17,
-            "v1": 0,
-            "not_built": 0,
-            "waiting_qc": 17,
-            "locked": 0,
-            "form": 12,
-            "grid": 0,
+            "form": 23,
+            "grid": 15,
             "report": 5
         },
         {
@@ -152,14 +128,14 @@
         },
         {
             "label": "Setup",
-            "total": 25,
-            "v2": 25,
+            "total": 32,
+            "v2": 32,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 25,
+            "waiting_qc": 32,
             "locked": 0,
             "form": 5,
-            "grid": 19,
+            "grid": 26,
             "report": 1
         }
     ],
@@ -167,64 +143,28 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 81,
-            "days": 2,
-            "last": "2026-10-07",
-            "screens": 116,
-            "objects": 22,
-            "engines": 1,
-            "tests": 24
+            "commits": 91,
+            "days": 3,
+            "last": "2026-10-13",
+            "screens": 122,
+            "objects": 26,
+            "engines": 2,
+            "tests": 28
         },
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 64,
-            "days": 4,
-            "last": "2026-10-10",
-            "screens": 120,
-            "objects": 9,
-            "engines": 40,
-            "tests": 55
+            "commits": 121,
+            "days": 7,
+            "last": "2026-10-16",
+            "screens": 150,
+            "objects": 15,
+            "engines": 46,
+            "tests": 71
         }
     ],
-    "untracked": 1118,
+    "untracked": 1170,
     "days": [
-        {
-            "date": "2026-09-27",
-            "iwan": 0,
-            "jo": 0,
-            "other": 1
-        },
-        {
-            "date": "2026-09-28",
-            "iwan": 0,
-            "jo": 0,
-            "other": 20
-        },
-        {
-            "date": "2026-09-29",
-            "iwan": 0,
-            "jo": 0,
-            "other": 25
-        },
-        {
-            "date": "2026-09-30",
-            "iwan": 0,
-            "jo": 0,
-            "other": 102
-        },
-        {
-            "date": "2026-10-01",
-            "iwan": 0,
-            "jo": 0,
-            "other": 136
-        },
-        {
-            "date": "2026-10-02",
-            "iwan": 0,
-            "jo": 0,
-            "other": 123
-        },
         {
             "date": "2026-10-03",
             "iwan": 0,
@@ -270,8 +210,44 @@
         {
             "date": "2026-10-10",
             "iwan": 0,
-            "jo": 8,
+            "jo": 20,
+            "other": 2
+        },
+        {
+            "date": "2026-10-11",
+            "iwan": 0,
+            "jo": 0,
             "other": 0
+        },
+        {
+            "date": "2026-10-12",
+            "iwan": 0,
+            "jo": 0,
+            "other": 0
+        },
+        {
+            "date": "2026-10-13",
+            "iwan": 10,
+            "jo": 5,
+            "other": 23
+        },
+        {
+            "date": "2026-10-14",
+            "iwan": 0,
+            "jo": 27,
+            "other": 6
+        },
+        {
+            "date": "2026-10-15",
+            "iwan": 0,
+            "jo": 0,
+            "other": 0
+        },
+        {
+            "date": "2026-10-16",
+            "iwan": 0,
+            "jo": 13,
+            "other": 21
         }
     ],
     "weeks": [
@@ -332,8 +308,14 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 64,
-            "other": 38
+            "jo": 76,
+            "other": 40
+        },
+        {
+            "week": "2026-W42",
+            "iwan": 10,
+            "jo": 45,
+            "other": 50
         }
     ],
     "items": [
@@ -346,6 +328,17 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_PPIC_ALL",
+            "name": "All PPIC Settings",
+            "module": "Manufacture",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -396,22 +389,33 @@
             "type": "FORM",
             "key": "menu:INV_LBL_LOC",
             "name": "Print Location Label (QR)",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
-            "type": "FORM",
-            "key": "menu:PROD_OPERATOR",
-            "name": "Operator Queue",
-            "module": "Production",
+            "type": "GRID",
+            "key": "menu:SET_GUIDES",
+            "name": "Guides",
+            "module": "Setup",
             "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
+            "built_at": "2026-10-16",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
+            "changed_at": "2026-10-16",
+            "changed_by": "jo"
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_DESIGN_NOTES",
+            "name": "Design Notes",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-16",
+            "built_by": "jo",
+            "changed_at": "2026-10-16",
             "changed_by": "jo"
         },
         {
@@ -427,6 +431,17 @@
         },
         {
             "type": "GRID",
+            "key": "menu:SET_TECH_GUIDE",
+            "name": "Technical Guide",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-16",
+            "built_by": null,
+            "changed_at": "2026-10-16",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
             "key": "menu:ACC_AMORT",
             "name": "Amortization",
             "module": "Finance & Accounting",
@@ -434,17 +449,6 @@
             "built_at": "2026-10-02",
             "built_by": null,
             "changed_at": "2026-10-02",
-            "changed_by": null
-        },
-        {
-            "type": "FORM",
-            "key": "menu:SALES_INQ",
-            "name": "All Inquiries",
-            "module": "Sales",
-            "qc": "LOCKED",
-            "built_at": "2026-09-25",
-            "built_by": null,
-            "changed_at": "2026-10-03",
             "changed_by": null
         },
         {
@@ -466,8 +470,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-16",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -477,8 +481,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -488,8 +492,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -499,8 +503,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -510,8 +514,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -545,17 +549,6 @@
             "built_by": null,
             "changed_at": "2026-10-01",
             "changed_by": null
-        },
-        {
-            "type": "GRID",
-            "key": "menu:PROD_OUTPUT",
-            "name": "Production Output",
-            "module": "Production",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-01",
-            "built_by": null,
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -616,7 +609,7 @@
             "type": "FORM",
             "key": "menu:MD_MACHINE",
             "name": "Master Machine",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
@@ -642,8 +635,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -653,7 +646,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-25",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -737,23 +730,23 @@
             "type": "GRID",
             "key": "menu:PROD_WO_LIST",
             "name": "Work Order",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-14",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:PROD_SHIFT_ROSTER",
             "name": "Shift Schedule",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -803,18 +796,18 @@
             "type": "FORM",
             "key": "menu:INV_LBL_ITEM1",
             "name": "Print Pallet Label (QR)",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
             "key": "menu:INV_LBL_ITEM3",
             "name": "Label Print History",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -840,8 +833,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -873,8 +866,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -884,8 +877,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -906,8 +899,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -917,8 +910,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -928,8 +921,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -939,8 +932,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -961,7 +954,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -984,17 +977,6 @@
             "built_at": "2026-09-30",
             "built_by": null,
             "changed_at": "2026-09-30",
-            "changed_by": null
-        },
-        {
-            "type": "REPORT",
-            "key": "menu:PROD_RPT_NO_OUTPUT",
-            "name": "Shipped Without Production Output",
-            "module": "Production",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-01",
-            "built_by": null,
-            "changed_at": "2026-10-01",
             "changed_by": null
         },
         {
@@ -1049,8 +1031,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1078,12 +1060,12 @@
             "type": "FORM",
             "key": "menu:PROD_QC_COMPLAINT",
             "name": "Complaint Review (QA)",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1100,12 +1082,12 @@
             "type": "FORM",
             "key": "menu:INV_WH_MAP",
             "name": "Warehouse Map",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1115,14 +1097,14 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
             "key": "menu:INV_WH_BLD",
             "name": "Buildings",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -1144,40 +1126,40 @@
             "type": "FORM",
             "key": "menu:MAINT_PLAN",
             "name": "Preventive Plan",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:MAINT_REQ",
             "name": "Maintenance Request",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:MAINT_PROFILE",
             "name": "Asset Maintenance Profile",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
             "key": "menu:MAINT_ORDER_RPT",
             "name": "Maintenance Order Report",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
@@ -1188,34 +1170,34 @@
             "type": "REPORT",
             "key": "menu:MAINT_DASH",
             "name": "Maintenance Dashboard",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
             "key": "menu:INV_WH_RCV",
             "name": "Receiving & Putaway",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:INV_WH_PICK",
             "name": "Pick List",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1225,7 +1207,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-10",
             "built_by": "jo",
-            "changed_at": "2026-10-10",
+            "changed_at": "2026-10-13",
             "changed_by": "jo"
         },
         {
@@ -1252,25 +1234,36 @@
         },
         {
             "type": "FORM",
-            "key": "menu:INV_WH_TRANSIT",
-            "name": "In Transit",
-            "module": "Warehouse",
+            "key": "menu:PROD_OPERATOR",
+            "name": "Production Output",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
+            "changed_at": "2026-10-13",
             "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_TRANSIT",
+            "name": "In Transit",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-09",
+            "built_by": "jo",
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:INV_WH_COUNT",
             "name": "Count Tasks",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1280,8 +1273,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -1298,7 +1291,7 @@
             "type": "GRID",
             "key": "menu:INV_TOOLS_REG",
             "name": "Tool Register",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
@@ -1313,8 +1306,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-10",
             "built_by": "jo",
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -1331,22 +1324,33 @@
             "type": "FORM",
             "key": "menu:WH_TASK_BOARD",
             "name": "Task Board",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-10",
             "built_by": "jo",
-            "changed_at": "2026-10-10",
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_MD_REVIEW",
+            "name": "MD Review",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": "iwan",
+            "changed_at": "2026-10-14",
             "changed_by": "jo"
         },
         {
             "type": "FORM",
             "key": "menu:PROD_MPS",
             "name": "PPIC Workspace",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-10",
+            "changed_at": "2026-10-14",
             "changed_by": "jo"
         },
         {
@@ -1362,14 +1366,36 @@
         },
         {
             "type": "FORM",
+            "key": "menu:PROD_LIVE",
+            "name": "Live Schedule",
+            "module": "Manufacture",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_CREW",
+            "name": "Assign Crew",
+            "module": "Manufacture",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-14",
+            "built_by": null,
+            "changed_at": "2026-10-14",
+            "changed_by": "jo"
+        },
+        {
+            "type": "FORM",
             "key": "menu:HRM_CLOCKIN",
             "name": "GPS Clock-In (Mobile)",
             "module": "Human Resources",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1379,8 +1405,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1391,6 +1417,17 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_COLOR_SEQ",
+            "name": "Colour Sequence",
+            "module": "Manufacture",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-10",
+            "built_by": "jo",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -1412,7 +1449,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-04",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -1423,14 +1460,14 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
             "key": "menu:PROD_MTS_FORECAST",
             "name": "Demand Forecast (MPS)",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
@@ -1441,23 +1478,23 @@
             "type": "FORM",
             "key": "menu:PROD_PREBOOK",
             "name": "Pre-Booking",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
             "key": "menu:PROD_BOOKING",
             "name": "Material Booking",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1467,8 +1504,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1478,19 +1515,19 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
             "key": "menu:PROD_MRP",
             "name": "Material Planning (MRP)",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1522,8 +1559,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1544,8 +1581,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -1621,7 +1658,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-09-30",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -1632,7 +1669,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-09-30",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -1676,19 +1713,19 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:INV_LBL_ITEM2",
             "name": "Print Item Label (QR)",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1698,7 +1735,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -1709,8 +1746,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -1731,8 +1768,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1742,8 +1779,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1782,7 +1819,7 @@
             "type": "GRID",
             "key": "menu:PROD_MACHINE_MODEL",
             "name": "Machine Model Catalog",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
@@ -1797,8 +1834,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-29",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -1863,8 +1900,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1885,8 +1922,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1903,7 +1940,7 @@
             "type": "GRID",
             "key": "menu:INV_WH_ZONE",
             "name": "Storage Areas",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -1918,7 +1955,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -1936,7 +1973,7 @@
             "type": "REPORT",
             "key": "menu:INV_WH_STACK",
             "name": "Stack Monitor",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-03",
             "built_by": null,
@@ -1947,29 +1984,29 @@
             "type": "FORM",
             "key": "menu:MAINT_PM_CAL",
             "name": "PM Calendar",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:MAINT_BMO",
             "name": "Breakdown Maintenance Order",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
             "key": "menu:MAINT_READY",
             "name": "Asset Readiness",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
@@ -1980,7 +2017,7 @@
             "type": "REPORT",
             "key": "menu:MAINT_RELIAB",
             "name": "Machine Reliability",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
@@ -1995,8 +2032,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2039,8 +2076,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-10",
             "built_by": "jo",
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -2052,6 +2089,17 @@
             "built_by": "jo",
             "changed_at": "2026-10-10",
             "changed_by": "jo"
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_STORY_REVIEW",
+            "name": "Old Stories Review",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": "iwan",
+            "changed_at": "2026-10-13",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -2068,12 +2116,12 @@
             "type": "FORM",
             "key": "menu:PROD_LEARNING",
             "name": "Learning Changes",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2094,7 +2142,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-09-30",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -2105,8 +2153,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -2116,8 +2164,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-29",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2138,8 +2186,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -2182,7 +2230,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-09-30",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -2200,7 +2248,7 @@
             "type": "GRID",
             "key": "menu:PROD_SCRAP_TYPE",
             "name": "Scrap Types",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
@@ -2244,7 +2292,7 @@
             "type": "GRID",
             "key": "menu:PROD_MST_PROCESS",
             "name": "Master Process",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
@@ -2288,12 +2336,12 @@
             "type": "FORM",
             "key": "menu:INV_SCAN_ITEM2",
             "name": "Track via QR/Barcode",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2303,8 +2351,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-29",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2325,7 +2373,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -2358,8 +2406,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-13",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -2369,8 +2417,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -2391,8 +2439,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-25",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-13",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -2424,8 +2472,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2453,7 +2501,7 @@
             "type": "GRID",
             "key": "menu:INV_WH_BIN",
             "name": "Bins",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -2464,7 +2512,7 @@
             "type": "REPORT",
             "key": "menu:INV_WH_RPT_LOC",
             "name": "Stock by Location",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -2497,40 +2545,40 @@
             "type": "FORM",
             "key": "menu:MAINT_PMO",
             "name": "Preventive Maintenance Order",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:MAINT_MYWORK",
             "name": "My Work",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:MAINT_DOCS",
             "name": "SOP and Work Instructions",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
             "key": "menu:MAINT_PMCOMP",
             "name": "PM Compliance",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
@@ -2545,8 +2593,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2578,8 +2626,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -2600,8 +2648,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-10",
             "built_by": "jo",
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -2612,6 +2660,17 @@
             "built_at": "2026-10-10",
             "built_by": "jo",
             "changed_at": "2026-10-10",
+            "changed_by": "jo"
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_DOCS_LIBRARY",
+            "name": "Old Docs Library",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-14",
+            "built_by": "jo",
+            "changed_at": "2026-10-16",
             "changed_by": "jo"
         },
         {
@@ -2644,8 +2703,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2666,8 +2725,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-29",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -2688,8 +2747,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -2732,8 +2791,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -2743,14 +2802,14 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
             "key": "menu:INV_REF_WH",
             "name": "Warehouse & Location",
-            "module": "Warehouse",
+            "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
@@ -2787,14 +2846,14 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
             "key": "menu:PROD_ROUTING_TPL",
             "name": "Master Routing Template",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
@@ -2809,7 +2868,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-04",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -2831,7 +2890,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -2842,8 +2901,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-25",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -2882,18 +2941,18 @@
             "type": "FORM",
             "key": "menu:MAINT_DAILY",
             "name": "Daily Check",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
             "key": "menu:MAINT_CODES",
             "name": "Maintenance Codes",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
@@ -2908,8 +2967,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -2930,7 +2989,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -2957,6 +3016,17 @@
         },
         {
             "type": "GRID",
+            "key": "menu:SET_QUOTES",
+            "name": "Quotes",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
             "key": "menu:MD_UOM",
             "name": "Master Unit (UoM)",
             "module": "Master Data",
@@ -2974,7 +3044,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-09-30",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -2985,7 +3055,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-09-30",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -2996,7 +3066,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-09-30",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -3018,14 +3088,14 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
             "key": "menu:PROD_MST_BOP_RULE",
             "name": "BOP Rule Setting",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -3051,8 +3121,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -3073,7 +3143,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-04",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -3102,7 +3172,7 @@
             "type": "FORM",
             "key": "menu:MAINT_METER",
             "name": "Meter Readings",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
@@ -3113,7 +3183,7 @@
             "type": "FORM",
             "key": "menu:MAINT_MACHINE",
             "name": "Master Machine",
-            "module": "Maintenance",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
@@ -3130,6 +3200,17 @@
             "built_by": null,
             "changed_at": "2026-10-05",
             "changed_by": "iwan"
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:SALES_INQ",
+            "name": "All Inquiries",
+            "module": "Sales",
+            "qc": "LOCKED",
+            "built_at": "2026-09-25",
+            "built_by": null,
+            "changed_at": "2026-10-16",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -3161,8 +3242,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -3201,7 +3282,7 @@
             "type": "GRID",
             "key": "menu:PROD_MST_TOOLING",
             "name": "Tooling Master",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
@@ -3256,7 +3337,7 @@
             "type": "GRID",
             "key": "menu:PROD_MST_CHANGEOVER",
             "name": "Setup and Changeover",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
@@ -3289,7 +3370,7 @@
             "type": "GRID",
             "key": "menu:PROD_MST_WAIT_RULE",
             "name": "Wait Rules",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
@@ -3322,7 +3403,7 @@
             "type": "GRID",
             "key": "menu:PROD_RULE_LIB",
             "name": "Rule Library",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
@@ -3381,7 +3462,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -3399,7 +3480,7 @@
             "type": "GRID",
             "key": "menu:PROD_MST_CREW",
             "name": "Master Crew",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
@@ -3410,7 +3491,7 @@
             "type": "GRID",
             "key": "menu:PROD_PPIC_PARAMS",
             "name": "Planning Parameters",
-            "module": "Production",
+            "module": "Manufacture",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
@@ -3447,7 +3528,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-17",
             "built_by": null,
-            "changed_at": "2026-10-01",
+            "changed_at": "2026-10-16",
             "changed_by": null
         },
         {
@@ -3485,6 +3566,17 @@
         },
         {
             "type": "ENGINE",
+            "key": "engine:costing-advisor",
+            "name": "Costing Advisor (fills the boxes, explains the price, learns)",
+            "module": "Pro-Cost",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-16",
+            "built_by": "jo",
+            "changed_at": "2026-10-16",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
             "key": "engine:reverse-costing",
             "name": "Reverse Costing",
             "module": "Pro-Cost",
@@ -3513,8 +3605,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-08-20",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-16",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",
@@ -3535,8 +3627,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-16",
+            "changed_by": null
         },
         {
             "type": "ENGINE",
@@ -3810,7 +3902,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-08-28",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-14",
             "changed_by": null
         },
         {
@@ -3832,7 +3924,18 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-08-28",
             "built_by": null,
-            "changed_at": "2026-09-03",
+            "changed_at": "2026-10-10",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:sequence-learning",
+            "name": "Job Order Learning (Sequence)",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-14",
+            "built_by": null,
+            "changed_at": "2026-10-14",
             "changed_by": null
         },
         {
@@ -3986,8 +4089,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "ENGINE",
@@ -4008,8 +4111,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-14",
+            "changed_by": null
         },
         {
             "type": "ENGINE",
@@ -4030,8 +4133,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
+            "changed_at": "2026-10-14",
+            "changed_by": null
         },
         {
             "type": "ENGINE",
@@ -4041,8 +4144,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "ENGINE",
@@ -4056,6 +4159,17 @@
             "changed_by": "jo"
         },
         {
+            "type": "ENGINE",
+            "key": "engine:master-card-dummy",
+            "name": "Master Card Dummy Engine (PDF to leveled dummy data)",
+            "module": "Dummy Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-14",
+            "built_by": "jo",
+            "changed_at": "2026-10-14",
+            "changed_by": "jo"
+        },
+        {
             "type": "OBJECT",
             "key": "object:Accordion",
             "name": "Accordion",
@@ -4063,7 +4177,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -4074,7 +4188,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -4178,6 +4292,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:Block",
+            "name": "Block",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
             "key": "object:Blueprint",
             "name": "Blueprint",
             "module": "DevLib",
@@ -4189,14 +4314,25 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:Box",
+            "name": "Box",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
             "key": "object:Brand",
             "name": "Brand",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-13",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4288,6 +4424,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:Chips",
+            "name": "Chips",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
             "key": "object:Clock",
             "name": "Clock",
             "module": "DevLib",
@@ -4328,6 +4475,17 @@
             "built_at": "2026-10-07",
             "built_by": null,
             "changed_at": "2026-10-07",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Cols",
+            "name": "Cols",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -4460,6 +4618,17 @@
             "built_at": "2026-10-02",
             "built_by": null,
             "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:EnvBadge",
+            "name": "EnvBadge",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-14",
+            "built_by": null,
+            "changed_at": "2026-10-14",
             "changed_by": null
         },
         {
@@ -4877,8 +5046,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-05",
-            "changed_by": "iwan"
+            "changed_at": "2026-10-14",
+            "changed_by": null
         },
         {
             "type": "OBJECT",
@@ -4910,8 +5079,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-13",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4921,8 +5090,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "OBJECT",
@@ -4976,8 +5145,41 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Headline",
+            "name": "Headline",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:HelpMap",
+            "name": "HelpMap",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Hint",
+            "name": "Hint",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-14",
+            "changed_by": null
         },
         {
             "type": "OBJECT",
@@ -5014,6 +5216,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:IssueModal",
+            "name": "IssueModal",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-14",
+            "built_by": "jo",
+            "changed_at": "2026-10-14",
+            "changed_by": "jo"
+        },
+        {
+            "type": "OBJECT",
             "key": "object:Kanban",
             "name": "Kanban",
             "module": "DevLib",
@@ -5033,6 +5246,17 @@
             "built_by": null,
             "changed_at": "2026-10-05",
             "changed_by": "iwan"
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:KpiRow",
+            "name": "KpiRow",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "OBJECT",
@@ -5097,7 +5321,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-14",
             "changed_by": null
         },
         {
@@ -5108,8 +5332,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-07",
-            "changed_by": null
+            "changed_at": "2026-10-16",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -5152,8 +5376,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-13",
+            "changed_by": null
         },
         {
             "type": "OBJECT",
@@ -5168,6 +5392,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:Media",
+            "name": "Media",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": "jo",
+            "changed_at": "2026-10-14",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
             "key": "object:MegaMenu",
             "name": "MegaMenu",
             "module": "DevLib",
@@ -5175,6 +5410,17 @@
             "built_at": "2026-09-24",
             "built_by": null,
             "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:MemberList",
+            "name": "MemberList",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-14",
+            "built_by": null,
+            "changed_at": "2026-10-14",
             "changed_by": null
         },
         {
@@ -5306,8 +5552,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-14",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -5340,6 +5586,17 @@
             "built_at": "2026-09-24",
             "built_by": null,
             "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:QueueBoard",
+            "name": "QueueBoard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-14",
             "changed_by": null
         },
         {
@@ -5388,6 +5645,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:ReviewFeed",
+            "name": "ReviewFeed",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": "iwan",
+            "changed_at": "2026-10-14",
+            "changed_by": "jo"
+        },
+        {
+            "type": "OBJECT",
             "key": "object:Ribbon",
             "name": "Ribbon",
             "module": "DevLib",
@@ -5416,7 +5684,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-09",
+            "changed_at": "2026-10-13",
             "changed_by": "jo"
         },
         {
@@ -5427,8 +5695,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-13",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5549,6 +5817,28 @@
             "built_at": "2026-09-23",
             "built_by": null,
             "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:StripKv",
+            "name": "StripKv",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:SuggestionStrip",
+            "name": "SuggestionStrip",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-14",
+            "built_by": null,
+            "changed_at": "2026-10-14",
             "changed_by": null
         },
         {
@@ -5703,6 +5993,28 @@
             "built_at": "2026-09-23",
             "built_by": null,
             "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:WizardOption",
+            "name": "WizardOption",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:WizardOptions",
+            "name": "WizardOptions",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-13",
+            "built_by": null,
+            "changed_at": "2026-10-13",
             "changed_by": null
         },
         {
@@ -5965,6 +6277,14 @@
                     "mode": "calc",
                     "used": 2,
                     "tests": 4
+                },
+                {
+                    "key": "costing-advisor",
+                    "name": "Costing Advisor (fills the boxes, explains the price, learns)",
+                    "purpose": "Fills the empty Pro-Cost boxes in the background, explains the result in a Calculation Report, and learns from what the officer finally uses.",
+                    "mode": "suggest",
+                    "used": 1,
+                    "tests": 2
                 },
                 {
                     "key": "reverse-costing",
@@ -6261,6 +6581,14 @@
                     "tests": 0
                 },
                 {
+                    "key": "sequence-learning",
+                    "name": "Job Order Learning (Sequence)",
+                    "purpose": "Learns the order in which the officer applies jobs to the Live Schedule and suggests that order for new jobs on a machine.",
+                    "mode": "suggest",
+                    "used": 1,
+                    "tests": 0
+                },
+                {
                     "key": "interruption",
                     "name": "Hot Job Option Generator",
                     "purpose": "When an urgent job must be inserted, proposes up to three ways to do it with their measured impact.",
@@ -6327,7 +6655,7 @@
                 {
                     "key": "ppic-operator-timer",
                     "name": "Operator Timer",
-                    "purpose": "Play, Pause and Stop at the machine: records real setup, run and pause time and the quantities of each job.",
+                    "purpose": "Play, Pause and Stop of the SETUP and PRODUCTION timers at the machine, and SAVE RESULT: records real setup, run and pause time and the good / bad quantities of each job, with a log row for every action.",
                     "mode": "flow",
                     "used": 1,
                     "tests": 0
@@ -6431,6 +6759,19 @@
                     "mode": "auto",
                     "used": 2,
                     "tests": 1
+                }
+            ]
+        },
+        {
+            "group": "Dummy Data",
+            "items": [
+                {
+                    "key": "master-card-dummy",
+                    "name": "Master Card Dummy Engine (PDF to leveled dummy data)",
+                    "purpose": "Turns the new Master Card PDFs in docs/attachments/mastercard into leveled dummy data (Inquiry, Pro-Dev, Pro-Cost, Quotation WIN, Customer Order Confirmed), always with dieline, artwork and flat size. Dummy databases (ddt*) only; products already present are skipped, never overwritten.",
+                    "mode": "auto",
+                    "used": 2,
+                    "tests": 0
                 }
             ]
         }

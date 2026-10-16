@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Grid Master Employee (keluarga Grid Master): daftar pegawai, stat Staff / Weekly, saringan jabatan; Open / + New Record membuka layar form v2 hrm-employee-form.
+ * Sumber hulu  : tm2mst.emp_employee, org_position, org_department, att_daily_status (hitungan absen tahun berjalan).
+ * Input        : Query string saringan grid.
+ * Output       : x-dl::grid lewat DbGrid; alamat buka = v2:hrm-employee-form?id={id}, New = ?new=1.
+ * Dipakai oleh : Menu HRM > Master Employee (slug hrm-employee).
+ * Status       : Aktif. Layar v1 pages::master.employee tetap hidup untuk tab anak (Contract, Family, Education, Discipline) sampai tahap berikutnya.
+ */
+
 namespace App\Support\V2\Grid\Hrm;
 
 use App\Models\Master\AttDailyStatus;
@@ -38,6 +48,16 @@ class EmployeeGrid extends HrmGrid
     protected function v1Component(): ?string
     {
         return 'pages::master.employee';
+    }
+
+    public function openUrl(): ?string
+    {
+        return route('v2.screen', 'hrm-employee-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return $this->canCreate() ? route('v2.screen', 'hrm-employee-form').'?new=1' : null;
     }
 
     protected function models(): array

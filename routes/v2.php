@@ -31,6 +31,8 @@ use App\Providers\AssistantHostProvider;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
 use App\Services\Master\MaterialCategoryService;
+use App\Models\Master\EmpEmployee;
+use App\Services\Hrm\EmployeeProfileService;
 use App\Services\Payroll\PayrollAccess;
 use App\Services\ProDev\PartDieline;
 use App\Services\Pur\SpecialReceiptService;
@@ -244,6 +246,22 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return $back->with('v2_flash', t('Saved.'));
     })->name('crew.save');
+
+    // Master Employee Form v2 (hrm-employee-form): save / activate / deactivate satu pegawai. Aturan = EmployeeProfileService.
+    Route::post('/hrm/employee/save', function (Request $r, EmployeeProfileService $svc) {
+        abort_unless(Auth::user()->canAccessModule('HRM'), 403);
+        $e = $r->filled('id') ? EmpEmployee::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        if ($e && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($e, $action === 'activate', Auth::user());
+            $msg = $action === 'activate' ? ':name activated.' : ':name deactivated.';
+        } else {
+            [$e, $cred] = $svc->save($e, $r->except(['id', 'action']), Auth::user(), $r->file('photo'));
+            $msg = $cred ? ':name saved. Login '.$cred['login'].' created, temporary password '.$cred['password'].' (shown once).' : ':name saved.';
+        }
+
+        return redirect(route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id)->with('v2_flash', tf($msg, ['name' => $e->full_name]));
+    })->name('hrm.employee.save');
 
     // Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru; logika = App\Services\Sales\InquiryDuplicator (sama dgn v1).
     Route::post('/inquiry/duplicate', function (Request $r) {
