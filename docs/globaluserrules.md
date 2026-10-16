@@ -639,6 +639,15 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     - Aturan hidup di token dan objek induk DevLib; layar tidak menulis warna sendiri, sehingga satu perubahan menurunkan ke semua turunan.
     - Layar review (membaca lalu memutuskan) = blog: objek `x-dl::review-feed`, satu kolom, judul 30px, isi 21px, kartu per butir, tombol keputusan besar yang langsung tersimpan, saringan + cari di atas. Dipakai MD Review dan Old Stories Review (Setup > Others).
 
+35. **Menu Reports di grup menu: judul + jarak, laporan di bawahnya — user 2026-10-16.**
+
+    > User: "pisahkan menunya buat space di bawah Inquiry Recalc, lalu tulis Reports, di bawah tulisan report ada menu All Inquiries" dan "catat dan simpan cara penulisan menu reports".
+
+    - Laporan (read-only, `object_type=report`, layar `x-dl::grid mode="report"`) tidak bercampur dengan menu kerja. Di grup menu, tulis baris judul `menu_type='heading'` (label English `Reports`, tanpa `target`, tanpa ikon, `required_object` kosong), `sort_order` di bawah semua menu kerja; laporan ditaruh sesudahnya dengan `sort_order` lebih besar di grup yang sama.
+    - Judul memberi jarak di atasnya; Layer Menu merendernya sebagai kepala kelompok (prop `group`) untuk semua baris sesudahnya sampai judul berikutnya. Baris heading bukan layar: tidak dihitung, tidak dites "tanpa layar".
+    - Tulis lewat migration `sys_app_menu` (kode `<GRUP>_REPORTS`), bukan kode; contoh: `PRE_INQ_REPORTS` di bawah `PRE_INQGRP`, lalu `SALES_INQ` (All Inquiries). Kode: `AppMenu::nodes`; gaya: `.dl-lm__cap` di `devlib.css`.
+    - Layar laporan: cari bebas, pintasan status / jenis, tombol Filter per kolom, dan buka baris selalu `&view=1`; tanpa New / Edit / aksi massal. Contoh: `resources/views/v2/screens/inquiry.blade.php`.
+
 ## D. Cara kerja developer / agen
 
 1. **Peran:** system analyst, developer, dan database designer. Aktif menilai desain; audit integritas data
@@ -893,3 +902,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-14 | Arsip: `customerinvoice_review.md`, `flowengine_tier4.md`, `claude_md_archive_2026_10_07.md`, `help_writing_findings_2026_10_02.md` dibuang atas keputusan Jo di layar MD Review (13-Okt); isinya tersimpan di `sys_md_library` (`php artisan md:library search "customer invoice review"`). Rujukan ke `customerinvoice_review.md` di A.21 menunjuk ke arsip itu; butir pertanyaan terbukanya kini di `customerinvoice_accounting.md` dan `backlog07_finance_accounting.md`. |
 | 2026-10-14 | D.22: **uji mandiri lewat login admin di devlib.test dan mockup.test** (user: "HARUS bisa menguji mandiri via user admin di devlib.test ... Begitu pula di mockup.test. YANG TIDAK BOLEH adalah tmerp setelah proses UAT berjalan") — dicatat di CLAUDE.md butir 8. |
 | 2026-10-14 | D.23: **DevLib hanya bentuk; bila perlu data, pakai XML** (user: "di devlib hanya bentuknya saja dan pakai xml kalau mau pakai data"). |
+| 2026-10-16 | C.35: **menu Reports = judul `heading` + jarak, laporan di bawahnya**; All Inquiries jadi laporan read-only (user). |

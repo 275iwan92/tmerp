@@ -5,7 +5,7 @@
  * Tujuan       : Menu v2 dari sys_app_menu; item berstatus hide_in_menu keluar dari sidebar tetapi layarnya tetap bisa dibuka lewat URL.
  * Sumber hulu  : sys_app_menu (kolom activate, hide_in_menu, target).
  * Input        : Pengguna aktif dan hak modul.
- * Output       : Pohon menu untuk x-dl::layer-shell.
+ * Output       : Pohon menu untuk x-dl::layer-shell; baris menu_type=heading menjadi judul kelompok (prop group) bagi baris sesudahnya.
  * Dipakai oleh : Layout v2 (resources/views/v2/layout.blade.php).
  * Status       : Aktif.
  */
@@ -46,7 +46,7 @@ final class AppMenu
             || $n->required_object === SecUser::PUBLIC_MODULE || $allowed->contains($n->required_object));
         // "General" is an access flag, not a menu (user 2026-10-04): a module the user has no right to still shows, but only
         // its branches marked GENERAL (groups without a right of their own pass so the GENERAL items inside are reachable).
-        $okPublic = fn (SysAppMenu $n) => $n->required_object === SecUser::PUBLIC_MODULE || ($n->menu_type === 'group' && $n->required_object === null);
+        $okPublic = fn (SysAppMenu $n) => $n->required_object === SecUser::PUBLIC_MODULE || (in_array($n->menu_type, ['group', 'heading'], true) && $n->required_object === null);
         $routes = MenuRoutes::map();
 
         $modules = [];
@@ -102,16 +102,30 @@ final class AppMenu
 
     // Isi satu grup. Grup di dalam grup (mis. Inquiry & Quotation > Pro-Dev > ...) = submenu bertingkat
     // (user 2026-09-26), bukan diratakan: node ber-'items' yang dibuka Layer Menu sebagai panel berikutnya.
+    // Baris menu_type='heading' = judul kelompok (jarak + teks kecil) untuk baris SESUDAHNYA di grup yang sama, sampai heading
+    // berikutnya; dirender Layer Menu lewat prop `group`. Heading bukan layar: tidak punya target dan tidak dihitung.
     private static function nodes(SysAppMenu $group, $children, callable $ok, array $routes): array
     {
-        return $children->get($group->id, collect())->filter($ok)->map(function ($n) use ($children, $ok, $routes) {
-            if ($n->menu_type !== 'group') {
-                return self::item($n, $routes);
-            }
-            $items = self::nodes($n, $children, $ok, $routes);
+        $out = [];
+        $heading = null;
+        foreach ($children->get($group->id, collect())->filter($ok) as $n) {
+            if ($n->menu_type === 'heading') {
+                $heading = self::label($n);
 
-            return $items ? ['code' => $n->code, 'label' => self::label($n), 'icon' => $n->icon ?: 'fa-solid fa-folder', 'items' => $items] : null;
-        })->filter()->values()->all();
+                continue;
+            }
+            if ($n->menu_type !== 'group') {
+                $node = self::item($n, $routes);
+            } else {
+                $items = self::nodes($n, $children, $ok, $routes);
+                $node = $items ? ['code' => $n->code, 'label' => self::label($n), 'icon' => $n->icon ?: 'fa-solid fa-folder', 'items' => $items] : null;
+            }
+            if ($node) {
+                $out[] = $heading ? $node + ['group' => $heading] : $node;
+            }
+        }
+
+        return $out;
     }
 
     private static function item(SysAppMenu $i, array $routes): array

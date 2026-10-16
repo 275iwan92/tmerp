@@ -26,12 +26,12 @@ class LayerShell extends Shell
         // Item ber-'items' = submenu bertingkat (dibuka sebagai panel berikutnya), selain itu daun.
         $leaf = function (array $it, ?string $group) use (&$leaf, $tone) {
             if (isset($it['items'])) {
-                return array_filter(['label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $group,
+                return array_filter(['label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $it['group'] ?? $group,
                     'items' => array_map(fn ($c) => $leaf($c, null), $it['items'])]);
             }
 
             return array_filter([
-                'key' => $it['code'], 'label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $group,
+                'key' => $it['code'], 'label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $it['group'] ?? $group,
                 'badge' => $it['badge'] ?? null, 'badgeTitle' => $it['badgeTitle'] ?? null, 'tone' => $tone[$it['badgeTone'] ?? ''] ?? null,
             ]);
         };

@@ -91,6 +91,7 @@
 32. Baris grid berwarna menurut jatuh tempo (merah/oranye/kuning), kolom "Due" teks, hari kerja Sabtu kerja, Minggu libur.
 33. Opening screen = papan widget milik user (top management dulu), widget = satu kelas + satu baris `sys_widget`, periode harian..tahunan, Overall + dashboard bidang.
 34. Teks HITAM (latar terang) atau TERANG (latar gelap), tanpa abu-abu kecuali `--dl-disabled`; ditulis di token/objek DevLib; layar review = blog `x-dl::review-feed`.
+35. Menu Reports: baris `menu_type='heading'` (label `Reports`, tanpa target) + jarak, laporan read-only (`object_type=report`, grid `mode="report"`) di bawahnya; ditulis lewat migration `sys_app_menu`, dirender `AppMenu::nodes` -> prop `group`.
 
 ## D. Cara kerja developer / agen
 

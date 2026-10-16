@@ -40,7 +40,7 @@ class MenuHasScreenTest extends TestCase
             if ($r->menu_type === 'module' && $r->parent_id) {
                 $bad[] = "{$r->code}: modul bersarang";
             }
-            if (in_array($r->menu_type, ['module', 'group'], true) || ! $visible($r)) {
+            if (in_array($r->menu_type, ['module', 'group', 'heading'], true) || ! $visible($r)) {
                 continue;
             }
             $t = (string) $r->target;
