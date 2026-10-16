@@ -74,6 +74,8 @@ class DocsCheck extends Command
             }
         }
 
+        $this->checkStale();
+
         if ($this->option('staged')) {
             $this->checkStaged();
         }
@@ -138,6 +140,33 @@ class DocsCheck extends Command
             $this->stat['bare']++;
             if (! isset($tables[$tok]) && ! isset($anyColumn[$tok]) && ! in_array($tok, $engineKeys, true)) {
                 $this->warns[] = "$rel: unknown name $tok (no table or column with this name)";
+            }
+        }
+    }
+
+    // Stale card: a cited file was committed after the card's last commit (one git call over the last 120 days of history; only a WARN).
+    private function checkStale(): void
+    {
+        $files = array_values(array_unique([...array_keys($this->cited), ...array_merge(...array_values($this->cited) ?: [[]])]));
+        if (! $files) {
+            return;
+        }
+        $last = [];
+        $out = (string) shell_exec('git -C '.escapeshellarg(base_path()).' log --format=@%cs --name-only --since=120.days 2>&1');
+        $date = null;
+        foreach (explode("\n", $out) as $line) {
+            $line = trim($line);
+            if (str_starts_with($line, '@')) {
+                $date = substr($line, 1);
+            } elseif ($line !== '' && $date && ! isset($last[$line])) {
+                $last[$line] = $date;
+            }
+        }
+        foreach ($this->cited as $code => $cards) {
+            foreach (array_unique($cards) as $card) {
+                if (isset($last[$code], $last[$card]) && $last[$code] > $last[$card]) {
+                    $this->warns[] = "$card: stale? $code changed {$last[$code]}, card last changed {$last[$card]}";
+                }
             }
         }
     }
@@ -224,8 +253,28 @@ class DocsCheck extends Command
         return ltrim(str_replace('\\', '/', substr($path, strlen(base_path()))), '/');
     }
 
+    // Hook mode: a commit is only blocked by its own cards; errors in cards that are not part of this commit (other sessions' unfinished work) become WARN.
+    private function limitToStaged(): void
+    {
+        $staged = array_filter(explode("\n", (string) shell_exec('git -C '.escapeshellarg(base_path()).' diff --cached --name-only')));
+        $own = [];
+        foreach ($this->errors as $e) {
+            $subject = strstr($e, ':', true);
+            if (str_starts_with($e, 'docs/tg/') && ! in_array($subject, $staged, true)) {
+                $this->warns[] = 'not in this commit: '.$e;
+            } else {
+                $own[] = $e;
+            }
+        }
+        $this->errors = $own;
+    }
+
     private function report(): int
     {
+        if ($this->option('staged')) {
+            $this->limitToStaged();
+        }
+
         $this->line(sprintf('docs:check: %d files; refs: %d paths, %d table.column, %d names, %d classes, %d links, %d engine keys',
             $this->stat['files'], $this->stat['path'], $this->stat['table_column'], $this->stat['bare'], $this->stat['class'], $this->stat['link'], $this->stat['engine_key']));
         $this->line(sprintf('ERROR %d, WARN %d', count($this->errors), count($this->warns)));

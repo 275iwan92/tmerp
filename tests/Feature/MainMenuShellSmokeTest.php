@@ -90,7 +90,7 @@ class MainMenuShellSmokeTest extends TestCase
         $labels = fn (string $code) => collect($children->firstWhere('code', $code)['children'])->pluck('label')->all();
         $this->assertSame(['Accounts', 'Groups', 'Modules', 'Groups on Modules'], array_slice($labels('SET_GRP_SECURITY'), 0, 4));
         $this->assertSame(['Support Tickets'], $labels('SET_GRP_SUPPORT'));
-        $this->assertSame(['Help Topics', 'Help Lines', 'Assistant Questions', 'Assistant Log'], $labels('SET_GRP_HELP'));
+        $this->assertSame(['Guides', 'Design Notes', 'Technical Guide', 'Help Topics', 'Help Lines', 'Assistant Questions', 'Assistant Log'], $labels('SET_GRP_HELP'));
         $this->assertSame(['Languages', 'Language', 'Localization', 'Translation Dictionary', 'Message Groups'], $labels('SET_GRP_LANG'));
         $this->assertSame(['Dummy & Legacy Data', 'Migration'], $labels('SET_GRP_DUMMY'));
         $this->assertSame(['Constants', 'Constant Categories', 'Document Number Series'], $labels('SET_GRP_CONSTANTS'));
