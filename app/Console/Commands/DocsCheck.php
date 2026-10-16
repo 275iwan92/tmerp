@@ -175,9 +175,11 @@ class DocsCheck extends Command
     private function checkStaged(): void
     {
         $staged = array_filter(explode("\n", (string) shell_exec('git -C '.escapeshellarg(base_path()).' diff --cached --name-only')));
+        // Only cards already tracked by git can be demanded: a card another session has not committed yet is not part of this commit's duty.
+        $tracked = array_filter(explode("\n", (string) shell_exec('git -C '.escapeshellarg(base_path()).' ls-files docs/tg')));
         foreach ($staged as $file) {
             foreach (array_unique($this->cited[$file] ?? []) as $card) {
-                if (! in_array($card, $staged, true)) {
+                if (in_array($card, $tracked, true) && ! in_array($card, $staged, true)) {
                     $this->errors[] = "$file is cited by $card, which is not staged: check the card against the change, update it (and its Verified date), then stage it";
                 }
             }

@@ -34,6 +34,17 @@ class TechGuideLookup extends GuidesLookup
         return 'Technical Guide: how each module works today (concept cards, engine cards, relations), written for agents and the owner. Nothing can be changed here.';
     }
 
+    // Card diagrams are written as ![alt](../img/NAME.svg); Help escapes HTML, so the image is served by the v2.tg-img route.
+    public function article(int $id): ?array
+    {
+        $a = parent::article($id);
+        if ($a) {
+            $a['body'] = preg_replace('~\]\((?:\.\./)+img/([a-z0-9-]+)\.svg\)~', '](/v2/tg-img/$1)', (string) $a['body']);
+        }
+
+        return $a;
+    }
+
     protected function section(): string
     {
         return 'tg';

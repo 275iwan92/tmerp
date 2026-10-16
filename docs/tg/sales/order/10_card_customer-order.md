@@ -47,3 +47,5 @@
 
 ## Already exists? Searched where, result
 Searched: `co_order*`, `crm_*`, `do_*` in `information_schema` (ddtsdi/tm2sdi), `app/Services/Sales`, `app/Models/Sdi`, `app/Support/V2/Data/CustomerOrder.php`, `resources/views/pages/co`, `routes/v2.php`, the Sales menu tree. Result: the concept ALREADY EXISTS in v1 (Livewire `pages::co.entry`, `pages::co.list`) and v2 (`customer-order`); the v2 screen calls v1 components per field (`CustomerOrder.php:32-37`). There is no `stat_confirm` column in CO; no new table needed. User's Guide: `docs/guides/sales/04_quotation_order_cpdel.md` (exists, not repeated).
+
+> Checked 2026-10-16 after adding the Technical Guide diagram route (`routes/web.php`: one `require` appended to an existing line, no line numbers moved). Content of this card is not affected.

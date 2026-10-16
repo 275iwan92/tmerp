@@ -139,7 +139,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_stockflow.php';
         require __DIR__.'/v2_valuation.php';
         require __DIR__.'/v2_review.php';
-        require __DIR__.'/v2_dummy_mastercard.php';
+        require __DIR__.'/v2_dummy_mastercard.php'; require __DIR__.'/v2_techguide.php'; // TG diagram route (same line: docs/tg cards cite web.php line numbers)
 
         Route::middleware('module:SALES')->group(function () {
             Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');

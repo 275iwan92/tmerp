@@ -20,6 +20,8 @@ FACT, from code:
 Not triggered directly by the Costing Engine, Quotation, or Reverse (FACT, grep); a new pre-booking appears at the next `runAll`/`runPre` (nightly schedule or button).
 
 ## Flow (text twin of diagram `../img/material-planning.svg`)
+
+![Material Planning flow](../img/material-planning.svg)
 1. **Demand from Sales**: (a) each active CO (`DRAFT`, `SUBMITTED`, `CONFIRMED`, not cancelled) per PRODUCT line, per CPDEL delivery schedule with status PLANNED (without a schedule: one row with the item `due_date`); (b) MPS forecast remainder; (c) pre-booking from PUBLISHED costings that do not yet have an active CO.
 2. **Need date** per row (formula below).
 3. **Priority order**: CO Confirmed (1), CO Draft/Submitted (2), Forecast (3), Quotation (4), Costing pre-booking (5); then need date; then CO id.

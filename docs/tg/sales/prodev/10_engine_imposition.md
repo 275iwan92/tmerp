@@ -82,3 +82,8 @@ Unit: mm, except `up` (pieces per sheet) and percent. No rounding unless stated.
 `tests/Unit/ImpositionEngineProDevToolsTest.php` (7 tests; `dieRuleMeterLari` x2, `bestSheet` x2, `combinePair` x3).
 
 > Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+
+> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+
+
+> Checked 2026-10-16 after adding the Technical Guide diagram route (`routes/web.php`: one `require` appended to an existing line, no line numbers moved; `routes/web.php:150` and `:339` re-read and still correct). Content of this card is not affected.
