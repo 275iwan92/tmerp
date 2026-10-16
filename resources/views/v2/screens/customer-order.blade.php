@@ -5,7 +5,7 @@
  Input        : Query id, new; session v2_flash dan errors.
  Output       : Daftar lewat _dbgrid; form header, baris + due date, jadwal kirim, biaya luar; Confirm membuat jadwal kirim default; Print / Email.
  Dipakai oleh : Rute v2.screen dengan slug 'customer-order' (menu v2:customer-order di sys_app_menu), dirender view layar generik v2.
- Status       : Aktif (Confirm wajib due date tiap baris PRODUCT; Cancel ditolak bila sudah ada WO / DO).
+ Status       : Aktif (due date baris PRODUCT otomatis = ACC Digital produk atau tanggal CO (CO direct) + CO_LEAD_WORKDAYS hari kerja, Sales boleh menimpa + catatan; Confirm wajib due date tiap baris PRODUCT; Cancel ditolak bila sudah ada WO / DO).
 --}}
 @php
     use App\Models\Master\FinPaymentTerm;
@@ -72,6 +72,7 @@
             'id_item' => $it->id_item, 'description' => $it->description, 'qty' => (float) $it->qty, 'qty_unit' => $it->qty_unit,
             'unit_price' => (float) $it->unit_price, 'discount_pct' => (float) $it->discount_pct, 'due_date' => $it->due_date?->toDateString() ?? '',
             'qty_minim' => (bool) $it->qty_minim,
+            'due_note' => (string) $it->due_note,
             'editable' => $draft && $it->quotation_item_id === null,
             'kind' => $it->line_kind === 'PRODUCT' ? t('Product') : t('Service line'), 'inquiry' => $it->inquiry?->inquiry_no ?? '—',
             'source' => $it->quotation_item_id !== null ? t('Quotation snapshot (locked)') : t('Manual'), 'spec_note' => $it->spec_note ?? '—',
@@ -212,6 +213,7 @@
                     ['key' => 'due_date', 'label' => 'Due Date', 'type' => 'date', 'width' => '150px'],
                     ['key' => 'qty_minim', 'label' => 'Qty Minim', 'type' => 'bool', 'width' => '90px'],
                     ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_price * (1 - discount_pct / 100)', 'sum' => true, 'width' => '140px'],
+                    ['key' => 'due_note', 'label' => 'Due Date Note', 'type' => 'text', 'more' => true],
                     ['key' => 'kind', 'label' => t('Type'), 'type' => 'display', 'more' => true],
                     ['key' => 'source', 'label' => t('Line Source'), 'type' => 'display', 'more' => true],
                     ['key' => 'inquiry', 'label' => 'Inquiry', 'type' => 'display', 'more' => true],

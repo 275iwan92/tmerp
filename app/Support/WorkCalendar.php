@@ -37,4 +37,16 @@ final class WorkCalendar
 
         return $n;
     }
+
+    // Tanggal sesudah $n hari kerja dari $from (hari kerja yang sama dengan workdaysBetween; $n <= 0 = $from).
+    public function addWorkdays(CarbonImmutable $from, int $n): CarbonImmutable
+    {
+        $d = $from->startOfDay();
+        for ($left = $n; $left > 0;) {
+            $d = $d->addDay();
+            $left -= (int) $this->isWorkday($d);
+        }
+
+        return $d;
+    }
 }

@@ -270,6 +270,15 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             return;
         }
 
+        // Alasan Sales menimpa due date otomatis (CoDueDate); boleh di baris manapun.
+        if ($field === 'due_note') {
+            $item->due_note = trim((string) $value) ?: null;
+            $item->save();
+            unset($this->order);
+
+            return;
+        }
+
         // Flag Qty Minim (v1 sdi_co_detail.qty_minim) boleh di baris manapun, seperti due_date.
         if ($field === 'qty_minim') {
             $item->qty_minim = filter_var($value, FILTER_VALIDATE_BOOLEAN);

@@ -190,6 +190,10 @@ class CoOrderBuilder
     public static function submit(CoOrder $order): ?string
     {
         $order->loadMissing(['items.deliveries']);
+        if ($order->doc_status === 'DRAFT') {
+            CoDueDate::refresh($order);
+            $order->load('items.deliveries');
+        }
         if ($order->doc_status !== 'DRAFT' || ! $order->isConfirmable()) {
             return $order->isInstant()
                 ? t('Cannot Confirm yet: every PRODUCT line needs a Due Date and a Master Product.')

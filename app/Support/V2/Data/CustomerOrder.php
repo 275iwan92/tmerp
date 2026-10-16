@@ -141,7 +141,7 @@ final class CustomerOrder
                 $c->updateItem((int) $id, 'qty_minim', $row['qty_minim']);
             }
         }
-        self::diff($o->items->keyBy('id_item'), (array) ($in['items'] ?? []), ['description', 'qty', 'qty_unit', 'unit_price', 'discount_pct', 'due_date'],
+        self::diff($o->items->keyBy('id_item'), (array) ($in['items'] ?? []), ['description', 'qty', 'qty_unit', 'unit_price', 'discount_pct', 'due_date', 'due_note'],
             ['qty', 'unit_price', 'discount_pct'], fn ($id, $f, $v) => $c->updateItem($id, $f, $v));
         self::diff($o->items->flatMap->deliveries->keyBy('id_delivery'), (array) ($in['deliveries'] ?? []), ['shipment_type', 'ship_date', 'ship_qty'],
             ['ship_qty'], fn ($id, $f, $v) => $c->updateDelivery($id, $f, $v));

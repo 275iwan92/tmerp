@@ -3,6 +3,7 @@
 namespace App\Models\Sdi;
 
 use App\Models\Master\ProdProduct;
+use App\Services\Sales\CoDueDate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,6 +34,8 @@ class CoOrderItem extends Model
         'discount_pct',
         'subtotal',
         'due_date',
+        'due_source',
+        'due_note',
         'created_by',
         'updated_by',
     ];
@@ -47,6 +50,30 @@ class CoOrderItem extends Model
         'subtotal' => 'decimal:2',
         'due_date' => 'date',
     ];
+
+    // Due date otomatis dari ACC Digital produk (CO direct: tanggal CO) + CO_LEAD_WORKDAYS hari kerja (CoDueDate) kecuali Sales menimpanya (due_source MANUAL).
+    // Mengosongkan tanggal = kembali ke otomatis.
+    protected static function booted(): void
+    {
+        static::saving(function (self $i) {
+            if ($i->line_kind !== 'PRODUCT' || ! $i->product_id) {
+                return;
+            }
+            $auto = CoDueDate::suggest($i);
+            if ($i->isDirty('due_date')) {
+                if ($i->due_date) {
+                    $i->due_source = $auto && $i->due_date->isSameDay($auto) ? 'ACC' : 'MANUAL';
+
+                    return;
+                }
+                $i->due_source = null; // dikosongkan = kembali otomatis
+            }
+            if ($i->due_source !== 'MANUAL' && $auto) {
+                $i->due_date = $auto;
+                $i->due_source = 'ACC';
+            }
+        });
+    }
 
     public function order(): BelongsTo
     {
