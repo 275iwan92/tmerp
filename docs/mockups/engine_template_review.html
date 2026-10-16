@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Template Review - preview</title>
+<style>
+:root{--navy:#2c3e69;--ink:#000;--bg:#fff;--line:#2c3e69;--soft:#eef2fb;--ok:#0a6b2d;--warn:#8a4b00;--bad:#a30000;--dis:#9aa3b2}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 "Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg)}
+.wrap{max-width:1360px;margin:0 auto;padding:18px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:26px 0 8px;padding:6px 10px;background:var(--navy);color:#fff;border-radius:6px}
+h3{font-size:16px;margin:0 0 6px}p{margin:4px 0}
+.card{border:2px solid var(--line);border-radius:8px;padding:12px;background:#fff;margin:8px 0}
+.top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--navy);color:#fff;padding:8px 12px;border-radius:8px 8px 0 0}
+.btn{display:inline-block;padding:5px 14px;border-radius:16px;border:2px solid #fff;color:#fff;font-weight:700;font-size:14px}
+.btn.p{background:#fff;color:var(--navy)}.btn.d{border-color:var(--dis);color:var(--dis)}
+.badge{display:inline-block;padding:1px 9px;border-radius:10px;font-weight:700;font-size:13px;border:2px solid currentColor}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.tabs{display:flex;gap:2px;margin:8px 0 0;border-bottom:2px solid var(--line)}
+.tab{padding:6px 14px;font-weight:700}.tab.on{background:var(--navy);color:#fff;border-radius:6px 6px 0 0}
+table{border-collapse:collapse;width:100%;margin:6px 0;font-size:14px}th,td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.why{font-size:13px;font-style:italic}
+.flow{display:flex;gap:6px;align-items:stretch;flex-wrap:wrap}
+.step{flex:1;min-width:150px;border:2px solid var(--line);border-radius:8px;padding:8px;background:#fff}
+.step b{display:block;color:var(--navy)}.arrow{align-self:center;font-weight:700;font-size:20px;color:var(--navy)}
+code{background:var(--soft);padding:0 4px;border-radius:3px;font-size:13px}
+.pill{display:inline-block;border:2px solid var(--line);border-radius:6px;padding:0 6px;margin:1px;font-size:13px;background:var(--soft)}
+.note{border-left:6px solid var(--warn);padding:6px 10px;background:#fff7ea;margin:8px 0}
+.cmp td:first-child{font-weight:700}
+</style></head><body><div class="wrap">
+<h1>PREVIEW - ENGINE Process per tipe produk + layar Template Review</h1>
+<p><b>Status: PREVIEW saja.</b> Belum ada kode, skema, atau data yang diubah (ProDev zona beku). Angka di bawah dibaca langsung dari DB mockup (<code>ddtmst</code>) dan Master Card asli.</p>
+
+<h2>0. Fakta DB hari ini (dibaca 2026-10-16, mockup)</h2>
+<div class="grid3">
+<div class="card"><h3>Tipe produk</h3><p><code>prod_type</code> = <b>63</b> tipe (<b>28 aktif</b>). Master Card dummy: <b>15 kartu, hanya 5 tipe</b> (RTE_BOX 6, RSC_2PC 5, TRAY_LID_DW 2, LOCK_BOTTOM_2PC 1, BUKU 1).</p><p class="bad"><b>58 dari 63 tipe belum punya contoh Master Card.</b></p></div>
+<div class="card"><h3>Template rute</h3><p><code>prod_routing_template</code> = <b>0</b> baris, <code>prod_routing_step</code> = <b>0</b>. Tabelnya ada (kolom <code>prod_type_code</code>), layarnya ada, tapi kosong dan tidak dipakai SpecEngine.</p></div>
+<div class="card"><h3>Aturan sekarang</h3><p><code>prod_bop_rule</code> = <b>26</b> baris, <b>semua <code>part_type</code> kosong</b> = berlaku sama untuk semua tipe. Satu-satunya pembeda: syarat <code>NEEDS_GLUE</code>, <code>MULTI_LAYER</code>, <code>PLANO_NEEDS_CUT</code>.</p></div>
+</div>
+<div class="grid2">
+<div class="card"><h3>Joint type</h3><p><code>mat_join_type</code> = <b>4</b> baris: STITCHING_SINGLE, STITCHING_DOUBLE, <b>GLUE_SINGLE</b>, <b>GLUE_DOUBLE</b> (dengan tarif default). Sudah ada kolom terstruktur <code>iqp_part.join_type_id</code> dan <code>prod_master_card.join_type_id</code> (kartu asli: "Double Join" = 4, "Single Join" = 3).</p><p class="warn"><b>Tapi</b> SpecEngine tidak membacanya; ia menebak <code>NEEDS_GLUE</code> dari <i>teks</i> <code>prod_part.joint_type</code> (33 baris "Lem Samping", 35 kosong).</p></div>
+<div class="card"><h3>Tipe di Inquiry</h3><p class="bad"><b>Inquiry belum menyimpan tipe produk.</b> <code>iqp_inquiry</code> dan <code>iqp_part</code> tidak punya <code>type_code</code>; <code>iqp_type</code> hanya NEW / RECALC / REVISE (jenis inquiry, bukan tipe box). Tipe hanya ada di <code>prod_master_card.type_code</code> dan <code>prod_type</code>.</p><p>Jadi keputusan 4 ("tipe diketahui dari Inquiry") butuh satu pilihan baru, lihat bagian 3 butir C.</p></div>
+</div>
+
+<h2>1. Layar officer: Template Review (satu tipe per kartu)</h2>
+<p>Objek DevLib (<code>x-dl::form</code> panel atas + <code>x-dl::review-feed</code> gaya blog, huruf besar, tombol keputusan besar). Contoh kartu diisi dari <b>Master Card asli</b> tipe <b>RSC_2PC</b> (Osima MS N100 CV, DS003146) - 5 kartu asli bertipe ini.</p>
+
+<div class="top"><span class="btn">Back</span><span class="btn p">Confirm</span><span class="btn">Edit</span><span class="btn">Back to Draft</span><span class="btn d">Duplicate</span>
+<b style="margin-left:auto">RSC_2PC - Regular Slotted Carton 2-Piece (FEFCO 0201)</b><span class="badge" style="background:#fff;color:#8a4b00;border-color:#fff">Draft</span></div>
+<div class="card" style="border-radius:0 0 8px 8px;margin-top:0">
+<div class="tabs"><span class="tab on">Template</span><span class="tab">Riwayat</span></div>
+<p><b>Kategori:</b> PACKAGING &nbsp; <b>Bagian default:</b> DC+SHEET &nbsp; <b>Contoh asli:</b> 5 Master Card (Osima N100, Yama Din170 B, JPC Gold N100, KS Power N120 A/B) &nbsp; <b>Dibuat oleh:</b> agen (draf), belum diperiksa officer</p>
+
+<h3 style="margin-top:12px">A. Langkah BOP (urut) - mesin dari <code>prod_process_machine</code>, tanpa mesin = SUBCON</h3>
+<table><tr><th>#</th><th>Proses (<code>prod_process</code>)</th><th>Mesin / SUBCON</th><th>Waste %</th><th>Syarat</th><th>Alasan (dari data)</th></tr>
+<tr><td>10</td><td>POTONG (P5) - potong bahan</td><td>dari master proses</td><td>0,5</td><td>plano perlu potong</td><td class="why">Osima langkah 1; kartu RSC yang dibaca</td></tr>
+<tr><td>20</td><td>CETAK (P1)</td><td>Lithrone G40 (tertulis di kartu)</td><td>3,0</td><td>-</td><td class="why">kartu RSC yang dibaca</td></tr>
+<tr><td>30</td><td>POTONG (P5) - potong ukuran cetak</td><td>dari master proses</td><td>0,5</td><td>-</td><td class="why">Osima dan JPC Gold "Potong Uk. 64,5 x 48(,5) cm"</td></tr>
+<tr><td>40</td><td>QC (P13)</td><td>-</td><td>0,5</td><td>-</td><td class="why">semua kartu RSC yang dibaca</td></tr>
+<tr><td>50</td><td>LAMINATING GLOSSY (P7)</td><td>dari master proses</td><td>1,0</td><td>finishing Laminating Glossy</td><td class="why">Osima; ikut <code>prod_bop_rule</code> #6</td></tr>
+<tr><td>60</td><td>LAMINASI (P2) paper + sheet</td><td>dari master proses</td><td>1,0</td><td><b>PAPER_SHEET</b> (bagian C)</td><td class="why">Osima: Duplex 310 + SH B/C flute</td></tr>
+<tr><td>70</td><td>PLONG (P3) belakang</td><td>dari master proses</td><td>1,5</td><td>-</td><td class="why">Osima "Plong Belakang"</td></tr>
+<tr><td>80</td><td>KUPAS (P10)</td><td>-</td><td>0,5</td><td>-</td><td class="why">semua kartu RSC yang dibaca</td></tr>
+<tr><td>90</td><td>LEM MESIN (P4) - sambung sisi</td><td>dari master proses</td><td>1,0</td><td><b>JOINT = GLUE_SINGLE / GLUE_DOUBLE</b> (bagian B)</td><td class="why">Osima "Lem Samping"</td></tr>
+<tr><td>100</td><td>HITUNG (P15)</td><td>-</td><td>0</td><td>-</td><td class="why">semua kartu RSC yang dibaca</td></tr>
+<tr><td>110</td><td>QC PACK (P11) / pack</td><td>-</td><td>0</td><td>-</td><td class="why">"Pack 10 biji / pack"</td></tr></table>
+<p class="why">Mesin tidak dikarang: kolom mesin diisi dari <code>prod_process_machine</code> (68 baris, data real). Proses tanpa baris di sana tampil <span class="badge warn">SUBCON</span>, bukan celah.</p>
+
+<div class="grid2">
+<div><h3>B. Aturan joint (sambung sisi box)</h3>
+<table><tr><th>Joint type (<code>mat_join_type</code>)</th><th>Bahan</th><th>Dipakai kartu</th></tr>
+<tr><td>GLUE_SINGLE (id 3) - lem 1 sisi</td><td>LEM BOX 0,15 /pcs</td><td>RTE_BOX: Yahya, Slider, Power X</td></tr>
+<tr><td>GLUE_DOUBLE (id 4) - lem kiri+kanan</td><td>LEM BOX 0,15 /pcs (rule #24); tarif default join 500 vs 250 (single)</td><td>RSC_2PC (5 kartu), LOCK_BOTTOM_2PC (1)</td></tr>
+<tr><td>STITCHING_SINGLE / DOUBLE</td><td>kawat (tidak tampil di tipe ini)</td><td>-</td></tr></table>
+<p class="why">Dibaca dari <code>join_type_id</code> terstruktur, <b>bukan</b> teks bebas. Pilihan single/double datang dari Inquiry per bagian; template hanya menyatakan jenis mana yang <i>diizinkan</i> (RSC_2PC: GLUE_DOUBLE; default).</p></div>
+<div><h3>C. Syarat lem laminasi (paper-sheet) - TERPISAH dari joint</h3>
+<table><tr><th>Syarat</th><th>Nilai tipe ini</th></tr>
+<tr><td>Laminasi paper + sheet</td><td><b>Ya</b> bila ada bahan SHEET + paper</td></tr>
+<tr><td>Bahan lem</td><td>LEM LAMINASI BAHAN (rule #23, 15 /m2) - estimasi awal</td></tr>
+<tr><td>Plastik laminasi</td><td>Hanya bila finishing Laminating (rule #5/#6)</td></tr>
+<tr><td>Tanpa sheet (mis. Kalender)</td><td>Tidak ada langkah/ bahan lem laminasi</td></tr></table>
+<p class="why">Sekarang <code>MULTI_LAYER</code> menyalakan laminasi; syarat baru ini eksplisit per tipe dan tidak ikut menyalakan "Lem Samping".</p></div>
+</div>
+
+<h3>D. Bahan BOM standar tipe ini</h3>
+<table><tr><th>Peran</th><th>Bahan (pola <code>mat_*</code>)</th><th>Dasar pakai</th><th>Sumber</th></tr>
+<tr><td>Kertas (paper)</td><td>DUPLEX 310 gsm (ukuran dari imposisi)</td><td>lembar = qty / up + waste</td><td class="why">Osima, JPC, Yama, KS: Duplex 310</td></tr>
+<tr><td>Sheet</td><td>SH B/C FLUTE (M125/M125/X3/K125)</td><td>per lembar laminasi</td><td class="why">Osima</td></tr>
+<tr><td>Tinta</td><td>TINTA {ink}</td><td>coverage x 1,5</td><td class="why">rule #22</td></tr>
+<tr><td>Lem box / lem laminasi / plastik laminasi</td><td>sesuai aturan B dan C</td><td>per pcs / per m2</td><td class="why">rule #23, #24, #5/#6</td></tr>
+<tr><td>Tali / plastik pack</td><td>TALI STRAPPING / WRAPPING PLASTIK</td><td>per pack</td><td class="why">rule #25-26</td></tr></table>
+
+<h3>E. Pemeriksa kecocokan (daftar temuan, tidak memblokir)</h3>
+<p><span class="badge warn">Perlu dilihat</span> Yama Din170 B: gramatur 310 dan ukuran bahan 79x109 beda dari kartu Osima; <span class="badge ok">Cocok</span> Duplex 310 muncul di kartu RSC yang dibaca; <span class="badge bad">Celah</span> langkah "Slitter Slotter" (kartu RTE_BOX Omegamoto) tidak punya master proses (NO_MACHINE).</p>
+
+<div style="display:flex;gap:10px;margin-top:10px"><span class="btn p" style="background:var(--navy);color:#fff;border-color:var(--navy);padding:10px 26px;font-size:17px">Confirm</span><span class="btn" style="background:#fff;color:var(--navy);border-color:var(--navy);padding:10px 26px;font-size:17px">Edit</span><span class="btn" style="background:#fff;color:var(--navy);border-color:var(--navy);padding:10px 26px;font-size:17px">Back to Draft</span></div>
+</div>
+
+<h3>Daftar tipe (halaman awal layar)</h3>
+<table><tr><th>Tipe</th><th>Contoh MC</th><th>Template</th><th>Status</th></tr>
+<tr><td>RSC_2PC</td><td>5</td><td>11 langkah, draf agen</td><td><span class="badge warn">Draft</span></td></tr>
+<tr><td>RTE_BOX</td><td>6</td><td>draf agen (UV, Plong Depan, Lem Samping)</td><td><span class="badge warn">Draft</span></td></tr>
+<tr><td>TRAY_LID_DW</td><td>2</td><td>draf agen (Laminating Doff, UV Spot, Hot Print, Emboss)</td><td><span class="badge warn">Draft</span></td></tr>
+<tr><td>LOCK_BOTTOM_2PC</td><td>1</td><td>draf agen</td><td><span class="badge warn">Draft</span></td></tr>
+<tr><td>BUKU</td><td>1 (tanpa proses)</td><td class="bad">tidak bisa diisi dari kartu: perlu data/riset</td><td><span class="badge bad">Kosong</span></td></tr>
+<tr><td>58 tipe lain (mis. KALENDER_DINDING)</td><td>0</td><td>belum ada contoh. Agen hanya mengisi dari <code>prod_bop_rule</code> + sifat tipe, dengan tanda "tanpa contoh asli"</td><td><span class="badge bad">Kosong</span></td></tr></table>
+
+<h2>2. Alur tombol Process di ProDev</h2>
+<div class="flow">
+<div class="step"><b>1. Buka layar ProDev</b>Produk baru (belum ada hasil tersimpan) langsung Process otomatis. Produk yang sudah punya hasil: tidak jalan sendiri.</div><div class="arrow">&rarr;</div>
+<div class="step"><b>2. Imposisi</b>layout, up, lembar (engine yang sudah ada).</div><div class="arrow">&rarr;</div>
+<div class="step"><b>3. Data Inquiry</b>ukuran, bahan, finishing, qty, <code>join_type_id</code>.</div><div class="arrow">&rarr;</div>
+<div class="step"><b>4. Pilih template tipe</b>Confirmed &rarr; kerangka BOP + BOM tipe. Belum Confirmed &rarr; fallback ke perilaku sekarang (<code>prod_bop_rule</code>).</div><div class="arrow">&rarr;</div>
+<div class="step"><b>5. BOP + BOM = DRAF</b>mesin/SUBCON, waste, qty dari imposisi. Hanya di layar/memori, <b>tidak menulis DB</b>.</div><div class="arrow">&rarr;</div>
+<div class="step"><b>6. Officer memutuskan</b>Save / Confirm. Hasil OVERRIDE/MANUAL officer <b>tidak pernah ditimpa</b> Process.</div></div>
+<div class="note"><b>Tidak berubah:</b> flow Inquiry &rarr; ProDev &rarr; ProCost, tiga tanda <code>stat_confirm_*</code>, tabel hasil ProDev, ProCost, MRP, aturan substitusi. Yang baru hanya: SpecEngine membaca template tipe yang sudah Confirmed.</div>
+
+<h2>3. Penyimpanan (CLAUDE.md butir 7.3)</h2>
+<table class="cmp"><tr><th>Apa</th><th>Database.tabel</th><th>Isi</th><th>Rumus / cara simpan</th></tr>
+<tr><td>Template tipe (MASTER, sudah ada)</td><td><code>tm2mst.prod_routing_template</code> + <code>prod_routing_step</code></td><td>per <code>prod_type_code</code>: urutan langkah, proses, mesin pilihan, faktor qty, opsional</td><td>Ditulis <b>hanya saat officer Confirm</b>. Sekarang 0 baris.</td></tr>
+<tr><td>Draf agen (BARU, terpisah dari master)</td><td><code>tm2mst.prod_routing_template_draft</code> (tabel baru)</td><td>per tipe: isi lengkap draf (langkah + bahan + joint + syarat laminasi) sebagai JSON, <b>alasan per baris</b>, status Draft/Confirmed/Cancelled, siapa/kapan</td><td>Agen mengisi dari: Master Card asli (<code>prod_master_card.process_json/materials_json</code>) per tipe, <code>prod_bop_rule</code>, <code>prod_process_machine</code>. Confirm &rarr; salin ke tabel master + catat di <code>doc_state_log</code>. Back to Draft membuka kembali, master lama dipertahankan sampai Confirm berikutnya.</td></tr>
+<tr><td>Bahan per tipe (BARU, perlu pilihan Jo)</td><td>lihat opsi A / B di bawah</td><td>peran bahan, pola nama, aturan pilih, dasar pakai, takaran</td><td>Mirror kolom <code>prod_bop_rule</code>: <code>material_pattern</code>, <code>material_rule</code>, <code>material_role</code>, <code>usage_basis</code>, <code>usage_rate</code>.</td></tr>
+<tr><td>Joint &amp; laminasi (BARU, 2 kolom)</td><td><code>prod_routing_template</code> (+2 kolom)</td><td><code>join_allowed</code> (mis. GLUE_DOUBLE) &amp; <code>needs_sheet_lamination</code> (0/1)</td><td>Dua penanda <b>terpisah</b>. Engine memakai <code>iqp_part.join_type_id</code>, bukan regex teks <code>joint_type</code>.</td></tr>
+<tr><td>Hasil Process produk (sudah ada)</td><td>tabel BOP/BOM ProDev yang sekarang</td><td>tetap sama</td><td>Tidak ditulis sebelum officer setuju.</td></tr></table>
+
+<div class="grid2">
+<div class="card"><h3>Pilihan tempat bahan per tipe</h3>
+<p><b>A. Kolom di <code>prod_routing_step</code></b> (5 kolom). Kecil dan cepat, tetapi satu langkah hanya satu bahan, padahal Laminating butuh <i>plastik + lem</i> (rule #5 dan #18 sekarang dua baris terpisah) dan bahan tidak selalu menempel pada langkah (tinta, tali pack).</p>
+<p><b>B. Tabel baru <code>tm2mst.prod_routing_step_material</code></b> (step_id nullable, material_role, pattern, rule, usage_basis, usage_rate). Satu langkah banyak bahan, bahan tanpa langkah boleh. Sama polanya dengan <code>prod_bop_rule</code>.</p>
+<p><b>Rekomendasi agen: B.</b> Dua-duanya perubahan skema (butuh izin Jo).</p></div>
+<div class="card"><h3>Perlu keputusan Jo</h3>
+<p><b>C. Dari mana tipe masuk?</b> Inquiry belum menyimpan tipe produk. Opsi: (1) tambah satu field <code>Product type</code> (lookup <code>prod_type</code>) di Inquiry per produk - menyentuh Inquiry (zona beku), butuh izin; (2) tipe dipilih officer di ProDev; (3) tipe diturunkan dari produk/Master Card induk bila ada. <b>Rekomendasi: (1)</b>, sesuai keputusan Jo bahwa tipe dipilih di Inquiry.</p>
+<p><b>D.</b> 58 tipe tanpa contoh asli: tetap dikosongkan sampai ada Master Card/riset, atau agen boleh menarik draf awal dari <code>prod_bop_rule</code> saja?</p></div></div>
+
+<div class="note"><b>Jujur - belum dibuktikan:</b> (1) apakah engine saat ini benar salah menyalakan "Lem" pada produk single-join belum diuji di data; yang terbukti hanya kodenya memakai regex teks. (2) Takaran lem/plastik (rule #18-#26) adalah estimasi awal, bukan data pakai nyata. (3) Mesin per langkah tidak diisi agen, hanya dibaca dari master. (4) Layar ini belum ada; ini mockup, data tabel di atas dibaca dari DB tetapi tampilan belum diuji di browser.</div>
+</div></body></html>

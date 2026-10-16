@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Pro-Dev New - perubahan per accordion (preview)</title>
+<style>
+:root{--navy:#2c3e69;--ink:#000;--soft:#eef2fb;--ok:#0a6b2d;--warn:#8a4b00;--bad:#a30000;--dis:#9aa3b2}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 "Segoe UI",Arial,sans-serif;color:var(--ink);background:#fff}
+.wrap{max-width:1380px;margin:0 auto;padding:16px}
+h1{font-size:21px;margin:0 0 4px}h2{font-size:17px;margin:22px 0 8px;padding:6px 10px;background:var(--navy);color:#fff;border-radius:6px}
+h3{font-size:15px;margin:0 0 5px}p{margin:3px 0}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border:2px solid var(--navy);border-radius:8px;overflow:hidden;background:#fff}
+.box>.t{padding:4px 10px;font-weight:700;background:var(--soft);border-bottom:2px solid var(--navy)}
+.box.new>.t{background:var(--navy);color:#fff}
+.in{padding:8px 10px}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:4px 0}th,td{border:1px solid var(--navy);padding:3px 6px;text-align:left;vertical-align:top}th{background:var(--soft)}
+.badge{display:inline-block;padding:0 8px;border-radius:10px;font-weight:700;font-size:12px;border:2px solid currentColor;white-space:nowrap}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.nav{color:var(--navy)}
+.btn{display:inline-block;padding:3px 12px;border-radius:14px;border:2px solid var(--navy);color:var(--navy);font-weight:700;font-size:13px}
+.btn.f{background:var(--navy);color:#fff}
+.top{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--navy);color:#fff;padding:7px 10px}
+.top .btn{border-color:#fff;color:#fff}.top .btn.f{background:#fff;color:var(--navy)}
+.chg{display:inline-block;background:#fff2d6;border:2px solid var(--warn);border-radius:50%;width:22px;height:22px;text-align:center;font-weight:700;color:var(--warn);line-height:18px;margin-right:4px}
+.note{border-left:6px solid var(--warn);padding:5px 10px;background:#fff7ea;margin:8px 0}
+.why{font-size:12px;font-style:italic}
+.flow{display:flex;gap:6px;flex-wrap:wrap}.step{flex:1;min-width:150px;border:2px solid var(--navy);border-radius:8px;padding:6px 8px}.step b{color:var(--navy);display:block}.ar{align-self:center;font-weight:700;color:var(--navy);font-size:18px}
+code{background:var(--soft);padding:0 4px;border-radius:3px;font-size:12px}
+.strip{border:2px dashed var(--navy);border-radius:8px;padding:6px 10px;margin:6px 0;background:#f7f9ff}
+.sec{display:flex;gap:2px;margin:0}.sec span{padding:3px 10px;border:2px solid var(--navy);border-bottom:0;border-radius:6px 6px 0 0;font-weight:700;font-size:12px}.sec .on{background:var(--navy);color:#fff}
+</style></head><body><div class="wrap">
+<h1>PREVIEW - Perubahan di layar Pro-Dev New (Imposition Plano Optimizer), per accordion</h1>
+<p><b>Status: PREVIEW saja.</b> Tidak ada kode, skema, atau data diubah. Layar dipakai apa adanya; kiri = SEKARANG (dari kode), kanan = USULAN. Nomor <span class="chg">1</span> menandai bagian yang berubah. Contoh data nyata: <b>BOX BTP OMEGAMOTO SPOTLIGHT</b> (IQ2690068, part DC+SHEET, Qty 100 pcs, pack 100, flat 740 x 650 mm) dengan Master Card asli YO-OMG SPLT BTP (tipe TRAY_LID_DW).</p>
+
+<h2>0. Kenapa BOM Omegamoto kosong (dibaca dari DB + kode, 2026-10-16)</h2>
+<div class="note"><b>Terbukti:</b> part ini punya ukuran flat (740 x 650 mm), qty order 100, tipe part DC+SHEET, tetapi <b>belum ada baris <code>iqp_layout</code></b> (layout belum disimpan/Confirm; <code>stat_confirm_prodev=0</code>) dan <code>join_type_id</code> kosong. Di kode, <code>SpecEngine::generate()</code> menghitung lembar cetak dari langkah BOP pertama yang satuannya LBR; tanpa jumlah up/ukuran canvas dari layar, <code>qty_in</code> kosong sehingga <code>printSheets</code> = "-" dan tiap baris BOM menulis "cannot be calculated yet". Itu yang Jo lihat; tinta, plastik, dan lem tampil karena memakai luas, bukan lembar.<br><b>Belum dibuktikan:</b> apakah di layar Jo angka up memang 0 saat itu atau baru dihitung browser setelah layar selesai dimuat. Kode jalur WO (<code>forWorkOrder</code>) sudah memakai cadangan "1 up per lembar + peringatan"; jalur layar belum.</div>
+
+<h2>A. Panel atas (judul, status, Confirm / Save / Edit)</h2>
+<div class="ba">
+<div class="box"><div class="t">SEKARANG</div>
+<div class="top"><b>Imposition Plano Optimizer</b><span class="badge" style="background:#fff;color:var(--warn);border-color:#fff">Draft</span><span style="margin-left:auto"></span><span class="btn">Email</span><span class="btn">Print</span><span class="btn f">Confirm</span><span class="btn">Save</span><span class="btn">Back</span></div>
+<div class="in"><p>Tidak ada petunjuk bahwa engine jalan, apa yang sudah dihitung, atau apa yang menunggu. Teks status hanya "Calculating from the Inquiry data..." lalu tabel.</p></div></div>
+<div class="box new"><div class="t">USULAN</div>
+<div class="top"><b>Imposition Plano Optimizer</b><span class="badge" style="background:#fff;color:var(--warn);border-color:#fff">Draft</span><span class="badge" style="background:#fff;color:var(--navy);border-color:#fff"><span class="chg" style="width:18px;height:18px;line-height:14px">1</span>Tipe: TRAY_LID_DW</span><span style="margin-left:auto"></span><span class="btn">Email</span><span class="btn">Print</span><span class="btn f">Confirm</span><span class="btn">Save</span><span class="btn">Back</span></div>
+<div class="in"><span class="chg">1</span><b>Satu baris status engine</b> di bawah panel (tanpa tombol Process): <span class="badge ok">Engine jalan otomatis</span> <span class="badge warn">Imposisi: dihitung dari flat 740 x 650 mm</span> <span class="badge nav">Template tipe: Draft (belum Confirm)</span><br>Confirm dokumen tetap hanya oleh officer. Hasil OVERRIDE/MANUAL officer tidak pernah ditimpa engine.</div></div>
+</div>
+
+<h2>B. Accordion "Imposition &amp; Nesting"</h2>
+<div class="ba">
+<div class="box"><div class="t">SEKARANG</div><div class="in">
+<p><b>1. Number of Ups</b> - Auto Up (aktif), "Optimization result: -"</p>
+<p><b>3. Print Sheet / Canvas</b> - Canvas limit: Custom; Length/Width kosong, tombol "Suggestion"</p>
+<p><b>Calculation Data</b> - semua "-"</p>
+<p class="why">Untuk part baru tanpa layout tersimpan, angka-angka ini kosong sampai officer mengisi atau menekan Suggestion; BOM/BOP di accordion lain ikut kosong.</p></div></div>
+<div class="box new"><div class="t">USULAN</div><div class="in">
+<p><span class="chg">2</span><b>Imposisi otomatis saat layar dibuka</b> (hanya bila belum ada layout tersimpan): Auto Up memakai flat dari Inquiry (740 x 650 mm) + canvas limit; hasil tampil sebagai DRAF (layout, up, plano, efisiensi) dan menjalankan "Suggestion" sekali.</p>
+<p><span class="badge warn">Draf otomatis - belum disimpan</span> Up = 1 &nbsp; Canvas 74,0 x 65,0 cm &nbsp; Plano 79 x 109 cm</p>
+<p><span class="chg">2</span><b>Bila tetap belum bisa</b>: kotak alasan menggantikan "-", mis. <span class="badge bad">Ukuran flat belum ada di Inquiry</span> atau <span class="badge bad">Tidak ada plano yang muat</span> atau <span class="badge warn">Mesin cetak belum dipilih (batas meja)</span>, plus tautan ke bagian yang harus diisi.</p>
+<p class="why">Officer boleh mengubah semua (Manual up, Gap, Canvas). Begitu ia mengubah atau menekan Save, draf otomatis tidak berjalan lagi untuk part itu.</p></div></div>
+</div>
+
+<h2>C. Accordion "Plano Configuration" dan "Ink Configuration"</h2>
+<div class="ba">
+<div class="box"><div class="t">SEKARANG</div><div class="in"><p>Mesin cetak/pond, ranking plano, kalkulator PCS-PLANO; tinta per unit dan warna khusus.</p></div></div>
+<div class="box new"><div class="t">USULAN: tidak berubah</div><div class="in"><p>Struktur dan tombol sama. Hanya terisi lebih awal karena imposisi otomatis (B). Mesin cetak diambil dari <code>prod_process_machine</code> (data real), tidak dikarang.</p></div></div>
+</div>
+
+<h2>D. Accordion "Bill of Material"</h2>
+<div class="ba">
+<div class="box"><div class="t">SEKARANG (Omegamoto)</div><div class="in">
+<p><b>Qty order:</b> 100 pcs &nbsp; <b>Print sheets needed:</b> -</p>
+<table><tr><th>Role</th><th>Material</th><th>Per print sheet</th><th>Qty required</th><th>Stock</th><th>Status</th></tr>
+<tr><td>BAHAN</td><td>Duplex 250 gsm 90 x 120</td><td>-</td><td>cannot be calculated yet</td><td>-</td><td>-</td></tr>
+<tr><td>SHEET</td><td>E/Flute K125/M125/M125</td><td>-</td><td>cannot be calculated yet</td><td>-</td><td>-</td></tr>
+<tr><td>TINTA</td><td>...</td><td>-</td><td>ada</td><td>ada</td><td>-</td></tr>
+<tr><td>PLASTIK LAMINASI</td><td>Doff</td><td>-</td><td>0</td><td>0</td><td>-</td></tr></table></div></div>
+<div class="box new"><div class="t">USULAN</div><div class="in">
+<p><b>Qty order:</b> 100 pcs &nbsp; <b>Print sheets needed:</b> 106 lembar <span class="badge warn">dari imposisi draf, up 1</span></p>
+<table><tr><th>Role</th><th>Material</th><th><span class="chg">3</span>Asal</th><th>Qty required</th><th>Stock</th><th>Status</th></tr>
+<tr><td>BAHAN</td><td>Duplex 250 gsm 90 x 120</td><td><span class="badge nav">Template tipe (Draft)</span></td><td>106 lbr</td><td>...</td><td>...</td></tr>
+<tr><td>SHEET</td><td>E/Flute K125/M125/M125</td><td><span class="badge nav">Template tipe (Draft)</span></td><td>106 lbr</td><td>...</td><td>...</td></tr>
+<tr><td>LEM LAMINASI BAHAN</td><td>rule paper-sheet</td><td><span class="badge warn">Syarat: PAPER_SHEET</span></td><td>...</td><td>...</td><td>...</td></tr>
+<tr><td>LEM BOX</td><td>-</td><td><span class="badge bad">Tidak ada: joint kosong</span></td><td>-</td><td>-</td><td>-</td></tr></table>
+<p><span class="chg">3</span>Kolom baru <b>Asal</b> per baris: Template tipe / Aturan umum (<code>prod_bop_rule</code>) / Override officer. Baris yang belum bisa dihitung menulis <b>alasannya</b> (mis. "menunggu imposisi", "bahan tidak ada di master"), bukan hanya "cannot be calculated yet".</p>
+<p><span class="chg">4</span>Dua penanda <b>terpisah</b> di baris lem: <span class="badge nav">Joint: GLUE_DOUBLE</span> (sambung sisi box, dari <code>join_type_id</code> Inquiry) dan <span class="badge nav">Lem laminasi paper-sheet</span> (dari syarat template). Contoh Omegamoto: join belum dipilih di Inquiry, jadi tampil peringatan, tidak ditebak dari teks.</p>
+<p class="why">Angka 106 lembar = ilustrasi rumus (100 pcs / 1 up x waste dari Bill of Process), bukan hasil engine; nilai sebenarnya muncul saat dibangun.</p></div></div>
+</div>
+
+<h2>D2. Bill of Material: tombol "Check / Process" (MRP) dan kandidat substitusi</h2>
+<div class="ba">
+<div class="box"><div class="t">SEKARANG</div><div class="in">
+<p>Engine dasar (BOP/BOM) jalan otomatis. Tombol per baris hanya "+ Create PR" bila stok kurang. Tidak ada cara meminta pemeriksaan ketersediaan lebih dalam, dan tidak ada saran bahan pengganti.</p></div></div>
+<div class="box new"><div class="t">USULAN</div><div class="in">
+<p><span class="chg">6</span><b>Tombol "Check / Process"</b> di toolbar BOM (sejajar Edit). Klik = menjalankan <code>MaterialPlanningEngine</code> (ketersediaan: stok Available, PO tepat waktu, PR, telat, SHORT) untuk part ini. Untuk perubahan manual officer; engine dasar tetap otomatis di background.</p>
+<table><tr><th>Role</th><th>Material (terpilih)</th><th>Qty</th><th>Ketersediaan (MRP)</th><th></th></tr>
+<tr><td>BAHAN</td><td><b>Duplex 250 gsm 90 x 120</b></td><td>106 lbr</td><td><span class="badge bad">SHORT 40 lbr</span></td><td><span class="btn">v Kandidat (3)</span></td></tr>
+<tr style="background:#f7f9ff"><td colspan="5"><span class="chg">7</span><b>Kandidat substitusi (di bawah baris terpilih, bertingkat):</b>
+<table style="margin:4px 0 2px 18px;width:calc(100% - 18px)"><tr><th>Peringkat</th><th>Bahan</th><th>Gramatur</th><th>Ukuran</th><th>Stok</th><th>Dampak</th><th></th></tr>
+<tr><td>1 (ML)</td><td>Duplex 250 Brand B</td><td>250 (sama)</td><td>90 x 120</td><td><span class="badge ok">cukup</span></td><td>biaya sama</td><td><span class="btn">Pilih sebagai cadangan</span></td></tr>
+<tr><td>2 (ML)</td><td>Duplex 250 Brand C</td><td>250 (sama)</td><td>100 x 130 (lebih besar)</td><td><span class="badge warn">sebagian</span></td><td>+ sisa trim</td><td><span class="btn">Pilih sebagai cadangan</span></td></tr>
+<tr><td>3 (ML)</td><td>Duplex 250 Brand D</td><td>250 (sama)</td><td>90 x 120</td><td><span class="badge warn">PO 3 hari</span></td><td>biaya sama</td><td><span class="btn">Pilih sebagai cadangan</span></td></tr></table></td></tr></table>
+<p><span class="chg">7</span>Aturan (sudah disetujui): <b>ML hanya mengusulkan dan meranking, officer memutuskan</b>; kandidat = kategori material sama, gramatur TIDAK berubah, ukuran lembar boleh lebih besar. Substitusi <b>tidak mengubah</b> BOM/BOP awal ProDev.</p>
+<div class="note" style="margin:6px 0"><span class="chg">?</span><b>PERTANYAAN untuk Jo:</b> bila officer memilih kandidat di layar Pro-Dev, apakah itu <b>hanya disimpan sebagai bahan cadangan</b> (<code>prod_material_alt</code>, baris BOM ProDev tetap) atau <b>mengganti baris BOM ProDev</b>? Pilihan kedua bertentangan dengan aturan "BOM/BOP awal tidak berubah oleh substitusi". <b>Rekomendasi: bahan cadangan saja</b> (preview ini memakai tombol "Pilih sebagai cadangan").</div>
+<p class="why">Catatan jujur: <code>MaterialPlanningEngine</code> sekarang menghitung ketersediaan dan menulis booking/PR; ia <b>belum</b> punya daftar kandidat substitusi. Tombol ini harus memanggil bagian baca (<code>explodePre</code>), bukan <code>persistPre</code> yang menulis booking. Pencari kandidat + ranking adalah logika baru (aturan di atas), belum ada kodenya. Angka dan merek di tabel adalah ilustrasi.</p></div></div>
+</div>
+
+<h2>E. Accordion "Bill of Process"</h2>
+<div class="ba">
+<div class="box"><div class="t">SEKARANG</div><div class="in">
+<table><tr><th>#</th><th>Work sequence</th><th>Machine</th><th>Qty in</th><th>Waste</th><th>Subcontract</th></tr>
+<tr><td>1</td><td>Potong Plano</td><td>-</td><td>-</td><td>0,5%</td><td></td></tr>
+<tr><td>2</td><td>Cetak di mesin: {machine}</td><td>-</td><td>-</td><td>3%</td><td></td></tr>
+<tr><td>...</td><td>QC, Laminasi, Plong, Kupas, Hitung, Pack</td><td>-</td><td>-</td><td></td><td></td></tr></table>
+<p class="why">Daftar langkah dari 26 aturan <code>prod_bop_rule</code> yang sama untuk semua tipe (part_type semua kosong).</p></div></div>
+<div class="box new"><div class="t">USULAN</div><div class="in">
+<div class="strip"><span class="chg">5</span><b>Panel "Template tipe: TRAY_LID_DW"</b> &nbsp; <span class="badge warn">Draft</span> &nbsp; langkah dari 2 contoh Master Card asli &nbsp; <span class="btn">Open Template Review</span><br>Bila template belum Confirm: tampil "memakai aturan umum (perilaku sekarang)".</div>
+<table><tr><th>#</th><th>Work sequence</th><th>Machine</th><th><span class="chg">5</span>Asal</th><th>Syarat</th></tr>
+<tr><td>1</td><td>Potong</td><td>Pemotong (master)</td><td><span class="badge nav">Template</span></td><td></td></tr>
+<tr><td>2</td><td>Cetak</td><td>Lithrone GL440</td><td><span class="badge nav">Template</span></td><td></td></tr>
+<tr><td>3</td><td>Laminating Doff</td><td>master</td><td><span class="badge nav">Finishing</span></td><td></td></tr>
+<tr><td>4</td><td>Laminasi paper + sheet</td><td>master</td><td><span class="badge nav">Template</span></td><td><span class="badge warn">PAPER_SHEET</span></td></tr>
+<tr><td>5</td><td>Plong Depan, Kupas, Hitung, Pack 100</td><td>master / SUBCON</td><td><span class="badge nav">Template</span></td><td></td></tr>
+<tr><td>6</td><td>Lem Samping (hanya bila joint dipilih)</td><td>-</td><td><span class="badge nav">Template</span></td><td><span class="badge warn">JOINT: kosong</span></td></tr></table>
+<p>Proses tanpa mesin di master tampil <span class="badge warn">SUBCON</span> (sah). Mesin tidak diisi agen. Alat Edit/Subcontract per baris tetap seperti sekarang.</p></div></div>
+</div>
+
+<h2>F. Template Review (officer Confirm) - usulan tempat</h2>
+<div class="ba">
+<div class="box"><div class="t">Opsi 1 (rekomendasi): Setting Aturan BOP &gt; tab "Template per tipe"</div><div class="in">
+<p>Layar Setting Aturan BOP sudah ada (<code>BopRuleGrid</code> / bop-rule), dikelola officer. Tab baru di sana: satu tipe per kartu, tombol Confirm / Edit / Back to Draft, tab Riwayat. Dari Pro-Dev New cukup tombol "Open Template Review" (panel di Bill of Process).</p>
+<p class="why">Alasan: template adalah MASTER (diubah user), bukan bagian satu part; mengubahnya dari tengah layar part berisiko menimpa banyak produk sekaligus.</p></div></div>
+<div class="box"><div class="t">Opsi 2: panel dalam Pro-Dev New</div><div class="in">
+<p>Kartu template tipe langsung di bawah Bill of Process; officer meng-Confirm dari situ. Lebih sedikit klik, tetapi layar part makin panjang dan Confirm master tercampur dengan Confirm dokumen part (dua arti "Confirm" di satu layar).</p></div></div>
+</div>
+<div class="box new" style="margin-top:10px"><div class="t">Kartu Template Review (isi sama dengan preview sebelumnya, ditaruh di opsi 1)</div><div class="in">
+<div class="sec"><span class="on">Template</span><span>Riwayat</span></div>
+<p><b>TRAY_LID_DW</b> &nbsp; <span class="badge warn">Draft</span> &nbsp; Contoh asli: 2 Master Card (ALSAMSI Exclusive Top, Omegamoto Spotlight BTP) &nbsp; <span class="btn f">Confirm</span> <span class="btn">Edit</span> <span class="btn">Back to Draft</span></p>
+<table><tr><th>Langkah</th><th>Mesin / SUBCON</th><th>Syarat</th><th>Alasan (data)</th></tr>
+<tr><td>Potong, Cetak, QC</td><td>master</td><td></td><td class="why">Omegamoto kartu</td></tr>
+<tr><td>Laminating Doff, UV Spot, Hot Print, Emboss</td><td>master</td><td>finishing Inquiry</td><td class="why">ALSAMSI kartu</td></tr>
+<tr><td>Laminasi paper + sheet</td><td>master</td><td>PAPER_SHEET</td><td class="why">Omegamoto: Duplex 250 + SHEET E/Flute</td></tr>
+<tr><td>Plong Depan, Kupas, Hitung, Pack</td><td>master</td><td></td><td class="why">kedua kartu</td></tr></table>
+<p><span class="chg">4</span><b>Joint</b>: diizinkan GLUE_SINGLE / GLUE_DOUBLE (kartu Omegamoto: "BADAN TUTUP", tanpa single/double, jadi officer memutuskan). <b>Lem laminasi</b>: ya bila ada bahan SHEET (dua kartu ini). Dua pengaturan terpisah.</p></div></div>
+
+<h2>G. Cara engine background bekerja (urutan, tanpa tombol Process)</h2>
+<div class="flow">
+<div class="step"><b>1. Layar dibuka</b>part dimuat; cek: sudah ada hasil/layout tersimpan?</div><div class="ar">&rarr;</div>
+<div class="step"><b>2. Imposisi</b>belum ada layout: hitung dari flat Inquiry, jadi DRAF (memori/session, tidak ke DB).</div><div class="ar">&rarr;</div>
+<div class="step"><b>3. BOP</b>template tipe Confirmed? ya: kerangka dari template; tidak: aturan umum seperti sekarang.</div><div class="ar">&rarr;</div>
+<div class="step"><b>4. BOM</b>bahan Inquiry + bahan template; qty dari lembar cetak BOP.</div><div class="ar">&rarr;</div>
+<div class="step"><b>5. Alasan</b>yang belum bisa: tulis sebabnya per baris dan di panel status.</div><div class="ar">&rarr;</div>
+<div class="step"><b>6. Officer</b>mengubah atau Save/Confirm; override tidak pernah ditimpa. Tidak ada tulis DB sebelum Save.</div></div>
+<div class="note"><b>Tidak berubah:</b> flow Inquiry &rarr; ProDev &rarr; ProCost, tiga tanda <code>stat_confirm_*</code>, tombol Confirm/Save/Edit, tab Need improvement/Approved, Master Card (print/email), hasil yang disimpan ProDev, ProCost, MRP.</div>
+
+<h2>H. Penyimpanan (CLAUDE.md butir 7.3)</h2>
+<table><tr><th>Apa</th><th>Database.tabel</th><th>Isi</th><th>Rumus / cara simpan</th></tr>
+<tr><td>Tipe produk per part</td><td><code>tm2sdi.iqp_part</code> (+1 kolom <code>type_code</code>, null = ikut Master Card/produk)</td><td>kode tipe dari lookup <code>tm2mst.prod_type</code> (63 tipe)</td><td>Dipilih di Inquiry (satu field baru, menyentuh zona beku, butuh izin). Sekarang tidak ada kolom tipe di Inquiry; hanya <code>prod_master_card.type_code</code>.</td></tr>
+<tr><td>Template tipe (master)</td><td><code>tm2mst.prod_routing_template</code> + <code>prod_routing_step</code> (sudah ada, 0 baris)</td><td>langkah, proses, mesin pilihan, faktor qty, opsional</td><td>Ditulis hanya saat officer Confirm.</td></tr>
+<tr><td>Draf template (terpisah)</td><td><code>tm2mst.prod_routing_template_draft</code> (baru)</td><td>JSON langkah+bahan+joint+syarat, alasan per baris, status Draft/Confirmed, siapa/kapan</td><td>Agen mengisi dari <code>prod_master_card.process_json/materials_json</code> per tipe + <code>prod_bop_rule</code>; Confirm menyalin ke tabel master + <code>doc_state_log</code>.</td></tr>
+<tr><td>Bahan per tipe</td><td>Opsi B (rekomendasi): <code>tm2mst.prod_routing_step_material</code> (baru) &nbsp;/ Opsi A: 5 kolom di <code>prod_routing_step</code></td><td>peran, pola nama, aturan pilih, dasar pakai, takaran</td><td>Sama pola kolom <code>prod_bop_rule</code>. B: satu langkah boleh banyak bahan dan bahan boleh tanpa langkah (tinta, tali pack).</td></tr>
+<tr><td>Joint dan syarat laminasi</td><td><code>prod_routing_template</code> (+2 kolom)</td><td><code>join_allowed</code>, <code>needs_sheet_lamination</code></td><td>Terpisah; engine membaca <code>iqp_part.join_type_id</code> (bukan regex teks <code>joint_type</code>).</td></tr>
+<tr><td>Bahan cadangan hasil pilihan officer</td><td><code>tm2mst.prod_material_alt</code> (sudah ada, migration 16-Okt)</td><td>material_id asal, alt_material_id, catatan, approved_by/at, source_wo_id</td><td>Pilihan di Pro-Dev = baris baru di sini (bila Jo setuju "cadangan saja"). BOM ProDev tidak berubah; dipakai sebagai saran pada substitusi WO berikutnya (<code>SpecChangeService</code>, OTP).</td></tr>
+<tr><td>Hasil Check / Process</td><td>tidak disimpan</td><td>-</td><td>Hanya ditampilkan; tidak menulis booking/PR kecuali officer menekan Create PR seperti sekarang.</td></tr>
+<tr><td>Imposisi draf otomatis</td><td>tidak disimpan</td><td>-</td><td>Tersimpan hanya saat officer Save ke <code>iqp_layout</code> seperti sekarang.</td></tr></table>
+<div class="note"><b>Perlu keputusan Jo:</b> (1) tipe di Inquiry (tambah kolom di <code>iqp_part</code>) setuju? (2) bahan per tipe A atau B. (3) Template Review di Setting Aturan BOP (opsi 1) atau panel Pro-Dev (opsi 2). (4) Substitusi dari layar Pro-Dev: cadangan saja (rekomendasi) atau ganti baris BOM? (5) Imposisi otomatis hanya untuk part tanpa layout tersimpan (usulan).<br><b>Belum dibuktikan:</b> penyebab pasti "-" di layar Jo (lihat bagian 0); angka lembar di D adalah ilustrasi; 58 dari 63 tipe belum punya Master Card contoh; mesin per langkah dibaca dari master, tidak dikarang.</div>
+</div></body></html>

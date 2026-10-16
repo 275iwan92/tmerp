@@ -1,3 +1,13 @@
+# SESI PROCOST (satu dari dua sesi: ProDev dan ProCost). Baca ini dulu.
+
+Aturan: jawab Jo dalam bahasa Indonesia, pendek, jujur; diskusi satu per satu; perubahan flow/layar = narasi, preview, izin Jo, lalu commit + push (`Agent: Jo` Rabu-Sabtu, `Agent: Iwan` Senin-Selasa).
+
+## Tugas utama: MRP di ProCost
+Baca **`docs/design-notes/ppic/18_ppic-mrp-buy-policy-substitution.md`**: tombol Buy sudah commit (0a50ff36); kebijakan beli Direksi sekarang lalu ML + officer ke depan; Draft ready + Release; substitusi di rincian bahan kertas/sheet; kartu ketersediaan di ProCost Instant (Direct); pertanyaan terbuka a-f; urutan kerja 1-4. Mulai dengan mendiskusikan a-f bersama Jo. Terkait: memori project_procost_advisor_built_2026_10_16 (CostingAdvisor). Tes dummy: set env DB_*=ddt* (lihat tests/Feature/MrpBuyTest.php). Dummy belum punya supplier usulan atau harga terakhir pada bahan mana pun.
+
+## Backlog lain (kerjakan sesudah MRP/biaya, satu per satu dengan Jo)
+Daftar di bawah ini dulu sesi "Lainnya"; spec change kelas 3 dipindah ke sesi ProDev.
+
 # Handoff sisa pekerjaan sesi 2026-10-16 (selain MRP dan ENGINE BOP/BOM, yang punya sesi sendiri)
 
 Aturan: jawab Jo dalam bahasa Indonesia, pendek, jujur; diskusi satu per satu; perubahan flow/layar = narasi, preview, izin Jo, lalu commit + push (`Agent: Jo` Rabu-Sabtu, `Agent: Iwan` Senin-Selasa).

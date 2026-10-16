@@ -1,3 +1,18 @@
+# SESI PRODEV (satu dari dua sesi: ProDev dan ProCost). Baca ini dulu.
+
+Aturan: jawab Jo dalam bahasa Indonesia, pendek, jujur. ProDev zona beku: narasi, PREVIEW, izin Jo, baru kode; commit + push hanya setelah Jo agree (`Agent: Jo` Rabu-Sabtu, `Agent: Iwan` Senin-Selasa).
+
+## Status terakhir (dari sesi lama, ditutup 2026-10-16)
+- **Baca `docs/engine-process-template-per-tipe.md`**: hasil diskusi lengkap ENGINE Process (tombol Process, resep BOP/BOM per tipe produk, joint type bukan "perlu lem", peta kode SpecEngine, revisi layar = Pro-Dev New dengan engine background). Belum ada kode.
+- Preview yang sudah dibuat: `docs/mockups/engine_template_review.(html|jpg)` dan `docs/mockups/prodev_engine_per_accordion.(html|jpg)`. Belum disetujui Jo.
+- Belum diperiksa: jumlah tipe di `prod_type`, kelengkapan template/Master Card per tipe, isi `prod_bop_rule`, kebenaran up/imposisi di BOM.
+
+## Dari sesi lain yang menyentuh ProDev (dikerjakan di sini)
+- Perubahan spesifikasi kelas 3 (routing/BOP) sesudah CO Confirm: OTP OPM/GM/Director, ditulis balik ke master ProDev untuk order berikutnya, PPIC boleh menambah atau mengganti proses (tidak mengurangi), rework sesudah QC. Fondasi: `app/Services/Production/SpecChange/*`.
+- Substitusi bahan TIDAK mengubah ProDev (BOM/BOP awal tetap).
+
+## Awal handoff lama (konteks ENGINE)
+
 # Handoff sesi baru: ENGINE penyusun BOP dan BOM dari data Inquiry Product (2026-10-16)
 
 Sesi ini DISKUSI dulu (narasi, tanpa kode) dengan Jo. ProDev adalah zona beku: tiap perubahan wajib narasi rinci sebelum dikerjakan, lalu preview, lalu izin Jo.
