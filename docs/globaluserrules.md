@@ -282,6 +282,9 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     - Hanya mesin dulu (user 2026-10-14: "kalau manual itu satu crew hanya satu orang dan itu sangat ribet"): stasiun kerja manual (Manual QC, Manual Lem, dst) dan anggota borongan `BOR-ddmmyy-nnn` DITUNDA, tidak dibangun.
     - Aturan dijaga `MachineCrewService`; tes `MachineCrewServiceTest`. Help: topik `crew` dan `crew-form` (`resources/data/help/ppic_assign_crew.json`).
 
+**A.28 Master Card = satu wujud (user 2026-10-16).** *"Master Card satu wujud saja, hasil perpaduan master product dan Layout dari inquiryprod+prodev+procost."*
+    - Master Card adalah gabungan Master Product dengan layout hasil Inquiry Product + ProDev + ProCost. Kode saat ini masih punya dua bentuk (view `vw_master_card` dan koleksi `prod_master_card`); penyatuannya adalah perubahan flow/data di zona beku, jadi menunggu narasi, preview, dan izin Jo. Kartu TG: `docs/tg/sales/inquiry-product/14_card_dieline-and-master-card.md`.
+
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
@@ -903,3 +906,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-14 | D.22: **uji mandiri lewat login admin di devlib.test dan mockup.test** (user: "HARUS bisa menguji mandiri via user admin di devlib.test ... Begitu pula di mockup.test. YANG TIDAK BOLEH adalah tmerp setelah proses UAT berjalan") — dicatat di CLAUDE.md butir 8. |
 | 2026-10-14 | D.23: **DevLib hanya bentuk; bila perlu data, pakai XML** (user: "di devlib hanya bentuknya saja dan pakai xml kalau mau pakai data"). |
 | 2026-10-16 | C.35: **menu Reports = judul `heading` + jarak, laporan di bawahnya**; All Inquiries jadi laporan read-only (user). |
+| 2026-10-16 | A.28: **Master Card satu wujud** = perpaduan Master Product dan layout Inquiry Product + ProDev + ProCost (user). Penyatuan kode belum dikerjakan (zona beku). |

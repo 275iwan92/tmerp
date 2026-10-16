@@ -9278,5 +9278,131 @@
             "Learning Changes",
             "scheduler: ppic:learn"
         ]
+    },
+    {
+        "class": "App\\Services\\MasterCard\\MasterCardDummyEngine",
+        "file": "app/Services/MasterCard/MasterCardDummyEngine.php",
+        "lines": 496,
+        "entries": [
+            {
+                "method": "plan",
+                "static": false,
+                "params": [
+                    {
+                        "name": "dir",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Status of every product found in the PDF folder (ready or the reason it is skipped); writes nothing."
+            },
+            {
+                "method": "counts",
+                "static": false,
+                "params": [],
+                "returns": "array",
+                "note": "Dummy sets now in the database by the furthest document each reached, from Inquiry to a planned WO operation."
+            },
+            {
+                "method": "run",
+                "static": false,
+                "params": [
+                    {
+                        "name": "dir",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "quota",
+                        "type": "array",
+                        "default": null
+                    },
+                    {
+                        "name": "qty",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "dueDays",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Builds the sets up to the quota of each level; products beyond the quota are noted, not built."
+            },
+            {
+                "method": "reset",
+                "static": false,
+                "params": [],
+                "returns": "int",
+                "note": "Removes everything this engine made: PDF Master Cards and, per card, the Inquiry chain down to WO, product, layout and files."
+            }
+        ],
+        "key": "master-card-dummy",
+        "name": "Master Card Dummy Engine (PDF to leveled dummy data)",
+        "group": "Dummy Data",
+        "mode": "auto",
+        "purpose": "Turns the new Master Card PDFs in docs/attachments/mastercard into leveled dummy data (Inquiry, Pro-Dev, Pro-Cost, Quotation WIN, Customer Order Confirmed), always with dieline, artwork and flat size. Dummy databases (ddt*) only; products already present are skipped, never overwritten.",
+        "inputs": [
+            [
+                "dir",
+                "Folder with the Master Card PDFs (default docs/attachments/mastercard)."
+            ],
+            [
+                "quota",
+                "Number of sets per level: inquiry, prodev, procost, co, product."
+            ],
+            [
+                "qty",
+                "Order quantity of the sample Quotation and Customer Order."
+            ],
+            [
+                "dueDays",
+                "Days from today for the Customer Order due date."
+            ]
+        ],
+        "outputs": [
+            [
+                "Report",
+                "One row per product: design no., name, level reached, note (incomplete, skipped, over quota)."
+            ],
+            [
+                "Dummy data",
+                "Collection cards and an Inquiry per product, plus layout, published costing, Quotation WIN and Confirmed CO as far as the level goes; data_origin DUMMY."
+            ]
+        ],
+        "steps": [
+            "Reads each PDF (MasterCardPdfReader) and groups the cards of one product by design number or card code.",
+            "Refuses to run unless the master, sales and production connections point to ddt* databases.",
+            "Checks the dummy requirements: artwork, P x L x T size, knife (flat size) and material; otherwise the product is reported as incomplete.",
+            "Level Inquiry: Collection cards with source file and artwork, customer ensured, Inquiry confirmed by Sales through InquiryWriter.",
+            "Level Pro-Dev: the layout canvas is built from the card (print size, knife layout, UP, press from the card text); BOP and BOM come from SpecEngine.",
+            "Level Pro-Cost and CO: costing is calculated and published, the Quotation is set to WIN and the Customer Order is created, approved and Confirmed.",
+            "Level product is a branch: the card becomes a Master Product directly, without Pro-Dev, Pro-Cost or Customer Order."
+        ],
+        "reads": [
+            "docs/attachments/mastercard/*.pdf",
+            "tm2mst.prod_master_card",
+            "tm2sdi.iqp_inquiry",
+            "tm2prd.prd_wo / prd_wo_operation"
+        ],
+        "writes": [
+            "tm2mst.prod_master_card (and files)",
+            "tm2mst.prod_part and product",
+            "tm2sdi.iqp_inquiry / iqp_part / costing / quotation / co_order",
+            "only in ddt* databases"
+        ],
+        "settings": [
+            "Command options --levels, --qty, --due, --reset"
+        ],
+        "used": [
+            "php artisan dummy:mastercard --env=mockup",
+            "Developer > Database > Master Card Dummy (v2/dummy/mastercard)"
+        ],
+        "docs": [
+            "docs/PATOKAN-DATA-DUMMY.md"
+        ]
     }
 ]

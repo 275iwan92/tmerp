@@ -1,6 +1,6 @@
 # ENGINE map (Phase 3)
 
-> Generated 2026-10-16 from `app/Support/Engines/EngineRegistry.php` (60 registered engines), `routes/console.php` and a grep for callers. Verification status: **SCHEDULED** = proven in `routes/console.php` and its command uses the engine class (FACT, seen this session). **Screen/route** = only a class-name grep in `resources/views`, `app/Support/V2`, `routes`; not yet mapped to a button/row, so it must not be read as 'certain trigger'. Full cards exist only for 10 Sales engines; the rest wait for their module (Phase 5). The status of open items stays in `docs/ENGINE-ATTENTION.md`.
+> Generated 2026-10-16 from `app/Support/Engines/EngineRegistry.php` (61 registered engines), `routes/console.php` and a grep for callers. Verification status: **SCHEDULED** = proven in `routes/console.php` and its command uses the engine class (FACT, seen this session). **Screen/route** = only a class-name grep in `resources/views`, `app/Support/V2`, `routes`; not yet mapped to a button/row, so it must not be read as 'certain trigger'. Full cards exist only for 10 Sales engines; the rest wait for their module (Phase 5). The status of open items stays in `docs/ENGINE-ATTENTION.md`.
 
 ## Engines without a menu (background)
 Only 10 engines run on a schedule (server time, `php artisan schedule:run`):
@@ -147,11 +147,17 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 |---|---|---|---|---|
 | `assistant` | Assistant Engine (offline) | auto | Trigger NOT found in `app/` (class of package `Assistant`); NOT checked further | not yet |
 
+### Dummy Data
+
+| Key | Engine | Mode | Trigger | TG card |
+|---|---|---|---|---|
+| `master-card-dummy` | Master Card Dummy Engine (PDF to leveled dummy data) | auto | Manual command `dummy:mastercard --env=mockup` and the Developer screen `v2/dummy/mastercard` (buttons Make Master Product, Make dummy data, Reset); ddt* databases only (FROM CODE: `assertDummy`) | not yet |
+
 ## Findings (recorded, not fixed)
-1. `MasterCardDummyEngine` (`App\Services\MasterCard`) is not registered; `EngineCatalogTest::test_every_engine_class_is_registered` FAILS (run 2026-10-16). Needs Jo's decision: register or exclude.
-2. Registry: 60 keys but 59 classes; key `dieline` has no class (three code copies). `assistant` has no caller in `app/`.
+1. RESOLVED 2026-10-16: Jo decided to include `MasterCardDummyEngine`; registered as key `master-card-dummy`, `engines.json` regenerated, `EngineCatalogTest` 6/6 pass.
+2. Registry: 61 keys but 60 classes; key `dieline` has no class (three code copies). `assistant` has no caller in `app/`.
 3. `ppic:auto-plan`, `ppic:learn` only run if `$ppicReady` is true; that condition was not read this session.
-4. Engines without a TG card: 50 of 60. Registry vs code findings for the 10 Sales engines: `sales/90_findings_engine-group-c.md`.
+4. Engines without a TG card: 51 of 61. Registry vs code findings for the 10 Sales engines: `sales/90_findings_engine-group-c.md`.
 
 ## Diagram
 [img/engine-map.svg](./img/engine-map.svg), text twin = the schedule table above.

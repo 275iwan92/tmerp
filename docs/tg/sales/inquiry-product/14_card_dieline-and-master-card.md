@@ -3,7 +3,7 @@
 > Group B, 2026-10-16. FACT = seen directly (mockup DB `ddtsdi`/`ddtmst`, code with lines, file listing). Behaviour on the browser screen was NOT tested.
 
 - **Module/sub-module**: Sales > Inquiry & Quotation > Inquiry Product (the dieline is born here) and > Pro-Dev (Master Card and its collection).
-- **Canonical name**: Dieline = `iqp_part.dieline_spec` (JSON) + `flat_w/flat_h/flat_area`. Master Card = two forms (see Facts): (a) `tm2mst.vw_master_card`, (b) collection `tm2mst.prod_master_card`.
+- **Canonical name**: Dieline = `iqp_part.dieline_spec` (JSON) + `flat_w/flat_h/flat_area`. Master Card = ONE form (decision Jo 2026-10-16): the combination of the Master Product and the layout that comes from Inquiry Product + ProDev + ProCost. Code today still has two shapes (see Facts): (a) `tm2mst.vw_master_card`, (b) collection `tm2mst.prod_master_card`.
 - **Synonyms**: flat layout, flat size, international dieline, knife/die, MC, parent card, Master Card Collection.
 - **NOT the same as**: product type (`prod_type`, card `10_card_product-type.md`); ProDev layout/imposition (`prod_layout_group`); artwork (design image, column `artwork_path`).
 
@@ -28,7 +28,7 @@
 - **frozen_zone**: Inquiry dieline and Master Card. Jo's original files are used as they are; the dieline is not redrawn.
 
 ## Findings (recorded, not fixed)
-1. **"Master Card" has two forms without one standard name**: (a) the view from product/part (`vw_master_card`) and (b) the collection of imported cards. The project memory says Master Card is "born in ProDev"; that matches (a), while (b) is born from outside files and then becomes an Inquiry. Needs a statement from Jo: both are called Master Card, or (b) uses another name.
+1. **"Master Card" has two shapes in code, but ONE form by decision (Jo 2026-10-16)**: Master Card is the combination of the Master Product and the layout from Inquiry Product + ProDev + ProCost. Today (a) the view `vw_master_card` (from product/part) and (b) the collection of imported cards (`prod_master_card`) both exist. Merging them into one is a flow/data change in the frozen zone: not done; needs narrative, preview and Jo's permission first.
 2. **Column `prod_part.dieline_spec` is only filled at WIN.** `sendToProDev` only copies L/W/H (cm), `pack_qty`, `cfg_color`, finishing, artwork (`InquiryWriter.php:109-119`); it does not copy `part_type`, `dieline_spec`, flat. In the mockup, 2 of 35 master parts linked to an inquiry have `part_type` NULL although their `iqp_part.part_type` is `DC`. Impact on the engine not proven.
 3. **Artwork attachments are always given `file_type='JPEG'`** even though the upload may be PNG (`InquiryWriter.php:144-146`; validation `mimes:jpg,jpeg,png`, `routes/v2.php:276`).
 4. **Mixed types in JSON**: `dims` stores numbers as text with varying decimals (`"200"` vs `"40.0000"`); harmless, but a text comparison would be wrong.

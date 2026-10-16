@@ -34,7 +34,8 @@
 24. Kartu stok: urutan = tanggal dokumen, baris sesudahnya dihitung ulang; saldo minus ditolak; periode tertutup ditolak (koreksi = Stock Adjustment); Confirm tidak diedit; dummy salah dihapus dan dibangun ulang.
 25. Payroll dibatasi peran: Direksi/GM semua; HR Officer hanya Non-staff; Op Manager hanya slip bawahan; developer/admin biasa tanpa akses (`PayrollAccess`).
 26. Inventory & Warehouse v2.01: INVENTORY (apa, berapa, nilai) vs WAREHOUSE (di mana); QC sampling, URGENT dock-to-line; Average per item; booking sejak costing; Stock Card rumus bersambung (BB = EB sebelumnya); koreksi lewat dokumen baru; semua perubahan PREVIEW dulu; Form WO: **Release = Available, Purchase = Required − Release**.
-27. Assign Crew: satu crew = satu mesin Offset + satu shift (nama = nickname + nama shift); maks 10 anggota, orang yang sama tidak boleh bentrok pada shift + periode yang sama; bentuk form tidak menambah tabel atau kolom; jumlah kotak crew = jumlah shift produksi aktif di Master Shift (tanpa batas tetap, tanpa Delete); hanya mesin dulu, stasiun manual dan borongan ditunda.
+27. Assign Crew: satu crew = satu mesin Offset + satu shift (nama = nickname + nama shift); maks 10 anggota, orang yang sama tidak boleh bentrok pada shift + periode yang sama; bentuk form tidak menambah tabel atau kolom; jumlah kotak crew = jumlah shift produksi aktif di Master Shift (tanpa batas tetap, tanpa Delete); hanya mesin dulu, stasiun manual dan borongan ditunda.
+28. Master Card = satu wujud: perpaduan Master Product dan layout Inquiry Product + ProDev + ProCost (penyatuan kode menunggu izin Jo, zona beku).
 
 ## B. Database dan data
 
