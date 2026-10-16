@@ -4,7 +4,7 @@
  * REMARK
  * Tujuan       : Ringkasan otomatis sebuah berkas .md (judul + 2-3 kalimat pembuka) untuk kartu MD Review, tanpa AI dan tanpa tabel baru.
  * Sumber hulu  : Berkas .md di repo (path relatif dari sys_md_review.file_path).
- * Input        : path relatif repo (atau path absolut folder arsip); jumlah kalimat dan batas karakter.
+ * Input        : path relatif repo / absolut (of) atau teks markdown (fromText); jumlah kalimat dan batas karakter.
  * Output       : ['title' => judul H1 atau null, 'summary' => kalimat pembuka, '' bila berkas tidak ada atau tanpa prosa].
  * Dipakai oleh : App\Support\V2\Grid\Setup\MdReviewLookup::posts().
  * Status       : Aktif.
@@ -22,10 +22,14 @@ final class MdDigest
     public static function of(string $relPath, int $sentences = 3, int $maxChars = 520): array
     {
         $path = is_file($relPath) ? $relPath : base_path($relPath);
-        if (! is_file($path)) {
-            return ['title' => null, 'summary' => ''];
-        }
-        $lines = preg_split('/\R/', (string) file_get_contents($path, false, null, 0, self::READ_BYTES)) ?: [];
+
+        return is_file($path) ? self::fromText((string) file_get_contents($path, false, null, 0, self::READ_BYTES), $sentences, $maxChars) : ['title' => null, 'summary' => ''];
+    }
+
+    /** @return array{title: ?string, summary: string} */
+    public static function fromText(string $text, int $sentences = 3, int $maxChars = 520): array
+    {
+        $lines = preg_split('/\R/', $text) ?: [];
         // Front matter YAML (--- ... ---) di awal berkas bukan prosa: dilewati.
         if (trim($lines[0] ?? '') === '---' && ($end = array_search('---', array_map('trim', array_slice($lines, 1)), true)) !== false) {
             $lines = array_slice($lines, $end + 2);

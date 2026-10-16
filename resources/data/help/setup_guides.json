@@ -1,0 +1,38 @@
+[
+  {
+    "key": "setup-guides",
+    "type": "REPORT",
+    "module": "SETUP",
+    "title": "Guides",
+    "purpose": {
+      "en": "Read how each module works as blog-style articles: the screens step by step, the engines behind them, and the formulas. Nothing can be changed here.",
+      "id": "Baca cara kerja tiap modul sebagai artikel bergaya blog: layar langkah demi langkah, engine di baliknya, dan rumusnya. Tidak ada yang bisa diubah di sini."
+    },
+    "keywords": "guides, panduan, artikel, cara kerja, engine, formula, rumus, blog, bantuan",
+    "steps": [
+      {
+        "en": "Open Guides. Each card is one article with its module, a short summary and a Read article link.",
+        "id": "Buka Guides. Tiap kartu satu artikel dengan modulnya, ringkasan singkat, dan tautan Read article."
+      },
+      {
+        "en": "Type a word in Search inside documents and click Search to look inside the text; the card shows the matching passage.",
+        "id": "Ketik kata di Search inside documents lalu klik Search untuk mencari di dalam teks; kartu menampilkan kutipan yang cocok."
+      },
+      {
+        "en": "Use the boxes on top to narrow the list by module.",
+        "id": "Pakai kotak di atas untuk menyaring daftar menurut modul."
+      },
+      {
+        "en": "Click Read article to read the whole guide. The Formulas section at the end is shown only to the people allowed to see formulas.",
+        "id": "Klik Read article untuk membaca seluruh panduan. Bagian Formulas di akhir hanya tampil untuk yang berhak melihat rumus."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Formulas (owner only)",
+        "en": "The formulas and worked examples of the module. Visible only to the logins listed in the constant PROCOST_FORMULA_LOGINS.",
+        "id": "Rumus dan contoh hitungan modul. Hanya tampil untuk login yang terdaftar di konstanta PROCOST_FORMULA_LOGINS."
+      }
+    ]
+  }
+]

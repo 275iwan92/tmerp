@@ -3,7 +3,7 @@
      Sumber hulu  : tm2sys.sys_md_library lewat DocsLibraryLookup (feed() untuk indeks, article() untuk satu artikel).
      Input        : ?q= (kata dicari), ?doc= (id artikel); chip jenis dokumen dan kotak cari cepat di indeks.
      Output       : Hanya tampilan baca; tidak ada yang tersimpan.
-     Dipakai oleh : Menu SET_DOCS_LIBRARY (screen() milik DocsLibraryLookup).
+     Dipakai oleh : Menu SET_DOCS_LIBRARY (DocsLibraryLookup) dan SET_GUIDES (GuidesLookup): keduanya menyediakan feed(), article(), guide(), url().
      Status       : Aktif (ddt*). --}}
 @php
     use App\Support\V2\Crumb;
