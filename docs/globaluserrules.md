@@ -733,6 +733,17 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     - Demo di devlib.test menampilkan **bentuk** objek dengan data contoh statis; tidak membaca database bisnis (`tm2*` / `ddt*`).
     - Bila demo perlu data lebih banyak, datanya ditulis sebagai berkas **XML** di folder data DevLib, bukan tabel database atau JSON baru.
     - Sisa lama: `devlib/resources/data/warehouse-desk.json` (JSON) dipindah ke XML saat demo itu disentuh berikutnya.
+24. **[2026-10-16] Technical Guide (TG) = ingatan agen.**
+    > User 2026-10-16: *"Agen yang memperingatkan Jo bila sebuah usulan duplikat atau bertabrakan, bukan Jo."*
+    - **Bahasa dan tempat.** TG ditulis English penuh; User's Guide (UG) tetap Indonesia. Sumber: `docs/tg/<modul>/<sub-modul>/` (peta besar `docs/tg/00_big-map.md`, peta engine `01_engine-map.md`, relasi `02_relations.md`). Tampil di Setup > Help and Support > Technical Guide setelah `php artisan guides:import` (jalankan di mockup dan tmerp).
+    - **Baca dulu.** Sebelum diskusi atau mengusulkan apa pun di modul X: baca peta besar, halaman sub-modul X, kartu terkait, lalu antarmuka (`source`) semua modul hulu X. Cek `used_by` hilir hanya bila antarmuka berubah. Untuk engine: baca juga kartu ENGINE-nya dan `docs/ENGINE-ATTENTION.md`.
+    - **Kartu belum ada.** Verifikasi dari DB dan layar nyata, lalu tambahkan kartunya saat itu.
+    - **Usul baru wajib bukti ketiadaan.** Usul skema, kolom, layar, atau aturan memuat blok "Already exists? Searched where, result" dari `php artisan concept:find "<kata>"` (sinonim: `docs/tg/_synonyms.txt`). Tanpa blok itu, usul tidak sah. Satu konsep = satu kartu = satu nama kanonik.
+    - **Label bukti.** FACT hanya untuk yang dilihat langsung di sesi itu (query DB, kode dengan nomor baris, layar). Klaim dokumen lama ditulis "FROM DOCUMENT, not checked".
+    - **Kode berubah, kartu ikut.** Berkas yang dikutip kartu tidak boleh berubah tanpa kartunya dalam commit yang sama. Hook pre-commit (`docs:check --staged`, aktif lewat `core.hooksPath=.githooks`) menolak commit. Bila isi kartu tidak terpengaruh, tambah baris `> Checked <tanggal> after <perubahan>: ...`.
+    - **Rahasia.** Angka dan rumus harga hanya di bawah `<!-- johiwan-only -->` (A.8-A.9).
+    - **Zona beku.** Menyentuh antarmuka beku: peringatkan Jo lebih dulu, seperti aturan biasa.
+    - **Sebelum commit docs/tg:** `php artisan docs:check` harus 0 ERROR.
 
 ## E. Help & Asisten AI
 
@@ -907,3 +918,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-14 | D.23: **DevLib hanya bentuk; bila perlu data, pakai XML** (user: "di devlib hanya bentuknya saja dan pakai xml kalau mau pakai data"). |
 | 2026-10-16 | C.35: **menu Reports = judul `heading` + jarak, laporan di bawahnya**; All Inquiries jadi laporan read-only (user). |
 | 2026-10-16 | A.28: **Master Card satu wujud** = perpaduan Master Product dan layout Inquiry Product + ProDev + ProCost (user). Penyatuan kode belum dikerjakan (zona beku). |
+| 2026-10-16 | D.24: **Technical Guide (docs/tg) = ingatan agen**; protokol baca, bukti ketiadaan lewat concept:find, hook kartu (user: "Agen yang memperingatkan Jo bila sebuah usulan duplikat atau bertabrakan, bukan Jo"). |

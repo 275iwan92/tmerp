@@ -119,6 +119,7 @@
 21. **Standar kode:** OO + DevLib dulu; sederhana; REMARK enam butir + `docs/SCREEN-INDEX.md`; tanpa dead code (buktikan lewat grep, hapus, bukan komentar).
 22. Uji mandiri sebagai user `admin` di devlib.test dan mockup.test (login di browser uji boleh); tmerp.test boleh selama UAT belum dimulai (sekarang masih jauh), dilarang setelah UAT berjalan.
 23. DevLib hanya menampilkan bentuk (data contoh statis); bila perlu data, pakai berkas XML, bukan database bisnis atau JSON baru.
+24. TG = ingatan agen: baca peta besar + kartu modul dan hulunya sebelum usul; usul baru wajib blok "Already exists?" (`concept:find`); kode yang dikutip kartu berubah = kartu ikut (hook); TG English, UG Indonesia.
 
 ## E. Help dan asisten AI
 

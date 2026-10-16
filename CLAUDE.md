@@ -2,7 +2,7 @@
 
 > Disusun ulang 2026-10-14 (disetujui Jo) dari 515 baris. Versi lama dengan bagian usangnya: `tmerp_unused/CLAUDE_before_ringkas_2026-10-14.md` dan riwayat git.
 > Aturan user bernomor (A.n..E.n): indeks `docs/ringkas/globaluserrules.md`, detail `docs/globaluserrules.md` pada nomor yang sama. Bahasa jawaban ke Jo: Indonesia, pendek, jujur.
-> Awal sesi: `php artisan qc:reviews --env=mockup` (kerjakan Need improvement, D.19), `gen:requests` di folder `devlib/`, dan baca rating <= 3 bintang di devlib.test > Quality & Rating.
+> Awal sesi: `php artisan qc:reviews --env=mockup` (kerjakan Need improvement, D.19), `gen:requests` di folder `devlib/`, dan baca rating <= 3 bintang di devlib.test > Quality & Rating. Sebelum diskusi atau usul di modul X, baca TG (D.24): `docs/tg/00_big-map.md`, halaman sub-modul X, kartu terkait, dan kartu modul hulunya.
 
 ## 1. Bisnis dan aturan keras
 - OFFSET PRINTING (karton box/kemasan). Semua data dummy mulai dari INQUIRY dan wajib punya **Master Card + artwork + dieline** dengan ukuran jelas (P x L x T, datar, mm). Berkas asli Jo di `docs/attachments/MC-*.xlsx` dan `docs/attachments/mastercard/` dipakai apa adanya; dieline tidak digambar ulang.
@@ -85,3 +85,4 @@ php artisan engine:catalog               # setelah daftar engine berubah
 7. Backlog: item selesai pindah ke `docs/LOG_JOB_DONE.md`; aturan baru dari Jo ditambahkan ke rulebook.
 8. **Uji mandiri lewat login admin (Jo 2026-10-14, berlaku selamanya):** agen BOLEH dan HARUS menguji sendiri sebagai user `admin` di **devlib.test**, **mockup.test**, dan (selama UAT belum dimulai; tahap sekarang masih jauh dari UAT) **tmerp.test**, termasuk login admin di browser uji (Edge headless / CDP). **TIDAK BOLEH** login atau menguji di **tmerp.test setelah UAT berjalan**.
 9. Jangan memakai `employee_id=1` untuk uji; jangan mengetik password akun nyata Jo atau layanan lain.
+10. **Technical Guide (D.24):** `docs/tg` = kondisi sistem sekarang, English. Usul skema/field/layar/aturan baru wajib blok "Already exists? Searched where, result" dari `php artisan concept:find "<kata>"`. Mengubah berkas yang dikutip kartu = memperbarui kartunya dalam commit yang sama (hook pre-commit menolak; `php artisan docs:check`). Setelah mengubah `docs/tg` jalankan `php artisan guides:import` di mockup dan tmerp.

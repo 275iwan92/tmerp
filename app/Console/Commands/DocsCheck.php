@@ -178,6 +178,10 @@ class DocsCheck extends Command
         // Only cards already tracked by git can be demanded: a card another session has not committed yet is not part of this commit's duty.
         $tracked = array_filter(explode("\n", (string) shell_exec('git -C '.escapeshellarg(base_path()).' ls-files docs/tg')));
         foreach ($staged as $file) {
+            // Rule files and other docs are cited as references (A.8, D.24 ...); adding a rule does not make 24 cards stale. Only code files demand their cards.
+            if (str_starts_with($file, 'docs/') || $file === 'CLAUDE.md') {
+                continue;
+            }
             foreach (array_unique($this->cited[$file] ?? []) as $card) {
                 if (in_array($card, $tracked, true) && ! in_array($card, $staged, true)) {
                     $this->errors[] = "$file is cited by $card, which is not staged: check the card against the change, update it (and its Verified date), then stage it";
