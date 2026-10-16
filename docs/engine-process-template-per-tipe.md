@@ -2,7 +2,7 @@
 
 > Status: HASIL DISKUSI, belum ada kode. ProDev zona beku: narasi (dokumen ini), lalu PREVIEW (JPEG), lalu izin Jo, baru dibangun.
 > REVISI Jo 2026-10-16 (lihat §6): layar yang dipakai = Pro-Dev New yang sudah ada (bukan layar baru); engine selalu jalan di background.
-> Pelengkap: `docs/handoff-engine-bop-bom-dari-inquiry.md`, `docs/ENGINE-ATTENTION.md`, `docs/mastercard-okt-analysis.md`.
+> Pelengkap: `docs/handoff-prodev-session.md`, `docs/ENGINE-ATTENTION.md`, `docs/mastercard-okt-analysis.md`.
 
 ## 1. Keputusan Jo
 1. **Tombol Process** di ProDev menghitung semuanya sekaligus, urut: imposisi (layout, up, lembar) -> data Inquiry Product (ukuran, bahan, finishing, qty) -> routing BOP -> BOM. Hasil = draf; officer memeriksa lalu memutuskan.

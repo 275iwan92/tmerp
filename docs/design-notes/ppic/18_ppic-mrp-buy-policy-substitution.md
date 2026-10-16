@@ -53,4 +53,4 @@ Per bahan atau kategori, disetujui Direksi: kelipatan beli dan MOQ; harga bertin
 4. Kartu ketersediaan di ProCost Instant.
 
 ## Sesi lain yang terkait
-- ENGINE penyusun BOP/BOM dari data Inquiry Product: `docs/handoff-engine-bop-bom-dari-inquiry.md` (sesi terpisah).
+- ENGINE penyusun BOP/BOM dari data Inquiry Product: `docs/handoff-prodev-session.md` (sesi terpisah).
