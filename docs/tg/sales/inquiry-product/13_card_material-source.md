@@ -40,3 +40,6 @@ Searched tables `cust_material%` / `%material_source%` in all `ddt*` (`informati
 
 > Checked 2026-10-16 after the ProCost BOM panel change (Jo agreed): this card is only linked from a changed card; nothing in it needs to change.
 
+
+> Checked 2026-10-16 after the ProCost Book button (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.
+

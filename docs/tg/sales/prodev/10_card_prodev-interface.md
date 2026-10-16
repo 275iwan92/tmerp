@@ -58,3 +58,6 @@ Searched: `sendToProDev`, `openInProdev`, `prod_part_id`, `stat_confirm_prodev`,
 > Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): the content of this card is not affected; cited `SpecEngine.php` line numbers after ~690 are about 25 lines lower. Only the cited items were re-read, not the whole card.
 
 > Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+
+> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+

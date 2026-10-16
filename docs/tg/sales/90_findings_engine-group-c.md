@@ -36,3 +36,6 @@ FACT (partly read): `ProCostContextService` (maps the ProDev layout to costing b
 > Update 2026-10-16: `SpecEngine.php` (ink estimate, Stock -> Usage conversion in `toStockUom`/`stockFor`) and `MaterialPlanningEngine::availabilityFor` were changed with Jo's agreement; SpecEngine line numbers after ~690 shifted by about +25 (items 3, 11, 12 cite the old numbers). ATTENTION-ENGINE-04 is only partly addressed (conversion works only where the master has `conversion_to_usage`).
 
 > Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+
+> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+

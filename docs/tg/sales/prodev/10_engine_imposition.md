@@ -87,3 +87,6 @@ Unit: mm, except `up` (pieces per sheet) and percent. No rounding unless stated.
 
 
 > Checked 2026-10-16 after adding the Technical Guide diagram route (`routes/web.php`: one `require` appended to an existing line, no line numbers moved; `routes/web.php:150` and `:339` re-read and still correct). Content of this card is not affected.
+
+> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+

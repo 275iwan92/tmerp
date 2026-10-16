@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Inventory\RmBooking;
 use App\Models\Master\MatCoatingRate;
 use App\Models\Master\MatFilmRate;
 use App\Models\Master\MatGrammage;
@@ -22,6 +23,7 @@ use App\Services\Costing\CostingAdvisor;
 use App\Services\Costing\CostingEngine;
 use App\Services\Costing\ProCostContextService;
 use App\Support\Costing\FormulaAccess;
+use App\Support\V2\Data\MaterialPlanning;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -44,9 +46,9 @@ use Livewire\Component;
  * Tujuan       : Layar ProCost Mode Integrasi: hitung HPP dan harga per tier dari Inquiry + ProDev; panel BOM menampilkan BOM ProDev dengan ketersediaan MRP.
  * Sumber hulu  : ProCostContextService (spec, layout, BOM/BOP ProDev), SpecEngine (BOM), MaterialPlanningEngine::availabilityFor (ketersediaan), CostingEngine, CostingAdvisor.
  * Input        : inquiry (id), tier terpilih (qty), isian officer.
- * Output       : iqp_costing, part, tier; panel BOM and availability hanya membaca (tanpa PR/PO/booking).
+ * Output       : iqp_costing, part, tier; panel BOM and availability membaca saja, kecuali tombol Book / Release hold yang menahan stok pre-booking inquiry ini (MaterialPlanningEngine::hold, kertas saja, habis sendiri); tanpa PR/PO.
  * Dipakai oleh : rute inquiry.costing, wizard-bar.
- * Status       : Aktif (v1); panel BOM and availability ditambah izin Jo 2026-10-16, tampil bila part tertaut ProDev, kalau tidak panel BOM InqProd lama.
+ * Status       : Aktif (v1); panel BOM and availability dan tombol Book ditambah izin Jo 2026-10-16, tampil bila part tertaut ProDev, kalau tidak panel BOM InqProd lama.
  */
 new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 {
@@ -55,6 +57,8 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     public int $costingId = 0;
 
     public string $engineError = '';
+
+    public string $bookMsg = '';
 
     // Cross-nav read-only (wizard-bar, user 2026-09-04): lihat status/harga saja,
     // tidak bisa mengubah, harga kelihatan setelah PUBLISHED.
@@ -345,6 +349,48 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     {
         $this->tierId = $id ? (int) $id : null;
         unset($this->tier, $this->context);
+    }
+
+    // Pre-booking (tanpa CO) rantai inquiry ini: sumber status tombol Book.
+    #[Computed]
+    public function booking(): ?RmBooking
+    {
+        return $this->inquiryId ? RmBooking::where('chain_key', (string) $this->inquiryId)->whereNull('co_id')->where('stat_cancel', 0)->orderByDesc('booking_id')->first() : null;
+    }
+
+    // Book = Hold pre-booking yang ada (kertas saja): tulis ulang pre-booking inquiry ini lalu tahan stoknya beberapa hari kerja. Hanya sesudah Publish.
+    public function book(): void
+    {
+        $this->bookMsg = '';
+        if ($this->costing?->doc_status !== 'PUBLISHED') {
+            $this->bookMsg = t('Book is available after Publish.');
+
+            return;
+        }
+        $engine = MaterialPlanning::engine();
+        $b = $engine->persistPre($this->inquiryId);
+        if (! $b || $b->co_id) {
+            $this->bookMsg = t('No pre-booking for this inquiry (a Customer Order or an ended quotation owns it).');
+
+            return;
+        }
+        try {
+            $engine->hold($b, t('Booked from ProCost'));
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            $this->bookMsg = $e->getMessage();
+        }
+        MaterialPlanning::changed();
+        unset($this->booking, $this->context);
+    }
+
+    public function releaseBook(): void
+    {
+        $this->bookMsg = '';
+        if ($this->booking?->doc_status === 'HELD') {
+            MaterialPlanning::engine()->releaseHold($this->booking);
+            MaterialPlanning::changed();
+        }
+        unset($this->booking, $this->context);
     }
 
     // Tombol Recalculate di panel BOM: hitung ulang ketersediaan MRP dari stok dan PO/PR terbaru.
@@ -1077,7 +1123,17 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         <div class="[display:grid] grid-cols-2 gap-4">
             @if ($ctx['bomLive'])
                 <x-ui.accordion title="BOM and availability — BOM: ProDev · Availability: MRP · qty {{ number_format((float) $this->tier?->qty_pcs) }}" :count="count($ctx['bomLive'])" :open="true" tone="blue">
-                    <div class="flex justify-end mb-1"><button type="button" wire:click="refreshBom" class="text-[11px] px-2 py-0.5 border border-[#cbd5e1] rounded">Recalculate</button></div>
+                    <div class="flex justify-end items-center gap-2 mb-1">
+                        @if ($this->booking?->doc_status === 'HELD')
+                            <span class="text-[11px] px-1.5 rounded bg-[#dcfce7] text-[#166534] font-semibold">Held by {{ $this->booking->hold_by }} until {{ $this->booking->hold_until?->format('d-M-Y') }}</span>
+                            <button type="button" wire:click="releaseBook" wire:loading.attr="disabled" wire:target="book,releaseBook" class="text-[11px] px-2 py-0.5 border border-[#cbd5e1] rounded">Release hold</button>
+                        @else
+                            @if ($this->costing?->doc_status !== 'PUBLISHED')<span class="text-[11px] px-1.5 rounded bg-[#fef3c7] text-[#92400e]">Book is available after Publish</span>@endif
+                            <button type="button" wire:click="book" wire:loading.attr="disabled" wire:target="book,releaseBook" @disabled($this->costing?->doc_status !== 'PUBLISHED') class="text-[11px] px-2 py-0.5 border border-[#cbd5e1] rounded">Book</button>
+                        @endif
+                        <button type="button" wire:click="refreshBom" class="text-[11px] px-2 py-0.5 border border-[#cbd5e1] rounded">Recalculate</button>
+                    </div>
+                    @if ($bookMsg)<div class="mb-1 text-[11px] text-[#8a5a00] bg-[#fff8ec] border border-[#f0dcae] rounded px-2 py-1">{{ $bookMsg }}</div>@endif
                     <table class="w-full text-[12px]">
                         <thead class="text-[10px] uppercase text-[#64748b] bg-[#f8fafc]"><tr><th class="p-1.5 text-left">Role</th><th class="p-1.5 text-left">Material</th><th class="p-1.5 text-right">Need</th><th class="p-1.5 text-right">Free stock</th><th class="p-1.5 text-right">Incoming PO/PR</th><th class="p-1.5 text-left">Status</th></tr></thead>
                         <tbody>

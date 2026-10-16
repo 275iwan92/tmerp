@@ -50,3 +50,6 @@ Searched: `show columns` + `information_schema` tm2sdi/tm2mst/tm2sys; `grep` `ap
 `docs/guides/sales/01_inquiry_product.md` (FROM DOCUMENT, not opened in this session).
 
 > Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+
+> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+

@@ -12,11 +12,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\Inventory\RmBooking;
+use App\Models\Inventory\RmBookingAlloc;
+use App\Models\Inventory\RmBookingD;
 use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SecUser;
 use App\Services\Planning\MaterialPlanningEngine;
 use App\Services\ProDev\SpecEngine;
+use App\Support\V2\Data\MaterialPlanning;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -79,5 +83,39 @@ class ProCostBomAvailabilityTest extends TestCase
         $this->assertSame('STOCK', $r[0]['status']);
         $this->assertSame('SHORT', $r[2]['status']);
         $this->assertGreaterThan(0, $r[2]['short']);
+    }
+
+    public function test_book_holds_the_pre_booking_and_release_frees_it(): void
+    {
+        $eligible = (new MaterialPlanningEngine)->preDemands()->first();
+        $inv = $eligible['inquiry_id'] ?? null;
+        if (! $eligible) {
+            $this->markTestSkipped('No published costing with a live pre-booking chain in this database.');
+        }
+        $had = RmBooking::where('chain_key', (string) $inv)->whereNull('co_id')->where('stat_cancel', 0)->exists();
+
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
+        try {
+            $c = Livewire::test('pages::inquiry.costing', ['inquiry' => (int) $inv])->call('book');
+            $b = RmBooking::where('chain_key', (string) $inv)->whereNull('co_id')->where('stat_cancel', 0)->orderByDesc('booking_id')->first();
+            $this->assertSame('HELD', $b->doc_status);
+            $this->assertNotNull($b->hold_until);
+
+            $c->call('releaseBook');
+            $this->assertSame('DRAFT', $b->fresh()->doc_status);
+        } finally {
+            $b = RmBooking::where('chain_key', (string) $inv)->whereNull('co_id')->where('stat_cancel', 0)->orderByDesc('booking_id')->first();
+            if ($b && $b->doc_status === 'HELD') {
+                MaterialPlanning::engine()->releaseHold($b);
+            }
+            if ($b && ! $had) {
+                $ids = RmBookingD::where('booking_id', $b->booking_id)->pluck('booking_detail_id');
+                RmBookingAlloc::whereIn('booking_detail_id', $ids)->delete();
+                RmBookingD::where('booking_id', $b->booking_id)->delete();
+                $b->delete();
+            }
+            MaterialPlanning::changed();
+        }
+        $this->assertSame($had, RmBooking::where('chain_key', (string) $inv)->whereNull('co_id')->where('stat_cancel', 0)->exists(), 'The test leaves no booking behind.');
     }
 }

@@ -48,3 +48,7 @@ Searched: `published_flag`, `stat_confirm_procost`, `TierPricingResolver`, `ProC
 
 ## Added 2026-10-16 (Jo agreed)
 `ProCostContextService::forPart` now also takes the selected tier qty and returns `bomLive`: BOM of ProDev (`SpecEngine::forWorkOrder`, read only) with availability per line from `MaterialPlanningEngine::availabilityFor`. The ProCost screen shows it as the accordion "BOM and availability" when the part is linked to ProDev (otherwise the old Inquiry BOM panel). It writes nothing and creates no PR/PO/booking. Cited line numbers of `ProCostContextService.php` and `costing.blade.php` below this change are about 30 lines lower. Test: `ProCostBomAvailabilityTest`.
+
+## Added 2026-10-16 (Jo agreed): Book
+The ProCost screen has a Book button in the panel BOM and availability: after Publish it runs MaterialPlanningEngine::persistPre for the inquiry and hold (stock of the pre-booking, paper only, ends by itself after INV_BOOKING_HOLD_WORKDAYS workdays); Release hold undoes it. No PR/PO. Test: ProCostBomAvailabilityTest.
+
