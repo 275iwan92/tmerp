@@ -18,6 +18,7 @@ use App\Models\Sdi\IqpCostingPriceTier;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPart;
+use App\Services\Costing\CostingAdvisor;
 use App\Services\Costing\CostingEngine;
 use App\Services\Costing\ProCostContextService;
 use App\Support\Costing\FormulaAccess;
@@ -35,6 +36,9 @@ use Livewire\Component;
 // BOM/BOP/layout saat menghitung; panel padat dibungkus accordion. Rumus:
 // App\Services\Costing\CostingEngine (sama dgn Mode Instant). Mode Instant ada di
 // pages::inquiry.costing-instant.
+// ENGINE+ML (Jo 2026-10-16, preview procost_engine_rekomendasi.jpg): App\Services\Costing\CostingAdvisor
+// mengisi kotak kosong di belakang layar (penanda ✦ + sumber), officer bebas mengubah; isian dikosongkan
+// tidak sengaja dipulihkan; Hitung mencatat isian final (bahan belajar) dan menampilkan Laporan Hitung.
 new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 {
     public ?int $inquiryId = null;
@@ -52,6 +56,9 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     public int $partNo = 1;
 
     public ?int $tierId = null;
+
+    // Notifikasi pemulihan isian yang dikosongkan tidak sengaja: [partId, tierId, field, label, value].
+    public array $notice = [];
 
     public function mount(int $inquiry): void
     {
@@ -105,6 +112,12 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             }
         }
 
+        // Dokumen yang belum diajukan dibuka: engine mengisi kotak kosong (isian officer tidak disentuh, hasil harga baru berubah setelah Hitung).
+        // Yang sudah PENDING_APPROVAL / PUBLISHED / CANCELLED tidak diubah.
+        if (in_array($costing->doc_status, ['DRAFT', 'CALCULATED'], true)) {
+            (new CostingAdvisor)->prefill($costing);
+        }
+
         $this->costingId = $costing->id_costing;
     }
 
@@ -141,6 +154,21 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     public function canSeeFormula(): bool
     {
         return FormulaAccess::canSee(); // konstanta PROCOST_FORMULA_LOGINS
+    }
+
+    // Penanda sumber per isian ("partId|tierId|field" => rekaman saran) dan Laporan Hitung (rahasia: hanya login berhak).
+    #[Computed]
+    public function recs()
+    {
+        return $this->costingId ? (new CostingAdvisor)->recsFor($this->costingId) : collect();
+    }
+
+    #[Computed]
+    public function report(): ?array
+    {
+        $t = $this->tier;
+
+        return $this->canSeeFormula && $t && (float) $t->c_after_ppn_pc > 0 ? (new CostingAdvisor)->report($this->costing, $t) : null;
     }
 
     #[Computed]
@@ -183,7 +211,31 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
     private function refreshData(): void
     {
-        unset($this->costing, $this->tier, $this->part, $this->context, $this->partRouting);
+        unset($this->costing, $this->tier, $this->part, $this->context, $this->partRouting, $this->recs, $this->report);
+    }
+
+    // Engine mengisi kotak kosong (tidak menimpa isian officer), lalu layar dimuat ulang.
+    private function advise(): void
+    {
+        (new CostingAdvisor)->prefill(IqpCosting::findOrFail($this->costingId));
+        $this->refreshData();
+    }
+
+    // "Memang tidak dipakai": isian dikosongkan sengaja -> 0, tidak dipulihkan lagi.
+    public function acceptZero(): void
+    {
+        [$partId, $tierId, $field] = [$this->notice['part'] ?? null, $this->notice['tier'] ?? null, $this->notice['field'] ?? null];
+        $this->notice = [];
+        if (! $this->editable() || ! $field) {
+            return;
+        }
+
+        $tierId ? $this->updateTier($tierId, $field, 0) : $this->updatePart((int) $partId, $field, 0);
+    }
+
+    public function dismissNotice(): void
+    {
+        $this->notice = [];
     }
 
     private function editable(): bool
@@ -216,6 +268,9 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             $eff = $prodPart ? $group->effectiveCutFor($prodPart) : ($group->up_count ?: 1);
             $pisauFaktor = $isMulti && $eff > 0 ? round((float) $group->die_rule_meter * $own / $eff, 4) : (float) $group->die_rule_meter;
         }
+
+        // Layout ProDev menggantikan perkiraan engine (geometri).
+        \App\Models\Sdi\IqpCostingRecommendation::where('costing_part_id', $part->id_costing_part)->where('source', 'ESTIMATE')->delete();
 
         $part->update([
             'data_source' => 'PRODEV',
@@ -267,6 +322,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
         $this->refreshData();
         $this->partNo = $this->costing->parts->count();
+        $this->advise();
         $this->hitung();
     }
 
@@ -311,6 +367,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
         $this->applyLayout($part, $group, $prodPart);
         $this->refreshData();
+        $this->advise();
         $this->hitung();
     }
 
@@ -353,6 +410,22 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $value = $value === '' ? null : $value;
+
+        // Isian disarankan engine dikosongkan: anggap tidak sengaja, pulihkan nilai saran (kecuali officer mengetik 0).
+        $advisor = new CostingAdvisor;
+        $managed = in_array($field, CostingAdvisor::managedPartFields(), true);
+        $restored = false;
+        if ($managed && $value === null && ($old = $advisor->valueToRestore($this->costingId, $partId, null, $field)) !== null) {
+            $value = $old;
+            $restored = true;
+            $this->notice = ['part' => $partId, 'tier' => null, 'field' => $field, 'label' => CostingAdvisor::LABELS[$field] ?? $field, 'value' => $old];
+        }
+
+        // Kolom NOT NULL yang dikosongkan tanpa nilai saran = sengaja tidak dipakai (0), bukan galat SQL.
+        if ($value === null && ! $restored && in_array($field, CostingAdvisor::NOT_NULL, true)) {
+            $value = 0;
+        }
+
         $data = [$field => $value, 'updated_by' => Auth::user()->login];
         match ($field) {
             'part_type_code' => $data['i_pisau_rate_rp'] = ProdPartType::where('part_type_code', $value)->value('pisau_rate_rp'),
@@ -364,7 +437,15 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         };
 
         IqpCostingPart::where('costing_id', $this->costingId)->whereKey($partId)->update($data);
+        if ($managed && ! $restored) {
+            $advisor->markTouched($this->costingId, $partId, null, $field, $value, IqpCostingPart::whereKey($partId)->value('part_type_code'));
+        }
         $this->refreshData();
+
+        // Mode manual (tanpa Inquiry/ProDev): nama atau tipe part diketik -> engine memilih template terdekat dan mengisi tarif.
+        if (in_array($field, ['part_name', 'part_type_code'], true)) {
+            $this->advise();
+        }
     }
 
     public function addCoating(int $partId): void
@@ -410,7 +491,19 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
+        $advisor = new CostingAdvisor;
+        $tracked = in_array($field, ['margin_pct', 'tolerance_pct'], true);
+        $restored = false;
+        if ($tracked && $value === '' && ($old = $advisor->valueToRestore($this->costingId, null, $tierId, $field)) !== null) {
+            $value = $old;
+            $restored = true;
+            $this->notice = ['part' => null, 'tier' => $tierId, 'field' => $field, 'label' => CostingAdvisor::LABELS[$field], 'value' => $old];
+        }
+
         IqpCostingPriceTier::where('costing_id', $this->costingId)->whereKey($tierId)->update([$field => $value === '' ? 0 : $value]);
+        if ($tracked && ! $restored) {
+            $advisor->markTouched($this->costingId, null, $tierId, $field, $value, $this->part?->part_type_code);
+        }
         $this->refreshData();
     }
 
@@ -440,6 +533,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
         try {
             (new CostingEngine)->run($this->costing);
+            (new CostingAdvisor)->learn($this->costing); // isian final officer = bahan belajar engine
         } catch (\Throwable $e) {
             $this->engineError = $e->getMessage();
         }
@@ -661,6 +755,21 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     $isLam = in_array($p?->part_type_code, ['DC+SF', 'DC+SHEET'], true);
     $geoLock = $ro || $p?->data_source === 'PRODEV';
     $pid = $p?->id_costing_part ?? 0;
+    // ENGINE+ML (CostingAdvisor): penanda sumber, ringkasan banner, isian inti yang masih kosong, Laporan Hitung.
+    $recs = $this->recs;
+    $rep = $this->report;
+    $tid = $t?->id_price_tier ?? 0;
+    $advMine = $recs->filter(fn ($r) => $r->source !== 'OFFICER' && $r->recommended_value !== null && ($r->costing_part_id === null ? $r->tier_id === $tid : $r->costing_part_id === $pid));
+    $advFilled = $advMine->count();
+    $advEstimate = $advMine->where('source', 'ESTIMATE')->where('is_override', false)->count();
+    $advOverride = $advMine->where('is_override', true)->count();
+    $advMissing = $p && ! $ro ? (new \App\Services\Costing\CostingAdvisor)->missing($p) : [];
+    // Laporan Hitung: format dan label (dihitung di sini, bukan di dalam @if, hindari bug @php Livewire v4).
+    $idr = fn ($v) => 'IDR '.number_format((float) $v, 2, '.', ',');
+    $cmp = $rep['compare'] ?? ['n' => 0, 'median' => null, 'min' => null, 'max' => null, 'pct' => null];
+    $lvl = ['warn' => 'bg-[#fef3c7] text-[#78350f]', 'info' => 'bg-[#dbeafe] text-[#1e3a8a]', 'tip' => 'bg-[#dcfce7] text-[#14532d]'];
+    $srcLabels = \App\Services\Costing\CostingAdvisor::SOURCES;
+    $maxSplit = $rep ? max(0.0001, array_sum(array_map('abs', $rep['split']))) : 1;
 @endphp
 
 <div>
@@ -717,6 +826,19 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
         @if ($engineError)<div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md">⚠ {{ $engineError }}</div>@endif
         @if (session('error'))<div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md">⚠ {{ session('error') }}</div>@endif
+        @if ($advFilled > 0 || $advMissing)
+            <div class="bg-[#eff6ff] border border-[#2563eb] text-[#0f172a] text-xs px-3.5 py-2.5 rounded-md">
+                @if ($advFilled > 0)
+                    <b>✦ Engine mengisi {{ $advFilled }} kotak</b> dari Inquiry, ProDev, template, konstanta, dan master.
+                    @if ($advEstimate > 0){{ $advEstimate }} perkiraan (garis biru) karena layout ProDev belum ada.@endif
+                    @if ($advOverride > 0){{ $advOverride }} sudah Anda ubah.@endif
+                    Arahkan kursor ke ✦ untuk melihat sumbernya; nilai mana pun boleh diubah.
+                @endif
+                @if ($advMissing)
+                    <div class="mt-1 font-semibold text-[#7c2d12]">Belum terisi dan perlu dicek: {{ implode(', ', $advMissing) }}.</div>
+                @endif
+            </div>
+        @endif
 
         {{-- ═════ Baris 1: Doc & Customer | Product Specification (+InqProd) | Dynamic Parameters ═════ --}}
         <div class="[display:grid] grid-cols-3 gap-4">
@@ -784,7 +906,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                         @endif
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Margin (%)</label>
+                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Margin (%) <x-costing.src :rec="$recs->get('0|'.$tid.'|margin_pct')" /></label>
                         <input type="number" step="any" value="{{ (float) $t?->margin_pct }}" @readonly($ro) wire:change="updateTier({{ $t?->id_price_tier ?? 0 }}, 'margin_pct', $event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
                     </div>
                     <div>
@@ -796,7 +918,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                         <input type="number" step="any" value="{{ (float) $c->ppn_pct }}" @readonly($ro) wire:change="updateHeader('ppn_pct', $event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Toleransi (%)</label>
+                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Toleransi (%) <x-costing.src :rec="$recs->get('0|'.$tid.'|tolerance_pct')" /></label>
                         <input type="number" step="any" value="{{ (float) $t?->tolerance_pct }}" @readonly($ro) wire:change="updateTier({{ $t?->id_price_tier ?? 0 }}, 'tolerance_pct', $event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
                     </div>
                     <div>
@@ -835,10 +957,10 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         @else
         {{-- ═════ Baris 2: Visual Imposition (ProDev asli) | Granular Cost Breakdown ═════ --}}
         <div class="[display:grid] grid-cols-2 gap-4" wire:key="part-{{ $p->id_costing_part }}">
-            <div class="{{ $card }} flex flex-col">
-                <h2 class="{{ $h2 }}">🗂 Visual Imposition Layout (ProDev)
+            <x-ui.accordion title="🗂 Visual Imposition Layout (ProDev)" :open="true" tone="blue" class="self-start">
+                <x-slot:summary>
                     <button type="button" wire:click="toggleDataSource({{ $p->id_costing_part }})" @disabled($ro) class="ml-auto normal-case text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer {{ $p->data_source === 'PRODEV' ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#f1f5f9] text-[#64748b] border border-[#cbd5e1]' }}">{{ $p->data_source === 'PRODEV' ? '🔗 Ambil Data (ProDev)' : '✎ Manual' }}</button>
-                </h2>
+                </x-slot:summary>
                 @if ($p->data_source === 'PRODEV' && ! $ro)
                     <select onchange="if(this.value) $wire.pickLayoutGroup({{ $p->id_costing_part }}, parseInt(this.value))" class="text-[11px] px-2 py-1 border border-[#c3d8f5] rounded mb-2">
                         <option value="">— ganti layout ProDev (CONFIRMED) —</option>
@@ -869,10 +991,10 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                 @else
                     <div class="flex-1 bg-[#f8fafc] rounded-lg border border-dashed border-[#cbd5e1] p-6 text-center text-[#64748b]">Part ini belum punya layout ProDev — ilustrasi & print size muncul setelah layout dibuat di ProDev. Sementara isi geometri di "Parameter Ongkos" di bawah.</div>
                 @endif
-            </div>
+            </x-ui.accordion>
 
-            <div class="{{ $card }} flex flex-col">
-                <h2 class="{{ $h2 }}">🧾 Granular Cost Breakdown <span class="ml-auto normal-case text-[11px] text-[#64748b]">Qty {{ number_format($qty * max(1, (float) $p->qty_per_set)) }}</span></h2>
+            <x-ui.accordion title="🧾 Granular Cost Breakdown" :open="true" tone="blue" class="self-start">
+                <x-slot:summary><span class="ml-auto normal-case text-[11px] font-semibold">Qty {{ number_format($qty * max(1, (float) $p->qty_per_set)) }}</span></x-slot:summary>
                 @if ($lock)
                     <div class="bg-[#f4f6fa] border border-[#d7dbe2] rounded p-4 text-[#64748b]">🔒 Breakdown biaya hanya untuk login yang ditunjuk (konstanta PROCOST_FORMULA_LOGINS). Harga jual akhir tetap tampil di bawah.</div>
                 @else
@@ -933,7 +1055,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                         <div class="text-[10px] font-mono whitespace-pre-line text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] rounded p-2">{{ $p->description_calc }}</div>
                     </div>
                 @endif
-            </div>
+            </x-ui.accordion>
         </div>
 
         {{-- ═════ Info InqProd & ProDev (READ-ONLY, accordion supaya compact) ═════ --}}
@@ -1007,7 +1129,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         </div>
 
         {{-- ═════ Parameter ongkos (input officer; geometri ProDev terkunci) ═════ --}}
-        <x-ui.accordion title="✎ Parameter Ongkos & Bahan (input officer)" :open="true" tone="blue">
+        <x-ui.accordion title="✎ Parameter Ongkos & Bahan (input officer)" :open="true" tone="blue" :recs="$recs">
             <div class="[display:grid] grid-cols-6 gap-x-2 gap-y-1.5 text-xs">
                 <x-costing.field label="Nama Part" key="part_name" :value="$p->part_name" type="text" :args="[$pid]" :readonly="$ro" />
                 <x-costing.field label="Tipe Part" key="part_type_code" :value="$p->part_type_code" type="select" :options="$lk['partTypes']" :args="[$pid]" :readonly="$ro" />
@@ -1103,6 +1225,94 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                 <div class="text-[12px] font-medium text-[#93c5fd]">Excl PPN {{ $rp($t?->price_per_pcs) }} · Grand Total: {{ $rp((float) $t?->c_after_ppn_pc * $qty) }}</div>
             </div>
         </div>
+
+        {{-- ═════ Laporan Hitung (ENGINE+ML, rahasia: hanya login berhak; accordion per sesi) ═════ --}}
+        @if ($rep && ! $lock)
+            <div class="{{ $card }} !border-2 !border-[#0f172a] space-y-3" wire:key="laporan-hitung">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h2 class="text-[16px] font-bold text-[#0f172a]">Laporan Hitung</h2>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ collect($rep['notes'])->contains(fn ($n) => $n[0] === 'warn') ? 'bg-[#fef3c7] text-[#78350f]' : 'bg-[#dcfce7] text-[#14532d]' }}">{{ count($rep['notes']) }} catatan</span>
+                    <span class="ml-auto text-[11px] text-[#0f172a]">Qty {{ number_format($rep['qty']) }} pcs · {{ $p?->part_name ?: 'Part' }} ({{ $p?->part_type_code }})</span>
+                </div>
+                <p class="text-[16px] leading-snug font-semibold text-[#0f172a]">
+                    Harga jual <b>{{ $idr($rep['final']) }} per pcs</b> ({{ $idr($rep['per_order']) }} per order)@if ($cmp['pct'] !== null), <b>{{ number_format(abs($cmp['pct']), 1) }}% {{ $cmp['pct'] >= 0 ? 'di atas' : 'di bawah' }}</b> median {{ $cmp['n'] }} costing serupa ({{ $idr($cmp['median']) }})@endif.
+                    @if ($rep['overrides'] > 0) {{ $rep['overrides'] }} isian sudah Anda ubah dari saran engine.@endif
+                </p>
+
+                <x-ui.accordion title="1. Rincian harga, per pcs" :open="true" tone="blue">
+                    <x-slot:summary><span class="ml-auto normal-case text-[11px] font-semibold">HPP {{ $idr($rep['hpp']) }} menjadi harga akhir {{ $idr($rep['final']) }}</span></x-slot:summary>
+                    <div class="text-[13px] text-[#0f172a]">
+                        @foreach ($rep['split'] as $lbl => $val)
+                            <div class="[display:grid] grid-cols-[260px_1fr_130px] items-center gap-2 py-0.5">
+                                <span>{{ $lbl }}</span>
+                                <div class="h-3 bg-[#e2e8f0] rounded"><div class="h-3 bg-[#2563eb] rounded" style="width: {{ max(0, min(100, $val / $maxSplit * 100)) }}%"></div></div>
+                                <span class="text-right font-bold tabular-nums">{{ $idr($val) }}</span>
+                            </div>
+                        @endforeach
+                        @if ($rep['ok'])
+                            @foreach ($rep['steps'] as [$lbl, $val, $kind])
+                                <div class="[display:grid] grid-cols-[260px_1fr_130px] gap-2 py-0.5 {{ $kind === 'sum' ? 'font-bold border-t border-[#0f172a] mt-1' : '' }}">
+                                    <span>{{ $lbl }}</span><span></span>
+                                    <span class="text-right tabular-nums font-semibold {{ $kind === 'minus' ? 'text-[#7f1d1d]' : ($kind === 'plus' ? 'text-[#14532d]' : '') }}">{{ $kind === 'sum' ? $idr($val) : ($val < 0 ? '- ' : '+ ').number_format(abs($val), 2, '.', ',') }}</span>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="mt-2 text-[12px] text-[#7c2d12]">Rincian langkah tidak ditampilkan: hasil penelusuran tidak sama dengan hasil engine tersimpan. Hitung ulang atau laporkan.</div>
+                        @endif
+                    </div>
+                </x-ui.accordion>
+
+                <x-ui.accordion title="2. Yang perlu diperhatikan" :count="count($rep['notes'])" :open="count($rep['notes']) > 0" tone="amber">
+                    <x-slot:summary><span class="ml-auto normal-case text-[11px] font-semibold">{{ count($rep['notes']) ? collect($rep['notes'])->pluck(1)->implode(' | ') : 'tidak ada catatan' }}</span></x-slot:summary>
+                    <div class="text-[13px] text-[#0f172a]">
+                        @forelse ($rep['notes'] as [$lv, $tag, $txt])
+                            <div class="[display:grid] grid-cols-[90px_1fr] gap-3 py-2 border-b border-[#e2e8f0] last:border-0"><span class="h-fit text-center px-2 py-0.5 rounded-full text-[11px] font-bold {{ $lvl[$lv] ?? '' }}">{{ $tag }}</span><span>{{ $txt }}</span></div>
+                        @empty
+                            <div class="py-1">Tidak ada catatan: semua isian inti terisi dan tidak ada perkiraan.</div>
+                        @endforelse
+                    </div>
+                </x-ui.accordion>
+
+                <x-ui.accordion title="3. Dibanding costing serupa" :count="$cmp['n'].' sampel'" tone="green">
+                    <x-slot:summary><span class="ml-auto normal-case text-[11px] font-semibold">{{ $cmp['median'] !== null ? 'median '.$idr($cmp['median']).' | kisaran '.number_format($cmp['min'], 2).' - '.number_format($cmp['max'], 2) : 'belum cukup pembanding' }}</span></x-slot:summary>
+                    <div class="text-[13px] text-[#0f172a]">
+                        @if ($cmp['median'] !== null)
+                            Costing lain bertipe part sama dengan qty setengah sampai dua kali ({{ $cmp['n'] }} tier): median {{ $idr($cmp['median']) }}, terendah {{ $idr($cmp['min']) }}, tertinggi {{ $idr($cmp['max']) }}. Harga ini {{ number_format(abs($cmp['pct']), 1) }}% {{ $cmp['pct'] >= 0 ? 'di atas' : 'di bawah' }} median.
+                        @else
+                            Baru {{ $cmp['n'] }} pembanding (minimal 3). Perbandingan muncul setelah lebih banyak costing selesai dihitung.
+                        @endif
+                    </div>
+                </x-ui.accordion>
+
+                <x-ui.accordion title="4. Asal isian" :count="array_sum($rep['sources'])" tone="blue">
+                    <x-slot:summary><span class="ml-auto normal-case text-[11px] font-semibold">{{ collect($rep['sources'])->map(fn ($n, $s) => ($srcLabels[$s] ?? $s).' '.$n)->implode(' | ') ?: 'belum ada saran engine' }}</span></x-slot:summary>
+                    <div class="text-[13px] text-[#0f172a]">
+                        Sumber isian yang diisi engine: {{ collect($rep['sources'])->map(fn ($n, $s) => ($srcLabels[$s] ?? $s).' '.$n)->implode(', ') ?: '-' }}. Isian yang Anda ubah: {{ $rep['overrides'] }}. Statistik dipakai mulai 5 costing serupa dan machine learning ringan mulai 30 (konstanta COSTING). Template hanya mengisi tarif, geometri produk tetap dari Inquiry dan ProDev.
+                    </div>
+                </x-ui.accordion>
+
+                <x-ui.accordion title="5. Simulasi cepat" :count="count($rep['sim']).' skenario'" tone="slate">
+                    <x-slot:summary><span class="ml-auto normal-case text-[11px] font-semibold">{{ collect($rep['sim'])->map(fn ($s) => $s[0].': '.number_format($s[1], 2))->take(1)->implode('') }}</span></x-slot:summary>
+                    <div class="text-[13px] text-[#0f172a]">
+                        @foreach ($rep['sim'] as [$lbl, $val])
+                            <div class="[display:grid] grid-cols-[1fr_150px_110px] gap-2 py-0.5"><span>{{ $lbl }}</span><span class="text-right font-bold tabular-nums">{{ $idr($val) }}</span><span class="text-right tabular-nums">{{ ($val >= $rep['final'] ? '+' : '-').number_format(abs($val - $rep['final']) / max(0.0001, $rep['final']) * 100, 1) }}%</span></div>
+                        @endforeach
+                        <div class="mt-1 text-[12px]">Perkiraan cepat dengan rumus engine yang sama; bukan hasil Hitung baru.</div>
+                    </div>
+                </x-ui.accordion>
+
+                <div class="text-[11px] text-[#0f172a]">Hitung ini dicatat sebagai bahan belajar engine: {{ $rep['learned'] }} isian beserta konteksnya (tipe part, qty).</div>
+            </div>
+        @endif
+
+        {{-- Notifikasi pemulihan isian yang dikosongkan tidak sengaja --}}
+        @if ($notice)
+            <div class="fixed bottom-4 right-4 z-50 bg-[#0f172a] text-white text-[13px] font-semibold rounded-lg shadow-xl px-4 py-3 flex items-center gap-4" wire:key="notice">
+                <span>{{ $notice['label'] }} dikosongkan, dikembalikan ke {{ rtrim(rtrim(number_format((float) $notice['value'], 4, '.', ','), '0'), '.') }}</span>
+                <button type="button" wire:click="acceptZero" class="text-[#fbbf24] font-bold cursor-pointer">Memang tidak dipakai</button>
+                <button type="button" wire:click="dismissNotice" class="text-white/80 cursor-pointer">Tutup</button>
+            </div>
+        @endif
     </div>
     @endif
 </div>

@@ -55,3 +55,9 @@
 ## Belum tercatat (isi bertahap saat layar disentuh)
 
 Layar v2 lain di luar daftar di atas (Sales, Inventory, HRM, Finance, Maintenance, dst.). Tambahkan baris saat file layarnya diubah.
+
+## Inquiry Product
+
+| Layar | Rute / berkas | Fungsi | Dipakai / hulu | Menu |
+|---|---|---|---|---|
+| Pro-Cost > Pro-Cost New (Costing HPP, Mode #1) | `inquiry.costing`, `resources/views/pages/inquiry/costing.blade.php` (v1, belum v2) | Hitung HPP dan harga per tier dari Inquiry + ProDev. ENGINE+ML (`CostingAdvisor`, Jo 2026-10-16): kotak kosong diisi otomatis (penanda ✦ + sumber di tooltip, garis biru = perkiraan, kuning = diubah officer), margin default 18%, isian dikosongkan tidak sengaja dipulihkan ("Memang tidak dipakai" = 0), Hitung mencatat isian final sebagai bahan belajar dan menampilkan Laporan Hitung (5 accordion: rincian, perhatian, pembanding, asal isian, simulasi; hanya login `PROCOST_FORMULA_LOGINS`). Panel Visual Imposition dan Granular Cost Breakdown kini accordion. Preview: `docs/mockups/procost_engine_rekomendasi.jpg`. | `CostingAdvisor`, `CostingEngine`, `ProCostContextService`, `x-costing.field`, `x-costing.src`, `x-ui.accordion`, `iqp_costing_recommendation`, `prod_part_template` | tampil |

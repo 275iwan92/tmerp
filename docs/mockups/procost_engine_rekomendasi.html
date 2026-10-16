@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><title>ProCost - Engine dan Laporan Hitung (usulan)</title>
+<style>
+/* REMARK Tujuan: usulan ProCost: layar tetap utuh; engine+statistik/ML mengisi kotak dari Inquiry, ProDev, template dan konstanta; tombol Hitung menampilkan Laporan Hitung. Dasar gambar: dua tangkapan layar asli (procost_layar_asli_atas/bawah.png) disambung jadi satu layar; semua angka isian dan hasil = DATA DUMMY yang saling berantai. Status: PREVIEW, menunggu izin Jo. */
+*{box-sizing:border-box}
+body{margin:0;width:1915px;font:13px/1.45 'Segoe UI',system-ui,sans-serif;color:#0b1220;background:#e9eef5}
+.shot{position:relative;width:1915px;overflow:hidden}
+.shot img{display:block;width:1915px}
+.f{position:absolute;height:30px;background:#fff;border:1px solid #2c7be5;border-radius:4px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:12px;font-weight:700;color:#0b1220}
+.f i{font-style:normal;color:#1d4ed8;font-size:13px}
+.f.ov{border:2px solid #d97706;background:#fffbeb}
+.f.est{border:2px solid #2563eb;background:#eff6ff}
+.f small{font-weight:400}
+.n{position:absolute;width:22px;height:22px;border-radius:50%;background:#dc2626;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;z-index:5}
+.box{position:absolute;border-radius:6px;padding:7px 12px;font-size:12px}
+.banner{background:#eff6ff;border:1px solid #2563eb;color:#0b1220}
+.toast{background:#0b1220;color:#fff;font-weight:600;font-size:13px;padding:10px 14px}
+.toast b{color:#fbbf24;margin-left:14px}
+.tip{background:#fff;border:1px solid #0b1220;box-shadow:0 4px 12px rgba(0,0,0,.25);font-size:12px}
+.final{position:absolute;background:#0f172a;color:#fff;border-radius:10px}
+.final .c{position:absolute;top:22px}.final small{display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase}.final b{display:block;font-size:22px;margin:2px 0}
+.final .fp{position:absolute;left:732px;top:18px;width:455px;height:108px;border:1px solid #3b82f6;border-radius:8px;background:#172554;padding:12px 16px}
+.final .fp b{font-size:32px}
+/* Laporan Hitung */
+.rep{margin:18px 0 0 466px;width:1206px;background:#fff;border:2px solid #0b1220;border-radius:10px;padding:22px 26px}
+.rep h2{margin:0;font-size:20px}
+.rep h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.c-ok{background:#dcfce7;color:#14532d}.c-w{background:#fef3c7;color:#78350f}.c-i{background:#dbeafe;color:#1e3a8a}
+.lead{font-size:20px;line-height:1.5;margin:14px 0 18px;font-weight:600}
+.cols{display:grid;grid-template-columns:1.25fr 1fr;gap:26px}
+.sec{border-top:2px solid #0b1220;padding-top:12px;margin-top:16px}
+.row{display:grid;grid-template-columns:200px 1fr 120px;align-items:center;gap:10px;padding:5px 0;font-size:14px}
+.row .t{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.bar{height:16px;background:#e2e8f0;border-radius:3px;position:relative}.bar i{position:absolute;top:0;height:16px;border-radius:3px}
+.row.sum{border-top:1px solid #0b1220;font-weight:700}
+.minus .t{color:#7f1d1d}.plus .t{color:#14532d}
+.note{display:grid;grid-template-columns:90px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid #cbd5e1;font-size:14px}
+.note:last-child{border-bottom:0}
+.range{position:relative;height:56px;margin:8px 0 4px}
+.range .ln{position:absolute;top:26px;left:0;right:0;height:4px;background:#cbd5e1;border-radius:2px}
+.range .bd{position:absolute;top:20px;height:16px;background:#bfdbfe;border:1px solid #2563eb;border-radius:3px}
+.range .mk{position:absolute;top:10px;width:3px;height:36px;background:#0b1220}
+.range .lb{position:absolute;top:0;font-size:12px;white-space:nowrap}
+.range .lb2{position:absolute;top:44px;font-size:12px;white-space:nowrap}
+.src{display:flex;height:26px;border-radius:4px;overflow:hidden;margin:6px 0}
+.src div{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.legend{margin:18px 0 0 0;padding:18px 24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;background:#f1f5f9;border-top:3px solid #0b1220}
+.legend h3{margin:0 0 6px;font-size:13px;text-transform:uppercase}
+.legend ul{margin:0;padding-left:18px}.legend li{margin:4px 0}
+.legend .n{position:static;display:inline-flex;margin-right:6px}
+.cap{margin:14px 0 6px 466px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.acc{margin-top:12px;border:1px solid #94a3b8;border-radius:6px;overflow:hidden}
+.acc summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 14px;font-size:13px;cursor:pointer}
+.acc summary::-webkit-details-marker{display:none}
+.acc .ic{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:4px;background:#2563eb;color:#fff;font-size:12px}
+.acc .bd2{padding:1px 9px;border-radius:99px;background:#fff;border:1px solid #0b1220;font-size:11px;font-weight:700}
+.acc .bd2.warn{background:#fef3c7}
+.acc .sm{margin-left:auto;font-size:12px;font-weight:600}
+.acc .ab{padding:6px 16px 12px;background:#fff}
+.acc .ab:empty{display:none}
+.a-blue summary{background:#e8f0fe}.a-amber summary{background:#fef3dc}.a-amber .ic{background:#d97706}.a-green summary{background:#e3f5e8}.a-green .ic{background:#16a34a}.a-slate summary{background:#eef1f6}.a-slate .ic{background:#475569}
+</style></head><body>
+
+<div class="shot" id="atas"><img src="procost_layar_asli_atas.png"></div>
+<div class="shot" id="bawah" style="height:686px"><img src="procost_layar_asli_bawah.png" style="margin-top:-234px"></div>
+
+<div class="cap">Panel baru: Laporan Hitung, tampil di bawah kartu harga setelah tombol Hitung ditekan. Gaya accordion sama dengan panel BOM / BOP / Tinta di layar ini</div>
+<div class="rep">
+  <div style="display:flex;align-items:center;gap:14px"><h2>Laporan Hitung</h2><span class="chip c-w">Siap diajukan, 3 catatan</span><span style="margin-left:auto;font-size:12px">Hitung 16-Oct-2026 10:42 | Qty 1,000 pcs | Part: Kalender Test (DC) | <b>Buka semua</b> / <b>Tutup semua</b></span></div>
+  <p class="lead">Harga jual <b>IDR 6,429.88 per pcs</b> (IDR 6,429,880 per order), <b>4.6% di atas</b> median 7 costing serupa (IDR 6,150.00). Satu isian masih perkiraan dan perlu dicek sebelum diajukan.</p>
+
+  <details class="acc a-blue" open>
+    <summary><span class="ic">▾</span><b>1. Rincian harga, per pcs</b><span class="bd2">11 baris</span><span class="sm">HPP 4,820.00 menjadi harga akhir 6,429.88</span></summary>
+    <div class="ab">
+      <div class="row"><span>Bahan (kertas)</span><div class="bar"><i style="left:0;width:55%;background:#2563eb"></i></div><span class="t">IDR 3,310.00</span></div>
+      <div class="row"><span>Proses (cetak, plong, QC, kirim)</span><div class="bar"><i style="left:0;width:15.4%;background:#2563eb"></i></div><span class="t">IDR 925.00</span></div>
+      <div class="row"><span>Tooling (plate 4 warna, pisau)</span><div class="bar"><i style="left:0;width:9.7%;background:#2563eb"></i></div><span class="t">IDR 585.00</span></div>
+      <div class="row sum"><span>HPP kotor</span><div></div><span class="t">IDR 4,820.00</span></div>
+      <div class="row minus"><span>Keluarkan PPN masukan bahan</span><div></div><span class="t">- 300.91</span></div>
+      <div class="row plus"><span>Toleransi 5%</span><div></div><span class="t">+ 241.00</span></div>
+      <div class="row minus"><span>Pembulatan NEAREST 50</span><div></div><span class="t">- 10.09</span></div>
+      <div class="row sum"><span>Dasar sebelum margin</span><div></div><span class="t">IDR 4,750.00</span></div>
+      <div class="row plus"><span>Margin 18% (4,750 / 0.82)</span><div></div><span class="t">+ 1,042.68</span></div>
+      <div class="row plus"><span>PPN 11%</span><div></div><span class="t">+ 637.20</span></div>
+      <div class="row sum" style="font-size:16px"><span>Harga akhir incl. PPN</span><div></div><span class="t">IDR 6,429.88</span></div>
+    </div>
+  </details>
+
+  <details class="acc a-amber" open>
+    <summary><span class="ic">▾</span><b>2. Yang perlu diperhatikan</b><span class="bd2 warn">3</span><span class="sm">1 perhatian, 1 info, 1 saran</span></summary>
+    <div class="ab">
+      <div class="note"><span class="chip c-w" style="height:22px;text-align:center">Perhatian</span><span><b>Isi dalam lembar cetak = 2 masih perkiraan</b> (dari dimensi Inquiry, layout ProDev belum ada). Bila ternyata 1 UP, biaya proses naik dari IDR 925.00 menjadi IDR 1,750.00 per pcs. Nilai ini otomatis diperbarui saat layout ProDev CONFIRMED.</span></div>
+      <div class="note"><span class="chip c-i" style="height:22px;text-align:center">Info</span><span><b>Margin 18% masih nilai default.</b> Tiap tambah 1 poin margin, harga naik IDR 79.38 per pcs (1.2%).</span></div>
+      <div class="note"><span class="chip c-ok" style="height:22px;text-align:center">Saran</span><span><b>Tooling 12% dari HPP.</b> Pada qty 2,000 pcs harga turun ke IDR 6,023.78 per pcs (turun 6.3%).</span></div>
+    </div>
+  </details>
+
+  <details class="acc a-green">
+    <summary><span class="ic">▸</span><b>3. Dibanding costing serupa</b><span class="bd2">7 sampel</span><span class="sm">median 6,150.00 | kisaran 5,780.00 - 6,720.00 | ini 6,429.88 (+4.6%)</span></summary>
+    <div class="ab"></div>
+  </details>
+
+  <details class="acc a-blue">
+    <summary><span class="ic">▸</span><b>4. Asal isian</b><span class="bd2">31</span><span class="sm">Inquiry 6 | Template 14 | Konstanta 7 | Master 3 | Perkiraan 1</span></summary>
+    <div class="ab"></div>
+  </details>
+
+  <details class="acc a-slate">
+    <summary><span class="ic">▸</span><b>5. Simulasi cepat</b><span class="bd2">3 skenario</span><span class="sm">qty 2,000 turun 6.3% | margin +1 poin naik 1.2% | isi 1 UP: proses naik ke 1,750.00</span></summary>
+    <div class="ab"></div>
+  </details>
+
+  <div style="margin-top:12px;font-size:12px">Hitung ini dicatat sebagai bahan belajar: 32 isian final beserta konteksnya (tipe part, bahan, qty, jumlah warna, UP).</div>
+</div>
+
+<div class="legend">
+<div>
+<h3>Perubahan dari layar lama</h3>
+<ul>
+<li><span class="n">1</span>Tombol <b>Hitung</b> menjalankan hitungan, menampilkan Laporan Hitung, dan mencatat isian final untuk belajar. Rumus tidak berubah.</li>
+<li><span class="n">2</span>Banner error flute diganti ringkasan engine. Duplex tidak memakai flute, jadi tidak diminta.</li>
+<li><span class="n">3</span><b>✦</b> = nilai dari engine; margin default 18%. Kursor di atas ✦ menampilkan sumber dan jumlah sampel.</li>
+<li><span class="n">4</span>Garis kuning = officer sudah mengubah (tidak ditimpa); garis biru = perkiraan, berubah otomatis bila sumbernya ada.</li>
+<li><span class="n">5</span>Isian dikosongkan tidak sengaja: nilai dipulihkan + <b>Undo</b> atau <b>Memang tidak dipakai</b>. Mengetik 0 = pilihan sadar.</li>
+<li><span class="n">6</span>Panel Laporan Hitung: ringkasan satu kalimat, rincian bahan sampai harga akhir, pembanding riwayat, catatan, asal isian.</li>
+</ul>
+</div>
+<div>
+<h3>Mode manual memakai layanan yang sama</h3>
+<ul>
+<li>Mode #2 (tanpa Inquiry/ProDev): masukan dari yang officer ketik (tipe part, dimensi, bahan, warna, qty). Engine memilih template terdekat, mengisi kotak, dan membuat Laporan Hitung yang sama.</li>
+<li>Mode #1 dan #2 memakai layanan saran dan <b>CostingEngine</b> yang sama, jadi HPP untuk geometri setara tetap sama.</li>
+<li>Template (m_part_template) diimpor dari tmhpp dan diperiksa: isian yang sudah diwakili Inquiry/ProDev tidak diambil dari template.</li>
+<li>Semua angka di gambar ini data dummy yang saling berantai: 3,310 + 925 + 585 = 4,820; hasil akhir 6,429.88.</li>
+</ul>
+</div>
+</div>
+
+<script>
+function put(host,x,y,w,cls,label,val){var d=document.createElement('div');d.className='f '+cls;d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px';d.innerHTML='<span>'+val+'</span>'+(label||'<i>✦</i>');document.getElementById(host).appendChild(d);}
+function box(host,x,y,w,h,cls,html){var d=document.createElement('div');d.className='box '+cls;d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;'+(h?'height:'+h+'px;':'');d.innerHTML=html;document.getElementById(host).appendChild(d);}
+function num(host,x,y,t){var d=document.createElement('div');d.className='n';d.style.cssText='left:'+x+'px;top:'+y+'px';d.textContent=t;document.getElementById(host).appendChild(d);}
+// Perbaikan sambungan sidebar: irisan sidebar kosong (atas y=600) diregangkan menutup bagian ganda
+function side(host,top,h){var w=document.createElement('div');w.style.cssText='position:absolute;left:0;top:'+top+'px;width:242px;height:'+h+'px;overflow:hidden;z-index:3';var i=document.createElement('div');i.style.cssText='width:242px;height:1px;overflow:hidden;transform:scaleY('+h+');transform-origin:0 0';i.innerHTML='<img src="procost_layar_asli_atas.png" style="width:1915px;margin-top:-600px">';w.appendChild(i);document.getElementById(host).appendChild(w);}
+side('atas',850,66); side('bawah',0,618);
+// ATAS: kotak Dynamic Parameters
+put('atas',1298,321,174,'','','1,000');
+put('atas',1484,321,174,'','','18.0 <small>default</small>');
+put('atas',1298,383,174,'','','345,000');
+put('atas',1484,383,174,'','','11');
+put('atas',1298,445,174,'','','5.0');
+put('atas',1484,445,174,'','','NEAREST 50');
+box('atas',468,199,1205,34,'banner','<b>Engine mengisi 31 kotak</b> dari Inquiry, template Kalender, konstanta, dan master. 1 perkiraan karena layout ProDev belum ada. Nilai mana pun boleh diubah.');
+num('atas',1296,122,'1'); num('atas',1660,190,'2'); num('atas',1650,300,'3');
+box('atas',1330,484,330,66,'tip','<b>Toleransi 5.0</b> (saran engine)<br>Sumber: konstanta COSTING (ProDev belum ada)<br>Belajar dari 7 costing serupa (statistik)');
+// BAWAH (offset -234 karena dipotong)
+var o=-234,y1=497+o,y2=548+o,y3=598+o,y4=649+o,y5=700+o;
+put('bawah',474,y1,191,'','','Kalender Test');
+put('bawah',674,y1,191,'','','DC - Duplex Carton');
+put('bawah',874,y1,191,'','','1.00');
+put('bawah',1073,y1,391,'','','Duplex 300gsm');
+put('bawah',1473,y1,191,'ov','<i style="color:#b45309">✎</i>','0.0000 <small>diubah officer</small>');
+put('bawah',474,y2,191,'','','65.0000');
+put('bawah',674,y2,191,'','','100.0000');
+put('bawah',874,y2,191,'','','1');
+put('bawah',1073,y2,191,'est','<i>~</i>','2 <small>perkiraan</small>');
+put('bawah',1273,y2,191,'','','65.0000');
+put('bawah',1473,y2,191,'','','100.0000');
+put('bawah',474,y3,191,'','','4');
+put('bawah',674,y3,191,'','','750,000');
+put('bawah',874,y3,191,'','','150');
+put('bawah',1073,y3,191,'','','0 <small>tidak dipakai</small>');
+put('bawah',1273,y3,191,'','','0 <small>tidak dipakai</small>');
+put('bawah',1473,y3,191,'','','55');
+put('bawah',474,y4,191,'','','0.0000');
+put('bawah',674,y4,191,'','','90,000');
+put('bawah',874,y4,191,'','','0.2500');
+put('bawah',1073,y4,191,'','','900,000');
+put('bawah',1273,y4,191,'','','0 <small>tidak dipakai</small>');
+put('bawah',1473,y4,191,'','','50');
+put('bawah',474,y5,191,'','','50');
+put('bawah',674,y5,191,'','','NONE');
+put('bawah',874,y5,191,'','','0');
+num('bawah',1668,490+o,'4');
+// panel hasil bawah (menimpa blok Rp 0,00 asli) y asli 776 -> 542
+var fb=document.createElement('div');fb.className='final';fb.style.cssText='left:466px;top:'+(776+o)+'px;width:1206px;height:142px';
+fb.innerHTML='<div class="c" style="left:19px"><small>Total COGS (HPP)</small><b>IDR 4,820,000</b>IDR 4,820.00 / pcs</div><div class="c" style="left:256px"><small>Margin (+18%) | Tol 5%</small><b>IDR 1,042,680</b>Profit contribution</div><div class="c" style="left:494px"><small>PPN (+11%)</small><b>IDR 637,200</b>Tax per order</div><div class="fp"><small>Final selling price</small><b>IDR 6,429.88 <span style="font-size:16px">/ pcs</span></b><span style="font-size:12px;color:#93c5fd">Excl PPN IDR 5,792.68 | Grand total IDR 6,429,880</span></div>';
+document.getElementById('bawah').appendChild(fb);
+num('bawah',1180,776+o-12,'6');
+box('bawah',1100,y5-4,560,38,'toast','Ongkos plong/LB dikosongkan, dikembalikan ke 150 <b>Undo</b> <b>Memang tidak dipakai</b>');
+num('bawah',1648,y5-14,'5');
+</script>
+</body></html>

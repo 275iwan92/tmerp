@@ -589,7 +589,7 @@
     {
         "class": "App\\Services\\ProDev\\SpecEngine",
         "file": "app/Services/ProDev/SpecEngine.php",
-        "lines": 1180,
+        "lines": 1248,
         "entries": [
             {
                 "method": "generate",
@@ -1104,6 +1104,195 @@
         ]
     },
     {
+        "class": "App\\Services\\Costing\\CostingAdvisor",
+        "file": "app/Services/Costing/CostingAdvisor.php",
+        "lines": 514,
+        "entries": [
+            {
+                "method": "prefill",
+                "static": false,
+                "params": [
+                    {
+                        "name": "costing",
+                        "type": "IqpCosting",
+                        "default": null
+                    }
+                ],
+                "returns": "int",
+                "note": "Fills only empty boxes: Inquiry BOM, Pro-Dev waste, part template rates, Costing constants, masters; history replaces the default when enough similar costings exist."
+            },
+            {
+                "method": "markTouched",
+                "static": false,
+                "params": [
+                    {
+                        "name": "costingId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "partId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "tierId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "field",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "value",
+                        "type": "mixed",
+                        "default": null
+                    },
+                    {
+                        "name": "type",
+                        "type": "?string",
+                        "default": "null"
+                    }
+                ],
+                "returns": "void",
+                "note": "Remembers that the officer changed a box (override) or deliberately set it to 0 (never restored)."
+            },
+            {
+                "method": "valueToRestore",
+                "static": false,
+                "params": [
+                    {
+                        "name": "costingId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "partId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "tierId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "field",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?float",
+                "note": "A box that had a suggestion and was blanked by accident gets its suggested value back."
+            },
+            {
+                "method": "learn",
+                "static": false,
+                "params": [
+                    {
+                        "name": "c",
+                        "type": "IqpCosting",
+                        "default": null
+                    }
+                ],
+                "returns": "int",
+                "note": "Called by Calculate: stores the final value of every box with its context (part type, quantity) as learning data."
+            },
+            {
+                "method": "report",
+                "static": false,
+                "params": [
+                    {
+                        "name": "c",
+                        "type": "IqpCosting",
+                        "default": null
+                    },
+                    {
+                        "name": "t",
+                        "type": "IqpCostingPriceTier",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Calculation Report: price steps, comparison with similar costings, notes, source of the boxes, quick simulations."
+            },
+            {
+                "method": "missing",
+                "static": false,
+                "params": [
+                    {
+                        "name": "part",
+                        "type": "IqpCostingPart",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Core boxes that are still empty and need a look before the price is trusted."
+            }
+        ],
+        "key": "costing-advisor",
+        "name": "Costing Advisor (fills the boxes, explains the price, learns)",
+        "group": "Pro-Cost",
+        "mode": "suggest",
+        "purpose": "Fills the empty Pro-Cost boxes in the background, explains the result in a Calculation Report, and learns from what the officer finally uses.",
+        "restricted": "Margin and cost are confidential (Costing and Directors only). The report is shown only to logins allowed to see the formula.",
+        "inputs": [
+            [
+                "costing",
+                "The costing document with parts and price tiers (Mode 1 pulled from Inquiry and Pro-Dev, Mode 2 typed by the officer)."
+            ],
+            [
+                "History",
+                "iqp_costing_recommendation rows learned from earlier Calculate clicks, same part type."
+            ]
+        ],
+        "outputs": [
+            [
+                "Box values",
+                "Written to iqp_costing_part and iqp_costing_price_tier, only where the box was empty."
+            ],
+            [
+                "Source marks",
+                "One row per box: suggested value, source, sample count, override and zero-intent flags."
+            ],
+            [
+                "Calculation Report",
+                "Array shown in five accordion sections under the price card."
+            ]
+        ],
+        "steps": [
+            "Default 18% margin (constant MARGIN_DEFAULT_PCT); below 5 similar costings (ADVISOR_MIN_SAMPLE_STAT) the default or derived value is used.",
+            "From 5 similar costings: median of the officer final values. From 30 (ADVISOR_MIN_SAMPLE_ML): light nearest-neighbour model by quantity, used only if it beats the median in leave-one-out.",
+            "Part template rates (prod_part_template, imported from tmhpp) fill rates only, never the product geometry.",
+            "The report repeats the CostingEngine tier formula for explanation and checks it equals the stored price; if not, the step list is hidden."
+        ],
+        "reads": [
+            "tm2sdi.iqp_costing / _part / _price_tier / _recommendation",
+            "tm2mst.prod_part_template, mat_grammage, prod_part_type",
+            "tm2sys.sys_constant (Costing group)"
+        ],
+        "writes": [
+            "tm2sdi.iqp_costing_part",
+            "tm2sdi.iqp_costing_price_tier",
+            "tm2sdi.iqp_costing_recommendation"
+        ],
+        "settings": [
+            "Settings > Constants (Costing): MARGIN_DEFAULT_PCT, ADVISOR_MIN_SAMPLE_STAT, ADVISOR_MIN_SAMPLE_ML"
+        ],
+        "used": [
+            "Pro-Cost (Costing Hub, Mode 1)"
+        ],
+        "tests": [
+            "tests/Feature/CostingAdvisorTest.php",
+            "tests/Feature/CostingAdvisorScreenTest.php"
+        ],
+        "docs": [
+            "docs/mockups/procost_engine_rekomendasi.jpg (approved preview)"
+        ]
+    },
+    {
         "class": "App\\Services\\Costing\\ReverseCostingService",
         "file": "app/Services/Costing/ReverseCostingService.php",
         "lines": 198,
@@ -1447,7 +1636,7 @@
     {
         "class": "App\\Services\\Sales\\CoOrderBuilder",
         "file": "app/Services/Sales/CoOrderBuilder.php",
-        "lines": 295,
+        "lines": 299,
         "entries": [
             {
                 "method": "submit",

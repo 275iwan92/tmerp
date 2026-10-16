@@ -3,9 +3,10 @@
     native + wire:ignore.self: status buka/tutup milik browser TIDAK di-reset saat
     Livewire morph, tapi isi di dalamnya tetap ikut ter-update (hindari bug
     x-show/x-if + state lokal -- memory feedback_alpine_xif_morph_stale_content_bug).
-    Props: title, count (badge opsional), open (default tertutup), tone (slate|blue|green|amber).
+    Props: title, count (badge opsional), open (default tertutup), tone (slate|blue|green|amber),
+    recs (opsional; diteruskan ke x-costing.field lewat @aware untuk penanda sumber saran engine).
 --}}
-@props(['title', 'count' => null, 'open' => false, 'tone' => 'slate'])
+@props(['title', 'count' => null, 'open' => false, 'tone' => 'slate', 'recs' => null])
 @php
     $tones = [
         'slate' => 'bg-[#f4f6fa] text-[#2c3e69]',
