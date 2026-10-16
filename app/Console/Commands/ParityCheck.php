@@ -3,7 +3,7 @@
 /*
  * REMARK
  * Tujuan       : Pemeriksa satu perintah bahwa tmerp.test (tm2*) dan mockup.test (ddt*) tidak berdualisme; gagal (exit 1) bila berbeda.
- * Sumber hulu  : sys_app_menu (ddtsys vs tm2sys), tabel migrations kedua sisi, tabel master ProDev / ProCost / Inquiry, APP_UI di .env dan .env.mockup.
+ * Sumber hulu  : sys_app_menu (ddtsys vs tm2sys), tabel migrations kedua sisi, struktur kolom tabel master ProDev / ProCost / Inquiry (isi baris boleh beda), APP_UI di .env dan .env.mockup.
  * Input        : -
  * Output       : Daftar selisih per bagian + exit code 0 (identik) / 1 (ada selisih). Baca-saja, tidak menulis ke database.
  * Dipakai oleh : Dijalankan setiap selesai batch kerja (aturan CLAUDE.md "Tanpa dualisme"); php artisan parity:check.
@@ -89,20 +89,23 @@ class ParityCheck extends Command
         return $this->report('Migrasi ('.count($d).' / '.count($t).')', $bad);
     }
 
+    // Struktur kolom harus sama; ISI (jumlah baris) sengaja boleh beda: ddt* dummy, tm2* nyata (Jo 2026-10-16).
     private function master(): int
     {
         $bad = [];
+        $cols = fn (string $db, string $tb) => collect(DB::connection('tm2sys')->select(
+            'SELECT COLUMN_NAME n, COLUMN_TYPE t, IS_NULLABLE u FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION',
+            [$db, $tb]
+        ))->map(fn ($c) => "$c->n $c->t $c->u")->all();
         foreach (self::MASTER as $m => $tables) {
             foreach ($tables as $tb) {
-                $a = DB::connection('tm2sys')->selectOne("SELECT COUNT(*) c FROM `tm2$m`.`$tb`")->c;
-                $b = DB::connection('tm2sys')->selectOne("SELECT COUNT(*) c FROM `ddt$m`.`$tb`")->c;
-                if ($a !== $b) {
-                    $bad[] = "$tb: tm2=$a ddt=$b";
+                if ($cols("tm2$m", $tb) !== $cols("ddt$m", $tb)) {
+                    $bad[] = "$tb: struktur kolom tm2 berbeda dengan ddt";
                 }
             }
         }
 
-        return $this->report('Master ProDev / ProCost / Inquiry', $bad);
+        return $this->report('Master ProDev / ProCost / Inquiry (struktur kolom)', $bad);
     }
 
     private function appUi(): int
