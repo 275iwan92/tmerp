@@ -31,3 +31,5 @@
 
 ## Already exists? Searched where, result
 Searched: columns `source`/`channel`/`lead` in tm2sdi and tm2mst (`information_schema`), `grep` `source` in `app/`, `resources/views/v2`, `packages`. Result: only one column `iqp_inquiry.source`; no channel master. The concept ALREADY EXISTS; no new table is needed unless Jo wants channel analytics.
+
+> Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.

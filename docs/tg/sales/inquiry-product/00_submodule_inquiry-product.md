@@ -39,3 +39,5 @@ Not made yet (next Phase). The text flow is in the Inquiry card and the interfac
 
 ## User's Guide (UG) already existing
 `docs/guides/sales/01_inquiry_product.md`; data flow: `docs/guides/sales/00_alur_data_dan_sistem.md` (FROM DOCUMENT, not opened in this session). TG does not repeat its content.
+
+> Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.

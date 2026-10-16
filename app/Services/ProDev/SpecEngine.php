@@ -7,7 +7,7 @@
  * Input        : ProdPart + IqpPart + jumlah order WO (forWorkOrder).
  * Output       : bop[] dan bom[] (nama dari jalur kategori bila material belum dipilih, qty_need dan uom), warnings.
  * Dipakai oleh : WoGenerationService (membuat WO), ProDev canvas, Ppic.
- * Status       : Aktif; engine beku untuk ProDev: jangan ubah alur tanpa izin Jo. Izin Jo 2026-10-16: NEEDS_GLUE juga dari Joint Type GLUE_* (bukan rakitan).
+ * Status       : Aktif; engine beku untuk ProDev: jangan ubah alur tanpa izin Jo. Izin Jo 2026-10-16: NEEDS_GLUE juga dari Joint Type GLUE_* (bukan rakitan), taksiran kebutuhan tinta bila tutupan belum ada (estimated), konversi Stok -> Pakai master ke satuan stok.
  */
 
 namespace App\Services\ProDev;
@@ -15,6 +15,7 @@ namespace App\Services\ProDev;
 use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpPart;
+use App\Models\Sys\SysConstant;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -708,8 +709,8 @@ class SpecEngine
                 'PLANO' => 1 / $fig['perPlano'],
                 'SHEET_LENGTH' => $fig['sheetW'] / 100 * ((float) ($r['rate'] ?? 1) ?: 1),
                 'SHEET_AREA' => $r['rate'] !== null ? $fig['sheetL'] * $fig['sheetW'] / 10000 * $r['rate'] / 1000 : null,
-                'INK_COVERAGE' => $r['rate'] !== null && $r['coverage_cm2_sheet'] !== null
-                    ? $r['coverage_cm2_sheet'] / 10000 * $r['rate'] / 1000 : null,
+                'INK_COVERAGE' => $r['rate'] !== null && ($cov = $r['coverage_cm2_sheet'] ?? $this->inkFallbackCm2($fig)) !== null
+                    ? $cov / 10000 * $r['rate'] / 1000 : null,
                 'PER_PCS' => $r['rate'] !== null && $fig['up'] ? $r['rate'] * $fig['up'] / 1000 : null,
                 'PER_PACK' => $r['rate'] !== null && $fig['up'] && $fig['packQty'] ? $r['rate'] * $fig['up'] / $fig['packQty'] : null,
                 default => null,
@@ -728,7 +729,7 @@ class SpecEngine
             $s = $r['material_id'] ? ($stock[$r['material_id']] ?? null) : null;
             $avail = $s['qty'] ?? null;
             $stockUom = $s['uom'] ?? null;
-            $needStock = $this->toStockUom($need, $r['uom'], $stockUom, (string) $r['name']);
+            $needStock = $this->toStockUom($need, $r['uom'], $stockUom, (string) $r['name'], $s);
 
             $status = match (true) {
                 $need === null => null,
@@ -741,6 +742,7 @@ class SpecEngine
 
             return array_merge($r, [
                 'qty_per_sheet' => $per !== null ? round($per, 6) : null,
+                'estimated' => $per !== null && $r['basis'] === 'INK_COVERAGE' && $r['coverage_cm2_sheet'] === null,
                 'qty_need' => $need !== null ? round($need, 4) : null,
                 'stock_available' => $avail,
                 'stock_uom' => $stockUom,
@@ -752,7 +754,16 @@ class SpecEngine
         }, $rows);
     }
 
-    private function toStockUom(?float $qty, ?string $uom, ?string $stockUom, string $name = ''): ?float
+    // Tutupan tinta belum ada (artwork belum dianalisa): taksiran = konstanta BOOKING_INK_COVERAGE_PCT dari luas lembar, sama dengan MRP.
+    private function inkFallbackCm2(array $fig): ?float
+    {
+        $area = $fig['sheetL'] * $fig['sheetW'];
+
+        return $area > 0 ? round(SysConstant::number('BOOKING_INK_COVERAGE_PCT', 25) / 100 * $area, 1) : null;
+    }
+
+    // $stock = baris stockFor() bahan itu; konversi "Stok -> Pakai" master (mat_raw) dipakai bila tidak ada aturan lain.
+    private function toStockUom(?float $qty, ?string $uom, ?string $stockUom, string $name = '', ?array $stock = null): ?float
     {
         if ($qty === null || ! $uom || ! $stockUom) {
             return null;
@@ -781,7 +792,7 @@ class SpecEngine
             'LBR>RIM' => round($qty / $rim, 4),
             'KG>G', 'KG>GR' => round($qty * 1000, 4),
             'M>CM' => round($qty * 100, 4),
-            default => null,
+            default => $stock && strtoupper((string) $stock['usage_uom']) === $uom && $stock['usage_conv'] > 0 ? round($qty / $stock['usage_conv'], 4) : null,
         };
     }
 
@@ -799,11 +810,12 @@ class SpecEngine
             ->selectRaw('material_id, SUM(qty_available) as qty')
             ->pluck('qty', 'material_id');
 
-        $uoms = DB::connection('tm2mst')->table('mat_raw')->whereIn('material_id', $ids)->pluck('uom_stock', 'material_id');
+        $raws = DB::connection('tm2mst')->table('mat_raw')->whereIn('material_id', $ids)->get(['material_id', 'uom_stock', 'uom_usage', 'conversion_to_usage'])->keyBy('material_id');
 
         $out = [];
         foreach ($ids as $id) {
-            $out[$id] = ['qty' => isset($qty[$id]) ? (float) $qty[$id] : 0.0, 'uom' => $uoms[$id] ?? null];
+            $out[$id] = ['qty' => isset($qty[$id]) ? (float) $qty[$id] : 0.0, 'uom' => $raws[$id]->uom_stock ?? null,
+                'usage_uom' => $raws[$id]->uom_usage ?? null, 'usage_conv' => (float) ($raws[$id]->conversion_to_usage ?? 0)];
         }
 
         return $out;

@@ -52,3 +52,5 @@ See `docs/ENGINE-ATTENTION.md`: no item specific to Reverse (read in full).
 
 ## Tests
 `tests/Feature/CostingInstantModeTest.php::test_instant_screen_reproduces_legacy_raja_bakery_and_reverse`: after Reverse, `mode` = INTEGRATED, the Inquiry type is `NEW`, and the main tier HPP equals the value before Reverse. No dedicated tests for: failure midway, the `stat_confirm_*` flags, the `up_count` value, or the `flat_*` mapping.
+
+> Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): the content of this card is not affected; cited engine line numbers may be about 25 lines lower. Only the cited items were re-read, not the whole card.

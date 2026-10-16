@@ -100,3 +100,5 @@ Case: 1 DC part, grammage Duplex 300gsm (list price 12.500 as in the test assert
 - additive tolerance then rounding: `round(2.464,4705*1,05/100)*100` = **2.600**; after margin: 2.600/0,8 = **3.250**.
 - PPN path: net = 2.464,4705 - 14,8611*(1 - 1/1,1) = **2.463,1194**; `dpp = round((2.463,1194 + 2.464,4705*0,05)/100)*100/0,8` = **3.250**; incl. PPN = 3.250*1,11 = **3.607,50**.
 Other cases guarded by tests (figures from the tests, not recalculated here): `CostingInstantModeTest` reproduces the DC+SF HPP/PC 1.487,4648 (tolerance 0,0005) and that figure stays the same after Reverse. Excel/legacy parity: see the Parity tests.
+
+> Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.

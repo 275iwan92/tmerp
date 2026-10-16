@@ -32,3 +32,5 @@ FACT (partly read): `ProCostContextService` (maps the ProDev layout to costing b
 - `inkLines`, `standardLines`, `summarize`, `frozenLines` in `MaterialPlanningEngine` were not read; `MrpBuyTest` was not run.
 - The content of `docs/guides/sales/*` was not read.
 - Hand comparison for `sweepInterlock` and part of `combinePair` was not done.
+
+> Update 2026-10-16: `SpecEngine.php` (ink estimate, Stock -> Usage conversion in `toStockUom`/`stockFor`) and `MaterialPlanningEngine::availabilityFor` were changed with Jo's agreement; SpecEngine line numbers after ~690 shifted by about +25 (items 3, 11, 12 cite the old numbers). ATTENTION-ENGINE-04 is only partly addressed (conversion works only where the master has `conversion_to_usage`).

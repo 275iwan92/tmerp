@@ -26,3 +26,5 @@
 
 ## User's Guide (UG)
 `docs/guides/sales/02_prodev.md` (FACT: file exists; content not read). TG does not repeat its content.
+
+> Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.

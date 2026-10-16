@@ -35,3 +35,5 @@
 
 ## Already exists? Searched where, result
 Searched tables `cust_material%` / `%material_source%` in all `ddt*` (`information_schema`): none. `grep` `material_source|cust_material|job_nature` in `app/`, `resources/views/v2`, `packages`. Result: the concept ALREADY EXISTS in the header columns + material rows; its downstream (Receiving, Customer Material) belongs to the Stock module, not this card.
+
+> Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): the content of this card is not affected; `SpecEngine.php:1225` now lies about 25 lines lower. Only the cited items were re-read, not the whole card.

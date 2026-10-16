@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Engine MRP + Booking: demand CO dan forecast, pecah ke bahan, netting stok/PO/PR, tulis booking; availabilityFor() = ketersediaan per baris BOM satu part untuk ProCost (baca saja).
+ * Sumber hulu  : co_*, iqp_*, prod_* (layout, BOM), mat_raw, mat_usage_standard, v_rm_available, po_*, pr_*, rm_booking*.
+ * Input        : CO / forecast (plan, persist) atau baris BOM SpecEngine (availabilityFor).
+ * Output       : usulan booking, kekurangan bahan, status per bahan.
+ * Dipakai oleh : Material Planning (v2), Pre-Booking, perintah planning:run, ProCost panel BOM (availabilityFor).
+ * Status       : Aktif; availabilityFor ditambah izin Jo 2026-10-16 (tidak mengubah perilaku yang ada).
+ */
+
 namespace App\Services\Planning;
 
 use App\Models\Inventory\RmBooking;
@@ -674,6 +684,28 @@ final class MaterialPlanningEngine
     }
 
     // ------------------------------------------------------------------ 3. Netting
+
+    /**
+     * Ketersediaan tiap baris BOM satu part (ProCost): netting yang sama dengan plan() atas baris dari SpecEngine, tanpa menulis apa pun.
+     * Kunci hasil = indeks baris input; baris tanpa bahan atau tanpa kebutuhan (satuan stok) tidak dikembalikan.
+     *
+     * @param  list<array>  $bom  baris SpecEngine (material_id, qty_need_stock_uom)
+     * @return array<int, array{status: string, short: float, stock: float, incoming: float}>
+     */
+    public function availabilityFor(array $bom, ?string $needDate = null): array
+    {
+        $lines = [];
+        foreach ($bom as $i => $b) {
+            if (! empty($b['material_id']) && (float) ($b['qty_need_stock_uom'] ?? 0) > 0) {
+                $lines[$i] = ['material_id' => (int) $b['material_id'], 'qty' => (float) $b['qty_need_stock_uom'], 'need_date' => $needDate ?? now()->toDateString(),
+                    'tier' => 0, 'co_id' => 0, 'status' => null, 'alloc' => []];
+            }
+        }
+
+        return collect($this->net($lines))->map(fn ($l) => ['status' => $l['status'], 'short' => (float) $l['short'],
+            'stock' => (float) collect($l['alloc'])->where('type', 'STOCK')->sum('qty'),
+            'incoming' => (float) collect($l['alloc'])->whereIn('type', ['PO', 'PR'])->sum('qty')])->all();
+    }
 
     private function net(array $lines): array
     {

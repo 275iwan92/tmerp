@@ -63,5 +63,8 @@ ATTENTION-ENGINE-02 (Available figures differ between screens; in this file `v_r
 3. Public methods that exist but are not listed in the registry `methods`: `persistPre`, `preDemands`, `explodePre`, `hold`, `releaseHold`, `linesForCo`, `fingerprint`, `leadDays`, `standards`, `material`, `isWorkday`, `addWorkdays`, `subWorkdays`, `pickKey`, `forget` (static). All ten registered methods exist.
 4. The registry `reads` does not mention `quo_quotation`, `iqp_costing`, `iqp_inquiry`, `iqp_tier`, `prd_demand_forecast`, `sys_holiday`, `sys_office_hour`.
 
+## Added 2026-10-16 (Jo agreed)
+Public `availabilityFor(array $bom, ?string $needDate)`: runs the same `net()` (Available stock, then PO, PR) over BOM lines supplied by `SpecEngine` for ONE part and returns status, short, stock, incoming per input index. It writes nothing and is used by the ProCost BOM panel. `plan()` is unchanged. Test: `ProCostBomAvailabilityTest` (2 passed).
+
 ## Tests
 `tests/Feature/PreBookingTest.php` (9 tests: pre-booking from costing, one header, Pick Item, B1 from quotation and chain end, Hold, Hold rejection for CO bookings, CO takes over the header, stale booking, screen and route), `PreBookingFgAvailabilityTest.php`, `MrpBuyTest.php` (Buy button; not run this session), `WoAvailableTest.php`. Tests write to the real DB and clean up after themselves.

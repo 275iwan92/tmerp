@@ -54,3 +54,5 @@
 6. **Cross-DB save is not atomic**: `persist` stacks transactions of `tm2mst` and `tm2sdi` (`SpecEngine.php:1128`); a failure between commits could leave the master and the Inquiry different. Not proven to happen.
 ## Already exists? Searched where, result
 Searched: `sendToProDev`, `openInProdev`, `prod_part_id`, `stat_confirm_prodev`, `iqp_layout`, `prod_layout_group`, `joint_type`, `routing_template` in `app/`, `routes/`, `resources/`, `packages/`, `database/`; related tables in `ddtsdi`/`ddtmst`. Result: the whole interface ALREADY EXISTS. No new table or column is needed for this interface; the proposal "recipe per type" in `engine-process-template-per-tipe.md` is an engine matter, not this card.
+
+> Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): the content of this card is not affected; cited `SpecEngine.php` line numbers after ~690 are about 25 lines lower. Only the cited items were re-read, not the whole card.

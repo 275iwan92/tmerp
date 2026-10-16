@@ -51,17 +51,17 @@ Unit: LBR = print sheet, PCS, M, KG. All from the code; formulas are not prices 
    - Empty `waste_pct`/`tolerance_pct` count as 0.
    - Merged steps (`merge_group`): waste and tolerance are **added** (lines 270-271).
 3. **printSheets** = `qty_in` of the first step with uom LBR (`firstSheets`).
-4. **BOM per sheet** (`figures`, lines 689-698), `per`:
+4. **BOM per sheet** (`figures`, lines 693-716), `per`:
    - PLANO: `1 / sheetsPerPlano`
    - SHEET_LENGTH: `sheetW/100 * rate` (M per sheet)
    - SHEET_AREA: `sheetL * sheetW / 10000 * rate / 1000` (KG per sheet; rate g/m2)
-   - INK_COVERAGE: `coverage_cm2_sheet / 10000 * rate / 1000` (KG per sheet)
+   - INK_COVERAGE: `coverage_cm2_sheet / 10000 * rate / 1000` (KG per sheet). Updated 2026-10-16 (Jo): when `coverage_cm2_sheet` is empty (artwork not analysed) it is estimated as `BOOKING_INK_COVERAGE_PCT` (default 25) % of `sheetL * sheetW` (`inkFallbackCm2`) and the row carries `estimated = true`.
    - PER_PCS: `rate * up / 1000`
    - PER_PACK: `rate * up / packQty` (display only, see step 5)
    - other basis (e.g. AREA_UNKNOWN): empty, the officer fills manually.
 5. **Requirement**: `need = per * printSheets`; for PER_PACK: `ceil(orderQty/packQty) * rate`; if the uom is LBR it is rounded up (`ceil`); stored with 4 decimals.
 6. **Ink**: `area_cm2 = die_w_cm * die_h_cm`, if empty `flat_w * flat_h / 100` (flat in mm). `coverage_cm2 = pct/100 * area` (2 decimals); `coverage_cm2_sheet = coverage_cm2 * up` (1 decimal). Notation `a/b` is rejected if it is not the pattern digit/digit (warning).
-7. **Stock status**: `CUKUP` if `avail >= need` (after conversion to the stock unit), `KURANG`, `TIDAK ADA`, `CEK SATUAN`, `BELUM ADA ITEM`. Conversions only: same, LBR->RIM (`/RIM_SHEETS`), KG->G/GR (`*1000`), M->CM (`*100`), M->ROLL (length from the item name). Others null (see ATTENTION-ENGINE-04).
+7. **Stock status**: `CUKUP` if `avail >= need` (after conversion to the stock unit), `KURANG`, `TIDAK ADA`, `CEK SATUAN`, `BELUM ADA ITEM`. Conversions only: same, LBR->RIM (`/RIM_SHEETS`), KG->G/GR (`*1000`), M->CM (`*100`), M->ROLL (length from the item name). Updated 2026-10-16 (Jo): when none of these rules fits, the master `mat_raw` "Stock -> Usage" conversion is used (`stockFor` now also returns `usage_uom` and `usage_conv`; need in usage unit / `conversion_to_usage`). Without it the result stays null (see ATTENTION-ENGINE-04; the master columns are empty for most materials).
 
 **Worked example (ddt* data, computed by `forWorkOrder`, WO qty 1,000)**
 - Part 532 (type DC, UP 3, pack content 100, BOP from rules): Potong Plano -> Cetak -> QC -> Laminating -> Plong -> Kupas & Hitung -> Pack. From the back: Pack out 1,000 in 1,000; Kupas & Hitung waste 0.5% = ceil(5) = 5, in 1,005; Plong out `ceil(1005/3)` = 335, waste 1.5% = ceil(5.025) = 6, tolerance 0.5% = ceil(1.675) = 2, in 343; Laminating out `ceil(343*3/3)` = 343, waste 4, tol 2, in 349; QC out 349, waste 2, in 351; Cetak out 351, waste 11, tol 4, in 366; Potong Plano out 366, waste 2, in 368. The engine result is exactly the same (368 LBR in), so `printSheets` = 368.
@@ -94,4 +94,4 @@ ATTENTION-ENGINE-01 (SpecEngine patch, DONE 14 Oct), ATTENTION-ENGINE-02 (two de
 8. `PROCESS_INKS` uses literal hex (`#1a1a1a`, etc.) in code, not tokens; display data only.
 
 ## Tests
-`tests/Feature/WoBomFromInquiryTest.php` (1 test), `tests/Feature/WoRowsTest.php` (uses `forWorkOrder`, line 164). These tests clean up their own data.
+`tests/Feature/ProCostBomAvailabilityTest.php` (ink estimate, added 2026-10-16; 2 passed). `tests/Feature/WoBomFromInquiryTest.php` (1 test), `tests/Feature/WoRowsTest.php` (uses `forWorkOrder`, line 164). These tests clean up their own data.
