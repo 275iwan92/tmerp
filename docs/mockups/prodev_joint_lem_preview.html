@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Preview: Lem otomatis dari Joint Type (Pro-Dev New)</title>
+<!-- REMARK Tujuan: preview izin Jo 2026-10-16, SpecEngine membaca join_type_id sebagai penanda NEEDS_GLUE. Sumber: layar asli mockup.test part 533 (gambar bop_*/bom_*), hasil SpecEngine::generate dengan konteks layar yang sama. Status: PREVIEW, kode belum diubah. -->
+<style>
+:root{--ink:#0b0b0b;--bg:#ffffff;--line:#0b0b0b33;--blue:#0b4fd6;--green:#0a6b3a;--red:#a40e0e;--soft:#eef3ff;--new:#e3f6ea;--old:#fdeaea}
+@media (prefers-color-scheme:dark){:root{--ink:#f5f5f5;--bg:#111418;--line:#ffffff33;--blue:#8fb4ff;--green:#6ee0a0;--red:#ff9b9b;--soft:#16233f;--new:#12301f;--old:#3a1717}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,sans-serif;padding:28px 32px;width:1360px}
+h1{font-size:30px;margin:0 0 4px}h2{font-size:22px;margin:30px 0 8px;border-bottom:2px solid var(--ink);padding-bottom:4px}
+.tag{display:inline-block;background:var(--blue);color:#fff;border-radius:6px;padding:1px 10px;font-size:14px;font-weight:700;margin-right:8px}
+.box{border:1.5px solid var(--ink);border-radius:8px;padding:12px 16px;margin:10px 0}
+.box.soft{background:var(--soft)}
+table.k{border-collapse:collapse;width:100%;margin:8px 0}
+table.k th,table.k td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+table.k th{background:var(--soft)}
+code{font-family:Consolas,monospace;font-size:14px;font-weight:600}
+.shot{border:2px solid var(--ink);border-radius:8px;overflow:hidden;margin:6px 0 14px;position:relative}
+.shot img{display:block;width:1500px}
+.lbl{display:inline-block;font-weight:800;padding:2px 12px;border-radius:6px;margin-top:10px}
+.lbl.old{background:var(--old);color:var(--red)}.lbl.new{background:var(--new);color:var(--green)}
+.crop-bop{height:590px}.crop-bop img{margin:-205px 0 0 -250px}
+.crop-bom{height:690px}.crop-bom img{margin:-205px 0 0 -140px}
+.crop-bop,.crop-bom{width:1206px}
+ul{margin:6px 0 6px 22px;padding:0}li{margin:3px 0}
+</style>
+</head>
+<body>
+<h1>Lem otomatis dari Joint Type <span class="tag">PREVIEW</span></h1>
+<div>Layar: <b>Pro-Dev New</b> (Imposition Plano Optimizer) &rarr; accordion <b>Bill of Process</b> dan <b>Bill of Material</b>. Contoh: part 533 &quot;Box Slider IV Rinal&quot;, Inquiry 1771, Joint Type di Inquiry = <b>Glue Single</b>. Kode belum diubah.</div>
+
+<h2>1. Masalah (terbukti di DB mockup)</h2>
+<div class="box">
+<ul>
+<li><code>prod_part.joint_type</code> (teks) kosong di <b>35 dari 35</b> part dari Inquiry. Engine hanya membaca teks ini untuk penanda <code>NEEDS_GLUE</code> (<code>SpecEngine.php:95</code>).</li>
+<li>Pilihan Joint Type sebenarnya ada di <code>join_type_id</code> (<code>iqp_part</code> dan <code>prod_part</code>, nilainya sama): 8 part terisi (3 Glue Single, 5 Glue Double). Engine tidak pernah membacanya.</li>
+<li>Akibatnya dua aturan <code>prod_bop_rule</code> yang bersyarat <code>NEEDS_GLUE</code> tidak pernah jalan: langkah <b>Lem</b> (aturan 15) dan bahan <b>LEM BOX</b> (aturan 24).</li>
+</ul>
+</div>
+
+<h2>2. Layar Bill of Process, part 533</h2>
+<span class="lbl old">SEKARANG: 7 langkah, tidak ada Lem</span>
+<div class="shot crop-bop"><img src="prodev_joint_lem/bop_now.png" alt="BOP sekarang"></div>
+<span class="lbl new">SESUDAH: 9 langkah, Lem muncul</span>
+<div class="shot crop-bop"><img src="prodev_joint_lem/bop_with.png" alt="BOP sesudah"></div>
+
+<h2>3. Layar Bill of Material, part 533</h2>
+<span class="lbl old">SEKARANG: 10 baris, tidak ada LEM BOX</span>
+<div class="shot crop-bom"><img src="prodev_joint_lem/bom_now.png" alt="BOM sekarang"></div>
+<span class="lbl new">SESUDAH: 11 baris, LEM BOX muncul</span>
+<div class="shot crop-bom"><img src="prodev_joint_lem/bom_with.png" alt="BOM sesudah"></div>
+
+<h2>4. Selisih angka (konteks layar sama: qty 5.000 pcs, belum ada layout)</h2>
+<table class="k">
+<tr><th>Item</th><th>Sekarang</th><th>Sesudah</th></tr>
+<tr><td>Jumlah langkah BOP</td><td>7</td><td>9</td></tr>
+<tr><td>Langkah 6-8</td><td>6 Kupas &amp; Hitung (gabungan)</td><td>6 Kupas, 7 <b>Lem</b>, 8 Hitung. Kupas dan Hitung terpisah karena Lem berada di antaranya.</td></tr>
+<tr><td>Qty masuk Kupas</td><td>5.025 PCS</td><td>5.101 PCS (waste dan toleransi Lem 1% dan 0,5% mengalir ke langkah sebelumnya)</td></tr>
+<tr><td>Qty masuk Lem</td><td>-</td><td>5.075 PCS, waste 1% (50 PCS), toleransi 0,5% (25 PCS)</td></tr>
+<tr><td>Proses master Lem</td><td>-</td><td>LEM MESIN (<code>prod_process</code> id 4, sudah ada di aturan 15)</td></tr>
+<tr><td>BOM baris baru</td><td>-</td><td>LEM BOX, LEM KUNING RAJAWALI xxxx, 0,15 g/pcs. Kolom Qty tampil &quot;belum bisa dihitung&quot; karena layout belum ada (celah lain, sama seperti baris bahan lain di layar ini).</td></tr>
+</table>
+
+<h2>5. Disimpan di mana, apa, rumusnya</h2>
+<div class="box soft">
+<ul>
+<li><b>Tidak ada tabel atau kolom baru. Tidak ada data master diubah.</b> Perubahan hanya cara <code>SpecEngine::generate</code> menentukan penanda <code>NEEDS_GLUE</code>.</li>
+<li><b>Dibaca:</b> <code>tm2sdi.iqp_part.join_type_id</code> (bila kosong: <code>tm2mst.prod_part.join_type_id</code>) lalu <code>tm2mst.mat_join_type.code</code>. Hanya baca.</li>
+<li><b>Rumus:</b> <code>NEEDS_GLUE = GLUE_JOINT(prod_part.joint_type teks) ATAU code berawalan "GLUE_"</code>. Kode <code>STITCHING_*</code> tidak melem. Part tanpa Joint Type: hasil sama seperti sekarang.</li>
+<li><b>Ditulis:</b> tidak ada saat layar dibuka (draf). Saat <b>Save/Confirm</b>, hasil engine ditulis seperti biasa: BOP ke <code>tm2mst.prod_part_process</code> + <code>tm2sdi.iqp_part_process</code>; BOM ke <code>tm2mst.prod_part_material</code> + <code>tm2sdi.iqp_part_material</code> (<code>source=ENGINE</code>). Baris OVERRIDE/MANUAL officer tidak ditimpa. Part yang sudah tersimpan baru berubah bila officer menyimpan ulang.</li>
+<li><b>Berkas:</b> hanya <code>app/Services/ProDev/SpecEngine.php</code> (zona beku, butuh izin). Setelah disetujui: diterapkan juga di tmerp.test, REMARK dan SCREEN-INDEX diperbarui, tes <code>SpecEngine</code> ditambah (Glue Single, Glue Double, Stitching, kosong).</li>
+</ul>
+</div>
+
+<h2>6. Sudah ada? Dicari di mana, hasil</h2>
+<div class="box">
+<ul>
+<li><code>join_type_id</code>/<code>mat_join_type</code> di <code>app/</code>: dipakai Inquiry, Master Card, ProductMasterSync, rakitan. <b>Tidak ada pembaca di SpecEngine.</b></li>
+<li><code>NEEDS_GLUE</code>/<code>MULTI_LAYER</code> di <code>app/</code>: hanya <code>SpecEngine.php:94-95</code>.</li>
+<li>Kolom baru tidak diperlukan: Joint Type sudah dipilih di Inquiry dan disalin ke <code>prod_part</code>.</li>
+<li>Belum dicari: <code>sys_help_topic</code>, <code>md:library</code>, DB tmerp (tm2*).</li>
+</ul>
+</div>
+
+<h2>7. Catatan jujur dan satu keputusan untuk Jo</h2>
+<div class="box">
+<ul>
+<li>Gambar &quot;sesudah&quot; = layar asli, tetapi jawaban engine disulihkan di browser uji dengan hasil <code>SpecEngine::generate</code> yang joint-nya diteruskan <i>di memori</i>. Tidak ada kode terpasang, tidak ada Save, tidak ada data ditulis.</li>
+<li>Dari 8 part ber-Joint, <b>5 adalah ASSEMBLY (rakitan)</b>: 450, 453, 456, 459, 546. Join mereka = sambungan antar part anak. Belum jelas apakah Lem boleh muncul di BOP rakitan.</li>
+<li>Part 546 tidak punya ukuran flat, jadi layar Pro-Dev-nya kosong (celah terpisah).</li>
+<li>Joint Stitching (kawat) tidak punya aturan BOP sama sekali; di luar usulan ini.</li>
+</ul>
+<b>Keputusan: Lem otomatis untuk (a) COMPONENT saja (463, 533, 547; rekomendasi) atau (b) COMPONENT dan ASSEMBLY?</b>
+</div>
+</body>
+</html>

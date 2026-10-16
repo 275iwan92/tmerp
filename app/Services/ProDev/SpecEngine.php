@@ -3,11 +3,11 @@
 /*
  * REMARK
  * Tujuan       : Mesin ProDev: menurunkan BOP dan BOM dari data Inquiry/ProDev; processOfBom menautkan tiap bahan ke proses BOP-nya.
- * Sumber hulu  : iqp_part dan prod_part (Inquiry sync), prod_bop_rule, prod_layout_group, master bahan (mat_raw, mat_category).
+ * Sumber hulu  : iqp_part dan prod_part (Inquiry sync, termasuk join_type_id), mat_join_type, prod_bop_rule, prod_layout_group, master bahan (mat_raw, mat_category).
  * Input        : ProdPart + IqpPart + jumlah order WO (forWorkOrder).
  * Output       : bop[] dan bom[] (nama dari jalur kategori bila material belum dipilih, qty_need dan uom), warnings.
  * Dipakai oleh : WoGenerationService (membuat WO), ProDev canvas, Ppic.
- * Status       : Aktif; engine beku untuk ProDev: jangan ubah alur tanpa izin Jo.
+ * Status       : Aktif; engine beku untuk ProDev: jangan ubah alur tanpa izin Jo. Izin Jo 2026-10-16: NEEDS_GLUE juga dari Joint Type GLUE_* (bukan rakitan).
  */
 
 namespace App\Services\ProDev;
@@ -92,7 +92,7 @@ class SpecEngine
         $facts = [
             'PLANO_NEEDS_CUT' => $sheetL > 0 && (abs($fig['planoL'] - $sheetL) > 0.5 || abs($fig['planoW'] - $sheetW) > 0.5),
             'MULTI_LAYER' => $materials->count() > 1 || in_array($part->part_type, ['DC+SF', 'DC+SHEET'], true),
-            'NEEDS_GLUE' => (bool) preg_match(self::GLUE_JOINT, (string) $part->joint_type),
+            'NEEDS_GLUE' => $this->needsGlue($part, $iqp),
         ];
 
         $area = $this->blankArea($part, $iqp);
@@ -130,6 +130,24 @@ class SpecEngine
             ],
             'warnings' => array_map(fn ($w) => array_values(array_unique($w)), $warnings),
         ];
+    }
+
+    // Langkah Lem + bahan LEM BOX: teks joint_type (cara lama) ATAU Joint Type GLUE_* dari Inquiry (cadangan: master part).
+    // Rakitan (ASSEMBLY) ditahan: join-nya sambungan antar part anak (Jo 2026-10-16). STITCHING_* tidak melem.
+    private function needsGlue(ProdPart $part, ?IqpPart $iqp): bool
+    {
+        if (preg_match(self::GLUE_JOINT, (string) $part->joint_type)) {
+            return true;
+        }
+
+        $joinId = $iqp?->join_type_id ?: $part->join_type_id;
+        if (! $joinId || ($iqp?->part_kind ?? $part->part_kind) === 'ASSEMBLY') {
+            return false;
+        }
+
+        $code = DB::connection('tm2mst')->table('mat_join_type')->where('id_join_type', $joinId)->value('code');
+
+        return str_starts_with((string) $code, 'GLUE_');
     }
 
     // ===================== INPUT =====================
