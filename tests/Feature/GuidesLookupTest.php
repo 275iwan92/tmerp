@@ -14,6 +14,7 @@ namespace Tests\Feature;
 
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysGuide;
+use App\Support\V2\Grid\Setup\DesignNotesLookup;
 use App\Support\V2\Grid\Setup\GuidesLookup;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,7 @@ class GuidesLookupTest extends TestCase
     {
         File::deleteDirectory(base_path(self::DIR));
         if (Schema::connection('tm2sys')->hasTable('sys_guide')) {
-            SysGuide::query()->where('slug', 'zztest-demo')->delete();
+            SysGuide::query()->whereIn('slug', ['zztest-demo', 'zztest-design'])->delete();
         }
         parent::tearDown();
     }
@@ -73,5 +74,15 @@ class GuidesLookupTest extends TestCase
 
         Auth::login(SecUser::query()->where('login', 'johiwan')->firstOrFail());
         $this->assertStringContainsString('kuda nil', $lookup->article($id)['body']);
+    }
+
+    public function test_design_notes_stay_apart_from_guides(): void
+    {
+        SysGuide::query()->create(['section' => 'design', 'module' => 'Zztest', 'slug' => 'zztest-design', 'title' => 'Catatan Rancangan Uji', 'body' => 'Alasan memilih flamingo.',
+            'source_path' => 'x', 'line_count' => 1]);
+
+        $this->assertCount(0, array_filter((new GuidesLookup)->feed()['posts'], fn ($p) => $p['title'] === 'Catatan Rancangan Uji'));
+        $this->assertCount(1, array_filter((new DesignNotesLookup)->feed()['posts'], fn ($p) => $p['title'] === 'Catatan Rancangan Uji'));
+        $this->assertCount(0, array_filter((new DesignNotesLookup)->feed()['posts'], fn ($p) => $p['title'] === 'Panduan Uji'));
     }
 }

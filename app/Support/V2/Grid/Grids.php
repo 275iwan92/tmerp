@@ -139,6 +139,7 @@ final class Grids
         Setup\StoryReviewLookup::class,
         Setup\DocsLibraryLookup::class,
         Setup\GuidesLookup::class,
+        Setup\DesignNotesLookup::class,
         Setup\LanguageLookup::class,
         Setup\DictionaryGroupLookup::class,
         Inv\RmStockInGrid::class,

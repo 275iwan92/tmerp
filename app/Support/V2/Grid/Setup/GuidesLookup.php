@@ -3,10 +3,10 @@
 /*
  * REMARK
  * Tujuan       : Layar Setup > Help and Support > Guides: panduan per modul dibaca seperti artikel blog (indeks + satu artikel penuh), dicari di dalam isinya; bagian rumus hanya tampil untuk yang lolos FormulaAccess.
- * Sumber hulu  : tm2sys.sys_guide (diisi php artisan guides:import dari docs/guides); izin rumus dari App\Support\Costing\FormulaAccess (konstanta PROCOST_FORMULA_LOGINS).
+ * Sumber hulu  : tm2sys.sys_guide bagian section = guide (diisi php artisan guides:import dari docs/guides); izin rumus dari App\Support\Costing\FormulaAccess (konstanta PROCOST_FORMULA_LOGINS).
  * Input        : ?q= (cari di judul, ringkasan, dan isi umum), ?doc= (id panduan yang dibaca); chip modul di indeks.
  * Output       : feed(): kartu indeks; article(): satu panduan penuh (markdown). Hanya baca; pencarian tidak menyentuh bagian rumus.
- * Dipakai oleh : Menu SET_GUIDES (v2:setup-guides); tampilan memakai resources/views/v2/screens/setup-docs-library.blade.php yang sama dengan Old Docs Library.
+ * Dipakai oleh : Menu SET_GUIDES (v2:setup-guides), induk DesignNotesLookup; tampilan memakai resources/views/v2/screens/setup-docs-library.blade.php yang sama dengan Old Docs Library.
  * Status       : Aktif.
  */
 
@@ -22,6 +22,12 @@ use Illuminate\Validation\ValidationException;
 class GuidesLookup extends DbLookup
 {
     private const LIMIT = 200;
+
+    // 'guide' = panduan pengguna; DesignNotesLookup menggantinya dengan 'design'.
+    protected function section(): string
+    {
+        return 'guide';
+    }
 
     public function slug(): string
     {
@@ -65,7 +71,7 @@ class GuidesLookup extends DbLookup
 
     protected function query(): Builder
     {
-        return SysGuide::query()->orderBy('module')->orderBy('sort_order');
+        return SysGuide::query()->where('section', $this->section())->orderBy('module')->orderBy('sort_order');
     }
 
     protected function row(Model $m): array

@@ -1,0 +1,28 @@
+[
+  {
+    "key": "setup-design-notes",
+    "type": "REPORT",
+    "module": "SETUP",
+    "title": "Design Notes",
+    "purpose": {
+      "en": "A look back at why each module was designed the way it is: plans, phases and decisions written during the build. Read-only, kept for the owner.",
+      "id": "Kilas balik mengapa tiap modul dirancang demikian: rencana, fase, dan keputusan yang ditulis saat pembangunan. Hanya baca, disimpan untuk pemilik."
+    },
+    "keywords": "design notes, catatan perancangan, rencana teknis, keputusan, kilas balik, technical plan, riwayat desain",
+    "steps": [
+      {
+        "en": "Open Design Notes. Each card is one note with its area (Maintenance, Inventory, PPIC) and a short summary.",
+        "id": "Buka Design Notes. Tiap kartu satu catatan dengan areanya (Maintenance, Inventory, PPIC) dan ringkasan singkat."
+      },
+      {
+        "en": "Search inside the notes, or use the boxes on top to narrow by area.",
+        "id": "Cari di dalam catatan, atau pakai kotak di atas untuk menyaring menurut area."
+      },
+      {
+        "en": "Click Read article to read the whole note. For how a screen works today, use Guides instead.",
+        "id": "Klik Read article untuk membaca seluruh catatan. Untuk cara kerja layar saat ini, pakai Guides."
+      }
+    ],
+    "fields": []
+  }
+]
