@@ -46,3 +46,5 @@ Searched: `published_flag`, `stat_confirm_procost`, `TierPricingResolver`, `ProC
 - Quotation lines use `price_per_pcs` (excl. PPN) as `unit_price`: 24 of 24 lines are exactly equal (none edited). PPN is recalculated by Quotation from `TaxRate::ppn()`, not taken from `c_after_ppn_pc`.
 - The HPP -> margin -> price chain is in `10_engine_costing-advisor.md` (confidential part); this card does not read the HPP or margin columns.
 
+## Added 2026-10-16 (Jo agreed)
+`ProCostContextService::forPart` now also takes the selected tier qty and returns `bomLive`: BOM of ProDev (`SpecEngine::forWorkOrder`, read only) with availability per line from `MaterialPlanningEngine::availabilityFor`. The ProCost screen shows it as the accordion "BOM and availability" when the part is linked to ProDev (otherwise the old Inquiry BOM panel). It writes nothing and creates no PR/PO/booking. Cited line numbers of `ProCostContextService.php` and `costing.blade.php` below this change are about 30 lines lower. Test: `ProCostBomAvailabilityTest`.

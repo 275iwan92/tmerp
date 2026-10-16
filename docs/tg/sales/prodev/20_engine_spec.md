@@ -95,3 +95,5 @@ ATTENTION-ENGINE-01 (SpecEngine patch, DONE 14 Oct), ATTENTION-ENGINE-02 (two de
 
 ## Tests
 `tests/Feature/ProCostBomAvailabilityTest.php` (ink estimate, added 2026-10-16; 2 passed). `tests/Feature/WoBomFromInquiryTest.php` (1 test), `tests/Feature/WoRowsTest.php` (uses `forWorkOrder`, line 164). These tests clean up their own data.
+
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.

@@ -163,3 +163,5 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 [img/engine-map.svg](./img/engine-map.svg), text twin = the schedule table above.
 
 > Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.
+
+> Checked 2026-10-16 after the ProCost BOM panel change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.

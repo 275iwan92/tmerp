@@ -39,6 +39,15 @@ use Livewire\Component;
 // ENGINE+ML (Jo 2026-10-16, preview procost_engine_rekomendasi.jpg): App\Services\Costing\CostingAdvisor
 // mengisi kotak kosong di belakang layar (penanda ✦ + sumber), officer bebas mengubah; isian dikosongkan
 // tidak sengaja dipulihkan; Hitung mencatat isian final (bahan belajar) dan menampilkan Laporan Hitung.
+/*
+ * REMARK
+ * Tujuan       : Layar ProCost Mode Integrasi: hitung HPP dan harga per tier dari Inquiry + ProDev; panel BOM menampilkan BOM ProDev dengan ketersediaan MRP.
+ * Sumber hulu  : ProCostContextService (spec, layout, BOM/BOP ProDev), SpecEngine (BOM), MaterialPlanningEngine::availabilityFor (ketersediaan), CostingEngine, CostingAdvisor.
+ * Input        : inquiry (id), tier terpilih (qty), isian officer.
+ * Output       : iqp_costing, part, tier; panel BOM and availability hanya membaca (tanpa PR/PO/booking).
+ * Dipakai oleh : rute inquiry.costing, wizard-bar.
+ * Status       : Aktif (v1); panel BOM and availability ditambah izin Jo 2026-10-16, tampil bila part tertaut ProDev, kalau tidak panel BOM InqProd lama.
+ */
 new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 {
     public ?int $inquiryId = null;
@@ -147,7 +156,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function context(): array
     {
-        return $this->part ? (new ProCostContextService)->forPart($this->part) : [];
+        return $this->part ? (new ProCostContextService)->forPart($this->part, (float) ($this->tier?->qty_pcs ?? 0)) : [];
     }
 
     #[Computed]
@@ -335,7 +344,13 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     public function selectTier($id): void
     {
         $this->tierId = $id ? (int) $id : null;
-        unset($this->tier);
+        unset($this->tier, $this->context);
+    }
+
+    // Tombol Recalculate di panel BOM: hitung ulang ketersediaan MRP dari stok dan PO/PR terbaru.
+    public function refreshBom(): void
+    {
+        unset($this->context);
     }
 
     // Toggle Manual <-> Ambil Data per part. Balik ke MANUAL cuma lepas link,
@@ -1060,6 +1075,23 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ═════ Info InqProd & ProDev (READ-ONLY, accordion supaya compact) ═════ --}}
         <div class="[display:grid] grid-cols-2 gap-4">
+            @if ($ctx['bomLive'])
+                <x-ui.accordion title="BOM and availability — BOM: ProDev · Availability: MRP · qty {{ number_format((float) $this->tier?->qty_pcs) }}" :count="count($ctx['bomLive'])" :open="true" tone="blue">
+                    <div class="flex justify-end mb-1"><button type="button" wire:click="refreshBom" class="text-[11px] px-2 py-0.5 border border-[#cbd5e1] rounded">Recalculate</button></div>
+                    <table class="w-full text-[12px]">
+                        <thead class="text-[10px] uppercase text-[#64748b] bg-[#f8fafc]"><tr><th class="p-1.5 text-left">Role</th><th class="p-1.5 text-left">Material</th><th class="p-1.5 text-right">Need</th><th class="p-1.5 text-right">Free stock</th><th class="p-1.5 text-right">Incoming PO/PR</th><th class="p-1.5 text-left">Status</th></tr></thead>
+                        <tbody>
+                            @foreach ($ctx['bomLive'] as $b)
+                                <tr class="border-t border-[#f1f5f9]"><td class="p-1.5">{{ $b['role'] }}</td><td class="p-1.5 font-medium">{{ $b['material'] }}</td>
+                                    <td class="p-1.5 text-right">@if ($b['need'] !== null){{ number_format((float) $b['need'], 2) }} {{ $b['uom'] }}{!! $b['estimated'] ? ' <span class="px-1 rounded bg-[#fef3c7] text-[#92400e]">est.</span>' : '' !!}@else — @endif</td>
+                                    <td class="p-1.5 text-right">{{ $b['stock'] !== null ? number_format((float) $b['stock'], 2).' '.$b['stock_uom'] : '—' }}</td>
+                                    <td class="p-1.5 text-right">{{ $b['incoming'] !== null ? number_format((float) $b['incoming'], 2) : '—' }}</td>
+                                    <td class="p-1.5"><span class="px-1.5 rounded font-semibold {{ ['ok' => 'bg-[#dcfce7] text-[#166534]', 'warn' => 'bg-[#fef3c7] text-[#92400e]', 'short' => 'bg-[#fee2e2] text-[#991b1b]'][$b['tone']] }}">{{ $b['status'] }}</span></td></tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </x-ui.accordion>
+            @else
             <x-ui.accordion title="BOM — Bill of Material (InqProd)" :count="count($ctx['bom'])" :open="true" tone="blue">
                 <table class="w-full text-[12px]">
                     <thead class="text-[10px] uppercase text-[#64748b] bg-[#f8fafc]"><tr><th class="p-1.5 text-left">Layer</th><th class="p-1.5 text-left">Material</th><th class="p-1.5 text-left">Merk</th><th class="p-1.5 text-left">Gramatur/Flute</th><th class="p-1.5 text-left">Ukuran (cm)</th><th class="p-1.5 text-left">Qty/Sheet</th><th class="p-1.5 text-left">Sumber</th></tr></thead>
@@ -1072,6 +1104,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                     </tbody>
                 </table>
             </x-ui.accordion>
+            @endif
 
             <x-ui.accordion title="BOP — Routing Proses ({{ $ctx['bop'][0]['origin'] ?? 'ProDev' }})" :count="count($ctx['bop'])" :open="true" tone="green">
                 <table class="w-full text-[12px]">

@@ -14,9 +14,11 @@ namespace Tests\Feature;
 
 use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpPart;
+use App\Models\Sys\SecUser;
 use App\Services\Planning\MaterialPlanningEngine;
 use App\Services\ProDev\SpecEngine;
 use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProCostBomAvailabilityTest extends TestCase
@@ -37,6 +39,25 @@ class ProCostBomAvailabilityTest extends TestCase
         $this->assertNotNull($ink, 'Ink rows are expected for a 4/0 part.');
         $this->assertTrue($ink['estimated']);
         $this->assertGreaterThan(0, $ink['qty_need']);
+    }
+
+    public function test_procost_screen_shows_prodev_bom_with_mrp_availability_read_only(): void
+    {
+        $costing = DB::connection('tm2sdi')->table('iqp_costing as c')
+            ->join('iqp_costing_part as cp', 'cp.costing_id', '=', 'c.id_costing')
+            ->join('iqp_part as p', 'p.id_part', '=', 'cp.part_id')
+            ->join('iqp_costing_price_tier as t', 't.costing_id', '=', 'c.id_costing')
+            ->where('c.doc_status', 'PUBLISHED')->whereNotNull('c.i_dim_panjang_mm')->whereNotNull('p.prod_part_id')->where('t.qty_pcs', '>', 0)
+            ->orderByDesc('c.id_costing')->first(['c.inquiry_id']);
+        if (! $costing) {
+            $this->markTestSkipped('No published costing with a ProDev part in this database.');
+        }
+
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
+        $html = Livewire::test('pages::inquiry.costing', ['inquiry' => $costing->inquiry_id])->html();
+
+        $this->assertStringContainsString('BOM and availability', $html);
+        $this->assertMatchesRegularExpression('/Enough|Short|No stock|Need item|Check unit|Covered by PO\/PR/', $html);
     }
 
     public function test_availability_for_returns_stock_and_short_per_bom_index(): void

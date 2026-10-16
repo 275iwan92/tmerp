@@ -56,3 +56,5 @@
 Searched: `sendToProDev`, `openInProdev`, `prod_part_id`, `stat_confirm_prodev`, `iqp_layout`, `prod_layout_group`, `joint_type`, `routing_template` in `app/`, `routes/`, `resources/`, `packages/`, `database/`; related tables in `ddtsdi`/`ddtmst`. Result: the whole interface ALREADY EXISTS. No new table or column is needed for this interface; the proposal "recipe per type" in `engine-process-template-per-tipe.md` is an engine matter, not this card.
 
 > Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): the content of this card is not affected; cited `SpecEngine.php` line numbers after ~690 are about 25 lines lower. Only the cited items were re-read, not the whole card.
+
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.

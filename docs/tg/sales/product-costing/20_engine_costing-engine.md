@@ -102,3 +102,5 @@ Case: 1 DC part, grammage Duplex 300gsm (list price 12.500 as in the test assert
 Other cases guarded by tests (figures from the tests, not recalculated here): `CostingInstantModeTest` reproduces the DC+SF HPP/PC 1.487,4648 (tolerance 0,0005) and that figure stays the same after Reverse. Excel/legacy parity: see the Parity tests.
 
 > Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.
+
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.

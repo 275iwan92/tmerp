@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Konteks baca-saja InqProd + ProDev untuk satu part ProCost (spec, layout, BOM, BOP, tinta, finishing); bomLive = BOM ProDev + ketersediaan MRP untuk qty tier terpilih.
+ * Sumber hulu  : iqp_part*, prod_part*, prod_layout_group, mat_raw; SpecEngine::forWorkOrder (BOM) dan MaterialPlanningEngine::availabilityFor (ketersediaan).
+ * Input        : IqpCostingPart dan qty tier (pcs).
+ * Output       : array konteks; bomLive = baris role, material, need, free stock, incoming PO/PR, status dan tone (ok|warn|short).
+ * Dipakai oleh : pages/inquiry/costing.blade.php (ProCost Integrasi), CostingAdvisor, components/costing/imposition-svg.
+ * Status       : Aktif; bomLive ditambah izin Jo 2026-10-16. Tidak menulis apa pun; tidak membuat PR/PO/booking.
+ */
+
 namespace App\Services\Costing;
 
 use App\Models\Master\MatRaw;
@@ -7,11 +17,12 @@ use App\Models\Master\ProdLayoutGroup;
 use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdPartFinishing;
-use App\Models\Master\ProdPartProcess;
 use App\Models\Master\RefFinishingType;
 use App\Models\Master\SupSupplier;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpPart;
+use App\Services\Planning\MaterialPlanningEngine;
+use App\Services\ProDev\SpecEngine;
 
 /**
  * Konteks READ-ONLY InqProd + ProDev utk 1 part costing mode Integrasi
@@ -23,7 +34,7 @@ use App\Models\Sdi\IqpPart;
  */
 class ProCostContextService
 {
-    public function forPart(IqpCostingPart $part): array
+    public function forPart(IqpCostingPart $part, float $qty = 0): array
     {
         $iqpPart = $part->part_id ? IqpPart::with(['bomMaterials', 'processes', 'finishings', 'inks'])->find($part->part_id) : null;
         $prodPartId = $part->prodev_part_id ?: $iqpPart?->prod_part_id;
@@ -38,11 +49,40 @@ class ProCostContextService
             'group' => $group,
             'geometry' => $group ? $this->layoutGeometry($group, $prodPart) : null,
             'bom' => $this->bom($iqpPart),
+            'bomLive' => $prodPart && $qty > 0 ? $this->bomLive($prodPart, $iqpPart, $qty) : [],
             'bop' => $this->bop($prodPart, $iqpPart),
             'inks' => $iqpPart?->inks ?? collect(),
             'finishings' => $this->finishings($iqpPart, $prodPart),
             'artworkUrl' => $iqpPart?->artwork_path ? asset('storage/'.$iqpPart->artwork_path) : null,
         ];
+    }
+
+    /**
+     * BOM ProDev (SpecEngine) untuk qty tier terpilih + ketersediaan MRP per baris (MaterialPlanningEngine::availabilityFor); baca saja.
+     * Status: Need item / Short n / Covered by PO-PR / Late PO-PR / Enough / No stock / Check unit; tone ok|warn|short.
+     */
+    private function bomLive(ProdPart $prodPart, ?IqpPart $iqpPart, float $qty): array
+    {
+        $bom = collect((new SpecEngine)->forWorkOrder($prodPart, $iqpPart, $qty)['bom'])->filter(fn ($b) => $b['name'] !== 'None')->values()->all();
+        $mrp = (new MaterialPlanningEngine)->availabilityFor($bom);
+
+        return array_map(function ($b, $i) use ($mrp) {
+            $m = $mrp[$i] ?? null;
+            $uom = $b['stock_uom'] ?: $b['uom'];
+            [$status, $tone] = match (true) {
+                $b['stock_status'] === 'BELUM ADA ITEM' => ['Need item', 'warn'],
+                $m && $m['short'] > 0 => ['Short '.round($m['short'], 2).' '.$uom, 'short'],
+                $m && in_array($m['status'], ['LATE_PO', 'LATE_PR'], true) => ['Late '.($m['status'] === 'LATE_PO' ? 'PO' : 'PR'), 'warn'],
+                $m && $m['incoming'] > 0 => ['Covered by PO/PR', 'ok'],
+                $m !== null => ['Enough', 'ok'],
+                $b['stock_status'] === 'TIDAK ADA' => ['No stock', 'short'],
+                $b['stock_status'] === 'CEK SATUAN' => ['Check unit', 'warn'],
+                default => ['—', 'warn'],
+            };
+
+            return ['role' => $b['role'], 'material' => $b['name'], 'need' => $b['qty_need'], 'uom' => $b['uom'], 'estimated' => (bool) ($b['estimated'] ?? false),
+                'stock' => $b['stock_available'], 'stock_uom' => $b['stock_uom'], 'incoming' => $m['incoming'] ?? null, 'status' => $status, 'tone' => $tone];
+        }, $bom, array_keys($bom));
     }
 
     /** BOM dari Inquiry (+ merk/ukuran dari master mat_raw). */
