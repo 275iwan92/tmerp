@@ -1,82 +1,82 @@
-# Kartu ENGINE: Imposition Engine
+# ENGINE card: Imposition Engine
 
-> DRAFT KELOMPOK C (2026-10-16), menunggu persetujuan Jo. Sumber: `app/Services/Imposition/ImpositionEngine.php` dibaca penuh (472 baris); tes `ImpositionEngineProDevToolsTest` dijalankan (7 lulus, 19 assert). Angka contoh dihitung sendiri lewat tinker (`--env=mockup`, tanpa menulis DB) dan dicek tangan.
+> DRAFT GROUP C (2026-10-16), awaiting Jo's approval. Source: `app/Services/Imposition/ImpositionEngine.php` read in full (472 lines); test `ImpositionEngineProDevToolsTest` was run (7 passed, 19 asserts). The example numbers were computed myself via tinker (`--env=mockup`, without writing to the DB) and hand-checked.
 
-- **Nama kanonik**: Imposition Engine. **Kelas**: `App\Services\Imposition\ImpositionEngine`. **Registry**: key `imposition`, mode `suggest`, grup Pro-Dev. **Modul/sub-modul**: Sales > Inquiry & Quotation > Pro-Dev.
-- **Status beku**: ProDev = zona beku (flow/data). Engine ini hitungan murni, tidak menulis DB sendiri (FAKTA: tidak ada `DB::`/`save` di berkas).
-- **Sinonim**: UP, nesting, tata letak plano, layout cetak, TEGAK/PUTAR/CAMPUR.
-- **BUKAN sama dengan**: nesting manual di layar ProDev baru (digambar di JS `prodev.blade.php`, bukan engine ini; lihat Temuan 1). **BUKAN** `ProCostContextService::layoutGeometry` (itu pemetaan hasil layout ke kotak costing).
+- **Canonical name**: Imposition Engine. **Class**: `App\Services\Imposition\ImpositionEngine`. **Registry**: key `imposition`, mode `suggest`, group Pro-Dev. **Module/sub-module**: Sales > Inquiry & Quotation > Pro-Dev.
+- **Frozen status**: ProDev = frozen zone (flow/data). This engine is pure calculation, it does not write the DB itself (FACT: no `DB::`/`save` in the file).
+- **Synonyms**: UP, nesting, plano layout, print layout, TEGAK/PUTAR/CAMPUR.
+- **NOT the same as**: manual nesting on the new ProDev screen (drawn in JS `prodev.blade.php`, not by this engine; see Finding 1). **NOT** `ProCostContextService::layoutGeometry` (that maps the layout result to the costing boxes).
 
-## Pemicu (tidak ada background / jadwal)
-Dicari di `routes/console.php` (tidak ada), `app/Jobs` (tidak ada), Observers (tidak ada), seluruh `app/`, `resources/views`, `packages`. FAKTA, semua pemanggil `new ImpositionEngine` / `app(ImpositionEngine::class)`:
-| Pemicu | Method | Berkas:baris | Catatan |
+## Trigger (no background / schedule)
+Searched in `routes/console.php` (none), `app/Jobs` (none), Observers (none), all of `app/`, `resources/views`, `packages`. FACT, all callers of `new ImpositionEngine` / `app(ImpositionEngine::class)`:
+| Trigger | Method | File:line | Note |
 |---|---|---|---|
-| Layar v1 Imposition per Inquiry dibuka / ukuran diubah | `run`, `cells` | `resources/views/pages/inquiry/imposition.blade.php:67` (recompute), `:118` (usulan semua plano aktif) | rute `inquiry.imposition` (`routes/web.php:150`); tautan masuk dari form v1 `form.blade.php:2621`. Menu v2 `SALES_IMPO` menunjuk `v2:prodev`, bukan layar ini. |
-| Pratinjau bahan pengganti di Form WO | `run` | `resources/views/pages/production/wo-entry.blade.php:439` | hanya tampil, tidak menyimpan |
-| Costing Advisor, bila layout ProDev belum ada | `run` | `app/Services/Costing/CostingAdvisor.php:276` | baca saja, ditandai ESTIMATE (lihat kartu Costing Advisor) |
-| Hitung "cut efektif" group multi-part | `applyFlap` | `app/Models/Master/ProdLayoutGroup.php:88` (dari `ProCostContextService.php:139`, `costing.blade.php:268`) | hanya ukuran bentangan, bukan `run` |
-| ProDev LAMA (diarsipkan) | semua tool (`run`, `sweepFlap` baris 622, `sweepInterlock` 673, `bestSheet` 726, `dieRuleMeterLari` 771, `combinePair` 854, `cells`, `applyFlap`) | `resources/views/pages/production/old_prodev.blade.php` | rute `production.old-prodev` (`routes/web.php:339`) hidup, tetapi komentar `MenuRoutes.php` dan isi `sys_app_menu` mockup tidak menautkannya |
+| v1 Imposition screen per Inquiry opened / size changed | `run`, `cells` | `resources/views/pages/inquiry/imposition.blade.php:67` (recompute), `:118` (suggestion for all active planos) | route `inquiry.imposition` (`routes/web.php:150`); incoming link from v1 form `form.blade.php:2621`. Menu v2 `SALES_IMPO` points to `v2:prodev`, not this screen. |
+| Substitute material preview in Form WO | `run` | `resources/views/pages/production/wo-entry.blade.php:439` | display only, does not save |
+| Costing Advisor, when no ProDev layout exists yet | `run` | `app/Services/Costing/CostingAdvisor.php:276` | read-only, marked ESTIMATE (see the Costing Advisor card) |
+| Compute "effective cut" of a multi-part group | `applyFlap` | `app/Models/Master/ProdLayoutGroup.php:88` (from `ProCostContextService.php:139`, `costing.blade.php:268`) | flat size only, not `run` |
+| OLD ProDev (archived) | all tools (`run`, `sweepFlap` line 622, `sweepInterlock` 673, `bestSheet` 726, `dieRuleMeterLari` 771, `combinePair` 854, `cells`, `applyFlap`) | `resources/views/pages/production/old_prodev.blade.php` | route `production.old-prodev` (`routes/web.php:339`) is alive, but the comment in `MenuRoutes.php` and the content of mockup `sys_app_menu` do not link it |
 
-**Tidak memanggil engine ini** (FAKTA, grep): layar ProDev aktif `pages::production.prodev` (menu `v2:prodev`, `v2:prodev-new`, `v2:prodev-revise`): nesting digambar dan dihitung di JS di klien, tombol Save hanya menyimpan hasilnya (`saveLayout`). `CostingEngine` juga tidak memanggilnya.
+**Does not call this engine** (FACT, grep): the active ProDev screen `pages::production.prodev` (menu `v2:prodev`, `v2:prodev-new`, `v2:prodev-revise`): nesting is drawn and computed in JS on the client, the Save button only stores the result (`saveLayout`). `CostingEngine` does not call it either.
 
-## Alur (kembaran teks dari diagram `../img/imposition.svg`)
-1. `run(plano, flat, gap, gripper, margin)` menghitung area pakai = plano dikurangi margin dan gripper.
-2. Hitung susunan TEGAK (flat apa adanya) dan PUTAR (flat diputar 90 derajat); yang UP-nya lebih banyak menang (seri = TEGAK).
-3. Coba CAMPUR: blok utama TEGAK, lalu sisa lebar diisi blok PUTAR; dipakai hanya bila total UP lebih banyak DAN blok putar tidak kosong.
-4. Hitung efisiensi dan waste; kembalikan `up`, `method`, `layout` (kolom, baris, ukuran per blok).
-5. `cells` mengubah `layout` menjadi koordinat tiap sel (mm dari kiri-atas plano) untuk gambar.
-6. Alat tambahan (semua memanggil `run` berulang): `sweepFlap` (variasi panjang lidah), `sweepInterlock` (lidah + geser "69"), `bestSheet` (semua plano aktif), `combinePair` (dua part sekaligus), `dieRuleMeterLari` (meter lari pisau).
-7. Hasil berupa saran; officer memutuskan (A.7). Engine tidak menyimpan.
+## Flow (text twin of diagram `../img/imposition.svg`)
+1. `run(plano, flat, gap, gripper, margin)` computes the usable area = plano minus margin and gripper.
+2. Compute the TEGAK arrangement (flat as is) and PUTAR (flat rotated 90 degrees); the one with more UP wins (tie = TEGAK).
+3. Try CAMPUR: main block TEGAK, then the remaining width is filled with a PUTAR block; used only if the total UP is higher AND the rotated block is not empty.
+4. Compute efficiency and waste; return `up`, `method`, `layout` (columns, rows, size per block).
+5. `cells` turns `layout` into the coordinates of each cell (mm from the top-left of the plano) for drawing.
+6. Extra tools (all call `run` repeatedly): `sweepFlap` (flap length variation), `sweepInterlock` (flap + shift "69"), `bestSheet` (all active planos), `combinePair` (two parts at once), `dieRuleMeterLari` (knife running metres).
+7. The result is a suggestion; the officer decides (A.7). The engine does not save.
 
 ## Input / Output
-- **Input**: argumen method (tanpa membaca DB), dalam mm: `planoW, planoH, flatW, flatH, gap, gripper, margin`; sweep: `flapMin, flapMax, step, flapSide` (TOP/BOTTOM/LEFT/RIGHT); `bestSheet`: koleksi `mat_plano_size` (diberikan pemanggil; engine sendiri tidak query). Nilai bawaan layar: `sys_constant` `PRODEV_GAP_MM`=3, `PRODEV_GRIPPER_MM`=12, `PRODEV_MARGIN_MM`=8, `PRODEV_FLAP_MIN_MM`=20 (FAKTA, DB mockup), tetapi engine tidak membacanya sendiri.
-- **Output (hanya nilai kembali)**: `up`, `method` (TEGAK/PUTAR/CAMPUR), `efficiency_pct`, `waste_pct`, `layout`, `area_w`, `area_h`; sweep menambah `flap_length_mm`, `shift_offset_mm`, `flat_w`, `flat_h`; `bestSheet` menambah `plano_size_id`, `plano_name`, `cost_metric`, `gross_sheets`; `combinePair` memberi `recommend` (COMBINED/SEPARATE/NONE), `combined`, `separate`, `saving_pct`.
-- **Siapa menulis hasilnya**: pemanggil. Layar v1 menulis `iqp_layout` (`imposition.blade.php:75-82`: `method`, `up_count`, `efficiency_pct`, `waste_pct`, `layout_detail`), hanya bila `stat_confirm` belum 1 (`:63`). ProDev aktif menulis `prod_layout_group` dan `iqp_layout` dari hasil JS-nya sendiri.
+- **Input**: method arguments (no DB reads), in mm: `planoW, planoH, flatW, flatH, gap, gripper, margin`; sweep: `flapMin, flapMax, step, flapSide` (TOP/BOTTOM/LEFT/RIGHT); `bestSheet`: collection `mat_plano_size` (given by the caller; the engine itself does not query). Screen defaults: `sys_constant` `PRODEV_GAP_MM`=3, `PRODEV_GRIPPER_MM`=12, `PRODEV_MARGIN_MM`=8, `PRODEV_FLAP_MIN_MM`=20 (FACT, mockup DB), but the engine does not read them itself.
+- **Output (return values only)**: `up`, `method` (TEGAK/PUTAR/CAMPUR), `efficiency_pct`, `waste_pct`, `layout`, `area_w`, `area_h`; sweep adds `flap_length_mm`, `shift_offset_mm`, `flat_w`, `flat_h`; `bestSheet` adds `plano_size_id`, `plano_name`, `cost_metric`, `gross_sheets`; `combinePair` gives `recommend` (COMBINED/SEPARATE/NONE), `combined`, `separate`, `saving_pct`.
+- **Who writes the result**: the caller. The v1 screen writes `iqp_layout` (`imposition.blade.php:75-82`: `method`, `up_count`, `efficiency_pct`, `waste_pct`, `layout_detail`), only when `stat_confirm` is not yet 1 (`:63`). The active ProDev writes `prod_layout_group` and `iqp_layout` from its own JS result.
 
 ## FORMULA
-Satuan: mm, kecuali `up` (buah per lembar) dan persen. Tanpa pembulatan kecuali disebut.
-1. `areaW = planoW - 2*margin`; `areaH = planoH - gripper - 2*margin` (baris 11-12).
-2. `fit(avail, item, gap) = max(0, floor((avail + gap) / (item + gap)))` (baris 458); `n = fit(areaW, itemW) * fit(areaH, itemH)` (baris 461-471). Item dengan sisi <= 0 memberi n = 0.
-3. TEGAK = `n(flatW, flatH)`; PUTAR = `n(flatH, flatW)`; `up` = yang besar, bila sama TEGAK (baris 17).
-4. CAMPUR: `mainCols = fit(areaW, flatW)`, `usedW = mainCols*(flatW+gap) - gap`, `restW = areaW - usedW - gap`, `mainRows = fit(areaH, flatH)`; `rotCols = fit(restW, flatH)`, `rotRows = fit(areaH, flatW)`; total = `mainCols*mainRows + rotCols*rotRows`; menggantikan hasil sebelumnya bila `total > up` DAN `rotCols*rotRows > 0` (baris 27-46).
-5. `efficiency = up * flatW * flatH / (areaW * areaH) * 100`, dijepit 0-100 dan dibulatkan 2 desimal; `waste = 100 - efficiency` dijepit sama (baris 48-56). Catatan: dasar efisiensi = area pakai (bukan seluruh plano).
-6. `applyFlap`: LEFT/RIGHT menambah lidah ke lebar, selain itu ke tinggi (baris 166-172).
-7. `sweepFlap`: untuk `flap = flapMin ... flapMax` (kelipatan `step`, toleransi +0,0001) hitung `run` pada bentangan `applyFlap`; urut UP turun lalu efisiensi turun; ambil `topN` (bawaan 5). `flapMax < flapMin` atau `step <= 0` memberi daftar kosong.
-8. `sweepInterlock`: sama, tetapi untuk tiap `flap` dicoba `shift = 0 ... flap` (kelipatan `shiftStep`) dan bentangan efektif memakai `flap - shift` (baris 206). Penulis kode sendiri menyatakan model ini perkiraan, bukan spesifikasi presisi (komentar baris 181-189); shift 0 = hasil `sweepFlap`.
-9. `bestSheet`: per plano ambil hasil `sweepFlap` teratas (UP >= 1). Metrik "termurah": bila `targetQty > 0`: `ceil(targetQty/up) * (planoW*planoH)`; bila tidak: `planoW*planoH / up`. Urut naik (baris 264-279). Harga bahan tidak dipakai (asumsi bahan sama di semua plano).
-10. `combinePair`: area dibagi dua kolom vertikal, kolom A selebar `x` (digeser `splitStep`, bawaan 5), B sisanya; `upA`/`upB` = maksimum dua orientasi; `sets = min(upA/qtyPerSkuA, upB/qtyPerSkuB)`; simpan `x` dengan `sets` terbesar. `area_per_set = planoArea / sets`. Pembanding terpisah: `planoArea/soloUpA*qtyA + planoArea/soloUpB*qtyB`. `saving_pct = (1 - gabung/pisah)*100` (baris 309-391). `recommend` = COMBINED hanya bila gabung < pisah; NONE bila tidak ada `x` yang memuat keduanya.
-11. `dieRuleMeterLari`: potong = `(cols+1)*gridH + (rows+1)*gridW` (pisau bersama antar sel), dengan `gridW = cols*iw + (cols-1)*gap`, dst; untuk CAMPUR dua grid dijumlah. Lipat = `up * panjangGarisLipat` (lebar badan bila lidah TOP/BOTTOM, tinggi bila LEFT/RIGHT). Perforasi = 0 (komentar: belum ada sumber data). Hasil = `(potong+lipat)/1000` meter, 4 desimal.
+Unit: mm, except `up` (pieces per sheet) and percent. No rounding unless stated.
+1. `areaW = planoW - 2*margin`; `areaH = planoH - gripper - 2*margin` (lines 11-12).
+2. `fit(avail, item, gap) = max(0, floor((avail + gap) / (item + gap)))` (line 458); `n = fit(areaW, itemW) * fit(areaH, itemH)` (lines 461-471). An item with a side <= 0 gives n = 0.
+3. TEGAK = `n(flatW, flatH)`; PUTAR = `n(flatH, flatW)`; `up` = the larger, TEGAK if equal (line 17).
+4. CAMPUR: `mainCols = fit(areaW, flatW)`, `usedW = mainCols*(flatW+gap) - gap`, `restW = areaW - usedW - gap`, `mainRows = fit(areaH, flatH)`; `rotCols = fit(restW, flatH)`, `rotRows = fit(areaH, flatW)`; total = `mainCols*mainRows + rotCols*rotRows`; replaces the previous result when `total > up` AND `rotCols*rotRows > 0` (lines 27-46).
+5. `efficiency = up * flatW * flatH / (areaW * areaH) * 100`, clamped to 0-100 and rounded to 2 decimals; `waste = 100 - efficiency` clamped the same way (lines 48-56). Note: the efficiency base = usable area (not the whole plano).
+6. `applyFlap`: LEFT/RIGHT adds the flap to the width, otherwise to the height (lines 166-172).
+7. `sweepFlap`: for `flap = flapMin ... flapMax` (multiples of `step`, tolerance +0.0001) compute `run` on the `applyFlap` flat size; sort UP descending then efficiency descending; take `topN` (default 5). `flapMax < flapMin` or `step <= 0` gives an empty list.
+8. `sweepInterlock`: the same, but for each `flap` try `shift = 0 ... flap` (multiples of `shiftStep`) and the effective flat size uses `flap - shift` (line 206). The code author states that this model is an approximation, not a precise specification (comment lines 181-189); shift 0 = the `sweepFlap` result.
+9. `bestSheet`: per plano take the top `sweepFlap` result (UP >= 1). "Cheapest" metric: if `targetQty > 0`: `ceil(targetQty/up) * (planoW*planoH)`; otherwise: `planoW*planoH / up`. Sorted ascending (lines 264-279). Material price is not used (assumes the same material on all planos).
+10. `combinePair`: the area is split into two vertical columns, column A of width `x` (shifted by `splitStep`, default 5), B the rest; `upA`/`upB` = maximum of the two orientations; `sets = min(upA/qtyPerSkuA, upB/qtyPerSkuB)`; keep the `x` with the largest `sets`. `area_per_set = planoArea / sets`. Separate comparison: `planoArea/soloUpA*qtyA + planoArea/soloUpB*qtyB`. `saving_pct = (1 - gabung/pisah)*100` (lines 309-391). `recommend` = COMBINED only when combined < separate; NONE when no `x` holds both.
+11. `dieRuleMeterLari`: cut = `(cols+1)*gridH + (rows+1)*gridW` (shared knife between cells), with `gridW = cols*iw + (cols-1)*gap`, etc.; for CAMPUR the two grids are added. Fold = `up * panjangGarisLipat` (body width when the flap is TOP/BOTTOM, height when LEFT/RIGHT). Perforation = 0 (comment: no data source yet). Result = `(potong+lipat)/1000` metres, 4 decimals.
 
-**Contoh angka (dihitung dan dicek tangan, plano 79x109 = 790x1090, gap 3, gripper 12, margin 8)**
-| Flat (mm) | Hasil `run` | Cek tangan |
+**Worked example (computed and hand-checked, plano 79x109 = 790x1090, gap 3, gripper 12, margin 8)**
+| Flat (mm) | `run` result | Hand check |
 |---|---|---|
-| 300 x 200 | 10 UP, TEGAK, efisiensi 72,99% | areaW 774, areaH 1062; kolom floor(777/303)=2, baris floor(1065/203)=5 = 10; 10*60.000/821.988 = 72,99% |
-| 250 x 100 | 30 UP, TEGAK, 91,24% | 3 kolom x 10 baris; 750.000/821.988 |
-| 128 x 102 | 58 UP, CAMPUR, 92,12% | TEGAK 5x10 = 50, PUTAR 7x8 = 56; campur 5x10 + 1x8 = 58 > 56; `offX` 655 |
-| 780 x 300 | 2 UP, PUTAR, 56,94% | (hasil engine, tidak dicek tangan) |
-| 2000 x 2000 | 0 UP, TEGAK, 0% | tidak muat |
-- `sweepFlap`, badan 200x150, lidah TOP 20-50 langkah 5, 3 teratas: lidah 40 = 20 UP PUTAR 92,46%; lidah 35 = 20 UP 90,03%; lidah 30 = 20 UP 87,59%. Cek tangan lidah 40: bentangan 200x190, PUTAR 4 kolom x 5 baris = 20, 20*38.000/821.988 = 92,46%. Dua lainnya tidak dicek tangan.
-- `combinePair` (plano 790x1090; A 300x200 qty 1, B 150x100 qty 1; step 10): COMBINED, `x` 610, 10 UP A + 10 UP B, 10 set per lembar, hemat 16,67% (hasil engine; tes mengasersi hanya COMBINED dan saving > 0).
-- `dieRuleMeterLari` grid 2x3, 100x80, 6 UP, gap 3, lidah TOP, badan 100x80 = 2,15 m (sama dengan tes).
+| 300 x 200 | 10 UP, TEGAK, efficiency 72.99% | areaW 774, areaH 1062; columns floor(777/303)=2, rows floor(1065/203)=5 = 10; 10*60,000/821,988 = 72.99% |
+| 250 x 100 | 30 UP, TEGAK, 91.24% | 3 columns x 10 rows; 750,000/821,988 |
+| 128 x 102 | 58 UP, CAMPUR, 92.12% | TEGAK 5x10 = 50, PUTAR 7x8 = 56; mixed 5x10 + 1x8 = 58 > 56; `offX` 655 |
+| 780 x 300 | 2 UP, PUTAR, 56.94% | (engine result, not hand-checked) |
+| 2000 x 2000 | 0 UP, TEGAK, 0% | does not fit |
+- `sweepFlap`, body 200x150, flap TOP 20-50 step 5, top 3: flap 40 = 20 UP PUTAR 92.46%; flap 35 = 20 UP 90.03%; flap 30 = 20 UP 87.59%. Hand check flap 40: flat 200x190, PUTAR 4 columns x 5 rows = 20, 20*38,000/821,988 = 92.46%. The other two were not hand-checked.
+- `combinePair` (plano 790x1090; A 300x200 qty 1, B 150x100 qty 1; step 10): COMBINED, `x` 610, 10 UP A + 10 UP B, 10 sets per sheet, saving 16.67% (engine result; the test asserts only COMBINED and saving > 0).
+- `dieRuleMeterLari` grid 2x3, 100x80, 6 UP, gap 3, flap TOP, body 100x80 = 2.15 m (same as the test).
 
-## Kasus tepi
-- Flat 0 atau lebih besar dari plano: `up` 0, efisiensi 0, `method` tetap TEGAK (FAKTA, dijalankan). Pemanggil harus memeriksa `up < 1`.
-- `restW` negatif: `fit` memberi 0, tidak ada blok putar.
-- Hasil tidak mempertimbangkan arah serat, ukuran mesin cetak, atau minimum gigitan selain `gripper` yang diberikan pemanggil.
-- Hasil seri antar lidah diurut stabil menurut urutan kemunculan (PHP `usort` stabil).
+## Edge cases
+- Flat 0 or larger than the plano: `up` 0, efficiency 0, `method` stays TEGAK (FACT, executed). The caller must check `up < 1`.
+- Negative `restW`: `fit` gives 0, no rotated block.
+- The result does not consider grain direction, press size, or minimum bite other than the `gripper` given by the caller.
+- Ties between flaps are sorted stably by order of appearance (PHP `usort` is stable).
 
-## Pemakai (relasi)
-- **sumber**: `prod_part` / `iqp_part` (bentangan, lidah), `mat_plano_size` (plano). **dipakai_oleh**: layar v1 Imposition, Form WO (pratinjau), Costing Advisor, ProDev LAMA. **hilir**: `iqp_layout`, `prod_layout_group` (diisi pemanggil); Costing membaca `up_count`/layout lewat `ProCostContextService`. Konsep terkait: Tipe produk, `../inquiry-product/20_engine_dieline.md` (sumber bentangan).
+## Used by (relations)
+- **source**: `prod_part` / `iqp_part` (flat, flap), `mat_plano_size` (plano). **used_by**: v1 Imposition screen, Form WO (preview), Costing Advisor, OLD ProDev. **downstream**: `iqp_layout`, `prod_layout_group` (filled by the caller); Costing reads `up_count`/layout via `ProCostContextService`. Related concepts: Product type, `../inquiry-product/20_engine_dieline.md` (source of the flat size).
 
-## Butir terbuka
-`docs/ENGINE-ATTENTION.md` tidak memuat butir untuk engine ini (dibaca penuh; status tetap di sana, tidak disalin).
+## Open items
+`docs/ENGINE-ATTENTION.md` has no item for this engine (read in full; status stays there, not copied).
 
-## Temuan (dicatat, tidak diperbaiki)
-1. Registry menulis pemakai "Pro-Dev workbench (Imposition tab)" (`EngineRegistry.php:148`). FAKTA: layar ProDev aktif tidak memanggil engine; hanya ProDev lama yang tidak ditaut menu. Teks registry menyesatkan.
-2. Registry menulis pemakai "Costing Engine (flat area per part)". FAKTA: `CostingEngine` tidak memanggil engine ini. Komentar `ImpositionEngine.php:164` merujuk `IqpCostingPart::allocateProportionalCost()` yang tidak ada (grep); yang ada `ProdLayoutGroup::effectiveCutFor` (memakai `applyFlap`).
-3. Nilai gap 3 / gripper 12 / margin 8 ditulis literal di `imposition.blade.php:45-50` dan `CostingAdvisor.php:276` (dan `old_prodev` lewat konstanta), padahal ada konstanta `PRODEV_GAP_MM`, `PRODEV_GRIPPER_MM`, `PRODEV_MARGIN_MM` (nilai sama sekarang). Bila konstanta diubah, tiga pemanggil tidak ikut.
-4. Tes tidak mencakup `run` (dasar TEGAK/PUTAR/CAMPUR), `sweepFlap`, `sweepInterlock`, `cells`, `applyFlap` secara langsung (hanya tiga alat: `dieRuleMeterLari`, `bestSheet`, `combinePair`).
-5. Tiap alat sweep hanya dipanggil dari ProDev lama; bila ProDev lama dibuang, lima method menjadi tanpa pemanggil. Keputusan Jo.
+## Findings (recorded, not fixed)
+1. The registry lists the user "Pro-Dev workbench (Imposition tab)" (`EngineRegistry.php:148`). FACT: the active ProDev screen does not call the engine; only the old ProDev does, which is not linked from the menu. The registry text is misleading.
+2. The registry lists the user "Costing Engine (flat area per part)". FACT: `CostingEngine` does not call this engine. The comment `ImpositionEngine.php:164` refers to `IqpCostingPart::allocateProportionalCost()` which does not exist (grep); what exists is `ProdLayoutGroup::effectiveCutFor` (uses `applyFlap`).
+3. The values gap 3 / gripper 12 / margin 8 are written literally in `imposition.blade.php:45-50` and `CostingAdvisor.php:276` (and `old_prodev` via constants), although constants `PRODEV_GAP_MM`, `PRODEV_GRIPPER_MM`, `PRODEV_MARGIN_MM` exist (same values now). If the constants are changed, three callers do not follow.
+4. Tests do not cover `run` (the TEGAK/PUTAR/CAMPUR basis), `sweepFlap`, `sweepInterlock`, `cells`, `applyFlap` directly (only three tools: `dieRuleMeterLari`, `bestSheet`, `combinePair`).
+5. Each sweep tool is only called from the old ProDev; if the old ProDev is dropped, five methods have no caller. Jo's decision.
 
-## Tes
-`tests/Unit/ImpositionEngineProDevToolsTest.php` (7 tes; `dieRuleMeterLari` x2, `bestSheet` x2, `combinePair` x3).
+## Tests
+`tests/Unit/ImpositionEngineProDevToolsTest.php` (7 tests; `dieRuleMeterLari` x2, `bestSheet` x2, `combinePair` x3).

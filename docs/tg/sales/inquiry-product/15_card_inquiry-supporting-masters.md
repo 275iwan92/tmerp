@@ -1,0 +1,36 @@
+# Concept card: Supporting masters of Inquiry New
+
+> Group B, 2026-10-16. FACT = seen directly (mockup DB `ddtmst`/`ddtsys`, code with lines). Only masters actually read by screen `inquiry-new` / `InquiryWriter` / `InquiryAssembly`, traced from `inquiry-new.blade.php` and `Sales.php`. Customer and Sales PIC have their own cards (`../master-data/`); product type is in `10_card_product-type.md`.
+
+- **Module/sub-module**: Sales > Inquiry & Quotation > Inquiry Product; data owners: Pro-Dev (Product Market), Master Data (material category), Setup.
+- **Canonical name**: Product Market (`tm2mst.prod_market`), Market size (`prod_type_size` + `prod_type_size_val`), Type parameter (`prod_type_param`), Material category (`mat_category`), Finishing type (`ref_finishing_type`), Join type (`mat_join_type`).
+- **Synonyms**: Lookup Product Market, Product Category -> Detail -> Market Size, Standard Size, Paper/Sheet material chain, Type + Grammage, finishing, Joint (Double Join).
+- **NOT the same as**: `prod_category` (Master Product category, stock/COGS account; screen `md-product-category`), `mat_raw` (branded raw material, chosen by Purchasing/ProDev, not Sales).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Product Market | `prod_market` 45 rows: 12 parents (Product Category), 33 details (Category Detail); all details have a `type_code` that is active in `prod_type`; all details have `paper_category_id`; `photo_path` 0 filled. Read by `Sales::productMarkets` (parent -> detail -> size). | FACT, query; `Sales.php:135-148` |
+| Input flow | Category -> Detail -> Standard Size -> Product Type is filled automatically and fills the dimensions of all parts. The Category/Detail/Size choice is NOT saved in the inquiry; for a saved document it is guessed from the size match (`marketOf`). The "Custom" choice saves the custom name only as a screen note. | FACT, `inquiry-new.blade.php:58-79`, `Sales.php:197-216` |
+| Market size | `prod_type_size` 162 rows (83 general with `market_id` NULL, 79 owned by a Product Market detail), `prod_type_size_val` 507 values (`value_num`/`value_str` per `param_key`); `prod_type_param` 328 rows. | FACT, query |
+| Material category | `mat_category` 557 rows, 5 levels (20, 75, 103, 201, 158). Sales only uses the roots Paper and Sheet: Type = level 2, Grammage = level 3; what is saved is `iqp_part_material.category_id` = deepest node, `rawmat_name` = name chain, `gram_weight` from the number in the name. Brand and plano size are DELIBERATELY empty (decided by Purchasing/ProDev). | FACT, `Sales.php:61-76`, `InquiryPayload.php:107-141` |
+| Use in the data | `iqp_part_material` 129 rows: 43 have `category_id`, 86 do not; 80 have `rawmat_id` (filled by engine/seeder). | FACT, query |
+| Finishing | `ref_finishing_type` 8 active rows (Laminating Doff, Laminating Glossy, UV Spot, Hot Print, Varnish, Emboss, Deboss, Foil Stamping). Saved to `iqp_part_finishing` (name frozen in `finishing_name`). | FACT, query; `InquiryWriter.php:325-340` |
+| Join type | `mat_join_type` 4 rows: STITCHING_SINGLE, STITCHING_DOUBLE, GLUE_SINGLE, GLUE_DOUBLE (label "kawat/lem 1 atau 2 lapis"). Used on assemblies (`iqp_part.join_type_id`), not on ordinary parts. | FACT, query; `inquiry-new.blade.php:177`, `InquiryAssembly.php:35` |
+| Constant | Artwork size limit = `SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10)`. Key `INQUIRY_ARTWORK_MAX_MB` is NOT in mockup `sys_constant`, so it is always the default 10 MB. | FACT, `routes/v2.php:276`; `select ... from sys_constant where constant_key='INQUIRY_ARTWORK_MAX_MB'` = 0 rows |
+| Master input screens | Product Market: `v2:sales-product-market` (Pro-Dev menu). Material category: `v2:md-matcat`. Finishing, join type, product type, type size/parameter: **no menu item found** (searched labels/targets finish, join, product-type, dieline in `sys_app_menu`). | FACT for the menu; v1 `pages/production/bop-rule` uses finishing as a reference, not an input screen |
+
+## Relations
+- **source**: neutral `tm2mst` masters (filled by ProDev/Purchasing officers/admin, not Sales; rule B.14: masters are changed only by the user).
+- **used_by**: Inquiry New, Inquiry Revise (scope Material/Process/Join), Duplicate, ProDev (reads back), Master Card (b) via `joinTypeId`/`category`.
+- **flows**: master values are frozen into the transaction (`finishing_name`, `rawmat_name`, `dieline_spec`); master changes do not propagate to old inquiries (A.13).
+- **frozen_zone**: choices in the Inquiry form (Inquiry Product).
+
+## Findings (recorded, not fixed)
+1. **Three masters with no input screen found**: `ref_finishing_type`, `mat_join_type`, and `prod_type` / `prod_type_size` / `prod_type_param` (CLAUDE.md item 7). Not searched across Setup menus beyond the keywords above; they may only be filled by migration/seeder.
+2. **Constant `INQUIRY_ARTWORK_MAX_MB` has no row** in `sys_constant` (always 10), so it cannot be changed from the Constants screen.
+3. **`Sales::masters()['materials']` loads all active-confirmed `mat_raw` every time `masters()` is called**, while Inquiry New only uses `finishing_types` (`inquiry-new.blade.php:19`, `inquiry-revise.blade.php:31`); the only user of `materials` is the `paper` lookup (`Lookups.php:19`). Useless read load if that lookup is not used; NOT measured and NOT checked whether the `paper` lookup is used by other screens.
+4. **Two ways to store material**: Sales chooses a category (`category_id`), engine/seeder fills `rawmat_id`; in the data more rows have a definite material than a category (80 vs 43). Not wrong, but readers must handle both (`Sales::materialRows` already does, lines 93-108).
+
+## Already exists? Searched where, result
+Searched: tables/columns `market`, `size`, `finishing`, `join`, `category`, `gram` in `ddtmst`; menu `sys_app_menu`; `grep` `app/Support/V2`, `resources/views/v2`, `packages`. Result: all masters ALREADY EXIST; no new table is needed. The only shortfalls are input screens (finding 1) and a constant row (finding 2).

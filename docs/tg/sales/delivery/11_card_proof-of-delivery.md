@@ -1,0 +1,40 @@
+# Concept card: Proof of Delivery (POD, proof of receipt)
+
+> Written 2026-10-16 (group A). FACT = mockup DB (`ddt*` through `tm2*`) and code with line numbers, seen this session. DO tables/lines: card `10_card_delivery-order.md` (not repeated).
+
+- **Document type**: concept card. **Module/sub-module**: Sales > Delivery > Proof of Delivery (`SALES_POD`, `v2:proof-of-delivery`, FACT `sys_app_menu`).
+- **Canonical name**: POD = `tm2sdi.do_delivery_pod`: one row = one truck arrival at the customer (attempt n) for one Delivery Order.
+- **Synonyms**: proof of receipt (bukti terima), receipt acknowledgement (tanda terima), arrival (kedatangan), on-time promise (janji tepat waktu), on-time delivery (KPI), `attempt_no`.
+- **NOT the same as**: Delivery Order (the shipping document), status SHIPPED on the DO (a warehouse/shipping action, not an arrival), Goods Receipt (purchasing).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Table | `do_delivery_pod`: 1 row. PK `id_pod`; `delivery_id` (FK CASCADE to `do_delivery`), `attempt_no`, `promise_date`, `promise_time`, `arrived_at`, `result`, `received_by`, `miss_cause`, `promise_kept`, `photo_path`, `gps_lat`, `gps_lng`, `notes`. | FACT, `show columns`; `referential_constraints` |
+| Result | `result`: RECEIVED, PARTIAL, CUSTOMER_CLOSED, REJECTED, NOT_SHIPPED, ACCIDENT. `arrived_at` is required except NOT_SHIPPED/ACCIDENT; `received_by` is required for RECEIVED/PARTIAL. | FACT, `DeliveryPromiseService.php:22-23,86-95` |
+| Promise | `promise_date/_time` = the earliest CPDEL slot of the lines pulled into this DO; without a CPDEL link = `scheduled_ship_date`, then `do_date`, without time. | FACT, `DeliveryPromiseService.php:34-44` |
+| Promise kept | `promise_kept` = result RECEIVED AND arrival date = promise date AND (no promise time OR arrival time <= promise time). Otherwise missed, and a cause must be chosen. | FACT, `DeliveryPromiseService.php:46-53,102-104` |
+| Cause | 8 causes, each pointing to a department: Truck late (Delivery), Production not ready (Production), Slot outside customer hours (Sales), Material late (Purchasing), Quality (Production), Customer (Customer), Accident (Delivery, automatic when the result is ACCIDENT), Other. | FACT, `DeliveryPromiseService.php:26-29,99-101` |
+| Received qty | Result RECEIVED: each DO line `qty_received = qty_do`. PARTIAL: input per line (empty = qty_do), clamped between `qty_invoiced` and `qty_do`; less than `qty_do` requires `receive_diff_reason` (DAMAGED, RETURNED, SHORT, OTHER). Other results do not change the lines. Skipped if column `receive_diff_reason` does not exist in the DB yet. | FACT, `DeliveryPromiseService.php:31-32,105-110,129-152` |
+| Photo | Optional, jpg/jpeg/png/webp/pdf max 10 MB, stored on disk `public` folder `pod/YYYYMM`. | FACT, `routes/v2.php:1597-1601`; `DeliveryPromiseService.php:116` |
+| Screen | The list = DOs with status CONFIRMED or SHIPPED (not SUBCON), display status: Waiting (no arrival yet), Kept, Missed, Retry (CUSTOMER_CLOSED/REJECTED/ACCIDENT, re-delivery). Record right: module SALES. | FACT, `ProofOfDelivery.php:18-44`; `routes/v2.php:1597-1599` |
+| KPI | Per month, each DO is counted ONCE by its first arrival (`attempt_no=1`) based on `promise_date` in that month; `pct` = kept / total; misses are grouped per cause department and per result. | FACT, `ProofOfDelivery.php:46-57` |
+| Data | 1 row: DO/26/00001, RECEIVED, arrived 01-Oct-2026 10:00 on a promise of 01-Oct (no promise time), `promise_kept=1`, no photo. Consistent with the "promise kept" rule above. | FACT, query today |
+| Price | Holds no price. | FACT, `show columns` |
+
+## Relations
+- **source**: `do_delivery` + `do_line`, CPDEL slot (`co_order_delivery`), customer receiving hours (`cust_receiving_hour`).
+- **used_by**: Customer Invoice (`CustomerInvoiceService` mentions POD; invoice basis = `do_line.qty_received`, A.21 FROM DOCUMENT), KPI of all departments, Delivery Track, POD print (`ProofOfDeliveryPrint`).
+- **flows**: DO CONFIRMED/SHIPPED -> arrival recorded -> `promise_kept` and `qty_received` -> invoice.
+- **frozen_zone**: Delivery document flow (the rule freezes all flows).
+
+## Findings (recorded, not fixed)
+1. **POD does not change the DO status**: `DeliveryPromiseService::record` writes only `do_delivery_pod` and `do_line` (lines 112-119); the DO status stays. DO/26/00001 has status CONFIRMED although already RECEIVED, and has no lines (see DO card finding 1). FACT.
+2. **GPS unused**: `gps_lat`, `gps_lng` are neither written nor read outside the model (grep `app/ resources/ routes/`: zero). FACT.
+3. **Photo may be placed on the public disk** (`public`) without a read-right check on download; whether there is a filter was not checked. FROM CODE (line 116), not tested.
+4. **KPI uses `attempt_no=1`**, so a successful re-delivery does not improve the figure; this follows the code comment ("janji pertama yang menentukan" = the first promise decides), not a rules document; agreement with Jo's intent is NOT checked.
+5. **No tests** for `DeliveryPromiseService` or `ProofOfDelivery` (grep `tests/`: only the dummy `StageBuilder` calls `record`). FACT.
+6. **Column `qty_received` exists only if the invoice migration was run**: the code checks the column at run time (`Schema::hasColumn`, line 131), so behavior depends on the DB. FACT (code); in the dummy the column exists.
+
+## Already exists? Searched where
+Searched: `do_delivery_pod`, `DeliveryPromiseService`, `ProofOfDelivery`, route `pod.save`, menu Sales > Delivery. Result: ALREADY EXISTS; no new table needed. Engine `DeliveryPromiseService` (rules for on-time promise, receiving hours, received qty) has no ENGINE card yet; noted in the Delivery sub-module page.

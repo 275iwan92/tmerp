@@ -1,69 +1,69 @@
-# Kartu ENGINE: Costing Advisor
+# ENGINE card: Costing Advisor
 
-> CONTOH FASE 1 (2026-10-16), menunggu persetujuan Jo. Sumber: `app/Services/Costing/CostingAdvisor.php` dibaca penuh; tes `CostingAdvisorTest` dijalankan (5 lulus, 24 assert). Bagian setelah penanda johiwan-only = angka/rumus rahasia (A.8-A.9).
+> PHASE 1 EXAMPLE (2026-10-16), awaiting Jo's approval. Source: `app/Services/Costing/CostingAdvisor.php` read in full; test `CostingAdvisorTest` run (5 passed, 24 asserts). The part after the johiwan-only marker = confidential figures/formulas (A.8-A.9).
 
-- **Nama kanonik**: Costing Advisor. **Kelas**: `App\Services\Costing\CostingAdvisor`. **Registry**: key `costing-advisor`, mode `suggest`. **Modul/sub-modul**: Sales > Inquiry & Quotation > Pro-Cost.
-- **Status beku**: ProCost = zona beku (flow/data). Engine ini hanya menyarankan (A.7).
+- **Canonical name**: Costing Advisor. **Class**: `App\Services\Costing\CostingAdvisor`. **Registry**: key `costing-advisor`, mode `suggest`. **Module/sub-module**: Sales > Inquiry & Quotation > Pro-Cost.
+- **Frozen status**: ProCost = frozen zone (flow/data). This engine only suggests (A.7).
 
-## Pemicu (tidak ada background / jadwal)
-Dicari di `routes/console.php` (tidak ada), Jobs (tidak ada folder), Observers (hanya 2 lain), dan semua pemanggil. FAKTA: hanya dari layar `pages::inquiry.costing` (`resources/views/pages/inquiry/costing.blade.php`):
-| Pemicu | Method | Baris |
+## Trigger (no background / schedule)
+Searched in `routes/console.php` (none), Jobs (no folder), Observers (only 2 others), and all callers. FACT: only from the screen `pages::inquiry.costing` (`resources/views/pages/inquiry/costing.blade.php`):
+| Trigger | Method | Line |
 |---|---|---|
-| Dokumen DRAFT/CALCULATED dibuka | `prefill` | 118 |
-| Tombol/aksi "advise" | `prefill` | 220 |
-| Officer mengubah isian | `markTouched`, `valueToRestore` | 415-505 |
-| Tombol Calculate | `CostingEngine::run` lalu `learn` | 536 |
-| Layar render (hanya yang boleh lihat rumus) | `report`, `recsFor`, `missing` | 171, 163, 766 |
+| DRAFT/CALCULATED document opened | `prefill` | 118 |
+| Button/action "advise" | `prefill` | 220 |
+| Officer changes an input | `markTouched`, `valueToRestore` | 415-505 |
+| Calculate button | `CostingEngine::run` then `learn` | 536 |
+| Screen renders (only for those allowed to see formulas) | `report`, `recsFor`, `missing` | 171, 163, 766 |
 
-## Alur (kembaran teks dari diagram `../img/costing-advisor.svg`)
-1. Dokumen costing dibuka -> `prefill` -> untuk tiap **kotak kosong**:
-   - gramatur: BOM Inquiry; bila kosong, template; lalu gramatur AKTIF terdekat di master.
-   - geometri (plano, UP, ukuran cetak): bila layout ProDev ada, dipakai apa adanya; bila tidak, simulasi `ImpositionEngine` (baca saja) atas semua plano aktif, ditandai ESTIMATE.
-   - tarif (`TARIF`): urutan prioritas = riwayat (STAT/ML) > template tarif > konstanta/master.
-   - margin & toleransi per tier: riwayat > konstanta.
-2. Tiap nilai yang diisi dicatat di `iqp_costing_recommendation` (sumber, metode, jumlah sampel).
-3. Officer mengubah kotak -> `markTouched` -> `is_override`; nilai 0 = `zero_intent`. Override dan nol sengaja TIDAK ditimpa lagi.
-4. Kotak dikosongkan tak sengaja -> `valueToRestore` mengembalikan nilai saran.
-5. Calculate -> `CostingEngine` menghitung -> `learn` menyimpan isian final (+ qty, tipe part) sebagai bahan belajar.
-6. `report` menyusun Laporan Hitung; langkah rumus disembunyikan bila penelusuran tidak sama dengan hasil tersimpan.
+## Flow (text twin of diagram `../img/costing-advisor.svg`)
+1. Costing document opened -> `prefill` -> for each **empty box**:
+   - grammage: Inquiry BOM; if empty, template; then the nearest ACTIVE grammage in the master.
+   - geometry (plano, UP, print size): if a ProDev layout exists, it is used as-is; otherwise a simulation by `ImpositionEngine` (read only) over all active planos, marked ESTIMATE.
+   - rates (`TARIF`): priority order = history (STAT/ML) > rate template > constant/master.
+   - margin & tolerance per tier: history > constant.
+2. Each filled value is recorded in `iqp_costing_recommendation` (source, method, sample count).
+3. Officer changes a box -> `markTouched` -> `is_override`; value 0 = `zero_intent`. Overrides and zeros are deliberately NOT overwritten again.
+4. A box accidentally emptied -> `valueToRestore` returns the suggested value.
+5. Calculate -> `CostingEngine` calculates -> `learn` stores the final inputs (+ qty, part type) as learning material.
+6. `report` builds the Laporan Hitung; the formula steps are hidden when the trace does not equal the stored result.
 
-**Titik keputusan officer (A.7)**: setiap saran bisa diubah; engine tidak menimpa override.
+**Officer decision points (A.7)**: every suggestion can be changed; the engine does not overwrite overrides.
 
 ## Input / Output
-- **Input**: `iqp_costing` + `iqp_costing_part` + `iqp_costing_price_tier`; `iqp_costing_recommendation` (riwayat); `prod_part_template`, `mat_grammage`, `mat_plano_size`, `prod_part_type`; `sys_constant` grup COSTING (`MARGIN_DEFAULT_PCT`, `TOLERANCE_DEFAULT_PCT`, `ADVISOR_MIN_SAMPLE_STAT`, `ADVISOR_MIN_SAMPLE_ML`, `FILM_*`, `PLATE_PER_COLOR`, `KNIFE_FACTOR_DEFAULT`, `PPN_INPUT_MATERIAL_DIVISOR`); konteks Inquiry/ProDev lewat `ProCostContextService`.
-- **Output (menulis ke DB)**: `iqp_costing_part`, `iqp_costing_price_tier` (hanya kotak kosong), `iqp_costing_recommendation` (satu baris per kotak).
-- **Hanya ditampilkan**: array Laporan Hitung (langkah, pembanding, catatan, simulasi).
+- **Input**: `iqp_costing` + `iqp_costing_part` + `iqp_costing_price_tier`; `iqp_costing_recommendation` (history); `prod_part_template`, `mat_grammage`, `mat_plano_size`, `prod_part_type`; `sys_constant` group COSTING (`MARGIN_DEFAULT_PCT`, `TOLERANCE_DEFAULT_PCT`, `ADVISOR_MIN_SAMPLE_STAT`, `ADVISOR_MIN_SAMPLE_ML`, `FILM_*`, `PLATE_PER_COLOR`, `KNIFE_FACTOR_DEFAULT`, `PPN_INPUT_MATERIAL_DIVISOR`); Inquiry/ProDev context via `ProCostContextService`.
+- **Output (writes to DB)**: `iqp_costing_part`, `iqp_costing_price_tier` (empty boxes only), `iqp_costing_recommendation` (one row per box).
+- **Display only**: the Laporan Hitung array (steps, comparisons, notes, simulation).
 
-## Ambang statistik / ML (FAKTA dari kode, baris 312-332)
-- < `ADVISOR_MIN_SAMPLE_STAT` (bawaan 5) riwayat serupa (tipe part sama, costing lain): tidak ada saran riwayat.
-- >= 5: median nilai final officer -> sumber `STAT`.
-- >= `ADVISOR_MIN_SAMPLE_ML` (bawaan 30) dan qty > 0: tetangga terdekat per qty (k = 3..7), dipakai hanya bila galat leave-one-out lebih kecil daripada median -> sumber `ML`.
-- Yang memutuskan: officer.
+## Statistics / ML thresholds (FACT from code, lines 312-332)
+- < `ADVISOR_MIN_SAMPLE_STAT` (default 5) similar history (same part type, other costings): no history suggestion.
+- >= 5: median of the officer's final values -> source `STAT`.
+- >= `ADVISOR_MIN_SAMPLE_ML` (default 30) and qty > 0: nearest neighbors per qty (k = 3..7), used only when the leave-one-out error is smaller than the median -> source `ML`.
+- Decided by: the officer.
 
-## Kasus tepi
-- Saran bernilai 0 -> kotak dibiarkan kosong tanpa penanda.
-- Tarif tooling bernilai 0 di template = "pakai default konstanta", bukan "tanpa tooling".
-- Tanpa tipe part, riwayat kosong (tidak ada saran STAT/ML).
-- Hanya keluarga DC (`DC`, `DC+SF`, `DC+SHEET`, `KRAFT`) mendapat gramatur/geometri otomatis.
+## Edge cases
+- A suggestion with value 0 -> the box is left empty without a marker.
+- A tooling rate of 0 in the template = "use the constant default", not "no tooling".
+- Without a part type, history is empty (no STAT/ML suggestion).
+- Only the DC family (`DC`, `DC+SF`, `DC+SHEET`, `KRAFT`) gets automatic grammage/geometry.
 
-## Pemakai
-`pages::inquiry.costing` (Mode 1), komponen `x-costing.src` dan `x-costing.field` (penanda sumber). Mode Instant: DARI DOKUMEN (REMARK kode: "costing-instant belum disambung"), belum dicek ulang.
+## Used by
+`pages::inquiry.costing` (Mode 1), components `x-costing.src` and `x-costing.field` (source marker). Instant mode: FROM DOCUMENT (code REMARK: "costing-instant belum disambung"), not rechecked.
 
-## Butir terbuka
-Lihat `docs/ENGINE-ATTENTION.md` (status tetap di sana, tidak disalin). Temuan baru: REMARK menulis Mode #2 "belum disambung", sedangkan teks registry menyebut Mode 2 "typed by the officer"; salah satu usang.
+## Open items
+See `docs/ENGINE-ATTENTION.md` (status stays there, not copied). New finding: the REMARK writes Mode #2 as "belum disambung", while the registry text says Mode 2 is "typed by the officer"; one of them is outdated.
 
-## Tes
-`tests/Feature/CostingAdvisorTest.php` (5 tes), `CostingAdvisorScreenTest.php`.
+## Tests
+`tests/Feature/CostingAdvisorTest.php` (5 tests), `CostingAdvisorScreenTest.php`.
 
 <!-- johiwan-only -->
 
-## Contoh angka (rahasia; diverifikasi lewat `CostingAdvisorTest`, 5/5 lulus 2026-10-16)
-Semua angka di bawah adalah assert tes, bukan tebakan.
-1. **Default**: costing baru tipe DC, qty 1.000: margin 18 (`MARGIN_DEFAULT_PCT`), toleransi 5 (`TOLERANCE_DEFAULT_PCT`), Ongkos Cetak/RIM 750.000 dan QC/PC 50 (template KALENDER), `i_film_faktor` 0,25 (konstanta, karena template menandai 0 = default), `i_dc_persen_override` 5,3 (gramatur Duplex 250). Tes: `test_prefill_fills_empty_boxes_with_margin_default_and_template_rates`.
-2. **Statistik**: 5 costing lama (KRAFT) bermargin akhir 20, 22, 24, 26, 28 -> median 24 -> costing baru mendapat margin 24, sumber `STAT`, `sample_count` 5. Tes: `test_statistics_replace_default_after_enough_history_then_ml_threshold`.
-3. **Override**: officer mengubah margin 18 -> 22 dan menolkan Ongkos Cetak/RIM; `prefill` ulang tidak mengubah keduanya; `valueToRestore` untuk yang dinolkan = null. Tes: `test_officer_override_and_zero_are_never_overwritten`.
-4. **Pemulihan**: kotak Ongkos Cetak/RIM dikosongkan -> dipulihkan 750.000; Hot Print (template 0) -> null. Tes: `test_blank_box_is_restored_to_suggested_value`.
+## Worked example (confidential; verified via `CostingAdvisorTest`, 5/5 passed 2026-10-16)
+All figures below are test asserts, not guesses.
+1. **Default**: new costing type DC, qty 1.000: margin 18 (`MARGIN_DEFAULT_PCT`), tolerance 5 (`TOLERANCE_DEFAULT_PCT`), Ongkos Cetak/RIM 750.000 and QC/PC 50 (template KALENDER), `i_film_faktor` 0,25 (constant, because the template marks 0 = default), `i_dc_persen_override` 5,3 (grammage Duplex 250). Test: `test_prefill_fills_empty_boxes_with_margin_default_and_template_rates`.
+2. **Statistics**: 5 old costings (KRAFT) with final margins 20, 22, 24, 26, 28 -> median 24 -> the new costing gets margin 24, source `STAT`, `sample_count` 5. Test: `test_statistics_replace_default_after_enough_history_then_ml_threshold`.
+3. **Override**: the officer changes margin 18 -> 22 and zeroes Ongkos Cetak/RIM; a repeated `prefill` changes neither; `valueToRestore` for the zeroed one = null. Test: `test_officer_override_and_zero_are_never_overwritten`.
+4. **Restore**: the Ongkos Cetak/RIM box is emptied -> restored to 750.000; Hot Print (template 0) -> null. Test: `test_blank_box_is_restored_to_suggested_value`.
 
-### Rumus rantai harga (salinan `CostingEngine::calculateTier` di `chain()`, baris 517-550; dijelaskan agar laporan bisa menjelaskan)
-Per part: `gross = c_total_part_cost_pc x qty_per_set + c_tooling_cost_order / qty`; bila PPN: `net = gross - inputBahan x credit`, `credit = 1 - 1/PPN_INPUT_MATERIAL_DIVISOR`; toleransi `tt` = % part atau tier: part biasa `tolNet += net + gross x tt`, part SHEET `tolNet += net / (1 - tt)`. Dasar = pembulatan (`rounding_mode`, `rounding_step`) atas `tolNet`; `dpp = dasar / (1 - margin)`; harga akhir = `dpp x (1 + ppn%)` bila PPN.
-Contoh angka rantai dari data ddt*: BELUM ditulis (butuh satu kasus tes baru; usul Fase 4, tunggu izin Jo).
+### Price chain formula (copy of `CostingEngine::calculateTier` in `chain()`, lines 517-550; explained so the report can explain)
+Per part: `gross = c_total_part_cost_pc x qty_per_set + c_tooling_cost_order / qty`; if PPN: `net = gross - inputBahan x credit`, `credit = 1 - 1/PPN_INPUT_MATERIAL_DIVISOR`; tolerance `tt` = % of the part or tier: normal part `tolNet += net + gross x tt`, SHEET part `tolNet += net / (1 - tt)`. Base = rounding (`rounding_mode`, `rounding_step`) of `tolNet`; `dpp = dasar / (1 - margin)`; final price = `dpp x (1 + ppn%)` if PPN.
+Chain worked example from ddt* data: NOT written yet (needs one new test case; proposed for Phase 4, awaiting Jo's approval).

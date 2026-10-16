@@ -1,54 +1,54 @@
-# Kartu ENGINE: Reverse Costing
+# ENGINE card: Reverse Costing
 
-> DRAFT KELOMPOK C (2026-10-16), menunggu persetujuan Jo. Sumber: `app/Services/Costing/ReverseCostingService.php` dibaca penuh (198 baris). Tes dijalankan: `CostingInstantModeTest` (2 lulus, 14 assert; satu tes mencakup Reverse). Tidak ada angka harga di kartu ini (angka HPP tidak berubah, hanya diasersi tes).
+> DRAFT GROUP C (2026-10-16), awaiting Jo's approval. Source: `app/Services/Costing/ReverseCostingService.php` read in full (198 lines). Tests run: `CostingInstantModeTest` (2 passed, 14 asserts; one test covers Reverse). No price figures in this card (HPP figures do not change, only asserted by tests).
 
-- **Nama kanonik**: Reverse Costing. **Kelas**: `App\Services\Costing\ReverseCostingService`. **Registry**: key `reverse-costing`, mode `auto`, grup Pro-Cost. **Modul/sub-modul**: Sales > Inquiry & Quotation > Pro-Cost (menu Pro-Cost Instant, `v2:sales-procost-instant`).
-- **Status beku**: ProCost dan Inquiry/ProDev = zona beku. Tiga keputusan Jo di komentar kode (jangan tanya ulang): Inquiry hasil Reverse selalu tipe BARU; ProDev (layout group) selalu lahir DRAFT; angka costing yang ada tidak berubah.
-- **Sinonim**: tombol Reverse, Instant -> Integrated, "balik silsilah".
-- **BUKAN sama dengan**: pembatalan costing atau `reversed_at` pada Stock Reversal (modul Inventory, hanya nama mirip).
+- **Canonical name**: Reverse Costing. **Class**: `App\Services\Costing\ReverseCostingService`. **Registry**: key `reverse-costing`, mode `auto`, group Pro-Cost. **Module/sub-module**: Sales > Inquiry & Quotation > Pro-Cost (menu Pro-Cost Instant, `v2:sales-procost-instant`).
+- **Frozen status**: ProCost and Inquiry/ProDev = frozen zone. Three decisions by Jo in the code comment (do not ask again): the Inquiry resulting from Reverse is always type NEW; ProDev (layout group) is always born DRAFT; existing costing figures do not change.
+- **Synonyms**: Reverse button, Instant -> Integrated, "balik silsilah".
+- **NOT the same as**: cancelling a costing or `reversed_at` on Stock Reversal (Inventory module, only a similar name).
 
-## Pemicu (tidak ada background / jadwal)
-Tidak ada di `routes/console.php`, Jobs, Observers. FAKTA: satu-satunya pemanggil adalah tombol **Reverse** di `resources/views/pages/inquiry/costing-instant.blade.php:467` (`wire:click="reverse"`, konfirmasi `wire:confirm`, nonaktif bila dokumen read-only) -> `reverse()` baris 237 -> `ReverseCostingService::reverse` (baris 240). Sukses mengarahkan ke `inquiry.costing` untuk Inquiry baru; gagal menampilkan `engineError`.
+## Trigger (no background / schedule)
+None in `routes/console.php`, Jobs, Observers. FACT: the only caller is the **Reverse** button in `resources/views/pages/inquiry/costing-instant.blade.php:467` (`wire:click="reverse"`, confirmation `wire:confirm`, disabled when the document is read-only) -> `reverse()` line 237 -> `ReverseCostingService::reverse` (line 240). Success redirects to `inquiry.costing` for the new Inquiry; failure shows `engineError`.
 
-## Alur (kembaran teks, tanpa diagram: satu jalur lurus dengan satu transaksi)
-1. Periksa prasyarat: mode INSTANT, `customer_id` terisi, `product_name_draft` terisi, minimal satu part. Gagal = `RuntimeException` dengan pesan Indonesia.
-2. Buka dua transaksi (`tm2mst`, `tm2sdi`).
-3. Buat nomor Inquiry, lalu Master Product DRAFT di `tm2mst` (kode `REV-<nomor inquiry>`).
-4. Buat Inquiry BARU (`source = REVERSE`, `sub_state = PRICE_CALCULATED`).
-5. Per part costing: buat `prod_part`, `prod_layout_group` DRAFT (+ pivot `prod_layout_group_part`), `iqp_part`; tautkan balik ke `iqp_costing_part` (`part_id`, `prod_layout_group_id`, `prodev_part_id`). `data_source` part TETAP manual; isian `i_*` dan `c_*` tidak disentuh.
-6. Per tier harga: buat `iqp_tier` (qty, harga excl/incl dari tier costing) dan tautkan `tier_id`.
-7. Balik costing: `inquiry_id` terisi, `mode` menjadi INTEGRATED, `reversed_at/by` diisi.
-8. Commit `tm2mst` dulu, lalu `tm2sdi`; gagal di tengah = rollback keduanya (lihat Temuan 1).
-**Titik keputusan officer (A.7)**: Reverse butuh klik dan konfirmasi manusia; ProDev hasilnya hanya bisa di-Confirm manusia.
+## Flow (text twin, no diagram: one straight path with one transaction)
+1. Check prerequisites: mode INSTANT, `customer_id` filled, `product_name_draft` filled, at least one part. A failure = `RuntimeException` with an Indonesian message.
+2. Open two transactions (`tm2mst`, `tm2sdi`).
+3. Create the Inquiry number, then a DRAFT Master Product in `tm2mst` (code `REV-<nomor inquiry>`).
+4. Create a NEW Inquiry (`source = REVERSE`, `sub_state = PRICE_CALCULATED`).
+5. Per costing part: create `prod_part`, DRAFT `prod_layout_group` (+ pivot `prod_layout_group_part`), `iqp_part`; link back to `iqp_costing_part` (`part_id`, `prod_layout_group_id`, `prodev_part_id`). The part `data_source` STAYS manual; the `i_*` and `c_*` inputs are not touched.
+6. Per price tier: create `iqp_tier` (qty, excl/incl price from the costing tier) and link `tier_id`.
+7. Flip the costing: `inquiry_id` filled, `mode` becomes INTEGRATED, `reversed_at/by` filled.
+8. Commit `tm2mst` first, then `tm2sdi`; a failure midway = rollback of both (see Finding 1).
+**Officer decision points (A.7)**: Reverse needs a human click and confirmation; its resulting ProDev can only be Confirmed by a human.
 
 ## Input / Output
-- **Input**: `tm2sdi.iqp_costing` (mode, `customer_id`, `product_name_draft`, dimensi), `iqp_costing_part` (tipe part, dimensi, plano, `i_cut_per_plano`, `qty_per_set`, `no_urut`), `iqp_costing_price_tier`.
-- **Output (menulis)**: `tm2mst.prod_product`, `prod_part`, `prod_layout_group`, `prod_layout_group_part`; `tm2sdi.iqp_inquiry`, `iqp_part`, `iqp_tier`; memperbarui `iqp_costing_part` dan `iqp_costing_price_tier` (hanya kolom tautan) dan `iqp_costing` (`inquiry_id`, `mode`, `reversed_*`).
-- **Siapa boleh menimpa**: tidak ada jalur kembali (INTEGRATED tidak bisa dibalik ke INSTANT lewat kode ini; tombol hanya untuk INSTANT). Master Product/ProDev hasilnya diedit officer seperti biasa.
+- **Input**: `tm2sdi.iqp_costing` (mode, `customer_id`, `product_name_draft`, dimensions), `iqp_costing_part` (part type, dimensions, plano, `i_cut_per_plano`, `qty_per_set`, `no_urut`), `iqp_costing_price_tier`.
+- **Output (writes)**: `tm2mst.prod_product`, `prod_part`, `prod_layout_group`, `prod_layout_group_part`; `tm2sdi.iqp_inquiry`, `iqp_part`, `iqp_tier`; updates `iqp_costing_part` and `iqp_costing_price_tier` (link columns only) and `iqp_costing` (`inquiry_id`, `mode`, `reversed_*`).
+- **Who may overwrite**: there is no path back (INTEGRATED cannot be reversed to INSTANT through this code; the button is only for INSTANT). The resulting Master Product/ProDev are edited by the officer as usual.
 
 ## FORMULA
-Tidak ada rumus harga. Hanya pemetaan satuan (FAKTA, baris 102-151): `cm_length = i_dim_panjang_mm / 10` (4 desimal), `cm_width = i_dim_lebar_mm / 10`; plano mm = plano cm * 10; `up_count = max(1, round(i_cut_per_plano))`; `qty_up_in_group = 1`; `flat_w = dimP (mm)`, `flat_h = dimL (mm)`, `flat_area = dimP * dimL`; `part_code = 'P' . no_urut`; `mastercard_code = product_code . '-' . no_urut`. Dimensi part dipakai bila ada, kalau tidak dimensi header costing.
+No price formula. Only unit mapping (FACT, lines 102-151): `cm_length = i_dim_panjang_mm / 10` (4 decimals), `cm_width = i_dim_lebar_mm / 10`; plano mm = plano cm * 10; `up_count = max(1, round(i_cut_per_plano))`; `qty_up_in_group = 1`; `flat_w = dimP (mm)`, `flat_h = dimL (mm)`, `flat_area = dimP * dimL`; `part_code = 'P' . no_urut`; `mastercard_code = product_code . '-' . no_urut`. The part dimensions are used if present, otherwise the costing header dimensions.
 
-## Kasus tepi
-- Costing sudah INTEGRATED: ditolak ("cuma berlaku utk costing mode INSTANT").
-- Tanpa customer atau nama produk atau part: ditolak dengan pesan.
-- Reverse kedua kali pada costing yang sama: ditolak oleh pemeriksaan mode.
-- Dimensi kosong: `cm_length/width` 0, `flat_*` null.
-- Data ddt* sekarang: 9 costing INSTANT, 17 INTEGRATED, 0 punya `reversed_at`, 0 inquiry berasal `REVERSE` (FAKTA, query 2026-10-16), jadi jalur ini hanya tersentuh tes.
+## Edge cases
+- Costing already INTEGRATED: rejected ("cuma berlaku utk costing mode INSTANT").
+- Without customer or product name or part: rejected with a message.
+- A second Reverse on the same costing: rejected by the mode check.
+- Empty dimensions: `cm_length/width` 0, `flat_*` null.
+- Current ddt* data: 9 INSTANT costings, 17 INTEGRATED, 0 with `reversed_at`, 0 inquiries from `REVERSE` (FACT, query 2026-10-16), so this path is touched only by tests.
 
-## Pemakai (relasi)
-- **sumber**: Pro-Cost Instant. **hilir**: Inquiry (daftar), ProDev (layout DRAFT yang harus di-Confirm manusia), Master Product (DRAFT, `card_status` belum approve), Quotation (butuh costing PUBLISHED, A.1), Material Planning (pre-booking membaca costing PUBLISHED tanpa CO). Aturan: Quotation wajib integrated; Reverse adalah jalan masuk costing instant ke jalur itu.
+## Used by (relations)
+- **source**: Pro-Cost Instant. **downstream**: Inquiry (list), ProDev (DRAFT layout that a human must Confirm), Master Product (DRAFT, `card_status` not yet approved), Quotation (needs a PUBLISHED costing, A.1), Material Planning (pre-booking reads a PUBLISHED costing without CO). Rule: Quotation must be integrated; Reverse is the entry of an instant costing into that path.
 
-## Butir terbuka
-Lihat `docs/ENGINE-ATTENTION.md`: tidak ada butir khusus Reverse (dibaca penuh).
+## Open items
+See `docs/ENGINE-ATTENTION.md`: no item specific to Reverse (read in full).
 
-## Temuan (dicatat, tidak diperbaiki)
-1. Komentar kelas (baris 37-40) mengakui dua transaksi terpisah: bila `tm2sdi` gagal commit setelah `tm2mst` commit, baris master tertinggal; `rollBack` pada koneksi yang sudah commit tidak lagi membatalkan baris itu (perilaku Laravel, tidak diuji). Kode: commit `tm2mst` baris 187, `tm2sdi` baris 188.
-2. Inquiry hasil Reverse langsung `stat_confirm_sales = true` dan `stat_confirm_prodev = true` (baris 94-95), padahal ProDev yang dibuat berstatus DRAFT (baris 126) dan komentar kelas menyatakan "Confirmed cuma lewat klik manusia". Tanda hulu A.20 sudah menyala sebelum ProDev di-Confirm. Perilaku tanda ini terhadap `InquiryStage::syncProdevForParts` BELUM diuji (fungsi itu menghitung ulang tanda saat ProDev disimpan). Keputusan Jo diperlukan bila ini tidak disengaja.
-3. `prod_layout_group.up_count` diisi dari `i_cut_per_plano` (baris 125). Di tempat lain `i_cut_per_plano` = lembar cetak per plano dan `i_isi_per_lb` = UP per lembar cetak (`ProCostContextService.php:110-113` dan `CostingEngine.php:80-81`); Material Planning memakai `up_count` layout CONFIRMED sebagai UP per plano (`MaterialPlanningEngine.php:554`). Bila `i_isi_per_lb > 1`, `up_count` hasil Reverse lebih kecil daripada UP sebenarnya. Dampak nyata baru terjadi setelah layout di-Confirm manusia (sampai itu layout DRAFT tidak dipakai Material Planning). DUGAAN, belum diuji.
-4. `flat_w/flat_h/flat_area` `iqp_part` diisi dari dimensi produk (P x L), padahal di jalur Inquiry kolom itu berisi bentangan datar hasil TMDieline. DUGAAN salah arti; belum dicek terhadap pemakai kolom itu.
-5. Part Reverse tidak membawa `dieline_spec`/`type_code`/artwork (tidak ada di `IqpPart::create`), sehingga Master Card yang lahir dari alur ini belum punya dieline sampai dilengkapi di ProDev (A.17).
-6. Registry (`EngineRegistry.php:322`) menulis "Pro-Dev layout, Created as Draft; only a person can Confirm it": benar untuk layout, tetapi lihat Temuan 2 untuk tandanya.
+## Findings (recorded, not fixed)
+1. The class comment (lines 37-40) acknowledges two separate transactions: if `tm2sdi` fails to commit after `tm2mst` has committed, the master rows remain; `rollBack` on an already committed connection no longer undoes those rows (Laravel behavior, not tested). Code: commit `tm2mst` line 187, `tm2sdi` line 188.
+2. An Inquiry resulting from Reverse is immediately `stat_confirm_sales = true` and `stat_confirm_prodev = true` (lines 94-95), although the created ProDev has status DRAFT (line 126) and the class comment states "Confirmed cuma lewat klik manusia". The upstream A.20 flag is already on before ProDev is Confirmed. The behavior of this flag against `InquiryStage::syncProdevForParts` has NOT been tested (that function recalculates the flag when ProDev is saved). A decision by Jo is needed if this is unintended.
+3. `prod_layout_group.up_count` is filled from `i_cut_per_plano` (line 125). Elsewhere `i_cut_per_plano` = print sheets per plano and `i_isi_per_lb` = UP per print sheet (`ProCostContextService.php:110-113` and `CostingEngine.php:80-81`); Material Planning uses `up_count` of the CONFIRMED layout as UP per plano (`MaterialPlanningEngine.php:554`). If `i_isi_per_lb > 1`, the Reverse `up_count` is smaller than the real UP. The real impact only occurs after the layout is Confirmed by a human (until then a DRAFT layout is not used by Material Planning). ASSUMPTION, not tested.
+4. `iqp_part` `flat_w/flat_h/flat_area` are filled from the product dimensions (P x L), whereas in the Inquiry path those columns hold the flat spread from TMDieline. ASSUMPTION of a wrong meaning; not checked against the users of that column.
+5. A Reverse part does not carry `dieline_spec`/`type_code`/artwork (not in `IqpPart::create`), so a Master Card born from this flow has no dieline until completed in ProDev (A.17).
+6. The registry (`EngineRegistry.php:322`) writes "Pro-Dev layout, Created as Draft; only a person can Confirm it": correct for the layout, but see Finding 2 for the flag.
 
-## Tes
-`tests/Feature/CostingInstantModeTest.php::test_instant_screen_reproduces_legacy_raja_bakery_and_reverse`: setelah Reverse, `mode` = INTEGRATED, Inquiry tipe `NEW`, dan HPP tier utama sama dengan sebelum Reverse. Tidak ada tes khusus untuk: kegagalan di tengah, tanda `stat_confirm_*`, nilai `up_count`, atau pemetaan `flat_*`.
+## Tests
+`tests/Feature/CostingInstantModeTest.php::test_instant_screen_reproduces_legacy_raja_bakery_and_reverse`: after Reverse, `mode` = INTEGRATED, the Inquiry type is `NEW`, and the main tier HPP equals the value before Reverse. No dedicated tests for: failure midway, the `stat_confirm_*` flags, the `up_count` value, or the `flat_*` mapping.

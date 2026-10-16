@@ -1,0 +1,34 @@
+# Cross-engine findings, group C (Imposition, Spec, Usage Rate, Dieline, Costing Engine, Reverse Costing, Material Planning)
+
+> DRAFT 2026-10-16, awaiting Jo's approval. Only RECORDED, nothing fixed. Details per engine are in each card (section "Findings"). Label FACT = seen directly this session (code, `ddt*` query, test run).
+
+## A. Verification of the engine list against the registry
+FACT: `EngineRegistry` holds 60 keys. Relevant for Sales: `dieline`, `imposition`, `spec`, `usage-rate`, `routing`, `costing`, `costing-advisor`, `reverse-costing`, `material-planning`, `booking-maintenance`, `cpdel`, `cpdel-promise`, `flow`, `wo-generation`. All methods registered for the group C engines exist in the class (matched one by one); the gaps are in public methods that are NOT registered (Spec: `processOfBom`; Material Planning: 15 methods; Dieline: export `eval/scope/STROKE`).
+
+| # | Finding | Evidence |
+|---|---|---|
+| 1 | **`EngineCatalogTest::test_every_engine_class_is_registered` FAILS now**: class `App\Services\MasterCard\MasterCardDummyEngine` is named `*Engine` but is not yet registered in the registry. This engine builds leveled dummy data (Inquiry, ProDev, ProCost, Quotation, CO) from the Master Card PDF; Sales upstream. Its card was not written (out of scope and `ddt*` only); Jo needs to register or exclude it. | test run 2026-10-16: 5 passed, 1 failed |
+| 2 | **Routing Template Engine is not connected to ProDev.** The registry (`EngineRegistry.php:240`) writes the user "Pro-Dev (BOP)". The only callers of `RoutingTemplateService` are `routing-template.blade.php:143,152` (Setup screen) and the test `MachineProcessCapabilityTest`; `SpecEngine`/`WoGenerationService` do not call it. Table `prod_routing_template` is empty in the mockup DB (0 rows). Therefore its card was NOT written. | grep `app resources routes packages`; query |
+| 3 | **Three meanings of the number "UP/cut/isi/up_count"**: `iqp_costing_part.i_cut_per_plano` = print sheets per plano; `i_isi_per_lb` = UP per print sheet (`ProCostContextService.php:111-113`); `iqp_layout.up_count` and `prod_layout_group.up_count` are used by SpecEngine as UP per print sheet (`sheetsPerPlano` forced to 1, `SpecEngine.php:1059`) but `MaterialPlanningEngine.php:552-554` names it "UP per plano"; `ReverseCostingService.php:125` fills `up_count` from `i_cut_per_plano` only. While 1 plano = 1 print sheet the three are equal; they differ otherwise. ASSUMPTION, needs Jo's decision on the standard term. | code, line numbers in the card |
+| 4 | **Values gap 3 / gripper 12 / margin 8 mm are written literally** in `inquiry/imposition.blade.php:45-50` and `CostingAdvisor.php:276`, although the constants `PRODEV_GAP_MM`, `PRODEV_GRIPPER_MM`, `PRODEV_MARGIN_MM` exist (same values now). | grep |
+| 5 | **Dieline: three code copies** (JS `resources/js`, JS `packages/mockup-parts`, PHP port `TmDieline`). Tested this session: 27 active types, `flat` and `svg` results identical byte for byte (single test dims). No automatic guard for future changes other than 3 unit test cases. | node v24 vs PHP; `TmDielineTest` |
+| 6 | **Usage Rate Engine: registry claims do not match the code** (apply=false still writes the proposal column; the proposal is still written below the minimum sample; `rate_source` MANUAL does not protect rules with `auto_apply`). No tests. No COMPLETED WO in the mockup DB. | `UsageRateEngine.php:53-89`; query |
+| 7 | **Costing Engine does not guard status**: `run` writes `CALCULATED` without checking `PUBLISHED` (`CostingEngine.php:59`); `hitung()`/`recalc()` do not call `editable()`. Risk, NOT tested. | code |
+| 8 | **Reverse Costing**: flags `stat_confirm_sales` and `stat_confirm_prodev` go straight to 1 although the ProDev layout is DRAFT; `flat_w/h` is filled with product dimensions; two DBs are committed in sequence without recovery. | `ReverseCostingService.php:94-95,146-148,187-188` |
+| 9 | **Registry vs code (text)**: Imposition "used by ProDev workbench" (no; only the old ProDev that is not linked from the menu) and "Costing Engine (flat area)" (no); Spec `writes` without `iqp_part_*` and "source per row" (key does not exist) and "Master Product sync" (no call exists); Costing `reads` includes `mat_coating_rate` (not read); Material Planning "from the moment costing has calculated" (code: published). | each card |
+| 10 | **No tests** for Usage Rate; Imposition tests do not cover `run`/sweep/`cells`; Spec tests only `forWorkOrder`; no test compares HPP Mode 1 vs Mode 2. | grep `tests/` |
+| 11 | **Line numbers in ENGINE-ATTENTION have shifted** (not changed): item 02 `SpecEngine.php:768` is now 778, `MaterialPlanning.php:180` is now 184; item 04 `SpecEngine::toStockUom :727` is now 737. Lines `MaterialPlanningEngine.php:684` and `:922`, `PlanningRun.php:52`, `MaterialShortage.php:66` are still correct. | grep |
+| 12 | **`SpecEngine::saved('bop')` treats `source = INQUIRY` as a non-ENGINE row** (`:943`), while material filters INQUIRY out (`:950`). In `ddt*`: 104 `prod_part_process` rows have source INQUIRY. Intended or not: NOT known. | code; query |
+
+## B. Sales upstream/downstream services that are NOT `*Engine` (not registered, no card in this group)
+FACT (partly read): `ProCostContextService` (maps the ProDev layout to costing boxes: cut, isi, print size; called by `costing.blade.php:150,262`, `CostingAdvisor.php:242`), `ArtworkAnalyzer` (server-side artwork color analysis, input for Ink Configuration), `ProcurementBridge` (short BOM -> PR; subcon BOP step -> PR + surat jalan), `PartDieline` (saves ProDev dieline and artwork), `ProductMasterSync`, `InquiryStage`, `InquiryWriter`, `QuotationBuilder`. Candidates for a "service" card if Jo wants; not written here.
+
+## C. Out-of-scope engines adjacent to Sales (links only)
+`cpdel`, `cpdel-promise` (cards `order/20_engine_co-order-builder.md`, `order/21_engine_cpdel-promise.md` by another group), `flow` (CO approval), `wo-generation` (CPDEL -> WO; calls `SpecEngine::forWorkOrder`), `booking-maintenance` (no card yet; mentioned in `order/30_engine_material-planning.md`).
+
+## D. What could not be verified this session
+- Screens were not opened in a browser (session rule): visual behavior of screens and buttons was only read from code.
+- `UsageRateEngine::refresh` was not run (writes `prod_bop_rule`); no worked example.
+- `inkLines`, `standardLines`, `summarize`, `frozenLines` in `MaterialPlanningEngine` were not read; `MrpBuyTest` was not run.
+- The content of `docs/guides/sales/*` was not read.
+- Hand comparison for `sweepInterlock` and part of `combinePair` was not done.

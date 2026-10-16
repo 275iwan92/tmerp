@@ -1,0 +1,39 @@
+# Concept card: Customer (Sales side)
+
+> Group B, 2026-10-16. FACT = seen directly (mockup DB `ddtmst`/`ddtsdi`, code with lines). Only the side touched by Sales (Inquiry, Quotation); Customer Order, Invoice, CRM belong to other people's cards.
+
+- **Module/sub-module**: Master Data (screen `md-customer`), used by Sales > Inquiry & Quotation.
+- **Canonical name**: Customer = `tm2mst.cust_customer` (screen label "Master Customer").
+- **Synonyms**: customer (pelanggan), buyer, client (klien), prospect, QC code (quick customer from Inquiry).
+- **NOT the same as**: *prospect* in Inquiry (`iqp_inquiry.is_prospect` + `prospect_name`, no `cust_customer` row); Customer 360 (`crm-customer`, read-only); supplier.
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Master | `cust_customer` 882 rows: 881 `data_origin=LEGACY`, 1 `LIVE` ("PAK PURNA (BLITAR)", `customer_code` NULL). All `activate=1`, `approval_status=DRAFT`, `is_prospect=0`, `customer_type='local'`. 713 have `payment_term`; 8 have an email; 0 have `sales_division_id`. | FACT, query 2026-10-16 |
+| Columns | Identity (`customer_code` unique, `customer_name`, `trade_name`, `parent_group`, `industry_category`, `nickname`, `alias_code`, `legacy_vendor_code`), contact and address (`default_address`, `default_area_id/_level`, `phone`, `email`, `contact_name`), finance (`payment_term`, `currency_code`, `credit_limit`, `current_balance`, `tax_profile`, `credit_rating`, `credit_check_enabled`, `tax_validated`, `kyc_status`, `approval_status`, `is_blacklisted`), print preferences (`primary_product`, `default_substrate`, `color_standard`, `proofing_method`, `artwork_approval`, `finishing_preference`, `die_owner`, `packing_instruction`, `quality_notes`), `customer_tier` (default 2). 61 columns. | FACT, `show columns` |
+| Pipeline | `approval_status`: DRAFT, CREDIT_CHECK, APPROVED, BLOCKED; `CUSTOMER_TIERS` 1 key, 2 regular, 3 occasional ("bobot prioritas penjadwalan produksi, dipegang Sales" = production scheduling priority weight, held by Sales). | FACT, `CustCustomer.php:12-25` (constant); use of the tier in scheduling NOT checked |
+| Input screen | `md-customer` = `CustomerGrid` (master grid + v1 form `pages::master.customer`), grid columns: Customer, Group, Type, Industry, Credit Limit, Term, Approval (BLOCKED if `is_blacklisted`), CO count. The menu item `Master Customer` exists THREE times: module Master Data (id 511), group Master Data in Sales > Inquiry & Quotation (id 1143), group Master Data in Sales > CRM (id 1191). | FACT, `CustomerGrid.php:15-79`; `sys_app_menu` |
+| Used by Inquiry | Lookup `customer` (active) in Inquiry New; `exists:tm2mst.cust_customer` required. Stored as `iqp_inquiry.customer_id` (cross-DB, no FK). | FACT, `inquiry-new.blade.php:51-52`, `InquiryPayload.php:24`, `Sales.php:29-33` |
+| Quick customer | From Inquiry: `InquiryWriter::quickCustomer` creates a row `QC`+yymm+4 digits, `approval_status=DRAFT`, `tax_profile=PPN_11`, `credit_rating=C`, `kyc_status=PENDING`, `customer_type` (local/import), `is_prospect=false`. Route response: "status DRAFT". In the data: 0 customers with code `QC%`. | FACT, `InquiryWriter.php:157-179`, `routes/v2.php:308-317`; query |
+| Used by Quotation | `quo_quotation.customer_id` from the first inquiry; `payment_term`, `currency_code`, `attn_contact` are filled from the customer (may be changed). Quotation accepts only inquiries with `customer_id` filled. | FACT, `QuotationBuilder.php:59-74,127` |
+| Use in data | `iqp_inquiry`: 19 rows have `customer_id` (9 different customers), 4 prospect rows without customer. | FACT, query |
+| Approval gate | `approval_status`, `is_blacklisted`, `credit_check_enabled` are not read by Inquiry, Quotation, or CO: in `app/` they are only read by `CustomerGrid` (display) and written by `quickCustomer`. | FACT, `grep` `app/` (`approval_status|is_blacklisted|credit_check_enabled`) |
+
+## Relations
+- **source**: Master Customer screen (Sales/Finance), legacy migration (881 rows), quick customer from Inquiry.
+- **used_by**: Inquiry, Quotation, Customer Order, Invoice/AR, Delivery, CRM, ProDev (card `vw_master_card` holds the customer name).
+- **flows**: master values are frozen into transactions (A.13): `payment_term` and `currency_code` are copied to Quotation, then to CO; a master change does not change old documents. Master is changed only by a user (B.14).
+- **frozen_zone**: no; but Master Customer data is changed only by a user.
+
+## Findings (recorded, not fixed)
+1. **No customer has status APPROVED** (882 DRAFT) and **no gate** holds back Inquiry/Quotation/CO for a DRAFT/BLOCKED/blacklisted customer. The quick customer route comments "review Finance/Credit tetap wajib" (Finance/Credit review is still required) (`routes/v2.php:308`); the pipeline steps exist in the Master Customer form (`CustCustomer::APPROVAL_STATUSES`), but no transaction code checks them. Needs Jo's decision: gate where (Quotation Confirm? CO Confirm?), or a flag is enough.
+2. **The same menu item three times** (`v2:md-customer`) in three places; A.15b allows shortcuts, but there is no "shortcut" marker in the menu data (the `sys_app_menu` columns have no such marker).
+3. **A prospect has no path to Quotation**: `is_prospect` on customer is always 0; an Inquiry prospect is only a text name (`prospect_name`) and does not pass `availableInquiries`. A "prospect becomes customer" path was not found in the Sales code (NOT searched in CRM).
+4. **One LIVE customer without `customer_code`** ("PAK PURNA (BLITAR)"); `customer_code` is unique but may be NULL.
+5. **Many rich columns (print preferences, `die_owner`, etc.)** are not read by Sales screens; their users (ProDev, QA) are NOT checked, so they cannot yet be marked unused.
+
+## Already exists? Searched where, result
+Searched: `cust_*` in `ddtmst` (`information_schema`: `cust_customer`, `_bank`, `_branch`, `_contact`, `cust_category`, `cust_receiving_hour`), menu `sys_app_menu`, `grep` `app/Support/V2`, `app/Services/Sales`. Result: the concept ALREADY EXISTS; no new table needed.
+
+

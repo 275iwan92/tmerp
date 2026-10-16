@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" font-family="sans-serif" font-size="13">
-  <!-- Kembaran teks: docs/tg/sales/prodev/10_engine_imposition.md bagian "Alur". Teks hitam di latar putih, tanpa abu-abu. -->
+  <!-- Text twin: docs/tg/sales/prodev/10_engine_imposition.md section "Flow". Black text on a white background, no grey. -->
   <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000"/></marker></defs>
   <rect width="760" height="330" fill="#fff"/>
   <g fill="#fff" stroke="#000" stroke-width="1.5">
@@ -11,17 +11,17 @@
     <rect x="610" y="125" width="140" height="70" rx="6"/>
   </g>
   <g fill="#000" text-anchor="middle">
-    <text x="85" y="150">1. Area pakai</text><text x="85" y="168">plano - margin</text><text x="85" y="186">- gripper</text>
-    <text x="295" y="45">2a. TEGAK</text><text x="295" y="63">kolom x baris</text>
-    <text x="295" y="155">2b. PUTAR</text><text x="295" y="173">flat diputar 90</text>
-    <text x="295" y="265">3. CAMPUR</text><text x="295" y="283">blok utama + blok putar</text>
-    <text x="505" y="150">4. UP terbanyak</text><text x="505" y="168">seri = TEGAK</text><text x="505" y="186">CAMPUR bila lebih banyak</text>
-    <text x="680" y="150">5. up, method,</text><text x="680" y="168">layout, efisiensi</text><text x="680" y="186">(tidak disimpan)</text>
+    <text x="85" y="150">1. Usable area</text><text x="85" y="168">plano - margin</text><text x="85" y="186">- gripper</text>
+    <text x="295" y="45">2a. TEGAK</text><text x="295" y="63">columns x rows</text>
+    <text x="295" y="155">2b. PUTAR</text><text x="295" y="173">flat rotated 90</text>
+    <text x="295" y="265">3. CAMPUR</text><text x="295" y="283">main block + rotated block</text>
+    <text x="505" y="150">4. Most UP</text><text x="505" y="168">tie = TEGAK</text><text x="505" y="186">CAMPUR if higher</text>
+    <text x="680" y="150">5. up, method,</text><text x="680" y="168">layout, efficiency</text><text x="680" y="186">(not saved)</text>
   </g>
   <g stroke="#000" stroke-width="1.5" fill="none" marker-end="url(#a)">
     <path d="M160,160 H185 V50 H208"/><path d="M160,160 H208"/><path d="M160,160 H185 V270 H208"/>
     <path d="M380,50 H405 V160 H428"/><path d="M380,160 H428"/><path d="M380,270 H405 V160 H428"/>
     <path d="M580,160 H608"/>
   </g>
-  <text x="380" y="320" fill="#000" text-anchor="middle">officer memutuskan (A.7); alat sweep/bestSheet/combinePair mengulang langkah 1-4</text>
+  <text x="380" y="320" fill="#000" text-anchor="middle">officer decides (A.7); sweep/bestSheet/combinePair tools repeat steps 1-4</text>
 </svg>

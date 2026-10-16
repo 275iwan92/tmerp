@@ -1,65 +1,65 @@
-# Kartu ENGINE: CpdelPromiseService (dua janji CPDEL)
+# ENGINE card: CpdelPromiseService (the two CPDEL promises)
 
-> Ditulis 2026-10-16 (kelompok A). Sumber: `app/Services/Sales/CpdelPromiseService.php` (254 baris) dibaca penuh, `app/Support/V2/Data/Cpdel.php`, rute `routes/v2.php:1608-1650`. Tes dijalankan: `CpdelDueColourTest` (2 lulus, 15 assert). Tabel/kolom: lihat kartu konsep `11_kartu_cpdel.md`. Tidak ada bagian rahasia (tanpa harga/HPP/margin).
+> Written 2026-10-16 (group A). Source: `app/Services/Sales/CpdelPromiseService.php` (254 lines) read in full, `app/Support/V2/Data/Cpdel.php`, route `routes/v2.php:1608-1650`. Tests run: `CpdelDueColourTest` (2 passed, 15 asserts). Tables/columns: see the concept card `11_card_cpdel.md`. No confidential section (no price/HPP/margin).
 
-- **Nama kanonik**: CpdelPromiseService (engine "CPDEL Two Promises"). **Kelas**: `App\Services\Sales\CpdelPromiseService` (final, method statis). **Registry**: key `cpdel-promise`, mode `flow`, grup Sales Order. **Modul/sub-modul**: Sales > Order > Customer Plan Delivery.
-- **Status beku**: flow CPDEL beku. Engine ini mencatat kesepakatan manusia; ia tidak memutuskan jadwal (A.7).
+- **Canonical name**: CpdelPromiseService (engine "CPDEL Two Promises"). **Class**: `App\Services\Sales\CpdelPromiseService` (final, static methods). **Registry**: key `cpdel-promise`, mode `flow`, group Sales Order. **Module/sub-module**: Sales > Order > Customer Plan Delivery.
+- **Frozen status**: the CPDEL flow is frozen. This engine records human agreements; it does not decide the schedule (A.7).
 
-## Pemicu (tidak ada background / jadwal)
-Dicari di `routes/console.php` (tidak ada), observer, job, dan semua pemanggil. FAKTA: hanya dari layar CPDEL.
-| Method | Pemicu | Berkas:baris |
+## Trigger (no background / schedule)
+Searched in `routes/console.php` (none), observers, jobs, and all callers. FACT: only from the CPDEL screen.
+| Method | Trigger | File:line |
 |---|---|---|
-| `state`, `gapDays`, `due` | Layar render grid dan form | `Cpdel.php:56,67,72` (grid), `Cpdel.php:156,163` (form) |
-| `slotProblems` | Form baris, menampilkan masalah slot | `Cpdel.php:185` |
+| `state`, `gapDays`, `due` | Screen renders the grid and form | `Cpdel.php:56,67,72` (grid), `Cpdel.php:156,163` (form) |
+| `slotProblems` | Row form, shows slot problems | `Cpdel.php:185` |
 | `commitReady` | POST `v2.cpdel.ready` (PPIC) | `routes/v2.php:1614-1615` |
 | `reschedule` | POST `v2.cpdel.reschedule` (Sales) | `routes/v2.php:1620-1621` |
 | `customerRejected` | POST `v2.cpdel.reject` (Sales) | `routes/v2.php:1626-1627` |
 | `opsDecision` | POST `v2.cpdel.decide` (Ops Manager) | `routes/v2.php:1632-1633` |
 | `merge` | POST `v2.cpdel.merge` (Sales) | `routes/v2.php:1638-1641` |
-| `canPlan/canSell/canDecide` | Gerbang rute dan tampilan tombol | `routes/v2.php:1614,1620,1626,1632,1638`; `Cpdel.php:167,186,201` |
-| `STATES` | Warna badge grid | `app/Support/V2/Grid/Sales/CpdelListGrid.php:65` |
+| `canPlan/canSell/canDecide` | Route gates and button display | `routes/v2.php:1614,1620,1626,1632,1638`; `Cpdel.php:167,186,201` |
+| `STATES` | Grid badge colors | `app/Support/V2/Grid/Sales/CpdelListGrid.php:65` |
 
 ## Input / Output
-- **Input**: satu `CoOrderDelivery`; isian form (tanggal, jam, alasan, saluran, kontak, catatan, qty split, keputusan); login pelaku; `sys_office_hour`, `sys_holiday`, `cust_receiving_hour` (lewat `DeliveryPromiseService::receivingHours`), `co_delay_reason`, konstanta `CPDEL_DUE_SOON_DAYS`.
-- **Output (menulis ke DB)**: `co_order_delivery` (`ready_at/_source/_by`, `ship_time`, `original_date`, `escalated_at`, dan baris baru/hapus lewat `Cpdel::split/merge`), `co_delivery_negotiation` (satu baris log tiap aksi).
-- **Hanya ditampilkan**: `state`, warna jatuh tempo (`due`), selisih hari (`gapDays`), daftar masalah slot.
+- **Input**: one `CoOrderDelivery`; form fields (date, time, reason, channel, contact, note, split qty, decision); the logged-in actor; `sys_office_hour`, `sys_holiday`, `cust_receiving_hour` (via `DeliveryPromiseService::receivingHours`), `co_delay_reason`, constant `CPDEL_DUE_SOON_DAYS`.
+- **Output (writes to DB)**: `co_order_delivery` (`ready_at/_source/_by`, `ship_time`, `original_date`, `escalated_at`, and new/deleted rows via `Cpdel::split/merge`), `co_delivery_negotiation` (one log row per action).
+- **Display only**: `state`, due color (`due`), day gap (`gapDays`), list of slot problems.
 
-## Alur (kembaran teks; diagram belum dibuat)
-Status baris dihitung (tidak disimpan) oleh `state` (baris 38-50), urutan evaluasi:
+## Flow (text twin; diagram not made yet)
+The row status is calculated (not stored) by `state` (lines 38-50), evaluation order:
 1. `status = SHIPPED` -> SHIPPED.
-2. `ship_date` ada dan lebih awal dari hari ini -> LATE.
-3. `escalated_at` terisi -> ESCALATED.
-4. `ready_at` kosong -> WAITING_PPIC.
-5. `ready_at` lebih besar dari slot -> NEED_NEGOTIATION.
-6. Selain itu -> ALIGNED.
+2. `ship_date` present and earlier than today -> LATE.
+3. `escalated_at` filled -> ESCALATED.
+4. `ready_at` empty -> WAITING_PPIC.
+5. `ready_at` greater than the slot -> NEED_NEGOTIATION.
+6. Otherwise -> ALIGNED.
 
-Aksi (semua menolak bila baris bukan PLANNED, `assertOpen` baris 242-247):
-1. **PPIC `commitReady`**: wajib `ready_date` + `ready_time`; bila lebih lambat dari slot, `reason_code` wajib. Menulis `ready_at`, `ready_source=MANUAL`, `ready_by`; log `READY_COMMITTED`.
-2. **Sales `reschedule`**: wajib tanggal, jam, saluran (WhatsApp/Phone call/Email/Meeting), kontak customer; slot harus lolos `slotProblems`; alasan wajib kecuali pertama kali jam disepakati (tanggal tidak berubah, tanpa split, `ship_time` masih kosong). Bila baris sudah `posted_at`, tanggal dan qty terkunci (hanya jam). `original_date` diisi sekali dan tidak berubah lagi. Bila tanggal berubah atau split: `Cpdel::split`. `escalated_at` dikosongkan. Log `SLOT_TIME_SET`/`RESCHEDULED`/`SPLIT` (split = dua log).
-3. **Sales `customerRejected`**: catatan wajib; `escalated_at = now()`; log `CUSTOMER_REJECTED`.
-4. **Ops Manager `opsDecision`**: keputusan (Overtime, Re-prioritize production, Subcontract, Make customer a new offer) + instruksi wajib; `escalated_at` dikosongkan; `ready_at` dikosongkan kecuali keputusan NEW_OFFER (PPIC harus mengisi ulang); log `OPS_DECISION`.
-5. **Sales `merge`**: `Cpdel::merge` lalu log `MERGED` pada baris yang masih ada.
+Actions (all reject if the row is not PLANNED, `assertOpen` lines 242-247):
+1. **PPIC `commitReady`**: `ready_date` + `ready_time` required; if later than the slot, `reason_code` is required. Writes `ready_at`, `ready_source=MANUAL`, `ready_by`; log `READY_COMMITTED`.
+2. **Sales `reschedule`**: date, time, channel (WhatsApp/Phone call/Email/Meeting), customer contact required; the slot must pass `slotProblems`; reason required except the first time the time is agreed (date unchanged, no split, `ship_time` still empty). If the row already has `posted_at`, date and qty are locked (time only). `original_date` is filled once and never changes again. If the date changes or on split: `Cpdel::split`. `escalated_at` is cleared. Log `SLOT_TIME_SET`/`RESCHEDULED`/`SPLIT` (split = two logs).
+3. **Sales `customerRejected`**: note required; `escalated_at = now()`; log `CUSTOMER_REJECTED`.
+4. **Ops Manager `opsDecision`**: decision (Overtime, Re-prioritize production, Subcontract, Make customer a new offer) + instruction required; `escalated_at` is cleared; `ready_at` is cleared except for decision NEW_OFFER (PPIC must refill it); log `OPS_DECISION`.
+5. **Sales `merge`**: `Cpdel::merge` then log `MERGED` on the row that remains.
 
-Hak (baris 84-98): `canPlan` = admin atau modul PROD `can_input`; `canSell` = admin atau modul SALES `can_input`; `canDecide` = admin atau `maxMgmtLevel() >= 4`.
+Rights (lines 84-98): `canPlan` = admin or module PROD `can_input`; `canSell` = admin or module SALES `can_input`; `canDecide` = admin or `maxMgmtLevel() >= 4`.
 
-## Formula (satu tempat; apa adanya dari kode)
-- `slot` (baris 33-36): `ship_date` + `ship_time`, tanpa jam = `23:59:00`.
-- `gapDays` (baris 79-82): `ship_date.startOfDay` ke `ready_at.startOfDay` dalam hari, bertanda; positif = produksi lebih lambat dari janji.
-- `due` (baris 55-76), dalam HARI KERJA (`WorkCalendar`): SHIPPED -> muted; tanpa `ship_date` -> LATER; slot < hari ini -> OVERDUE ("Late n days", n = `workdaysBetween`, minimum 1); slot = hari ini -> TODAY; selain itu `n = max(1, workdaysBetween(hari ini, slot))`, `n <= soon` -> SOON (kuning), lebih jauh -> LATER. `week` = 1 bila slot paling lambat hari ini + 6 hari kalender.
-- `slotProblems` (baris 106-128): kosong = sah. Tanggal libur (`SysHoliday`), kantor tutup atau jam di luar jam kantor, customer tidak menerima atau jam di luar jam terima (dengan jeda istirahat).
-- Contoh angka dari tes yang dijalankan (`CpdelDueColourTest`, hari ini = Jumat 02-Okt-2026, Sabtu kerja, Minggu libur, soon = 2): slot 29-Sep -> OVERDUE (merah, teks memuat 3 hari); slot 02-Okt -> TODAY (oranye); 03-Okt dan 05-Okt (Senin) -> SOON; 06-Okt -> LATER, tetapi SOON bila soon = 3; slot 15-Okt -> `week` 0; SHIPPED -> muted. `workdaysBetween(02-Okt, 05-Okt) = 2` dan hari besar 06-Okt tidak dihitung.
+## Formula (one place; as-is from the code)
+- `slot` (lines 33-36): `ship_date` + `ship_time`, without a time = `23:59:00`.
+- `gapDays` (lines 79-82): `ship_date.startOfDay` to `ready_at.startOfDay` in days, signed; positive = production later than the promise.
+- `due` (lines 55-76), in WORKING DAYS (`WorkCalendar`): SHIPPED -> muted; no `ship_date` -> LATER; slot < today -> OVERDUE ("Late n days", n = `workdaysBetween`, minimum 1); slot = today -> TODAY; otherwise `n = max(1, workdaysBetween(hari ini, slot))`, `n <= soon` -> SOON (yellow), further -> LATER. `week` = 1 if the slot is at most today + 6 calendar days.
+- `slotProblems` (lines 106-128): empty = valid. Holiday date (`SysHoliday`), office closed or time outside office hours, customer does not receive or time outside receiving hours (with break gap).
+- Worked example from the test run (`CpdelDueColourTest`, today = Friday 02-Okt-2026, Saturday working, Sunday off, soon = 2): slot 29-Sep -> OVERDUE (red, text contains 3 days); slot 02-Okt -> TODAY (orange); 03-Okt and 05-Okt (Monday) -> SOON; 06-Okt -> LATER, but SOON if soon = 3; slot 15-Okt -> `week` 0; SHIPPED -> muted. `workdaysBetween(02-Okt, 05-Okt) = 2` and the public holiday 06-Okt is not counted.
 
-## Kasus tepi
-- Server tidak memeriksa status asal untuk `customerRejected`, `opsDecision`, dan `commitReady`: semua baris PLANNED diterima walau layar hanya menawarkan tombolnya pada status tertentu (`Cpdel.php:199-202`). DARI KODE (baris 203-224), tidak diuji.
-- `reschedule` tidak memeriksa tanggal baru >= hari ini; hanya `slotProblems` (libur/jam).
-- `ESCALATED` kalah dari `LATE` (baris 44 sebelum 45): baris tereskalasi yang slotnya lewat tampil LATE dan tombol keputusan Ops tidak muncul (`Cpdel.php:201`). Lihat kartu CPDEL temuan 1.
-- Jam default form PPIC 07:30, jam default slot = jam buka customer atau 08:00 (`Cpdel.php:189,195`); hanya isian awal form.
+## Edge cases
+- The server does not check the source status for `customerRejected`, `opsDecision`, and `commitReady`: all PLANNED rows are accepted even though the screen only offers their buttons at certain statuses (`Cpdel.php:199-202`). FROM CODE (lines 203-224), not tested.
+- `reschedule` does not check that the new date >= today; only `slotProblems` (holiday/time).
+- `ESCALATED` loses to `LATE` (line 44 before 45): an escalated row whose slot has passed shows LATE and the Ops decision button does not appear (`Cpdel.php:201`). See CPDEL card finding 1.
+- Default PPIC form time 07:30, default slot time = customer opening time or 08:00 (`Cpdel.php:189,195`); only initial form values.
 
-## Pemakai
-Layar CPDEL (grid + form `x-mp::sales.promise-book`), `CpdelListGrid`. KPI ketepatan janji kirim tersendiri di `DeliveryPromiseService` (kartu belum ditulis; lihat sub-modul Delivery).
+## Used by
+CPDEL screen (grid + form `x-mp::sales.promise-book`), `CpdelListGrid`. The delivery promise-keeping KPI is separate in `DeliveryPromiseService` (card not written yet; see the Delivery sub-module).
 
-## Butir terbuka
-Tidak ada nomor `ATTENTION-ENGINE` untuk CPDEL (lihat `docs/ENGINE-ATTENTION.md`, dicari 'cpdel'). Temuan kartu CPDEL nomor 1, 2, 5 relevan.
+## Open items
+No `ATTENTION-ENGINE` number for CPDEL (see `docs/ENGINE-ATTENTION.md`, searched 'cpdel'). CPDEL card findings 1, 2, 5 are relevant.
 
-## Tes
-`tests/Feature/CpdelDueColourTest.php` (2 tes: hitung hari kerja, warna baris; lulus). Terdaftar di registry. Tidak ada tes untuk `state`, `slotProblems`, `commitReady`, `reschedule`, `customerRejected`, `opsDecision`, `merge` (grep `tests/`: nol).
+## Tests
+`tests/Feature/CpdelDueColourTest.php` (2 tests: working day count, row color; passed). Registered in the registry. No tests for `state`, `slotProblems`, `commitReady`, `reschedule`, `customerRejected`, `opsDecision`, `merge` (grep `tests/`: zero).

@@ -1,71 +1,71 @@
-# Kartu ENGINE: CoOrderBuilder (pembuat Customer Order dan engine CPDEL)
+# ENGINE card: CoOrderBuilder (Customer Order builder and CPDEL engine)
 
-> Ditulis 2026-10-16 (kelompok A). Sumber: `app/Services/Sales/CoOrderBuilder.php` (299 baris) dibaca penuh, plus `CoDueDate.php`, `CoOrder.php`, `CoOrderItem.php`. Tes dijalankan: `CoDueDateTest` (2 lulus, 4 assert). Tabel/kolom: lihat kartu konsep `10_kartu_customer-order.md` dan `11_kartu_cpdel.md` (tidak diulang di sini). Tidak ada bagian rahasia: engine ini tidak membaca HPP/margin (A.8-A.9), hanya `tolerance_pct` tier.
+> Written 2026-10-16 (group A). Source: `app/Services/Sales/CoOrderBuilder.php` (299 lines) read in full, plus `CoDueDate.php`, `CoOrder.php`, `CoOrderItem.php`. Tests run: `CoDueDateTest` (2 passed, 4 asserts). Tables/columns: see the concept cards `10_card_customer-order.md` and `11_card_cpdel.md` (not repeated here). No confidential section: this engine does not read HPP/margin (A.8-A.9), only the tier `tolerance_pct`.
 
-- **Nama kanonik**: CoOrderBuilder. **Kelas**: `App\Services\Sales\CoOrderBuilder` (semua method statis). **Registry**: key `cpdel`, nama "CPDEL Engine (Customer Plan Delivery)", mode `auto`, grup Sales Order, method terdaftar hanya `submit` dan `confirm`. **Modul/sub-modul**: Sales > Order.
-- **Status beku**: flow dokumen CO dan CPDEL beku. Engine ini bukan penyaran; ia menjalankan aturan (A.1-A.2, A.4, A.10, A.11, A.15). Keputusan Confirm tetap di manusia/approval.
+- **Canonical name**: CoOrderBuilder. **Class**: `App\Services\Sales\CoOrderBuilder` (all methods static). **Registry**: key `cpdel`, name "CPDEL Engine (Customer Plan Delivery)", mode `auto`, group Sales Order, registered methods only `submit` and `confirm`. **Module/sub-module**: Sales > Order.
+- **Frozen status**: the CO and CPDEL document flow is frozen. This engine is not an advisor; it enforces rules (A.1-A.2, A.4, A.10, A.11, A.15). The Confirm decision stays with humans/approval.
 
-## Pemicu (tidak ada background / jadwal)
-Dicari di `routes/console.php` (tidak ada jadwal CO), `app/Observers` (hanya 2, tidak terkait CO), Jobs, dan semua pemanggil. FAKTA: hanya dipanggil oleh aksi layar, seeder, dan migration.
-| Method | Pemicu | Berkas:baris |
+## Trigger (no background / schedule)
+Searched in `routes/console.php` (no CO schedule), `app/Observers` (only 2, unrelated to CO), Jobs, and all callers. FACT: called only by screen actions, seeders, and migrations.
+| Method | Trigger | File:line |
 |---|---|---|
-| `findOrCreateFromQuotation` | Tombol WIN Quotation (v2) | `app/Support/V2/Data/Quotation.php:284`; rute `routes/v2.php:442-445` |
-| | Pilih Quotation di layar Customer Order (v2) | `app/Support/V2/Data/CustomerOrder.php:83` |
-| | Layar v1 | `resources/views/pages/co/list.blade.php:149`, `pages/quotation/entry.blade.php:502` |
-| | Seeder/migration dummy | `database/seeders/UatQuotationInquirySeeder.php:127`, `database/migrations/2026_09_21_000007_seed_inquiry_to_co_win_chain.php:139` |
-| `createInstant` | Buat CO INSTANT dari pilihan customer (v2) dan Duplicate CO ditolak/batal | `CustomerOrder.php:88`, `CustomerOrder.php:241` |
-| | v1, dummy PPIC, migration | `pages/co/list.blade.php:160`, `app/Console/Commands/PpicSeedDummy.php:77`, migration `…000007…:202` |
-| `addProductLine` | Pilih Master Product pada CO INSTANT (v1 dipanggil dari komponen yang juga dipakai v2) | `pages/co/entry.blade.php:219`, `PpicSeedDummy.php:78`, migration `…:210` |
-| `submit` | Tombol Confirm CO (v2) | `CustomerOrder.php:192` |
-| `confirm` | Approval terakhir lolos | `CustomerOrder.php:223` (dalam `decide`) |
-| | Jalur v1 tanpa approval, dan seeder | `pages/co/entry.blade.php:414`, `pages/co/list.blade.php:180`, migration `…:158,215` |
-| `cancel` / `cancelBlocker` | Tombol Cancel CO (v2) | `CustomerOrder.php:267` |
+| `findOrCreateFromQuotation` | Quotation WIN button (v2) | `app/Support/V2/Data/Quotation.php:284`; route `routes/v2.php:442-445` |
+| | Pick a Quotation on the Customer Order screen (v2) | `app/Support/V2/Data/CustomerOrder.php:83` |
+| | v1 screens | `resources/views/pages/co/list.blade.php:149`, `pages/quotation/entry.blade.php:502` |
+| | Dummy seeder/migration | `database/seeders/UatQuotationInquirySeeder.php:127`, `database/migrations/2026_09_21_000007_seed_inquiry_to_co_win_chain.php:139` |
+| `createInstant` | Create an INSTANT CO from a customer choice (v2) and Duplicate of a rejected/cancelled CO | `CustomerOrder.php:88`, `CustomerOrder.php:241` |
+| | v1, PPIC dummy, migration | `pages/co/list.blade.php:160`, `app/Console/Commands/PpicSeedDummy.php:77`, migration `…000007…:202` |
+| `addProductLine` | Pick a Master Product on an INSTANT CO (v1, called from a component that v2 also uses) | `pages/co/entry.blade.php:219`, `PpicSeedDummy.php:78`, migration `…:210` |
+| `submit` | CO Confirm button (v2) | `CustomerOrder.php:192` |
+| `confirm` | Last approval passes | `CustomerOrder.php:223` (inside `decide`) |
+| | v1 path without approval, and seeders | `pages/co/entry.blade.php:414`, `pages/co/list.blade.php:180`, migration `…:158,215` |
+| `cancel` / `cancelBlocker` | CO Cancel button (v2) | `CustomerOrder.php:267` |
 
 ## Input / Output
-- **Input**: `QuoQuotation` PUBLISHED + item + inquiry; `CustCustomer` (profil pajak, termin, alamat bawaan); `ProdProduct` (INSTANT); `IqpCostingPriceTier.tolerance_pct`; `sales_person`; flow config `CO`; konstanta `CO_LEAD_WORKDAYS`; ACC Digital produk (lewat `CoDueDate`).
-- **Output (menulis ke DB)**: `co_order`, `co_order_item`, `co_order_delivery` (hanya `confirm`), `iqp_inquiry` (`co_id`, `sub_state=CONVERTED`), `tm2mst.prod_product` dan part (lewat `ProductMasterSync`, dijalankan saat WIN), `flow_log` (lewat `FlowEngineService::submit`), status jadwal pada `cancel`.
-- **Hanya mengembalikan**: `submit` dan `cancel` mengembalikan pesan galat atau null; `confirm` mengembalikan bool tanpa pesan.
+- **Input**: `QuoQuotation` PUBLISHED + items + inquiries; `CustCustomer` (tax profile, terms, default address); `ProdProduct` (INSTANT); `IqpCostingPriceTier.tolerance_pct`; `sales_person`; flow config `CO`; constant `CO_LEAD_WORKDAYS`; product ACC Digital (via `CoDueDate`).
+- **Output (writes to DB)**: `co_order`, `co_order_item`, `co_order_delivery` (only `confirm`), `iqp_inquiry` (`co_id`, `sub_state=CONVERTED`), `tm2mst.prod_product` and parts (via `ProductMasterSync`, run at WIN), `flow_log` (via `FlowEngineService::submit`), schedule status on `cancel`.
+- **Returns only**: `submit` and `cancel` return an error message or null; `confirm` returns a bool without a message.
 
-## Alur (kembaran teks; diagram belum dibuat)
+## Flow (text twin; diagram not made yet)
 **A. WIN: `findOrCreateFromQuotation`** (`CoOrderBuilder.php:27-113`)
-1. Bukan `PUBLISHED` -> null. Sudah ada CO dengan `quotation_id` itu -> kembalikan yang ada (1 Quotation = 1 CO).
-2. Dalam transaksi `tm2sdi`: buat header `INTEGRATED`, `DRAFT`, nomor `nextCoNo`, `is_ppn` dari inquiry (`tax_scheme = PPN`) atau profil customer (`PPN_11`), diskon dari inquiry pertama berjenis `INQUIRY_TIER`, sales dari teks `pic_sales` (tidak cocok = NULL).
-3. Tiap item Quotation menjadi baris CO: `FREEFORM` -> `SERVICE`, selain itu `PRODUCT`; qty, satuan, harga, diskon disalin; toleransi dihitung dari tier (rumus di bawah); `recalcSubtotal`.
-4. Semua inquiry terkait: `co_id` diisi dan `sub_state=CONVERTED` (update massal, tidak memicu event model).
-5. Tiap inquiry menjadi Master Product (`ProductMasterSync::fromInquiry`), `product_id` baris CO diisi.
+1. Not `PUBLISHED` -> null. A CO with that `quotation_id` already exists -> return the existing one (1 Quotation = 1 CO).
+2. Inside a `tm2sdi` transaction: create the header `INTEGRATED`, `DRAFT`, number `nextCoNo`, `is_ppn` from the inquiry (`tax_scheme = PPN`) or the customer profile (`PPN_11`), discount from the first inquiry of type `INQUIRY_TIER`, sales from the `pic_sales` text (no match = NULL).
+3. Each Quotation item becomes a CO line: `FREEFORM` -> `SERVICE`, otherwise `PRODUCT`; qty, unit, price, discount are copied; tolerance is calculated from the tier (formula below); `recalcSubtotal`.
+4. All related inquiries: `co_id` is filled and `sub_state=CONVERTED` (bulk update, does not fire model events).
+5. Each inquiry becomes a Master Product (`ProductMasterSync::fromInquiry`), the CO line `product_id` is filled.
 
-**B. CO langsung: `createInstant` + `addProductLine`** (`:130-181`): header `INSTANT`, `quotation_id` NULL, termin/mata uang/PPN/alamat dari customer. Tiap baris dari Master Product: deskripsi `nama (kode)`, harga `default_selling_price` (0 bila kosong), satuan `uom_sales` (bawaan Pcs), `qty_min/max` dari master.
+**B. Direct CO: `createInstant` + `addProductLine`** (`:130-181`): header `INSTANT`, `quotation_id` NULL, terms/currency/PPN/address from the customer. Each line from a Master Product: description `nama (kode)`, price `default_selling_price` (0 if empty), unit `uom_sales` (default Pcs), `qty_min/max` from the master.
 
-**C. Confirm: `submit` lalu `confirm`** (`:190-250`)
-1. `submit`: bila DRAFT, hitung ulang due date baris otomatis (`CoDueDate::refresh`).
-2. Tolak bila bukan DRAFT atau `isConfirmable()` salah (setiap baris PRODUCT harus punya due date, INSTANT juga harus punya produk).
-3. Tolak bila ada produk dengan lebih dari satu baris qty dari quotation (A.15).
-4. Tolak bila flow `CO` belum dikonfigurasi. Selain itu `doc_status=SUBMITTED` dan `FlowEngineService::submit('CO', id, 'SUBMITTED', net_receivable)`.
-5. Approval terakhir -> `confirm`: hanya dari DRAFT atau SUBMITTED dan `isConfirmable()`; set `CONFIRMED`; untuk tiap baris PRODUCT yang belum punya jadwal buat 1 baris `FULL`, `ship_qty` = qty, `ship_date` = `due_date`, `PLANNED`. Baris yang sudah punya jadwal tidak disentuh.
+**C. Confirm: `submit` then `confirm`** (`:190-250`)
+1. `submit`: if DRAFT, recalculate the automatic line due dates (`CoDueDate::refresh`).
+2. Reject if not DRAFT or `isConfirmable()` is false (every PRODUCT line must have a due date, INSTANT must also have a product).
+3. Reject if a product has more than one qty line from the quotation (A.15).
+4. Reject if flow `CO` is not configured. Otherwise `doc_status=SUBMITTED` and `FlowEngineService::submit('CO', id, 'SUBMITTED', net_receivable)`.
+5. Last approval -> `confirm`: only from DRAFT or SUBMITTED and `isConfirmable()`; set `CONFIRMED`; for each PRODUCT line that has no schedule yet, create 1 `FULL` row, `ship_qty` = qty, `ship_date` = `due_date`, `PLANNED`. Lines that already have a schedule are not touched.
 
-**D. Batal: `cancelBlocker`/`cancel`** (`:253-287`): hanya CONFIRMED; tolak bila ada WO tidak-batal atau baris DO tidak-batal yang menunjuk jadwalnya (pesan memuat nomornya); jika lolos `CANCELLED`, `stat_cancel=1`, alasan, semua jadwal `CANCELLED`. Quotation tetap WIN dan inquiry tetap CONVERTED; order ulang = CO INSTANT (komentar kode baris 273).
+**D. Cancel: `cancelBlocker`/`cancel`** (`:253-287`): only CONFIRMED; reject if a non-cancelled WO or non-cancelled DO line points to its schedule (the message includes the number); if it passes: `CANCELLED`, `stat_cancel=1`, reason, all schedules `CANCELLED`. The Quotation stays WIN and the inquiry stays CONVERTED; reordering = INSTANT CO (code comment line 273).
 
-## Formula (satu tempat; hanya apa adanya dari kode)
-- Toleransi (baris 68-85): `tol = iqp_costing_price_tier.tolerance_pct` baris `tier_id` item (0 bila tidak ada tier); bila `tol > 0`: `qty_min = round(qty x (1 - tol/100), 2)`, `qty_max = round(qty x (1 + tol/100), 2)`; selain itu NULL. Contoh dari data mockup (CO2600022): qty 20.000, tol 5 -> 19.000 / 21.000; 13 dari 13 baris INTEGRATED cocok (query hari ini).
-- Subtotal baris (`CoOrderItem.php:106-111`): `qty x unit_price x (1 - diskon/100)`, dibulatkan 2 desimal; bila `qty_minim`: `unit_price x (1 - diskon/100)`.
-- Due date (`CoDueDate.php:29-40`): `addWorkdays(dasar, CO_LEAD_WORKDAYS)`; dasar INSTANT = `co_date`, selain itu `acc_at` ACC DIGITAL terbaru (NULL bila tidak ada). Contoh data: CO2600059 `co_date` 16-Okt-2026 + 14 hari kerja (Minggu libur) = 02-Nov-2026. Tes `CoDueDateTest`: Jumat 02-Okt-2026 + 14 hari kerja = Senin 19-Okt-2026.
-- Total dokumen: `CoOrder::totals` (`CoOrder.php:183-221`), dijelaskan di kartu CO.
+## Formula (one place; only as-is from the code)
+- Tolerance (lines 68-85): `tol = iqp_costing_price_tier.tolerance_pct` of the item's `tier_id` row (0 if no tier); if `tol > 0`: `qty_min = round(qty x (1 - tol/100), 2)`, `qty_max = round(qty x (1 + tol/100), 2)`; otherwise NULL. Worked example from mockup data (CO2600022): qty 20.000, tol 5 -> 19.000 / 21.000; 13 of 13 INTEGRATED lines match (query today).
+- Line subtotal (`CoOrderItem.php:106-111`): `qty x unit_price x (1 - diskon/100)`, rounded to 2 decimals; if `qty_minim`: `unit_price x (1 - diskon/100)`.
+- Due date (`CoDueDate.php:29-40`): `addWorkdays(dasar, CO_LEAD_WORKDAYS)`; INSTANT base = `co_date`, otherwise the latest DIGITAL ACC `acc_at` (NULL if none). Data example: CO2600059 `co_date` 16-Okt-2026 + 14 working days (Sunday off) = 02-Nov-2026. Test `CoDueDateTest`: Friday 02-Okt-2026 + 14 working days = Monday 19-Okt-2026.
+- Document total: `CoOrder::totals` (`CoOrder.php:183-221`), explained in the CO card.
 
-## Kasus tepi
-- Quotation yang CO-nya sudah CANCELLED atau REJECTED tetap mengembalikan CO lama itu (baris 33-37), bukan membuat baru.
-- Transaksi hanya pada koneksi `tm2sdi`; `ProductMasterSync` membuka transaksi sendiri pada `tm2mst` (`ProductMasterSync.php`, `DB::connection('tm2mst')->transaction`). Gagal di tengah tidak membatalkan keduanya bersama (DARI KODE, tidak diuji).
-- Approval dengan `total net_receivable` sebagai `amount_snapshot`; angkanya dibaca saat submit, tidak diperbarui bila CO diubah sesudahnya (DRAFT sudah tidak bisa diubah setelah SUBMITTED, `CustomerOrder::save`, `abort_unless` DRAFT, baris 94).
-- `confirm` diam-diam mengembalikan false (tanpa pesan) bila syarat tidak terpenuhi; pemanggil v1 mengabaikannya (`entry.blade.php:414`).
-- `confirm` tidak memeriksa ulang aturan satu-qty (A.15) dan tidak memeriksa persetujuan; hanya `submit` yang memeriksa A.15.
+## Edge cases
+- A Quotation whose CO is already CANCELLED or REJECTED still returns that old CO (lines 33-37), it does not create a new one.
+- The transaction is only on connection `tm2sdi`; `ProductMasterSync` opens its own transaction on `tm2mst` (`ProductMasterSync.php`, `DB::connection('tm2mst')->transaction`). A failure midway does not roll back both together (FROM CODE, not tested).
+- Approval with `total net_receivable` as `amount_snapshot`; the figure is read at submit and is not updated if the CO is changed afterwards (a DRAFT can no longer be changed after SUBMITTED, `CustomerOrder::save`, `abort_unless` DRAFT, line 94).
+- `confirm` silently returns false (no message) when the conditions are not met; the v1 caller ignores it (`entry.blade.php:414`).
+- `confirm` does not recheck the one-qty rule (A.15) and does not check approval; only `submit` checks A.15.
 
-## Pemakai
-Layar Customer Order v2 dan v1, Quotation (WIN), seeder dummy, Planning (membaca CO CONFIRMED), Delivery Order (membaca jadwal yang dibuat engine ini), Customer 360.
+## Used by
+Customer Order screens v2 and v1, Quotation (WIN), dummy seeders, Planning (reads CONFIRMED COs), Delivery Order (reads the schedules created by this engine), Customer 360.
 
-## Butir terbuka
-- Tidak ada nomor `ATTENTION-ENGINE` di `docs/ENGINE-ATTENTION.md` yang menyebut CO/CPDEL (dicari: cpdel, customer order, co_order, delivery; nol hasil).
-- Registry (`EngineRegistry.php:375-403`) hanya mendaftarkan `submit` dan `confirm`; `findOrCreateFromQuotation`, `createInstant`, `addProductLine`, `cancel` tidak terdaftar, dan daftar `writes` tidak memuat `iqp_inquiry`, `prod_product`, `flow_log`. FAKTA.
-- Konflik A.10 (proof FISIK) versus kode (ACC Digital): kartu CO, temuan 10.
-- Pemicu A.11/A.15 hanya dijaga di `submit`/`decide` (v2): kartu CO, temuan 3.
+## Open items
+- No `ATTENTION-ENGINE` number in `docs/ENGINE-ATTENTION.md` mentions CO/CPDEL (searched: cpdel, customer order, co_order, delivery; zero results).
+- The registry (`EngineRegistry.php:375-403`) registers only `submit` and `confirm`; `findOrCreateFromQuotation`, `createInstant`, `addProductLine`, `cancel` are not registered, and the `writes` list does not include `iqp_inquiry`, `prod_product`, `flow_log`. FACT.
+- Conflict A.10 (PHYSICAL proof) versus code (ACC Digital): CO card, finding 10.
+- Trigger A.11/A.15 is guarded only in `submit`/`decide` (v2): CO card, finding 3.
 
-## Tes
-Tidak ada tes untuk `CoOrderBuilder` (grep `tests/`: nol). Yang menyentuh bagian terkait: `tests/Feature/CoDueDateTest.php` (lulus 2/2), `CoListExpandRowTest.php`, `QtyMinimLumpSumTest.php`. Usul (butuh izin Jo, tidak dikerjakan): satu tes WIN -> submit -> confirm yang membersihkan datanya sendiri.
+## Tests
+No test for `CoOrderBuilder` (grep `tests/`: zero). Tests touching related parts: `tests/Feature/CoDueDateTest.php` (passed 2/2), `CoListExpandRowTest.php`, `QtyMinimLumpSumTest.php`. Proposal (needs Jo's approval, not done): one WIN -> submit -> confirm test that cleans up its own data.

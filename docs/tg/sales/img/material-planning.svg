@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" font-family="sans-serif" font-size="13">
-  <!-- Kembaran teks: docs/tg/sales/customer-order/10_engine_material-planning.md bagian "Alur". Teks hitam di latar putih, tanpa abu-abu. -->
+  <!-- Text twin: docs/tg/sales/order/30_engine_material-planning.md section "Flow". Black text on a white background, no grey. -->
   <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000"/></marker></defs>
   <rect width="760" height="420" fill="#fff"/>
   <g fill="#fff" stroke="#000" stroke-width="1.5">
@@ -12,13 +12,13 @@
     <rect x="250" y="320" width="500" height="60" rx="6" stroke-dasharray="6 4"/>
   </g>
   <g fill="#000" text-anchor="middle">
-    <text x="105" y="45">CO aktif + jadwal CPDEL</text><text x="105" y="63">prioritas 1 (Confirmed)</text><text x="105" y="81">prioritas 2 (Draft/Submitted)</text>
-    <text x="105" y="155">Sisa forecast MPS</text><text x="105" y="173">prioritas 3</text>
-    <text x="105" y="265">Costing PUBLISHED tanpa CO</text><text x="105" y="283">prioritas 4 (quotation aktif, B1)</text><text x="105" y="301">prioritas 5 (tanpa quotation, B0)</text>
-    <text x="350" y="145">Urut: prioritas, tanggal butuh</text><text x="350" y="163">1. stok barang jadi dahulu</text><text x="350" y="181">2. pecah ke bahan</text><text x="350" y="199">3. netting stok, PO, PR, SHORT</text>
-    <text x="625" y="65">Tulis booking DRAFT (lunak)</text><text x="625" y="83">hanya CO Confirmed (persist)</text><text x="625" y="101">dan pre-booking (persistPre)</text>
-    <text x="625" y="225">PPIC memutuskan:</text><text x="625" y="243">Confirm (kunci stok), Back to Draft,</text><text x="625" y="261">Pick Item, Hold (tanpa CO)</text>
-    <text x="500" y="345">Pemicu: event CoOrder::updated dan PrdWo::created, jadwal 01:30,</text><text x="500" y="365">tombol layar; booking basi dilepas jadwal 01:45</text>
+    <text x="105" y="45">Active CO + CPDEL schedule</text><text x="105" y="63">priority 1 (Confirmed)</text><text x="105" y="81">priority 2 (Draft/Submitted)</text>
+    <text x="105" y="155">MPS forecast remainder</text><text x="105" y="173">priority 3</text>
+    <text x="105" y="265">PUBLISHED costing without CO</text><text x="105" y="283">priority 4 (active quotation, B1)</text><text x="105" y="301">priority 5 (no quotation, B0)</text>
+    <text x="350" y="145">Order: priority, need date</text><text x="350" y="163">1. finished-goods stock first</text><text x="350" y="181">2. split into materials</text><text x="350" y="199">3. netting stock, PO, PR, SHORT</text>
+    <text x="625" y="65">Write DRAFT booking (soft)</text><text x="625" y="83">only Confirmed CO (persist)</text><text x="625" y="101">and pre-booking (persistPre)</text>
+    <text x="625" y="225">PPIC decides:</text><text x="625" y="243">Confirm (locks stock), Back to Draft,</text><text x="625" y="261">Pick Item, Hold (without CO)</text>
+    <text x="500" y="345">Trigger: events CoOrder::updated and PrdWo::created, schedule 01:30,</text><text x="500" y="365">screen buttons; stale bookings released by the 01:45 schedule</text>
   </g>
   <g stroke="#000" stroke-width="1.5" fill="none" marker-end="url(#a)">
     <path d="M200,55 H225 V150 H248"/><path d="M200,165 H248"/><path d="M200,275 H225 V180 H248"/>

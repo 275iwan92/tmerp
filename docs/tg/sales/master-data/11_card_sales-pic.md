@@ -1,0 +1,34 @@
+# Concept card: Sales PIC (Sales Person)
+
+> Group B, 2026-10-16. FACT = seen directly (mockup DB `ddtmst`/`ddtsdi`, code with lines).
+
+- **Module/sub-module**: Master Data (screen `md-sales-person`), used by Sales > Inquiry & Quotation, Customer Order, KPI.
+- **Canonical name**: Sales PIC = `tm2mst.sales_person` (screen label "Sales Person"); stored in documents as a text NAME.
+- **Synonyms**: PIC Sales, salesman, sales_pic, pic_sales, agent/freelance (EXTERNAL).
+- **NOT the same as**: login user (`sec_user`), employee (`emp_employee`; only the optional link `employee_id`).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Master | `sales_person` 5 rows, all active: Johannes Iwan, Siti Rahma, Budi Santoso (INTERNAL); Agen Mitra Jaya (freelance), CV Perantara Cetak (EXTERNAL). `employee_id` NULL in all five. Columns: `sales_name`, `sales_type` (INTERNAL/EXTERNAL), `employee_id`, `phone`, `activate`. | FACT, query 2026-10-16; `show columns` |
+| Input screen | `md-sales-person` (`SalesPersonLookup`): a name already used by documents cannot be renamed, only deactivated; the menu appears twice (id 1182 Master Data, id 1192 Sales > CRM > Master Data). | FACT, `SalesPersonLookup.php:10-37`; `sys_app_menu` |
+| Inquiry | Lookup `sales_person` in Inquiry New; default = NAME of the logged-in user (`auth()->user()->name`); stored in `iqp_inquiry.pic_sales` varchar(100) as text, not an id. | FACT, `inquiry-new.blade.php:47`, `Lookups.php:17-18`, `Sales.php:35-40` |
+| Quotation | `quo_quotation.sales_pic` is filled from the first inquiry's `pic_sales`; may be changed (header field). | FACT, `QuotationBuilder.php:72`, `Data/Quotation.php:24` |
+| Customer Order | `co_order.sales_person_id` (id) is filled by matching the NAME `pic_sales` to `sales_person.sales_name`; no match -> NULL ("daripada menebak" = rather than guessing). | FACT, `CoOrderBuilder.php:289-299` |
+| KPI | Target per sales (`SysKpiTarget.sales_person_id`) is used by the numbers board; names are chosen from `sales_person`. | FACT that `Board/Numbers.php:152-163,277-288` refers to it; the KPI figures are NOT checked |
+| Data in documents | `iqp_inquiry.pic_sales`: Firman 17, Budi Tester 1, Demo Preview 1, empty 4. `quo_quotation.sales_pic`: Firman 13, names matching the master 5 (Johannes Iwan, Budi Santoso, Siti Rahma, CV Perantara Cetak, Agen Mitra Jaya), empty 2. `co_order.sales_person_id`: 0 of 25 filled. | FACT, query 2026-10-16 |
+
+## Relations
+- **source**: master `sales_person` (filled by a user), default name from the login account.
+- **used_by**: Inquiry, Quotation, Customer Order, KPI/Win-Rate Sales, Inquiry print ("Sales").
+- **flows**: Inquiry `pic_sales` (text) -> Quotation `sales_pic` (text) -> CO `sales_person_id` (id, via name matching). One person is stored in two forms (text and id); the link is only equal spelling.
+- **frozen_zone**: Inquiry (header field). Only recorded.
+
+## Findings (recorded, not fixed)
+1. **Not a single Inquiry `pic_sales` matches the master**: 19 non-NULL rows, all holding names that do not exist in `sales_person` ("Firman", "Budi Tester", "Demo Preview"). As a result `co_order.sales_person_id` is NULL for all 25 CO and the KPI per sales cannot be computed from CO.
+2. **The screen default = login name**, not a choice from the master; if the login name is not in `sales_person`, the value is still stored (validation is only `string|max:100`, `InquiryPayload.php:18`), not `exists`. That explains finding 1; the behavior of the lookup component on screen was NOT tested.
+3. **Name matching as a key** is fragile (spaces, spelling); the code itself admits "teks bebas (bukan FK)" (free text, not FK) (`CoOrderBuilder.php:293-296`). Changing to an id = an Inquiry schema change (frozen zone): needs Jo's permission.
+4. **`employee_id` is empty for 3 INTERNAL sales**: the link to employees is not used yet; do not fill it from `employee_id=1`.
+## Already exists? Searched where, result
+Searched: `sales_person`, `pic_sales`, `sales_pic`, `sales_person_id` in `ddtmst`, `ddtsdi`, `ddtsys` (`information_schema`) and `grep` `app/`, `resources/views/v2`. Result: the concept ALREADY EXISTS (master + three places of storage). No new table needed; what is missing is only an agreement on one storage form.
+

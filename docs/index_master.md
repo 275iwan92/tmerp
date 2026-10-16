@@ -5,7 +5,7 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 
 # Index Master Dokumentasi — TELASIH MAKMUR ERP V2
 
-> **Technical Guide (TG), 2026-10-16:** `docs/tg/` = kondisi sistem sekarang per modul/sub-modul (kartu konsep, kartu ENGINE, relasi). Mulai: `docs/tg/00_peta-besar.md`, `docs/tg/01_peta-engine.md`, `docs/tg/02_daftar-relasi.md`. Baru modul Sales (`docs/tg/sales/`).
+> **Technical Guide (TG), 2026-10-16:** `docs/tg/` = kondisi sistem sekarang per modul/sub-modul (kartu konsep, kartu ENGINE, relasi). Mulai: `docs/tg/00_big-map.md`, `docs/tg/01_engine-map.md`, `docs/tg/02_relations.md`. Baru modul Sales (`docs/tg/sales/`).
 
 > Dibuat 2026-09-05 (permintaan user: dokumentasi per-layar untuk dikoreksi, flow per-modul, database/tabel, dan
 > standarisasi UI/UX+komponen). **Konvensi penamaan**: `screen_*` (docs/screens/), `flow_*` (docs/flows/), `db_*`

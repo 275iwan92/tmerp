@@ -1,0 +1,42 @@
+# Concept card: Snapshot (master freezing) on the Sales side
+
+> Written 2026-10-16 (group A). Rule A.13: "transaksi membekukan nilai master; master berubah, transaksi lama tetap" (`docs/ringkas/globaluserrules.md`, FROM DOCUMENT; the original text in `docs/globaluserrules.md` was not reopened in this session). FACT = code with line numbers and mockup DB (`ddt*` via `tm2*`) seen this session. Tables/columns are detailed in the related concept cards; here only the "from where to where" map.
+
+- **Document type**: concept card (cross-document rule). **Module/sub-module**: Sales (Order, Delivery, CRM; Inquiry/Quotation referenced).
+- **Canonical name**: Snapshot = a copy of master/upstream document values into a downstream document at a given moment, without a live link for that value.
+- **Synonyms**: freezing, freeze, value copy, "bukan live-linked", "di-SNAPSHOT dari master".
+- **NOT the same as**: a logical link (`product_id`, `customer_id`) that is still read live; a change log.
+
+## Facts: snapshot map in Sales
+| From -> to | What is frozen | When | Evidence |
+|---|---|---|---|
+| `prod_type` -> `iqp_part.dieline_spec` | `type_code`, dieline spec, dimensions | Inquiry part save | FROM CARD Product type (`inquiry-product/10_card_product-type.md`), not rechecked |
+| Quotation item -> `co_order_item` | `description`, `spec_note`, `qty`, `qty_unit`, `unit_price`, `discount_pct`, line type; CO header: `payment_term`, `currency_code`, `is_ppn` (from inquiry/customer tax profile), document discount | CO is born (WIN) | FACT, `CoOrderBuilder.php:45-91`; data: 13 INTEGRATED lines, price/qty/description equal to the Quotation item (0 differences); 13 COs, currency and terms equal to the Quotation (0 differences) |
+| ProCost tier -> `co_order_item.qty_min/qty_max` | print qty tolerance (`tolerance_pct`) | CO is born | FACT, `CoOrderBuilder.php:65-85` |
+| `prod_product` -> INSTANT CO line | `description` (`nama (kode)`), `spec_note`, `qty_unit` (`uom_sales`), `qty_min/max` (master qty limits), `unit_price` (`default_selling_price`, 0 if empty) | line is added | FACT, `CoOrderBuilder.php:154-181`; data: 13 INSTANT lines, price equal to master price (0 differences) |
+| Customer -> INSTANT CO | `payment_term`, `currency_code`, `is_ppn`, default address | CO is created | FACT, `CoOrderBuilder.php:130-149` |
+| CO delivery schedule -> `do_line` | `item_description`, `qty_unit`, `unit_price` (via view `v_co_delivery_outstanding`) | line is pulled into DO | FACT, `DispatchService.php:86-100`; view |
+| `do_line` price changed | `original_unit_price` filled ONCE, `price_overridden`, header `price_change_flag` | manual override | FACT, `DispatchService.php:160-171` |
+| Product -> `crm_complaint_item` | `product_name` (required text) alongside `product_id` | complaint is recorded | FACT, `show columns crm_complaint_item` |
+| Inquiry -> Master Product | part, dieline, artwork, finishing, name, dimensions; product becomes `ACTIVE` + `stat_confirm` | WIN | FACT, `ProductMasterSync.php:25-60`; called by `CoOrderBuilder.php:104-109` |
+
+## What is NOT frozen (read live)
+- Customer name on CO/DO: `co_order` and `do_delivery` store only `customer_id`; the name is read from the master each time it is shown (`CustomerOrder::rows` maps `customer_name` from the master, `CustomerOrder.php:42-43`; there is no customer name column in `co_order`/`do_delivery`). FACT.
+- `co_order_item.product_id`, `inquiry_id`, `quotation_item_id`: live logical links; the product name in the line (`description`) is frozen, but other master attributes are read live.
+- INTEGRATED CO ship-to address: NOT copied at all (13 of 13 empty, CO card finding 6), so neither frozen nor live.
+
+## Relations
+- **source**: masters (`prod_type`, `prod_product`, `cust_customer`), Quotation, ProCost tier.
+- **used_by**: CO, DO/Surat Jalan, Complaint, Master Product (reverse direction: the transaction fills the master at WIN).
+- **flows**: see the column "From -> to". Master changes after the freeze moment do not propagate to old documents.
+- **frozen_zone**: Inquiry/ProDev/ProCost and the document flows.
+
+## Findings (recorded, not fixed)
+1. **11 of 13 INSTANT CO lines have a value of Rp 0**: `unit_price` = 0 because the master `default_selling_price` is 0 (matches the master, 0 differences; `CoOrderBuilder.php:170` falls back to 0 when empty). The engine gives no warning that the snapshot price is 0. FACT (query today).
+2. **WIN writes to the master from a transaction** (`ProductMasterSync`: `card_status=ACTIVE`, `stat_confirm=true`, part/finishing copied), while rule B.14 states that the master is changed only by the user (defaults allowed). Consistent with A.4 ("WIN = Master Product lahir") but two rules meet. No action; recorded. FACT (code).
+3. **Cross-connection transaction**: the WIN snapshot writes `tm2sdi` and `tm2mst` in two separate transactions (CoOrderBuilder engine card, edge cases). FROM CODE.
+4. **No snapshot timestamp**: there is no "copied at" column in `co_order_item`/`do_line`; the snapshot moment can be estimated from the row `created_at`. FACT (`show columns`).
+5. **The Quotation snapshot from Inquiry** was not checked in this session (owned by the author of the Quotation card).
+
+## Already exists? Searched where, result
+Searched: the word "snapshot" in `app/Services/Sales`, `app/Models/Sdi`, `CoOrderBuilder`, `DispatchService`; columns `original_*`, `*_snapshot`, `amount_snapshot` (exists in `flow_log`, not Sales). Result: the pattern ALREADY EXISTS as value copying inside services; there is no dedicated snapshot table or column, and none is needed.

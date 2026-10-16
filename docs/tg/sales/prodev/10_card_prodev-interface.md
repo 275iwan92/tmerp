@@ -1,0 +1,56 @@
+# Concept card: ProDev interface (Sales side)
+
+> Group B, 2026-10-16, awaiting Jo's approval. Only the Inquiry <-> ProDev boundary: what ProDev receives from Inquiry, what it returns, and the flag `stat_confirm_prodev`. The calculation engines (SpecEngine, ImpositionEngine) are not the content of this card; see the open items in `docs/ENGINE-ATTENTION.md` (ATTENTION-ENGINE-01) and the ENGINE cards of the engine group when they exist. FACT = seen directly (mockup DB, code with lines). Claims in old documents are verified in the section "Check of old document claims".
+
+- **Document type**: concept card (interface). **Module/sub-module**: Sales > Inquiry & Quotation > Pro-Dev (menu: Pro-Dev New, Pro-Dev Revise, Pro-Dev Manual, Master Product Market, Master Card Collection).
+- **Canonical name**: ProDev interface = `InquiryStage::openInProdev` + `InquiryWriter::sendToProDev` (inbound), `SpecEngine::persist` + layout `prod_layout_group` + `InquiryStage::syncProdev` (outbound), flag `iqp_inquiry.stat_confirm_prodev`.
+- **Synonyms**: Send to ProDev, Mode #1 (integration), master part from Inquiry, Confirm ProDev.
+- **NOT the same as**: ProDev Mode #2 (Pro-Dev Manual: master part without Inquiry, `Prodev::parts` excludes parts that have `iqp_part.prod_part_id`); Master Card Collection.
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Entry point | Grid Pro-Dev New/Revise (one row = one NEW/REVISE inquiry with `stat_confirm_sales=1`, not cancelled). Open -> `GET /prodev/open/{inquiry}` -> `InquiryStage::openInProdev`. The button "Kirim ke ProDev" in the Sales form has been removed (A.20). | FACT, `routes/v2.php:1654-1663`, `InquiryStage.php:73-87`, `ProdevNewGrid.php` |
+| Gate | Only NEW/REVISE that are Sales-Confirmed; RECALC does not go through ProDev. | FACT, `InquiryStage.php:20,75`; `Sales.php:249` |
+| What is created when opened | For each component part without `prod_part_id`: `sendToProDev` creates a DRAFT Master Product (`ensureDraftProduct`: `product_code='DRAFT-<id_inquiry>'`; REVISE = derived from the parent product, `revision_no`+1), creates `prod_part` (`part_code='P<id_part>'`, L/W/H in cm = mm/10, `activate`), writes `iqp_part.prod_part_id`; copies `pack_qty`, `cfg_color`, finishing, and artwork (outer side) as `prod_part_attachment`. | FACT, `InquiryWriter.php:97-155`, `IqpInquiry.php:132-154` |
+| What is NOT copied when opened | `part_type`, `dieline_spec`, `flat_w/h`, `joint`, material, `qty_per_sku`. Material, finishing, subcon processes are read DIRECTLY from the Inquiry by SpecEngine when the part is linked (`$iqp`); the blank size from `iqp_part.flat_w x flat_h` when `die_w_cm/die_h_cm` are empty. `part_type` and `dieline_spec` are only copied in full to the master at WIN (`ProductMasterSync::part`). | FACT, `InquiryWriter.php:109-119`; `SpecEngine.php:137-221,376-396`; `ProductMasterSync.php:61-78` |
+| What ProDev reads from Inquiry | Material (`iqp_part_material`), finishing (`iqp_part_finishing`), subcon processes (`iqp_part_process`), primary qty tier (`iqp_tier`), `pack_qty`, `cfg_color`, flat, dieline (panel "Part & Dieline"), artwork colours. | FACT, `SpecEngine.php` (`finishings`, `inputMaterials`, `tierQty`, `subconMap`, `blankArea`), `Data/Prodev.php:106-136` |
+| What is returned | "Save in 2 directions": BOP, BOM, ink are written to the master (`prod_part_process/_material/_ink`) AND to the Inquiry (`iqp_part_process/_material/_ink`), with `source` marker ENGINE / OVERRIDE / MANUAL; the officer's result (OVERRIDE) is not overwritten by the engine. The material chosen by Sales (`MANUAL`) in the Inquiry is UPDATED in place (`rawmat_id`, `rawmat_name`, grammage, size), other rows are rewritten. Two connections are wrapped in nested transactions, not a cross-DB transaction. | FACT, `SpecEngine.php:1103-1247` |
+| Dieline in two directions | The "Part & Dieline" panel changes `dieline_spec`, flat, and artwork in `iqp_part` and `prod_part` at once (A.17); the Master Product header size follows if the product is ACTIVE. | FACT, `PartDieline.php:29-53` |
+| Layout | Save layout: master `prod_layout_group` (+ `prod_layout_group_part`, 60 rows: CONFIRMED 39, DRAFT 21) AND snapshot `iqp_layout` per Inquiry part (28 rows, column `stat_confirm`). | FACT, `show columns`, query; `pages/production/prodev.blade.php:43-49,225-295` (comments and code) |
+| Flag `stat_confirm_prodev` | Computed, not clicked: `InquiryStage::syncProdev` = 1 when ALL non-assembly parts have a latest layout with status CONFIRMED; drops to 0 only while there is no `iqp_costing` yet. Triggered by event `ProdLayoutGroup::saved` (`AppServiceProvider.php:75` calls `InquiryStage::listen`) and the workbench call route. | FACT, `InquiryStage.php:23-50,99-105`, `routes/v2.php:1666-1673` |
+| Downstream users | ProCost takes the ProDev layout (`ProCostContextService`: `prod_layout_group`, BOM, BOP, ink, finishing; read-only); the workbench Confirm button goes to `procost?part=`. | FACT, `ProCostContextService.php:23-40`, `prodev.blade.php` (parameter `costingUrl`) |
+| Flag distribution (mockup) | `stat_confirm_prodev=1`: 15 NEW inquiries (13 CONVERTED + 2 SUBMITTED). REVISE (2) not yet ProDev-Confirmed. | FACT, query |
+
+## Check of old document claims (verified 2026-10-16)
+| Claim (source) | Result |
+|---|---|
+| "ProDev Mode #1: THIS LINK DOES NOT EXIST YET, 0 code paths create `prod_part` from `iqp_part`" (`claude_vital_flows.md`, status 2026-09-03) | **OUTDATED/WRONG today.** The path exists: `sendToProDev`, `openInProdev`, route `prodev.open`. 35 of 42 `iqp_part` already have `prod_part_id`. |
+| "Product Type moved from per-Part to Inquiry level (Header)" (`claude_vital_flows.md`) | **PARTLY.** Chosen in the header, but stored per part in `iqp_part.dieline_spec.type_code` (`InquiryWriter.php:254-258`); `iqp_inquiry` has no product type column (`show columns`). |
+| "Each Part is gated by Part Role (Body/Lid/...)" (`claude_vital_flows.md`) | **Screen gate only.** `part_role` exists in component `InquiryPart.php:9,24,97`, but there is no column and `InquiryWriter`/`InquiryPayload` do not write it; it is not stored. |
+| "`iqp_costing.calc_type` hardcoded `'NEW'`" (`claude_vital_flows.md`) | **Data is no longer like that**: 25 NEW, 1 RECALC in `iqp_costing`. The code was NOT re-read. |
+| "`prod_type` 63 (28 active); `prod_routing_template/step` 0 rows; `prod_bop_rule` 26 rows with `part_type` all empty; `mat_join_type` 4" (`handoff-prodev-session.md` §4, `engine-process-template-per-tipe.md` §6) | **CORRECT**: the 2026-10-16 query gives 63/28, 0/0, 26/26 empty, 4 (STITCHING_SINGLE/DOUBLE, GLUE_SINGLE/DOUBLE). |
+| "`SpecEngine` derives `NEEDS_GLUE` from the text `joint_type` (pattern `glue|lem|lock bottom|crash|auto bottom`)" | **CORRECT** (`SpecEngine.php:43,95`). **Addition**: column `prod_part.joint_type` is not written by any v2 code (only migration seeder, old v1 form `old_prodev`); of 35 parts linked to an Inquiry, 0 have `joint_type` filled, so `NEEDS_GLUE` is always false for parts born from an Inquiry. The Inquiry itself stores the join as `iqp_part.join_type_id` (assemblies; 8 master parts have `join_type_id`). |
+| "`prod_routing_template`/`RoutingTemplateService` is not used by SpecEngine, only referenced by EngineRegistry" | **CORRECT** for the service class: only `EngineRegistry.php:40,219,238` (and itself) use it; the model/grid/v1 page `routing-template` use the table, not the service. `SpecEngine.php:190-193` only reads `prod_bop_rule`. |
+| "Empty BOM for BOX BTP OMEGAMOTO SPOTLIGHT (IQ2690068, 100 pcs): flat 740 x 650, pack 100, DC+SHEET, `iqp_layout` not yet there, `join_type_id` empty" | **CORRECT in the DB**: `iqp_part` 1668: flat 740 x 650, `pack_qty` 100, `DC+SHEET`, `join_type_id` NULL, `iqp_layout` 0, no `prod_layout_group` for `prod_part` 516; `die_w_cm/die_h_cm` NULL. **Addition**: master part 516 already has BOP 9 rows, BOM 2, ink 2 (saved), so "empty BOM" depends on which screen Jo looked at. |
+| "print sheets = qty_in of the first BOP step with unit LBR; without up/canvas becomes '-'" | **CORRECT with a correction**: not the first step, but the FIRST BOP row that has unit `LBR` and `qty_in` filled; if none -> NULL (`SpecEngine.php` function `firstSheets`). |
+| "The WO path (`forWorkOrder`) has a fallback of 1 up + warning; the screen path does not" | **CORRECT**: `forWorkOrder` replaces `upCount=0` with 1 and adds warning `ups` (`SpecEngine.php:1042-1093`); `generate` uses `max(0, upCount)` without a fallback (lines 59-70). |
+| "`iqp_part.part_type` only DC 25, DC+SHEET 13, DC+SF 3, SHEET 1" | **CORRECT** (42 rows; 6 of them assemblies). |
+| "Dummy Master Card 15 cards only 5 types" | **CORRECT**: `prod_master_card` 15 rows, 5 `type_code` (RSC_2PC 5, RTE_BOX 6, TRAY_LID_DW 2, LOCK_BOTTOM_2PC 1, BUKU 1). |
+| "`inquiry-new.blade.php:68-70` states that `type_code` is saved to `iqp_part.part_type`" | **Misleading screen label** (already noted in the product type card): the value is in `iqp_part.dieline_spec.type_code`. |
+
+## Relations
+- **source**: Inquiry (Confirm Sales), type master/BOP rule, machines and processes (REAL, not touched).
+- **used_by**: ProCost (read-only context), Master Product/WIN, PPIC/WO (`forWorkOrder`), Master Card (a).
+- **flows**: Inquiry -> `prod_part`/layout/BOP/BOM/ink -> back to Inquiry (`iqp_part_*`) -> flag `stat_confirm_prodev` -> ProCost. A.20.
+- **frozen_zone**: ProDev and Inquiry Product. This card only records; nothing was changed.
+
+## Findings (recorded, not fixed)
+1. **`NEEDS_GLUE` depends on a column with no writer** (see the claims table). This strengthens decision item #5 for Jo in `handoff-prodev-session.md` §6 with code + data evidence.
+2. **ProDev overwrites the material chosen by Sales** (`rawmat_id`, `rawmat_name`, size) in `iqp_part_material` through Save (`SpecEngine.php:1216-1221`); A.17 only allows ProDev to change dimensions, flat, artwork. Whether that material overwrite is intended is NOT decided yet.
+3. **Two layout stores** (`prod_layout_group` master and `iqp_layout` snapshot) with different readers: the ProDev flag reads the master (`InquiryStage.php:23-35`), `forWorkOrder` and `PlanFacts` read `iqp_layout` first (`SpecEngine.php:1042-1047`, `PlanFacts.php:27`). If the two differ the results differ; the consistency of the two was not checked.
+4. **`sendToProDev` does not copy `part_type`**: 2 of 35 linked master parts have `part_type` NULL while the Inquiry says `DC`. Impact on `MULTI_LAYER` (`SpecEngine.php:94`) not proven.
+5. **Two inquiries flagged ProDev without master parts** (`IQ2600001`, `IQ2600002`): see the Inquiry card, finding 2.
+6. **Cross-DB save is not atomic**: `persist` stacks transactions of `tm2mst` and `tm2sdi` (`SpecEngine.php:1128`); a failure between commits could leave the master and the Inquiry different. Not proven to happen.
+## Already exists? Searched where, result
+Searched: `sendToProDev`, `openInProdev`, `prod_part_id`, `stat_confirm_prodev`, `iqp_layout`, `prod_layout_group`, `joint_type`, `routing_template` in `app/`, `routes/`, `resources/`, `packages/`, `database/`; related tables in `ddtsdi`/`ddtmst`. Result: the whole interface ALREADY EXISTS. No new table or column is needed for this interface; the proposal "recipe per type" in `engine-process-template-per-tipe.md` is an engine matter, not this card.

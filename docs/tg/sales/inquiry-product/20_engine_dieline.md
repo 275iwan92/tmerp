@@ -1,74 +1,74 @@
-# Kartu ENGINE: Dieline Engine (TMDieline)
+# ENGINE card: Dieline Engine (TMDieline)
 
-> DRAFT KELOMPOK C (2026-10-16), menunggu persetujuan Jo. Sumber: `resources/js/tmdieline.js` (176 baris) dan `app/Support/Dieline/TmDieline.php` (332 baris, port PHP) dibaca; tes `TmDielineTest` dijalankan (3 lulus, 8 assert). Kesamaan JS vs PHP diuji sendiri dengan node v24 terhadap 27 tipe produk aktif (hasil di bawah).
+> DRAFT GROUP C (2026-10-16), awaiting Jo's approval. Sources read: `resources/js/tmdieline.js` (176 lines) and `app/Support/Dieline/TmDieline.php` (332 lines, PHP port); test `TmDielineTest` was run (3 passed, 8 asserts). JS vs PHP parity was tested directly with node v24 against the 27 active product types (result below).
 
-- **Nama kanonik**: Dieline Engine (TMDieline). **Berkas (registry key `dieline`, mode `calc`, grup Inquiry Product)**: `resources/js/tmdieline.js`. **Modul/sub-modul**: Sales > Inquiry & Quotation > Inquiry Product.
-- **Tiga salinan kode yang sama** (FAKTA): `resources/js/tmdieline.js`; `packages/mockup-parts/resources/assets/tmdieline.js` (isi identik, `diff` kosong); port PHP `App\Support\Dieline\TmDieline`. Registry hanya mendaftarkan yang pertama.
-- **Status beku**: kemampuan render dieline = DIKUNCI Jo ("sudah ada & diverifikasi bagus, jangan diubah"; `docs/claude_vital_flows.md`). Jangan ubah geometri tanpa izin Jo.
-- **Sinonim**: dieline, pisau, bentangan (flat), DSL `dieline_spec`, TMDieline.
-- **BUKAN sama dengan**: `ImpositionEngine` (menyusun bentangan di plano); **BUKAN** tipe produk (`prod_type.type_code`, lihat `10_kartu_tipe-produk.md`): tipe produk adalah data resep, engine ini membacanya.
+- **Canonical name**: Dieline Engine (TMDieline). **File (registry key `dieline`, mode `calc`, group Inquiry Product)**: `resources/js/tmdieline.js`. **Module/sub-module**: Sales > Inquiry & Quotation > Inquiry Product.
+- **Three copies of the same code** (FACT): `resources/js/tmdieline.js`; `packages/mockup-parts/resources/assets/tmdieline.js` (identical content, empty `diff`); PHP port `App\Support\Dieline\TmDieline`. The registry only lists the first.
+- **Frozen status**: the dieline render capability is LOCKED by Jo ("already exists & verified good, do not change"; `docs/claude_vital_flows.md`). Do not change the geometry without Jo's permission.
+- **Synonyms**: dieline, knife, flat layout, DSL `dieline_spec`, TMDieline.
+- **NOT the same as**: `ImpositionEngine` (arranges the flat layout on the plano); **NOT** the product type (`prod_type.type_code`, see `10_card_product-type.md`): the product type is recipe data, this engine reads it.
 
-## Pemicu (tidak ada background / jadwal / command)
-Tidak ada di `routes/console.php`, Jobs, Observers. Semua dipicu oleh tampilan di browser (JS) atau oleh kode server (PHP). FAKTA, dari grep:
-| Pemicu | Method | Berkas:baris |
+## Trigger (no background / schedule / command)
+Not in `routes/console.php`, Jobs, Observers. Everything is triggered by the display in the browser (JS) or by server code (PHP). FACT, from grep:
+| Trigger | Method | File:line |
 |---|---|---|
-| Form Inquiry v2: dimensi/tipe diubah (komponen `x-mp::dieline-v3` di `x-mp::sales.inquiry-part`) | `flat`, `render`, `STROKE` | `packages/mockup-parts/resources/assets/js/components/dieline-x.js:116-119` (`redraw`); dipakai `Sales/InquiryPart.php:136`, `Sales/PartVisual.php:55` |
-| ProDev: panel Part & Dieline | sama | `packages/mockup-parts/src/Components/Prodev/PartDieline.php:75`; simpan lewat `PartDieline::save` (`app/Services/ProDev/PartDieline.php`), rute `routes/v2.php` (`prodev.dieline`) |
-| Master Card Collection | sama | `resources/views/v2/screens/master-card-collection.blade.php:144` |
-| Form/Recalc/Nota/Hub Inquiry v1, cetak Quotation | `svg`, `render` | `inquiry/form.blade.php:272`, `recalc.blade.php:302`, `nota.blade.php:472`, `hub.blade.php:33`, `quotation/print.blade.php:80`, `components/inquiry/readonly-summary.blade.php:224` |
-| ProDev (nesting menggambar blank) | `svg` | `production/prodev.blade.php:1593`, `:3695` |
-| Kotak 3D | `STROKE` | `resources/js/tm-box3d.js:17` |
-| Impor Master Card massal (server) | `TmDieline::flat`, `::svg` | `app/Services/MasterCard/MasterCardShape.php:98`, `:133`, `:142` (dipanggil `MasterCardService`, `MasterCardDummyEngine`) |
-`resources/js/app.js:1` memuat engine untuk halaman v1. Jembatan Livewire: `resources/js/dieline-part.js:65,85`.
+| Inquiry v2 form: dimension/type changed (component `x-mp::dieline-v3` in `x-mp::sales.inquiry-part`) | `flat`, `render`, `STROKE` | `packages/mockup-parts/resources/assets/js/components/dieline-x.js:116-119` (`redraw`); used by `Sales/InquiryPart.php:136`, `Sales/PartVisual.php:55` |
+| ProDev: Part & Dieline panel | same | `packages/mockup-parts/src/Components/Prodev/PartDieline.php:75`; saved via `PartDieline::save` (`app/Services/ProDev/PartDieline.php`), route `routes/v2.php` (`prodev.dieline`) |
+| Master Card Collection | same | `resources/views/v2/screens/master-card-collection.blade.php:144` |
+| Inquiry v1 Form/Recalc/Nota/Hub, Quotation print | `svg`, `render` | `inquiry/form.blade.php:272`, `recalc.blade.php:302`, `nota.blade.php:472`, `hub.blade.php:33`, `quotation/print.blade.php:80`, `components/inquiry/readonly-summary.blade.php:224` |
+| ProDev (nesting draws the blank) | `svg` | `production/prodev.blade.php:1593`, `:3695` |
+| 3D box | `STROKE` | `resources/js/tm-box3d.js:17` |
+| Bulk Master Card import (server) | `TmDieline::flat`, `::svg` | `app/Services/MasterCard/MasterCardShape.php:98`, `:133`, `:142` (called by `MasterCardService`, `MasterCardDummyEngine`) |
+`resources/js/app.js:1` loads the engine for v1 pages. Livewire bridge: `resources/js/dieline-part.js:65,85`.
 
-## Alur (kembaran teks, tanpa diagram: satu jalur lurus)
-1. Layar mengirim `spec` (resep tipe produk, JSON `prod_type.dieline_spec`) dan `dims` (ukuran yang diketik/pilih).
-2. `buildScope`: nilai `dims` menjadi variabel; singkatan A/B/C/D/LH/G/TT/DF/BT/P dipetakan ke nama panjangnya; lalu variabel turunan `spec.vars` dievaluasi berurutan.
-3. `flat`: evaluasi `spec.flat.w` dan `spec.flat.h`, bulatkan 2 desimal, hitung `area`.
-4. `svg`: evaluasi `spec.canvas.w/h`; bila bukan > 0, tidak menggambar. Tiap elemen `spec.elements` digambar berurutan (line, rect, circle, tuck, dust, glue, bleed, foldlines, holes, text). Elemen yang gagal dilewati diam-diam.
-5. `render` menaruh SVG di elemen, atau pesan "Tipe ini belum punya spesifikasi dieline" / "Pilih ukuran / isi dimensi untuk melihat dieline".
-6. Bentangan (flat) w/h/area dipakai layar untuk mengisi kotak ukuran datar; officer boleh mengisi manual (centang `manual`, `dieline-x.js:51,116`).
-7. Saat Inquiry disimpan, `InquiryWriter::persistParts` membekukan resep + dims + `type_code` ke `iqp_part.dieline_spec` (`InquiryWriter.php:249-258`, snapshot A.13); engine tidak menyimpan.
+## Flow (text twin, no diagram: one straight path)
+1. The screen sends `spec` (product type recipe, JSON `prod_type.dieline_spec`) and `dims` (the typed/chosen sizes).
+2. `buildScope`: `dims` values become variables; abbreviations A/B/C/D/LH/G/TT/DF/BT/P are mapped to their long names; then the derived variables `spec.vars` are evaluated in order.
+3. `flat`: evaluate `spec.flat.w` and `spec.flat.h`, round to 2 decimals, compute `area`.
+4. `svg`: evaluate `spec.canvas.w/h`; if not > 0, nothing is drawn. Each element of `spec.elements` is drawn in order (line, rect, circle, tuck, dust, glue, bleed, foldlines, holes, text). Elements that fail are skipped silently.
+5. `render` puts the SVG in the element, or the message "Tipe ini belum punya spesifikasi dieline" / "Pilih ukuran / isi dimensi untuk melihat dieline".
+6. The flat w/h/area is used by the screen to fill the flat size boxes; the officer may fill them manually (tick `manual`, `dieline-x.js:51,116`).
+7. When the Inquiry is saved, `InquiryWriter::persistParts` freezes recipe + dims + `type_code` into `iqp_part.dieline_spec` (`InquiryWriter.php:249-258`, snapshot A.13); the engine does not save.
 
 ## Input / Output
-- **Input**: `prod_type.dieline_spec` (JSON, 27 dari 28 tipe aktif punya `elements`; FAKTA, query), pilihan sah dibaca `Sales::dielineTypes()` (`app/Support/V2/Data/Sales.php:112`, hanya tipe aktif dengan `elements`); parameter `prod_type_param`, ukuran pasaran `prod_type_size`. Tidak membaca `sys_constant`.
-- **Output**: tidak menulis DB. `flat` -> `{w, h, area}` (mm, mm2); `svg` -> teks SVG atau `null`; `render` -> mengisi elemen. Yang menyimpan: `InquiryWriter` (`iqp_part.dieline_spec`, `flat_w`, `flat_h`, `flat_area`) dan `PartDieline::save` (`iqp_part` + `prod_part`, `cm_length/width/height` = dims/10).
-- **Siapa boleh menimpa**: officer lewat form (Inquiry; ProDev berhak mengubah dieline part, A.17).
+- **Input**: `prod_type.dieline_spec` (JSON, 27 of 28 active types have `elements`; FACT, query), the valid choices are read by `Sales::dielineTypes()` (`app/Support/V2/Data/Sales.php:112`, only active types with `elements`); parameters `prod_type_param`, market sizes `prod_type_size`. Does not read `sys_constant`.
+- **Output**: does not write the DB. `flat` -> `{w, h, area}` (mm, mm2); `svg` -> SVG text or `null`; `render` -> fills the element. What saves: `InquiryWriter` (`iqp_part.dieline_spec`, `flat_w`, `flat_h`, `flat_area`) and `PartDieline::save` (`iqp_part` + `prod_part`, `cm_length/width/height` = dims/10).
+- **Who may override**: the officer through the form (Inquiry; ProDev may change the part dieline, A.17).
 
 ## FORMULA
-Satuan mm. Tanpa pembulatan kecuali `nf`/`flat` (2 desimal). Rumus ditulis di DATA (`dieline_spec`), bukan di kode; engine hanya mengevaluasinya.
-1. Evaluator ekspresi (`evalExpr`): operator `+ - * /`, minus tunggal, tanda kurung, fungsi `max min abs sqrt round floor ceil`, konstanta `PI`. Variabel tak dikenal atau tak berhingga = 0. **Pembagian dengan 0 = 0** (baris 88). Hasil non-angka = 0.
-2. `flat.w`, `flat.h` = hasil ekspresi `spec.flat.w/h` (mis. RSC_2PC: `G+A+B+2*P`, `C+B+2*flap_extra+2*P`), dibulatkan `round(x*100)/100`; `area = round(w*h*100)/100`.
-3. Warna garis tetap: CUT `#ff3b3b`, CREASE `#00e676`, BLEED `#888` putus-putus `5 3`, HOLE `#4da3ff`; margin viewBox `max(24, (W+H)/16)`.
-4. Ukuran bleed (`draw_bleed`): persegi dari `-p` selebar `W+2p` x `H+2p`; tidak digambar bila `p <= 0`.
-5. `tuck`: tutup lengkung dengan radius `min(8, (b-a)/6)`; `dust`: trapesium dengan inset `min(h, (b-a)/3)`; `glue`: lidah lem trapesium sepanjang `g`.
-6. Port PHP sama: `flat` memakai `round(...,2)`, evaluator sama (`TmDieline::eval`).
+Unit mm. No rounding except `nf`/`flat` (2 decimals). The formulas are written in DATA (`dieline_spec`), not in code; the engine only evaluates them.
+1. Expression evaluator (`evalExpr`): operators `+ - * /`, unary minus, parentheses, functions `max min abs sqrt round floor ceil`, constant `PI`. Unknown or infinite variable = 0. **Division by 0 = 0** (line 88). Non-numeric result = 0.
+2. `flat.w`, `flat.h` = result of expression `spec.flat.w/h` (e.g. RSC_2PC: `G+A+B+2*P`, `C+B+2*flap_extra+2*P`), rounded `round(x*100)/100`; `area = round(w*h*100)/100`.
+3. Fixed line colours: CUT `#ff3b3b`, CREASE `#00e676`, BLEED `#888` dashed `5 3`, HOLE `#4da3ff`; viewBox margin `max(24, (W+H)/16)`.
+4. Bleed size (`draw_bleed`): square from `-p` of width `W+2p` x `H+2p`; not drawn when `p <= 0`.
+5. `tuck`: curved flap with radius `min(8, (b-a)/6)`; `dust`: trapezoid with inset `min(h, (b-a)/3)`; `glue`: trapezoid glue tab of length `g`.
+6. The PHP port is the same: `flat` uses `round(...,2)`, same evaluator (`TmDieline::eval`).
 
-**Contoh angka (dihitung sendiri; dims A=200, B=150, C=100, G=20, P=3, lainnya dari parameter tipe, `flap_extra` tidak diisi = 0)**
-| Tipe | Bentangan | Cek tangan |
+**Worked example (computed myself; dims A=200, B=150, C=100, G=20, P=3, others from the type parameters, `flap_extra` not filled = 0)**
+| Type | Flat | Hand check |
 |---|---|---|
-| RSC_2PC | 376 x 256 mm, area 96.256 | `G+A+B+2P` = 20+200+150+6 = 376; `C+B+0+2P` = 100+150+6 = 256 |
-| CARD_BOX | 726 x 146 mm, area 105.996 | `G+2A+2B+2P` = 20+400+300+6 = 726; `max(TT,DF)+C+max(BT,DF)+2P` dengan TT=20, DF=15, BT=20 = 20+100+20+6 = 146 |
-**Uji kesamaan JS vs PHP (dijalankan sendiri)**: 27 tipe aktif ber-spec, dims di atas; `flat` dan teks `svg` hasil `tmdieline.js` (node) dan `TmDieline` (PHP) **identik byte untuk byte untuk 27 dari 27**, tidak ada SVG null. Skrip uji berada di folder sementara sesi (bukan bagian repo).
+| RSC_2PC | 376 x 256 mm, area 96,256 | `G+A+B+2P` = 20+200+150+6 = 376; `C+B+0+2P` = 100+150+6 = 256 |
+| CARD_BOX | 726 x 146 mm, area 105,996 | `G+2A+2B+2P` = 20+400+300+6 = 726; `max(TT,DF)+C+max(BT,DF)+2P` with TT=20, DF=15, BT=20 = 20+100+20+6 = 146 |
+**JS vs PHP parity test (run myself)**: 27 active types with spec, dims above; `flat` and `svg` text from `tmdieline.js` (node) and `TmDieline` (PHP) are **byte-for-byte identical for 27 of 27**, no null SVG. The test script is in the session's temporary folder (not part of the repo).
 
-## Kasus tepi
-- Tipe tanpa spec / `elements`: `svg` = null, layar menampilkan pesan; satu tipe aktif tidak punya spec (28 aktif, 27 ber-spec). `persistParts` tidak menyimpan `type_code` bila spec kosong (lihat `10_kartu_tipe-produk.md`).
-- Ekspresi salah sintaks pada `vars` atau elemen: nilai 0 / elemen dilewati tanpa pesan (`catch` kosong, baris 98, 164). Salah ketik di resep tidak terlihat oleh officer.
-- Dims bukan angka (`parseFloat` NaN) = 0.
-- `text` elemen memakai warna isi `#9aa` tetap (baris 139); `esc()` dipakai untuk isi teks.
+## Edge cases
+- Type without spec / `elements`: `svg` = null, the screen shows the message; one active type has no spec (28 active, 27 with spec). `persistParts` does not save `type_code` when the spec is empty (see `10_card_product-type.md`).
+- Expression with a syntax error in `vars` or an element: value 0 / element skipped without a message (empty `catch`, lines 98, 164). A typo in the recipe is not visible to the officer.
+- Dims that are not numbers (`parseFloat` NaN) = 0.
+- `text` elements use the fixed fill colour `#9aa` (line 139); `esc()` is used for the text content.
 
-## Pemakai (relasi)
-- **sumber**: master `prod_type` (+ `_param`, `_size`). **dipakai_oleh**: Inquiry Product (New/Revise/Recalc), ProDev Part & Dieline, Master Card Collection, cetak Quotation, kotak 3D. **hilir**: `iqp_part.dieline_spec`/`flat_*` -> ImpositionEngine (ukuran awal), SpecEngine (`blankArea`: `flat_w*flat_h/100` bila `die_*_cm` kosong), Master Card (SVG dieline wajib diisi saat impor).
+## Used by (relations)
+- **source**: master `prod_type` (+ `_param`, `_size`). **used_by**: Inquiry Product (New/Revise/Recalc), ProDev Part & Dieline, Master Card Collection, Quotation print, 3D box. **downstream**: `iqp_part.dieline_spec`/`flat_*` -> ImpositionEngine (initial size), SpecEngine (`blankArea`: `flat_w*flat_h/100` when `die_*_cm` is empty), Master Card (dieline SVG must be filled on import).
 
-## Butir terbuka
-Tidak ada butir ATTENTION-ENGINE khusus engine ini (dibaca penuh).
+## Open items
+No ATTENTION-ENGINE item specific to this engine (read in full).
 
-## Temuan (dicatat, tidak diperbaiki)
-1. Registry (`EngineRegistry.php:79-105`) hanya mendaftarkan berkas JS; tidak menyebut port PHP `TmDieline` (dipakai impor Master Card massal) maupun salinan di `packages/mockup-parts`. Perubahan di satu salinan harus diulang manual di dua lainnya (komentar `TmDieline.php:11` memerintahkan "ubah salah satu = ubah keduanya"; `TmDielineTest` menjaga hanya 3 kasus). Hasil uji sesi ini 27/27 identik saat ini.
-2. Registry menulis `flat` mengembalikan "width and height"; kode mengembalikan juga `area`. Ekspor `eval`, `scope`, `STROKE` (baris 175) tidak tercatat di registry (`STROKE` dipakai tm-box3d dan dieline-x).
-3. Kegagalan evaluasi ekspresi disembunyikan (nilai 0, `catch` kosong); tidak ada log.
-4. Warna garis dan `#9aa` di renderer adalah hex literal di JS/PHP, bukan token (aturan UI: hitam/terang). Ini warna semantik garis dieline (potong/lipat/bleed), keputusan desain ada pada Jo.
-5. Tes PHP (`TmDielineTest`) menyebut kesamaan 27 tipe x 2 ukuran sudah dicek (2026-10-01): DARI DOKUMEN/komentar; sesi ini mengujinya ulang 27 tipe x 1 ukuran (lihat atas).
+## Findings (recorded, not fixed)
+1. The registry (`EngineRegistry.php:79-105`) only lists the JS file; it does not mention the PHP port `TmDieline` (used by bulk Master Card import) or the copy in `packages/mockup-parts`. A change in one copy must be repeated manually in the other two (the comment `TmDieline.php:11` orders "ubah salah satu = ubah keduanya"; `TmDielineTest` guards only 3 cases). The result of this session's test is 27/27 identical at present.
+2. The registry says `flat` returns "width and height"; the code also returns `area`. The exports `eval`, `scope`, `STROKE` (line 175) are not recorded in the registry (`STROKE` is used by tm-box3d and dieline-x).
+3. Expression evaluation failures are hidden (value 0, empty `catch`); there is no log.
+4. The line colours and `#9aa` in the renderer are literal hex in JS/PHP, not tokens (UI rule: black/bright). These are semantic dieline line colours (cut/fold/bleed); the design decision is Jo's.
+5. The PHP test (`TmDielineTest`) states that parity of 27 types x 2 sizes was checked (2026-10-01): FROM DOCUMENT/comment; this session re-tested 27 types x 1 size (see above).
 
-## Tes
-`tests/Unit/TmDielineTest.php` (3 tes: bentangan sama dengan pisau Master Card nyata untuk 3 kartu, SVG PHP sama dengan JS untuk satu kasus, evaluator ekspresi). Tidak ada tes JS.
+## Tests
+`tests/Unit/TmDielineTest.php` (3 tests: flat equals the knife of real Master Cards for 3 cards, PHP SVG equals JS for one case, expression evaluator). No JS tests.

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" font-family="sans-serif" font-size="13">
-  <!-- Kembaran teks: docs/tg/sales/product-costing/20_engine_costing-engine.md bagian "Alur". Teks hitam di latar putih, tanpa abu-abu. Tanpa angka/rumus (rahasia). -->
+  <!-- Text twin: docs/tg/sales/product-costing/20_engine_costing-engine.md section "Flow". Black text on a white background, no grey. No figures/formulas (confidential). -->
   <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000"/></marker></defs>
   <rect width="760" height="380" fill="#fff"/>
   <g fill="#fff" stroke="#000" stroke-width="1.5">
@@ -10,15 +10,15 @@
     <rect x="620" y="150" width="130" height="70" rx="6"/>
   </g>
   <g fill="#000" text-anchor="middle">
-    <text x="85" y="175">1. Tombol Hitung</text><text x="85" y="193">atau edit isian</text><text x="85" y="211">(Mode 1 / Mode 2)</text>
-    <text x="285" y="175">2. Per part: tipe?</text><text x="285" y="193">qty dasar = tier utama</text>
-    <text x="495" y="65">3a. Keluarga offset</text><text x="495" y="83">DC, DC+SF, DC+SHEET,</text><text x="495" y="101">KRAFT</text>
-    <text x="495" y="275">3b. Bergelombang</text><text x="495" y="293">SHEET, SHEET_DIGITAL</text><text x="495" y="311">tipe lain = kesalahan</text>
-    <text x="685" y="175">4. Roll-up header</text><text x="685" y="193">lalu tiap tier:</text><text x="685" y="211">toleransi, bulat, margin, PPN</text>
+    <text x="85" y="175">1. Hitung button</text><text x="85" y="193">or edit an input</text><text x="85" y="211">(Mode 1 / Mode 2)</text>
+    <text x="285" y="175">2. Per part: type?</text><text x="285" y="193">base qty = main tier</text>
+    <text x="495" y="65">3a. Offset family</text><text x="495" y="83">DC, DC+SF, DC+SHEET,</text><text x="495" y="101">KRAFT</text>
+    <text x="495" y="275">3b. Corrugated</text><text x="495" y="293">SHEET, SHEET_DIGITAL</text><text x="495" y="311">other type = error</text>
+    <text x="685" y="175">4. Header roll-up</text><text x="685" y="193">then each tier:</text><text x="685" y="211">tolerance, rounding, margin, PPN</text>
   </g>
   <g stroke="#000" stroke-width="1.5" fill="none" marker-end="url(#a)">
     <path d="M160,185 H208"/><path d="M360,170 H385 V80 H408"/><path d="M360,200 H385 V290 H408"/>
     <path d="M580,80 H600 V170 H618"/><path d="M580,290 H600 V200 H618"/>
   </g>
-  <text x="380" y="360" fill="#000" text-anchor="middle">satu transaksi di tm2sdi; status dokumen menjadi CALCULATED; isian officer (i_*) tidak diubah</text>
+  <text x="380" y="360" fill="#000" text-anchor="middle">one transaction on tm2sdi; document status becomes CALCULATED; officer inputs (i_*) are not changed</text>
 </svg>
