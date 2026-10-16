@@ -18,11 +18,17 @@ Hasil diskusi Jo dan agen 2026-10-16: siapa memutuskan pembelian dan penggantian
 1. ML hanya mengusulkan dan meranking; officer memutuskan (A.7).
 2. Kandidat pengganti: kategori sama, **gramatur tidak berubah**, ukuran lembar boleh lebih besar (dipotong di proses potong bahan). Prioritas: kertas dan sheet.
 3. Otomatisasi PR/PO: **setengah otomatis**. MRP berjalan terjadwal, menyiapkan PR Draft + PO Draft, officer melihat antrean "Draft ready" lalu menekan Release ke approval. Bahan tanpa supplier atau harga tetap Short dengan tombol Set supplier.
-4. **MRP membeli hanya bila ketersediaan bahan tidak cukup**, dan jumlahnya mengikuti **kebijakan Direksi**. Contoh: kurang 1 rim, tetapi beli 10 rim jauh lebih murah per rim dan bahan sering dipakai, maka PR/PO diperbesar menjadi 10 rim. Sisa masuk stok.
+4. **MRP membeli hanya bila ketersediaan bahan tidak cukup**, dan jumlahnya mengikuti **kebijakan beli** (saat ini ditetapkan Direksi manual; ke depan ML + officer, lihat bagian Arah ke depan). Contoh: kurang 1 rim, tetapi beli 10 rim jauh lebih murah per rim dan bahan sering dipakai, maka PR/PO diperbesar menjadi 10 rim. Sisa masuk stok.
 5. MRP **selalu mengecek gudang bahan baku dan booking** (stok yang boleh dipakai dikurangi booking order lain ditambah PO/PR berjalan). Bila stok banyak, bahan di-booking dan tidak ada PR.
 6. Usulan substitusi muncul di **rincian bahan**, terutama kertas dan sheet.
 7. ProCost Direct = **Mode Instant**: kartu read-only "Material availability (MRP)" di bawah Hasil Kalkulasi. Tidak ada CO, jadi hanya pre-booking lunak, PR/PO tidak dibuat dari sini.
 8. PR yang sudah terbit saat substitusi disetujui: dibahas per kasus nanti.
+
+## Arah ke depan: kebijakan beli dari Direksi menjadi ML + officer (Jo 2026-10-16)
+- **Sekarang**: kebijakan beli (kelipatan, MOQ, harga bertingkat, batas stok lebih) ditetapkan Direksi secara manual. Ini juga jadi data awal dan bahan belajar ML.
+- **Nanti**: ML membaca **riwayat pembelian** (harga per jumlah, frekuensi, pemakaian) dan **situasi pasar** untuk mengusulkan jumlah dan waktu beli, sehingga **ML dan officer bekerja tanpa Direksi**. Direksi tidak lagi di jalur keputusan harian; ia hanya menetapkan batas luar (mis. nilai maksimal) dan membaca laporannya.
+- Rancang sekarang agar peralihan tanpa ubah layar: setiap usulan jumlah menyimpan **sumber** (Policy atau ML), alasan, dan keputusan officer. Hasil keputusan officer dicatat sebagai bahan belajar (pola sama dengan CostingAdvisor: statistik dari 5 data, ML dari 30).
+- Terbuka: **sumber data "situasi pasar"** (penawaran supplier yang diinput, indeks harga, atau lainnya) belum ada di sistem; ML hanya sebaik data yang masuk. Perlu layar input (aturan: setiap nilai yang dibaca aplikasi wajib punya layar input).
 
 ## Yang sudah ada di kode (fakta)
 - `mat_raw` hanya punya `min_stock`, `safety_stock`, `reorder_point`, `max_stock`. **Tidak ada** MOQ, kelipatan beli, atau harga bertingkat.
