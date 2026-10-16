@@ -298,7 +298,9 @@ final class EngineRegistry
                 'steps' => [
                     'Default 18% margin (constant MARGIN_DEFAULT_PCT); below 5 similar costings (ADVISOR_MIN_SAMPLE_STAT) the default or derived value is used.',
                     'From 5 similar costings: median of the officer final values. From 30 (ADVISOR_MIN_SAMPLE_ML): light nearest-neighbour model by quantity, used only if it beats the median in leave-one-out.',
-                    'Part template rates (prod_part_template, imported from tmhpp) fill rates only, never the product geometry.',
+                    'Part template rates (prod_part_template, imported from tmhpp) fill rates only, never the product geometry. The template also gives the paper kind and gsm when the Inquiry BOM is empty; the nearest ACTIVE grammage (tmhpp prices) is used.',
+                    'No Pro-Dev layout yet: the Imposition Engine is run read-only over all active plano sizes and the cheapest layout per piece fills plano, UP and print size (marked as estimate, replaced by the real layout later).',
+                    'Tolerance default = constant TOLERANCE_DEFAULT_PCT (median of nine old tmhpp documents) until enough history exists.',
                     'The report repeats the CostingEngine tier formula for explanation and checks it equals the stored price; if not, the step list is hidden.',
                 ],
                 'reads' => ['tm2sdi.iqp_costing / _part / _price_tier / _recommendation', 'tm2mst.prod_part_template, mat_grammage, prod_part_type', 'tm2sys.sys_constant (Costing group)'],

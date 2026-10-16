@@ -3,6 +3,7 @@
 namespace App\Services\Costing;
 
 use App\Models\Master\MatGrammage;
+use App\Models\Master\MatPlanoSize;
 use App\Models\Master\ProdPartTemplate;
 use App\Models\Master\ProdPartType;
 use App\Models\Sdi\IqpCosting;
@@ -10,6 +11,7 @@ use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpCostingPriceTier;
 use App\Models\Sdi\IqpCostingRecommendation;
 use App\Models\Sys\SysConstant;
+use App\Services\Imposition\ImpositionEngine;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -81,21 +83,25 @@ class CostingAdvisor
         $qty = (float) ($c->priceTiers->firstWhere('is_primary', true)?->qty_pcs ?? $c->priceTiers->first()?->qty_pcs ?? 0);
         $n = 0;
 
-        // Gramatur dari BOM Inquiry
-        if (! $part->grammage_id && ($g = $this->grammageFromBom($ctx['bom']))) {
-            $n += (int) $this->fill($c, $part, null, $part, 'grammage_id', $g->id_grammage, 'INQUIRY', 'DERIVED', 'BOM Inquiry: '.$g->grammage_name);
-            if ((float) $g->duplex_dc_pct > 0) {
-                $n += (int) $this->fill($c, $part, null, $part, 'i_dc_persen_override', (float) $g->duplex_dc_pct, 'MASTER', 'DERIVED', 'Master gramatur '.$g->grammage_name);
+        $tpl = $this->template($part, $c);
+
+        // Gramatur: BOM Inquiry; bila BOM kosong, gramatur template terdekat. Selalu gramatur AKTIF terdekat di master (harga tmhpp).
+        if ((! $part->grammage_id || ! MatGrammage::whereKey($part->grammage_id)->value('activate')) && $this->isDcFamily($type)) {
+            [$g, $from] = $this->grammageFor($ctx['bom'], $tpl[0]->defaults ?? []);
+            if ($g) {
+                $n += (int) $this->fill($c, $part, null, $part, 'grammage_id', $g->id_grammage, $from === 'BOM' ? 'INQUIRY' : 'TEMPLATE', 'DERIVED', ($from === 'BOM' ? 'BOM Inquiry' : 'Template '.$tpl[0]->template_code).': gramatur aktif terdekat '.$g->grammage_name, 0, (float) $part->grammage_id);
+                if ((float) $g->duplex_dc_pct > 0) {
+                    $n += (int) $this->fill($c, $part, null, $part, 'i_dc_persen_override', (float) $g->duplex_dc_pct, 'MASTER', 'DERIVED', 'Master gramatur '.$g->grammage_name);
+                }
             }
         }
 
-        // Geometri: layout ProDev sudah mengisi (applyLayout); tanpa layout = perkiraan dari dimensi produk di plano acuan
+        // Geometri: layout ProDev sudah mengisi (applyLayout); tanpa layout = simulasi imposisi dari dimensi produk
         if ($part->data_source !== 'PRODEV' && ! $ctx['geometry'] && $this->isDcFamily($type)) {
             $n += $this->estimateGeometry($c, $part);
         }
 
         // Tarif: statistik/ML > template > konstanta/master
-        $tpl = $this->template($part, $c);
         foreach (self::TARIF as $f) {
             $cand = $this->learned($f, $type, $qty, $c->id_costing)
                 ?? ($tpl && array_key_exists($f, $tpl[0]->defaults) && ! $this->zeroToolFactor($f, $tpl[0]->defaults[$f])
@@ -119,13 +125,10 @@ class CostingAdvisor
             ?? [SysConstant::number('MARGIN_DEFAULT_PCT', 18), 'CONSTANT', 'DEFAULT', 'Konstanta COSTING MARGIN_DEFAULT_PCT', 0];
         $n += (int) $this->fill($c, null, $tier, $tier, 'margin_pct', $m[0], $m[1], $m[2], $m[3], $m[4] ?? 0);
 
-        $tol = $this->learned('tolerance_pct', $type, $qty, $c->id_costing);
-        if (! $tol && $part && ($w = $this->bopWaste($part)) > 0) {
-            $tol = [$w, 'PRODEV', 'DERIVED', 'Jumlah waste proses BOP', 0];
-        }
-        if ($tol) {
-            $n += (int) $this->fill($c, null, $tier, $tier, 'tolerance_pct', $tol[0], $tol[1], $tol[2], $tol[3], $tol[4] ?? 0);
-        }
+        // Toleransi umum: median 9 dokumen HPP lama tmhpp (0 sampai 11, median 5) sampai riwayat cukup.
+        $tol = $this->learned('tolerance_pct', $type, $qty, $c->id_costing)
+            ?? [SysConstant::number('TOLERANCE_DEFAULT_PCT', 5), 'CONSTANT', 'DEFAULT', 'Konstanta COSTING TOLERANCE_DEFAULT_PCT (median HPP lama tmhpp)', 0];
+        $n += (int) $this->fill($c, null, $tier, $tier, 'tolerance_pct', $tol[0], $tol[1], $tol[2], $tol[3], $tol[4] ?? 0);
 
         return $n;
     }
@@ -208,21 +211,29 @@ class CostingAdvisor
             ->sortByDesc(fn ($x) => $x[1])->first();
     }
 
-    private function grammageFromBom(array $bom): ?MatGrammage
+    /** [MatGrammage|null, 'BOM'|'TEMPLATE']: jenis dan gsm dari BOM Inquiry, bila kosong dari template; gramatur aktif terdekat. */
+    private function grammageFor(array $bom, array $tplDefaults): array
     {
         $row = collect($bom)->firstWhere('primary', true) ?? collect($bom)->first();
         $name = strtoupper((string) ($row['material'] ?? ''));
-        if (! preg_match('/(\d{2,3})\s*GSM/', $name.' '.strtoupper((string) ($row['spec'] ?? '')), $m)) {
-            return null;
-        }
-        $kind = str_contains($name, 'DUPLEX') ? 'DUPLEX' : (str_contains($name, 'KRAFT') ? 'KRAFT' : (str_contains($name, 'IVORY') ? 'IVORY' : null));
+        if (preg_match('/(\d{2,3})\s*GSM/', $name.' '.strtoupper((string) ($row['spec'] ?? '')), $m)) {
+            $kind = str_contains($name, 'DUPLEX') ? 'DUPLEX' : (str_contains($name, 'KRAFT') ? 'KRAFT' : (str_contains($name, 'IVORY') ? 'IVORY' : null));
 
-        return $kind ? MatGrammage::where('activate', true)->where('grammage_value', (float) $m[1])->where('paper_kind', 'like', $kind.'%')->first() : null;
+            return [$this->nearestGrammage($kind, (float) $m[1]), 'BOM'];
+        }
+
+        return [$this->nearestGrammage($tplDefaults['grammage_kind'] ?? null, (float) ($tplDefaults['grammage_value'] ?? 0)), 'TEMPLATE'];
     }
 
-    private function bopWaste(IqpCostingPart $part): float
+    /** Gramatur aktif sejenis dengan gsm terdekat (seri harga terbaru); bila seimbang pilih yang lebih tebal. */
+    private function nearestGrammage(?string $kind, float $gsm): ?MatGrammage
     {
-        return round((float) collect($this->ctx($part)['bop'])->where('subcon', null)->sum(fn ($r) => (float) ($r['waste'] ?? 0)), 2);
+        if (! $kind || $gsm <= 0) {
+            return null;
+        }
+        $key = fn ($g) => [abs((float) $g->grammage_value - $gsm), (float) $g->grammage_value < $gsm, -strtotime((string) $g->effective_date)];
+
+        return MatGrammage::where('activate', true)->where('paper_kind', 'like', $kind.'%')->get()->sort(fn ($a, $b) => $key($a) <=> $key($b))->first();
     }
 
     /** Konteks Inquiry/ProDev per part, dihitung sekali per instance (prefill memanggilnya berulang). */
@@ -249,20 +260,46 @@ class CostingAdvisor
         return array_merge(self::TARIF, ['grammage_id', 'i_dc_persen_override', 'i_panjang_plano_cm', 'i_lebar_plano_cm', 'i_cut_per_plano', 'i_isi_per_lb', 'i_uk_cetak_p_cm', 'i_uk_cetak_l_cm']);
     }
 
-    /** Perkiraan geometri bila layout ProDev belum ada: dimensi produk di plano acuan 79 x 109 cm (PLANO_REF_AREA). Ditandai ESTIMATE. */
+    /**
+     * Simulasi imposisi bila layout ProDev belum ada: ImpositionEngine (hanya dibaca, tidak menulis ke ProDev) mencoba semua plano
+     * aktif dan memilih yang luas per pcs terkecil. Tepi memakai nilai layar Pro-Dev (gripper 12, margin 8, jarak 3 mm). Ditandai ESTIMATE.
+     */
     private function estimateGeometry(IqpCosting $c, IqpCostingPart $part): int
     {
-        $pw = (float) ($part->i_dim_panjang_mm ?: $c->i_dim_panjang_mm) / 10;
-        $ph = (float) ($part->i_dim_lebar_mm ?: $c->i_dim_lebar_mm) / 10;
-        if ($pw <= 0 || $ph <= 0 || (float) $part->i_panjang_plano_cm > 0) {
+        $flatW = (float) ($part->i_dim_panjang_mm ?: $c->i_dim_panjang_mm);
+        $flatH = (float) ($part->i_dim_lebar_mm ?: $c->i_dim_lebar_mm);
+        $hasOwnPlano = (float) $part->i_panjang_plano_cm > 0 && ! $this->rec($c->id_costing, $part->id_costing_part, null, 'i_panjang_plano_cm'); // diisi officer, bukan perkiraan lama
+        if ($flatW <= 0 || $flatH <= 0 || $hasOwnPlano) {
             return 0;
         }
-        [$pl, $pwid] = [109.0, 79.0];
-        $up = max(1, max(floor($pl / $pw) * floor($pwid / $ph), floor($pl / $ph) * floor($pwid / $pw)));
-        $note = 'Perkiraan: layout ProDev belum ada, dimensi produk di plano acuan 79 x 109 cm';
+
+        $engine = new ImpositionEngine;
+        $best = null;
+        foreach (MatPlanoSize::where('activate', true)->get() as $plano) {
+            $r = $engine->run((float) $plano->width_mm, (float) $plano->height_mm, $flatW, $flatH, 3.0, 12.0, 8.0);
+            if ($r['up'] < 1) {
+                continue;
+            }
+            $perPcs = (float) $plano->width_mm * (float) $plano->height_mm / $r['up'];
+            if (! $best || $perPcs < $best['per_pcs']) {
+                $best = ['per_pcs' => $perPcs, 'plano' => $plano, 'r' => $r];
+            }
+        }
+        if (! $best) {
+            return 0;
+        }
+
+        $plano = $best['plano'];
+        $lay = $best['r']['layout'];
+        $printL = $lay['type'] === 'grid' ? $lay['cols'] * $lay['iw'] / 10 : $best['r']['area_w'] / 10;
+        $printW = $lay['type'] === 'grid' ? $lay['rows'] * $lay['ih'] / 10 : $best['r']['area_h'] / 10;
+        $note = "Simulasi imposisi (layout ProDev belum ada): plano {$plano->plano_name}, {$best['r']['up']} UP, {$best['r']['method']}, efisiensi ".$best['r']['efficiency_pct'].'%';
         $n = 0;
         // cut dan isi bernilai awal 1 (bawaan baris baru) = belum diisi
-        foreach (['i_panjang_plano_cm' => $pl, 'i_lebar_plano_cm' => $pwid, 'i_uk_cetak_p_cm' => $pl, 'i_uk_cetak_l_cm' => $pwid, 'i_cut_per_plano' => 1, 'i_isi_per_lb' => $up] as $f => $v) {
+        foreach ([
+            'i_panjang_plano_cm' => (float) $plano->width_mm / 10, 'i_lebar_plano_cm' => (float) $plano->height_mm / 10,
+            'i_uk_cetak_p_cm' => round($printL, 2), 'i_uk_cetak_l_cm' => round($printW, 2), 'i_cut_per_plano' => 1, 'i_isi_per_lb' => $best['r']['up'],
+        ] as $f => $v) {
             $n += (int) $this->fill($c, $part, null, $part, $f, (float) $v, 'ESTIMATE', 'DERIVED', $note, 0, 1.0);
         }
 

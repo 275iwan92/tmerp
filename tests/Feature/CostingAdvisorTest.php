@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Master\MatGrammage;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpCostingPriceTier;
@@ -55,7 +56,10 @@ class CostingAdvisorTest extends TestCase
         (new CostingAdvisor)->prefill($c);
 
         $this->assertEquals(18.0, (float) $t->fresh()->margin_pct); // MARGIN_DEFAULT_PCT
+        $this->assertEquals(5.0, (float) $t->fresh()->tolerance_pct); // TOLERANCE_DEFAULT_PCT (median tmhpp)
         $p = $p->fresh();
+        $this->assertTrue((bool) MatGrammage::whereKey($p->grammage_id)->value('activate'), 'gramatur harus terisi dan aktif (template KALENDER: Duplex 250)');
+        $this->assertEquals(5.3, (float) $p->i_dc_persen_override);
         $this->assertEquals(750000.0, (float) $p->i_ongkos_cetak_rim);   // template KALENDER (DC)
         $this->assertEquals(50.0, (float) $p->i_ongkos_qc_pack_pc);
         $this->assertEquals(0.25, (float) $p->i_film_faktor);            // konstanta, karena template menandai faktor 0 = default
