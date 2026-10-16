@@ -1,0 +1,14 @@
+# Tokens docs:check must not complain about (one per line, exact text of the backtick token). Keep each with a reason.
+# Legacy ScriptCase file names cited as the old system, not files of this repo:
+grid_so.php
+rpt_sales.php
+grid_monitoring_order.php
+# Cited as a finding: this file does NOT exist (see 11_card_procost-interface.md finding 6):
+resources/views/v2/screens/sales-price.blade.php
+# Names that are deliberately absent or are system catalogs (not business tables):
+doc_state_log
+doc_state
+state_log
+information_schema
+key_column_usage
+referential_constraints
