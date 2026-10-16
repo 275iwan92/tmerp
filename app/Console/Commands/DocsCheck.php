@@ -20,7 +20,7 @@ use RecursiveIteratorIterator;
 
 class DocsCheck extends Command
 {
-    protected $signature = 'docs:check {--path=docs/tg} {--strict} {--list}';
+    protected $signature = 'docs:check {--path=docs/tg} {--strict} {--list} {--staged : also fail when a staged file is cited by a card whose card is not staged}';
 
     protected $description = 'Check the Technical Guide cards against the database, the code and each other (read only)';
 
@@ -29,6 +29,9 @@ class DocsCheck extends Command
     private array $errors = [];
 
     private array $warns = [];
+
+    /** @var array<string,list<string>> repo-relative cited file => cards that cite it */
+    private array $cited = [];
 
     private array $stat = ['files' => 0, 'path' => 0, 'table_column' => 0, 'bare' => 0, 'class' => 0, 'link' => 0, 'engine_key' => 0];
 
@@ -71,6 +74,10 @@ class DocsCheck extends Command
             }
         }
 
+        if ($this->option('staged')) {
+            $this->checkStaged();
+        }
+
         return $this->report();
     }
 
@@ -92,6 +99,9 @@ class DocsCheck extends Command
                 } else {
                     $this->errors[] = "$rel: missing file $tok";
                 }
+            }
+            if ($full) {
+                $this->cited[$this->rel($full)][] = $rel;
             }
             if ($full && ! empty($p[2]) && (int) ($p[3] ?? $p[2]) > count(file($full))) {
                 $this->warns[] = "$rel: line beyond end of file $tok";
@@ -128,6 +138,19 @@ class DocsCheck extends Command
             $this->stat['bare']++;
             if (! isset($tables[$tok]) && ! isset($anyColumn[$tok]) && ! in_array($tok, $engineKeys, true)) {
                 $this->warns[] = "$rel: unknown name $tok (no table or column with this name)";
+            }
+        }
+    }
+
+    // Hook rule (Jo 2026-10-16): code that a card cites changes => the card must be touched in the same commit.
+    private function checkStaged(): void
+    {
+        $staged = array_filter(explode("\n", (string) shell_exec('git -C '.escapeshellarg(base_path()).' diff --cached --name-only')));
+        foreach ($staged as $file) {
+            foreach (array_unique($this->cited[$file] ?? []) as $card) {
+                if (! in_array($card, $staged, true)) {
+                    $this->errors[] = "$file is cited by $card, which is not staged: check the card against the change, update it (and its Verified date), then stage it";
+                }
             }
         }
     }

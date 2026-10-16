@@ -1,0 +1,9 @@
+#!/bin/sh
+# Technical Guide guard (Jo 2026-10-16): reject a commit when code cited by a docs/tg card changes without that card.
+# Enable once with: git config core.hooksPath .githooks   (disable: git config --unset core.hooksPath)
+PHP=php
+command -v php >/dev/null 2>&1 || PHP="/c/Users/iwanp/.config/herd/bin/php.bat"
+"$PHP" artisan docs:check --staged --env=mockup || {
+  echo "pre-commit: docs:check failed. Fix the card(s) above, or ask Jo before bypassing."
+  exit 1
+}
