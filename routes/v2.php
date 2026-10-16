@@ -32,7 +32,9 @@ use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
 use App\Services\Master\MaterialCategoryService;
 use App\Models\Master\EmpEmployee;
+use App\Models\Master\EmpFamily;
 use App\Services\Hrm\EmployeeProfileService;
+use App\Services\Hrm\EmployeeRecordService;
 use App\Services\Payroll\PayrollAccess;
 use App\Services\ProDev\PartDieline;
 use App\Services\Pur\SpecialReceiptService;
@@ -262,6 +264,43 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return redirect(route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id)->with('v2_flash', tf($msg, ['name' => $e->full_name]));
     })->name('hrm.employee.save');
+
+    // Master Employee Form v2: catatan anak (kontrak, keluarga, pendidikan, kedisiplinan). Tiap dialog menyimpan sendiri; aturan = EmployeeRecordService.
+    Route::prefix('hrm/employee/{employee}')->whereNumber('employee')->name('hrm.employee.')->group(function () {
+        $open = function (int $id, string $tab, string $msg) {
+            return redirect(route('v2.screen', 'hrm-employee-form').'?id='.$id.'&tab='.$tab)->with('v2_flash', $msg);
+        };
+        $emp = function (int $id) {
+            abort_unless(Auth::user()->canAccessModule('HRM'), 403);
+
+            return EmpEmployee::findOrFail($id);
+        };
+        Route::post('/contract', function (Request $r, int $employee, EmployeeRecordService $svc) use ($open, $emp) {
+            $svc->addContract($emp($employee), $r->all(), Auth::user());
+
+            return $open($employee, 'contract', t('Contract added. The previous contract has ended.'));
+        })->name('contract');
+        Route::post('/family', function (Request $r, int $employee, EmployeeRecordService $svc) use ($open, $emp) {
+            $cred = $svc->addFamily($emp($employee), $r->all(), Auth::user());
+
+            return $open($employee, 'family', $cred ? tf('Family member added. Login :login created, temporary password :pw (shown once).', ['login' => $cred['login'], 'pw' => $cred['password']]) : t('Family member added.'));
+        })->name('family');
+        Route::post('/deceased', function (Request $r, int $employee, EmployeeRecordService $svc) use ($open, $emp) {
+            $svc->markDeceased(EmpFamily::where('employee_id', $emp($employee)->employee_id)->findOrFail((int) $r->input('family_id')), Auth::user());
+
+            return $open($employee, 'family', t('Marked as deceased.'));
+        })->name('deceased');
+        Route::post('/education', function (Request $r, int $employee, EmployeeRecordService $svc) use ($open, $emp) {
+            $svc->addEducation($emp($employee), $r->all(), Auth::user());
+
+            return $open($employee, 'education', t('Education record added.'));
+        })->name('education');
+        Route::post('/discipline', function (Request $r, int $employee, EmployeeRecordService $svc) use ($open, $emp) {
+            $svc->addDiscipline($emp($employee), $r->all(), Auth::user());
+
+            return $open($employee, 'discipline', t('Discipline record added.'));
+        })->name('discipline');
+    });
 
     // Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru; logika = App\Services\Sales\InquiryDuplicator (sama dgn v1).
     Route::post('/inquiry/duplicate', function (Request $r) {

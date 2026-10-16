@@ -3,14 +3,15 @@
  Tujuan       : Form Master Employee v2 (konsep A2 disetujui Jo): banner pegawai (foto, nama, chip status, cincin kelengkapan), empat KPI (masa kerja, sisa cuti, absen, disiplin), tab Profile / Job / Contract / Family / Education / Bank / Discipline dan History bawaan.
  Sumber hulu  : App\Support\V2\Data\EmployeeProfile (KPI, kelengkapan, opsi); tabel tm2mst.emp_employee dan tab anak emp_contract, emp_family, emp_education, emp_disciplinary, emp_bank_account.
  Input        : Query id (pegawai) atau new=1; session v2_flash dan errors.
- Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate) -> EmployeeProfileService. Tab Contract / Family / Education / Discipline sementara baca-saja; ubah lewat layar v1 (tombol Manage).
- Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record). Tab Documents, BPJS, Account menyusul tahap berikutnya.
+ Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate) -> EmployeeProfileService. POST v2.hrm.employee.contract / family / deceased / education / discipline -> EmployeeRecordService (tiap dialog menyimpan sendiri; tanpa edit / hapus baris).
+ Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record), kembali dari dialog lewat ?tab=. Tab Documents, BPJS, Account menyusul.
  Status       : Aktif (mockup.test dulu, keputusan Jo 2026-10-16). Gaji kontrak tersembunyi mengikuti aturan v1 (admin, posisi salary_hidden_from_hr, tipe KONTRAK / BORONGAN).
 --}}
 @php
     use App\Models\Master\EmpEmployee;
     use App\Services\Hrm\EmployeeBankService;
     use App\Services\Hrm\EmployeeProfileService as Profile;
+    use App\Services\Hrm\EmployeeRecordService as Records;
     use App\Support\V2\Data\EmployeeProfile as Data;
     use App\Support\V2\Src;
     use Devlib\Locale;
@@ -30,8 +31,6 @@
     $todo = t('To complete').': '.collect($missing)->map(fn ($m) => t($m['label']).' ('.t(ucfirst($m['tab'])).')')->implode(', ');
     $bank = $new ? null : EmployeeBankService::primary($e->employee_id);
     $seeSalary = fn ($c) => $user->is_admin || (! $e->position?->salary_hidden_from_hr && $c && in_array($c->employment_type, ['KONTRAK', 'BORONGAN'], true));
-    $classic = $new ? route('hrm.employee').'?new=1' : route('hrm.employee').'?open='.$e->employee_id;
-    $manage = fn () => t('Contract, family, education and discipline records are edited in the classic screen for now.');
     $statusTone = ['WORKING' => 'success', 'DIRUMAHKAN' => 'warn', 'CUTI' => 'info'];
 @endphp
 
@@ -134,30 +133,53 @@
     </x-slot:job>
 
     <x-slot:contract>
-        <x-dl::alert tone="info" :message="$manage()" />
-        <x-dl::table :columns="['type' => 'Type', 'start' => 'Start', 'end' => 'End', 'salary' => ['Salary', 'num' => true, 'raw' => true], 'status' => 'Status']"
-            :rows="$e->contracts->map(fn ($c) => ['type' => $c->employment_type.($c->is_probation ? ' (Probation)' : ''), 'start' => Locale::date($c->start_date), 'end' => $c->end_date ? Locale::date($c->end_date) : '—',
-                'salary' => $seeSalary($c) ? Locale::money($c->salary_amount).' / '.$c->salary_type : t('Hidden'), 'status' => $c->activate ? 'Active' : 'Ended'])->all()"
-            empty="No contract yet." :source="Src::of('tm2mst.emp_contract')" />
-        <x-dl::button variant="secondary" icon="fa-up-right-from-square" label="Manage in classic screen" :href="$classic" />
+        @if ($new)
+            <x-dl::alert tone="info" message="Save the employee first, then add the contract." />
+        @else
+            <x-dl::action-bar>
+                <x-dl::button type="button" size="sm" variant="secondary" icon="fa-plus" label="New Contract" data-dl-open="emp-contract" />
+            </x-dl::action-bar>
+            <x-dl::table :columns="['type' => 'Type', 'start' => 'Start', 'end' => 'End', 'salary' => ['Salary', 'num' => true, 'raw' => true], 'status' => 'Status']"
+                :rows="$e->contracts->map(fn ($c) => ['type' => $c->employment_type.($c->is_probation ? ' (Probation)' : ''), 'start' => Locale::date($c->start_date), 'end' => $c->end_date ? Locale::date($c->end_date) : '—',
+                    'salary' => $seeSalary($c) ? Locale::money($c->salary_amount).' / '.$c->salary_type : t('Hidden'), 'status' => $c->activate ? 'Active' : 'Ended'])->all()"
+                empty="No contract yet." :source="Src::of('tm2mst.emp_contract')" />
+        @endif
     </x-slot:contract>
 
     <x-slot:family>
-        <x-dl::alert tone="info" :message="$manage()" />
-        <x-dl::table :columns="['relation' => 'Relation', 'name' => 'Name', 'birth' => 'Birth date', 'state' => 'Status']"
-            :rows="$e->families->map(fn ($f) => ['relation' => raw(ucwords(strtolower(str_replace('_', ' ', $f->relation)))), 'name' => raw($f->full_name), 'birth' => $f->birth_date ? Locale::date($f->birth_date) : '—',
-                'state' => $f->is_deceased ? 'Deceased' : 'Alive'])->all()"
-            empty="No family recorded yet." :source="Src::of('tm2mst.emp_family')" />
-        <x-dl::button variant="secondary" icon="fa-up-right-from-square" label="Manage in classic screen" :href="$classic" />
+        @if ($new)
+            <x-dl::alert tone="info" message="Save the employee first, then add family members." />
+        @else
+            <x-dl::chips>
+                @foreach (Profile::MANDATORY_FAMILY as $code => $label)
+                    <x-dl::badge :label="$e->families->contains('relation', $code) ? $label : $label.' — missing'" :tone="$e->families->contains('relation', $code) ? 'success' : 'danger'" />
+                @endforeach
+            </x-dl::chips>
+            <x-dl::action-bar>
+                <x-dl::button type="button" size="sm" variant="secondary" icon="fa-plus" label="Add Family" data-dl-open="emp-family" />
+                @if ($e->families->where('is_deceased', false)->isNotEmpty())
+                    <x-dl::button type="button" size="sm" variant="secondary" icon="fa-plus" label="Mark Deceased" data-dl-open="emp-deceased" />
+                @endif
+            </x-dl::action-bar>
+            <x-dl::table :columns="['relation' => 'Relation', 'name' => 'Name', 'birth' => 'Birth date', 'state' => 'Status']"
+                :rows="$e->families->map(fn ($f) => ['relation' => t(Records::FAMILY_RELATIONS[$f->relation] ?? $f->relation), 'name' => raw($f->full_name), 'birth' => $f->birth_date ? Locale::date($f->birth_date) : '—',
+                    'state' => $f->is_deceased ? tf('Deceased :d', ['d' => Locale::date($f->deceased_date)]) : 'Alive'])->all()"
+                empty="No family recorded yet." :source="Src::of('tm2mst.emp_family')" />
+        @endif
     </x-slot:family>
 
     <x-slot:education>
-        <x-dl::alert tone="info" :message="$manage()" />
-        <x-dl::table :columns="['type' => 'Type', 'name' => 'Activity', 'date' => 'Date', 'funded' => 'Funded by']"
-            :rows="$e->educations->map(fn ($d) => ['type' => ucwords(strtolower(str_replace('_', ' ', $d->education_type))), 'name' => raw($d->activity_name), 'date' => Locale::date($d->activity_date),
-                'funded' => ucwords(strtolower($d->funded_by))])->all()"
-            empty="No education or certification recorded yet." :source="Src::of('tm2mst.emp_education')" />
-        <x-dl::button variant="secondary" icon="fa-up-right-from-square" label="Manage in classic screen" :href="$classic" />
+        @if ($new)
+            <x-dl::alert tone="info" message="Save the employee first, then add education records." />
+        @else
+            <x-dl::action-bar>
+                <x-dl::button type="button" size="sm" variant="secondary" icon="fa-plus" label="Add Activity" data-dl-open="emp-education" />
+            </x-dl::action-bar>
+            <x-dl::table :columns="['type' => 'Type', 'name' => 'Activity', 'date' => 'Date', 'cost' => ['Cost', 'num' => true, 'raw' => true], 'funded' => 'Funded by', 'bonding' => 'Bonding']"
+                :rows="$e->educations->map(fn ($d) => ['type' => t(Records::EDUCATION_TYPES[$d->education_type] ?? $d->education_type), 'name' => raw($d->activity_name), 'date' => Locale::date($d->activity_date),
+                    'cost' => Locale::money($d->cost), 'funded' => t(Records::FUNDED_BY[$d->funded_by] ?? $d->funded_by), 'bonding' => $d->is_bonding ? 'Yes' : 'No'])->all()"
+                empty="No education or certification recorded yet." :source="Src::of('tm2mst.emp_education')" />
+        @endif
     </x-slot:education>
 
     <x-slot:bank>
@@ -175,10 +197,101 @@
     </x-slot:bank>
 
     <x-slot:discipline>
-        <x-dl::alert tone="info" :message="$manage()" />
-        <x-dl::table :columns="['date' => 'Date', 'type' => 'Type', 'reason' => 'Reason', 'by' => 'Issued by']"
-            :rows="$e->disciplinaries->map(fn ($d) => ['date' => Locale::date($d->incident_date), 'type' => $d->type, 'reason' => raw($d->reason), 'by' => raw($d->issued_by)])->all()"
-            empty="No discipline record." :source="Src::of('tm2mst.emp_disciplinary')" />
-        <x-dl::button variant="secondary" icon="fa-up-right-from-square" label="Manage in classic screen" :href="$classic" />
+        @if ($new)
+            <x-dl::alert tone="info" message="Save the employee first, then record discipline." />
+        @else
+            <x-dl::action-bar>
+                <x-dl::button type="button" size="sm" variant="secondary" icon="fa-plus" label="Add Record" data-dl-open="emp-discipline" />
+            </x-dl::action-bar>
+            <x-dl::table :columns="['date' => 'Date', 'type' => 'Type', 'reason' => 'Reason', 'by' => 'Issued by']"
+                :rows="$e->disciplinaries->map(fn ($d) => ['date' => Locale::date($d->incident_date), 'type' => t(Records::DISCIPLINARY_TYPES[$d->type] ?? $d->type), 'reason' => raw($d->reason), 'by' => raw($d->issued_by)])->all()"
+                empty="No discipline record." :source="Src::of('tm2mst.emp_disciplinary')" />
+        @endif
     </x-slot:discipline>
 </x-dl::form>
+
+{{-- Dialog tambah (tiap dialog = satu form sendiri, di luar x-dl::form agar form tidak bersarang). --}}
+@unless ($new)
+    <x-dl::modal id="emp-contract" title="New Contract" icon="fa-file-contract" size="lg">
+        <x-dl::action-form action="{{ route('v2.hrm.employee.contract', $e->employee_id) }}">
+            <x-dl::form.row :cols="3">
+                <x-dl::field.select name="employment_type" label="Type" required :options="array_combine(Records::EMPLOYMENT_TYPES, Records::EMPLOYMENT_TYPES)" value="TETAP" :placeholder="null" :source="Src::of('tm2mst.emp_contract.employment_type')" />
+                <x-dl::field.date name="start_date" label="Start date" required :value="now()->toDateString()" :source="Src::of('tm2mst.emp_contract.start_date')" />
+                <x-dl::field.date name="end_date" label="End date" :source="Src::of('tm2mst.emp_contract.end_date')" />
+            </x-dl::form.row>
+            <x-dl::form.row :cols="3">
+                <x-dl::field.select name="salary_type" label="Salary type" required :options="array_map('t', Records::SALARY_TYPES)" value="PER_MONTH" :placeholder="null" :source="Src::of('tm2mst.emp_contract.salary_type')" />
+                <x-dl::field.decimal name="salary_amount" label="Salary amount" required value="0" :source="Src::of('tm2mst.emp_contract.salary_amount')" />
+                <x-dl::field.date name="probation_end_date" label="Probation until" :source="Src::of('tm2mst.emp_contract.probation_end_date')" />
+            </x-dl::form.row>
+            <x-dl::field.checkbox name="is_probation" text="This contract starts with a probation period" :source="Src::of('tm2mst.emp_contract.is_probation')" />
+            <x-dl::alert tone="info" message="The active contract ends when this one is saved. Only one contract is active per employee." />
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                <x-dl::button preset="save" />
+            </x-dl::action-bar>
+        </x-dl::action-form>
+    </x-dl::modal>
+
+    <x-dl::modal id="emp-family" title="Add Family" icon="fa-people-roof">
+        <x-dl::action-form action="{{ route('v2.hrm.employee.family', $e->employee_id) }}">
+            <x-dl::form.row :cols="2">
+                <x-dl::field.select name="relation" label="Relation" required :options="array_map('t', Records::FAMILY_RELATIONS)" value="ANAK" :placeholder="null" :source="Src::of('tm2mst.emp_family.relation')" />
+                <x-dl::field.text name="full_name" label="Full name" required :source="Src::of('tm2mst.emp_family.full_name')" />
+            </x-dl::form.row>
+            <x-dl::form.row :cols="2">
+                <x-dl::field.date name="birth_date" label="Birth date" :source="Src::of('tm2mst.emp_family.birth_date')" />
+                <x-dl::field.text name="nik" label="NIK" :case-toggle="false" :source="Src::of('tm2mst.emp_family.nik')" />
+            </x-dl::form.row>
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                <x-dl::button preset="save" />
+            </x-dl::action-bar>
+        </x-dl::action-form>
+    </x-dl::modal>
+
+    <x-dl::modal id="emp-deceased" title="Mark Deceased" icon="fa-heart-crack">
+        <x-dl::action-form action="{{ route('v2.hrm.employee.deceased', $e->employee_id) }}">
+            <x-dl::field.select name="family_id" label="Family member" required :options="$e->families->where('is_deceased', false)->mapWithKeys(fn ($f) => [$f->family_id => $f->full_name.' · '.t(Records::FAMILY_RELATIONS[$f->relation] ?? $f->relation)])->all()" :source="Src::of('tm2mst.emp_family.is_deceased')" />
+            <x-dl::alert tone="info" message="The record stays; it is marked deceased as of today." />
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                <x-dl::button preset="save" label="Mark Deceased" data-dl-confirm="{{ t('Mark this family member as deceased?') }}" />
+            </x-dl::action-bar>
+        </x-dl::action-form>
+    </x-dl::modal>
+
+    <x-dl::modal id="emp-education" title="Add Activity" icon="fa-graduation-cap" size="lg">
+        <x-dl::action-form action="{{ route('v2.hrm.employee.education', $e->employee_id) }}">
+            <x-dl::form.row :cols="3">
+                <x-dl::field.select name="education_type" label="Type" required :options="array_map('t', Records::EDUCATION_TYPES)" value="PELATIHAN" :placeholder="null" :source="Src::of('tm2mst.emp_education.education_type')" />
+                <x-dl::field.text name="activity_name" label="Activity" required :source="Src::of('tm2mst.emp_education.activity_name')" />
+                <x-dl::field.text name="organizer" label="Organizer" :source="Src::of('tm2mst.emp_education.organizer')" />
+            </x-dl::form.row>
+            <x-dl::form.row :cols="3">
+                <x-dl::field.date name="activity_date" label="Date" required :value="now()->toDateString()" :source="Src::of('tm2mst.emp_education.activity_date')" />
+                <x-dl::field.decimal name="cost" label="Cost" required value="0" :source="Src::of('tm2mst.emp_education.cost')" />
+                <x-dl::field.select name="funded_by" label="Funded by" required :options="array_map('t', Records::FUNDED_BY)" value="PERUSAHAAN" :placeholder="null" :source="Src::of('tm2mst.emp_education.funded_by')" />
+            </x-dl::form.row>
+            <x-dl::field.checkbox name="is_bonding" text="Service bond (employee must stay after the training)" :source="Src::of('tm2mst.emp_education.is_bonding')" />
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                <x-dl::button preset="save" />
+            </x-dl::action-bar>
+        </x-dl::action-form>
+    </x-dl::modal>
+
+    <x-dl::modal id="emp-discipline" title="Add Record" icon="fa-gavel">
+        <x-dl::action-form action="{{ route('v2.hrm.employee.discipline', $e->employee_id) }}">
+            <x-dl::form.row :cols="2">
+                <x-dl::field.select name="type" label="Type" required :options="array_map('t', Records::DISCIPLINARY_TYPES)" value="TEGURAN_VERBAL" :placeholder="null" :source="Src::of('tm2mst.emp_disciplinary.type')" />
+                <x-dl::field.date name="incident_date" label="Incident date" required :value="now()->toDateString()" :source="Src::of('tm2mst.emp_disciplinary.incident_date')" />
+            </x-dl::form.row>
+            <x-dl::field.text name="reason" label="Reason" required multiline :source="Src::of('tm2mst.emp_disciplinary.reason')" />
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                <x-dl::button preset="save" />
+            </x-dl::action-bar>
+        </x-dl::action-form>
+    </x-dl::modal>
+@endunless
