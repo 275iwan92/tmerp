@@ -1,0 +1,44 @@
+# Concept card: Batch (lot master) and its quality status
+
+> Written 2026-10-16 (group Inventory, Batch & Quality). FACT = mockup DB (`ddtinv` and `ddtsys`, read through `tm2inv`/`tm2sys`) and code with line numbers, seen this session. No test was run (docs-only task; the tests write to the dummy DB and clean up). Verified: 2026-10-16.
+
+- **Document type**: concept card. **Module/sub-module**: Inventory > Batch & Quality > Batch (`INV_BQ_BATCH`, `v2:inv-batch`, grid + form; FACT `sys_app_menu`, active, `status_code` READY_FOR_QC).
+- **Canonical name**: Batch = one row of `tm2inv.inv_batch` (model `App\Models\Inventory\InvBatch`): one class + item + supplier lot, with a quality status.
+- **Synonyms**: lot, batch, lot number, `batch_no` (`BT2600031`), supplier lot, QC status, Quarantine, Conditional, Released.
+- **NOT the same as**: pallet (`inv_pallet`, the physical labelled unit that points to a batch, owned by Warehouse), `lot_no` on stock cards (the old free-text column, kept), the CO/PO line batch of other modules.
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Table | `inv_batch`: PK `id_batch`, `batch_no`, `stock_class` (RM/SFG/FG), `item_id`, `part_id`, `item_code`, `item_name`, `supplier_id`, `supplier_lot`, `production_date`, `expiry_date`, `retest_date`, `qc_status`, `qc_status_by`, `qc_status_at`, `certification`, `food_grade`, `grain_direction`, `coa_path`, `notes`, `activate`, audit columns. Dummy: 82 rows. | FACT, `information_schema`; `app/Models/Inventory/InvBatch.php:29` |
+| Status set | `QUARANTINE`, `CONDITIONAL`, `RELEASED`, `REJECTED`, `BLOCKED`. Flags `available`/`allocatable`: Quarantine, Rejected, Blocked = no; Conditional and Released = yes. Default status of a new row is `RELEASED`. | FACT, `app/Models/Inventory/InvBatch.php:15-21`; `app/Services/Inventory/BatchService.php:88` |
+| Number | `BT` + 2-digit year + 5-digit sequence = highest existing + 1 (no lock). | FACT, `app/Models/Inventory/InvBatch.php:69-75` |
+| One batch per lot | Class + item + supplier lot (upper-case, trimmed, empty lot = constant `INV_NO_LOT_BATCH_CODE`, value `NO-LOT`). The supplier is NOT part of the key. Enforced in code only: the unique index is the index uq_inv_batch_item_no (class, item, `batch_no`). | FACT, `app/Services/Inventory/BatchService.php:31-36,65-70`; index list |
+| Creation paths | (1) Batch form (`v2.iq.batch-save` -> `BatchLookup::save` -> `BatchService::create`); (2) posted PO receipt (`ReceiptBatchService`); (3) backfill of old lots (`inv:backfill-batch`). Subcon and Customer receipts make NO batch. | FACT, `routes/v2_quality.php:51-70`; `app/Services/Inventory/ReceiptBatchService.php:19`; `app/Services/Inventory/BatchBackfillService.php:25`; grep `ReceiptBatchService` (only `PvPostingService.php`) |
+| Status is not typed | The form shows Status read-only; a posted `qc_status` is ignored (test posts `REJECTED` and the batch stays `RELEASED`). Only `QcDecisionService` changes it (through `BatchService::setStatus`). | FACT, `resources/views/v2/screens/inv-batch.blade.php:66`; `tests/Feature/BatchLookupTest.php:216-220` (read, not run) |
+| Form rules | New batch: item code must exist in its class; the same lot of the same item is refused; expiry before production is refused; an item with a shelf life (raw material `shelf_life_days` > 0) needs an expiry date. | FACT, `app/Support/V2/Grid/Inv/BatchLookup.php:193-217`; `app/Services/Inventory/BatchService.php:60-63` |
+| Extra attributes | Certification `NONE/FSC/PEFC/OTHER`, food grade flag, grain direction `LONG/SHORT` (paper only, hint on screen), Certificate of Analysis upload (PDF/JPG/PNG, max 5 MB, disk `public`, path `batch/<batch_no>/<file>`). | FACT, `app/Models/Inventory/InvBatch.php:23-25`; `routes/v2_quality.php:55,64-67` |
+| On Hand | Sum of `qty_in - qty_out + qty_adj` of the batch's stock-card rows (RM/SFG/FG), all owners together. Expires soon = on hand > 0 and expiry within constant `WH_EXPIRY_SOON_DAYS` (30). | FACT, `app/Support/V2/Grid/Inv/BatchLookup.php:114-145`; `sys_constant` row |
+| Where status acts | `BatchService::allocatable` is read by the pick allocator and the putaway planner; Rejected/Blocked/Quarantine stock is never offered. A Conditional batch is refused for class A jobs (food grade, FSC, PEFC). Stock without a batch counts as allowed. | FACT, `app/Services/Inventory/BatchService.php:25-28`; `app/Services/Inventory/PickAllocator.php:87-96`; `app/Services/Inventory/PutawayPlanner.php:33` |
+| Dummy data | 82 batches: 74 RM, 6 FG, 2 SFG; all `RELEASED`; 81 carry the note "Created from existing lot data" (backfill); 81 have no `supplier_id`; 16 have an expiry date. `tm2inv.inv_batch` is empty (0 rows). | FACT, queries on `ddtinv.inv_batch` / `tm2inv.inv_batch` |
+| Screens | Grid `BatchListGrid` (slug `inv-batch`, stat boxes All / Quarantine / Conditional / Released / Rejected / Expires soon); form `inv-batch.blade.php` with tabs Batch, Stock of this batch, Quality decisions, plus a Quality Decision card (Release / Reject) for QA. | FACT, `app/Support/V2/Grid/Inv/BatchListGrid.php:13-95`; `resources/views/v2/screens/inv-batch.blade.php:47,101-114` |
+
+## Relations
+- **source**: item masters (`mat_raw`, `prod_part`, `prod_product`), supplier master (`sup_supplier`), posted PO receipt (`pv_line.i_batch_id`), old lot data on `rm_stockcard`/`sfg_stockcard`/`fg_stockcard` (`lot_no`).
+- **used_by**: stock cards and document lines (`batch_id` on `rm_stockcard`, `rm_stock_d`, `inv_pallet`, `inv_transfer_line`), pick allocation and putaway (Warehouse, see `../warehouse/`), QC decisions (`inv_qc_decision.batch_id`), supplier claims (`inv_supplier_claim.batch_id`), forward trace (`QcTraceService`), Conditional Stock screen.
+- **flows**: receipt posted -> batch born (`RELEASED`, or `CONDITIONAL` for a URGENT line) -> QC decision changes the status -> Rejected/Blocked holds work orders and Rejected opens a claim. See `11_card_conditional-stock-and-urgent.md`, `13_card_qc-decision-and-first-article.md`.
+- **frozen_zone**: none named for Inventory in `CLAUDE.md`; all flows are frozen by the general rule (do not change without Jo).
+- Stock core and valuation: `../stock/`; pallets and picking: `../warehouse/`.
+
+## Findings (recorded, not fixed)
+1. **Lot uniqueness is code-only and ignores the supplier.** There is no unique index on class + item + lot (only the index uq_inv_batch_item_no on `batch_no`). Two simultaneous saves of the same lot can both pass `findByLot`. Two suppliers that print the same lot number on the same item share one batch (`ReceiptBatchService.php:41` reuses the existing batch and keeps the first supplier). FACT.
+2. **Batch number is not DB-safe.** `nextNo` reads the maximum without a lock (compare `InvSubconIssue::nextNo`, which uses `lockForUpdate`), and the unique index includes class and item, so the same `batch_no` is allowed on two items. FACT, `InvBatch.php:69-75`.
+3. **A manually created batch is born `RELEASED` with no decision row.** `BatchLookup::create` does not pass `qc_status`, so the default applies; the history of a hand-made batch has no first status line. FACT, `BatchLookup.php:220-233`.
+4. **81 of 82 dummy batches have no supplier**, so `QcSamplingService::history` cannot build a supplier record for them (card `12_card_qc-sampling-setup.md`). FACT.
+5. **Subcon and Customer receipts never create a batch** (`SpecialReceiptService` does not call `ReceiptBatchService`), so customer-owned material and subcon work are outside batch status and forward trace. FACT, grep.
+6. **The dummy has 0 `pv_line` rows with `i_batch_id`** although 3 PO receipts are POSTED; the batch link of receipts is only proven by tests, not by dummy data. FACT (query).
+7. **`REJECT` and `QC_HOLD` storage zones exist (`wh_zone`) but no code moves a rejected or blocked batch there**; status only filters allocation. FACT, grep `QC_HOLD`.
+8. **Stock Transfer drops batch and owner.** `StockTransferService::move` writes cards with `lot_no` but no `batch_id`, `owner_type` or `owner_id` (default `COMPANY`), so a transfer (including Subcon send/return and a move of customer material) leaves the batch's On Hand and the customer owner unchanged on the new card. FACT, `app/Services/Inventory/StockTransferService.php:361-395 (base array :380)`; not run. Belongs to the Warehouse/Stock cards; recorded here because batch On Hand depends on it.
+
+## Already exists? Searched where
+Searched `inv_batch`, `InvBatch`, `BatchService`, menu `INV_BQ_BATCH`, `docs/design-notes/inventory/` (FROM DOCUMENT: `15_inv-open-decisions.md` item 9 says FSC/food grade attributes belong on the batch from day one), `docs/md_for_systems/inventorywarehouse_v201_scope.md` (FROM DOCUMENT, not re-checked line by line). Result: the concept ALREADY EXISTS; no new table is needed.

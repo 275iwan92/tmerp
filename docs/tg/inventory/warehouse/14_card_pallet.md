@@ -1,0 +1,41 @@
+# Concept card: Pallet (labelled unit) and stack
+
+> Written 2026-10-16 (group Inventory-Warehouse). Verified: 2026-10-16. FACT = mockup DB (`ddt*` through `tm2*`, `--env=mockup`) and code with line numbers, seen this session. FROM DOCUMENT = not checked. Tests were NOT run (brief: no DB writes); test names are read from the files.
+
+- **Document type**: concept card (a physical unit with a label; never a stock document). **Module/sub-module**: Inventory > Warehouse > Labels & Scan > Print Pallet Label (QR) (`INV_LBL_ITEM1`, `v2:label-pallet`); also shown in Stack Monitor and Scan Track (FACT `sys_app_menu`).
+- **Canonical name**: Pallet = `tm2inv.inv_pallet` (number `PL` + yy + 5 digits, `InvPallet::nextNo`) with its history `inv_pallet_log`. One row = one labelled physical unit inside the stock of an item in a bin. `unit_kind` PALLET (full or opened pallet) or PACK (remnant: reams, boxes, cans).
+- **Synonyms**: palet, label palet, pak sisa, remnant, kode palet supplier (`supplier_pallet_code`), stack, tumpukan, `stack_no`.
+- **NOT the same as**: the stock balance (the stock card is the only truth for quantity), the Item label (one position, no number) and the Location label (card `18_card_labels-and-scan.md`), batch (`inv_batch`, Batch group).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Pallet | `inv_pallet`: 41 rows, all ACTIVE (34 PALLET, 7 PACK). Columns: `pallet_no` UNIQUE, `stock_class`, `item_id`, `part_id`, `item_code`, `item_name`, `lot_no`, `supplier_pallet_code`, `ref_doc_no`, `uom_code`, `qty_initial`, `qty`, `location_id`, `arrived_at`, `expiry_date`, `status` (ACTIVE/CLOSED), `label_count`, `last_label_at`, `unit_kind`, `stack_no` (1 = bottom), `batch_id`. | FACT, `show columns`; `app/Models/Inventory/InvPallet.php:13-65` |
+| History | `inv_pallet_log`: 43 rows (41 CREATED, 2 MOVED). Actions CREATED, RELABEL, MOVED, CLOSED, RESTACK with `qty_before/_after`, `from_location_id`, `to_location_id`, `ref_no`, `note`. | FACT, query; `app/Models/Inventory/InvPalletLog.php:7-8`; `app/Services/Inventory/PalletService.php:298-302` |
+| Label work (the idea) | Per item per bin, engine compares stock on hand with the sum of active pallet quantities: more stock than labels = goods arrived without a label (need NEW, shown "Arrival label"); fewer = stock was used and the label shows the old qty (need RELABEL, shown "Relabel after use"). The engine only shows the gap; the officer decides which pallet holds how much. | FACT, `PalletService.php:18-24,95-124` |
+| Label work (the data) | RM positions with stock: 105. 25 match their pallet labels exactly, 78 have no pallet label at all (Arrival label), 1 has labels for only part of its stock (Arrival label for the rest), 1 has more pallet quantity than stock (Relabel). | FACT, query against `v_rm_onhand` and `inv_pallet` |
+| Arrival label | Screen creates new pallets for the unlabelled part of one position: qty, supplier pallet code, lot, expiry per pallet; total may not exceed the unlabelled stock; arrival date defaults to the position's arrival; expiry is proposed as arrival + `mat_raw.shelf_life_days` (empty if the item has none); batch is linked by item + lot when that batch exists; new units go on top of the bin's stack in order. Button "Create & Print". | FACT, `PalletService.php:127-176`; `routes/v2_warehouse.php:168-187`; `packages/mockup-parts/resources/views/inv/pallet-label.blade.php` |
+| Relabel after use | New remaining qty replaces the old (0 <= qty <= `qty_initial`); 0 closes the pallet (`stack_no` cleared, units above move down). The unit kind is re-decided: PACK stays PACK; sheet goods (unit LBR, SHEET, RIM = 500 sheets) at or below `WH_REMNANT_MAX_SHEETS` (1000) become PACK; the officer can force PALLET or PACK. A remainder can be put in another bin ("to_location_id") which creates and confirms a Stock Transfer (reason CONSOLIDATE); if that fails the label change stays and the message says so. Button "Relabel & Print". | FACT, `PalletService.php:36-44,180-202`; `routes/v2_warehouse.php:192-215`; `app/Support/V2/Data/Pallets.php:120-145` |
+| Pallets follow transfers | When a Stock Transfer is confirmed: a line that names a pallet moves that pallet; a line without a pallet moves ALL pallets if the whole position left the bin, or the oldest pallets whose sum is EXACTLY the line qty; otherwise pallets stay and the gap appears as label work. Cancel moves them back (only those still in the destination bin). Moved units go on top of the destination stack. | FACT, `PalletService.php:215-276` |
+| Restack | Swap with the neighbour above/below from the Map panel; no stock document, bin and qty unchanged; logged RESTACK. | FACT, `PalletService.php:65-86`; `routes/v2_warehouse.php:218-228` |
+| Expiry | `expiryState`: EXPIRED if the date is past, SOON if within `WH_EXPIRY_SOON_DAYS` (30). In the dummy 2 active pallets are expired, 3 expire within 30 days, 10 have no expiry date. | FACT, `InvPallet.php:48-56`; query (on 16-Oct-2026) |
+| Reprint | The Print route counts the reprint (`label_count` + 1, `last_label_at`) and writes `inv_label_print`. | FACT, `PalletService.php:205-210`; `routes/v2_warehouse.php:140-152` |
+| Stack and remnant marks | Remnant, Old remnant (a pack that arrived before the dead-stock limit) and Buried are computed in `WarehouseStock::stacks`; shown in Stack Monitor (card `11_card_warehouse-map-and-monitors.md`). | FACT, `WarehouseStock.php:268-314` |
+| Tests (read, not run) | `PalletServiceTest` (14 tests: arrival label gap, cannot exceed unlabelled, relabel and close, follow/revert transfer, single-pallet line, expiry tags, capacity, stack numbering, restack, move on top, remnant rule, buried, stack limit, approval switched on). | FACT, test file |
+
+## Relations
+- **source**: stock balance (views `v_rm_onhand`, `v_sfg_onhand`, `v_fg_onhand`), purchase receipt (`PalletService::receiptLines`: lines of a Posted SPB), batch (`inv_batch`), `mat_raw.shelf_life_days`.
+- **used_by**: putaway tasks (`inv_pallet` in a receiving area creates a task), pick allocation (works on pallets), Stock Transfer (pallet follows), Warehouse Map/Stack Monitor, Scan Track, labels.
+- **flows**: stock arrives -> Arrival label (pallets created) -> moves with transfers/putaway -> used (Confirm Pick relabels automatically with the rest) -> Relabel or closed.
+- **frozen_zone**: not frozen. Rule A.22 (FROM DOCUMENT): "Label palet wajib dibuat setiap barang datang dan setiap isi satu palet habis dipakai".
+
+## Findings (recorded, not fixed)
+1. **78 of 105 RM positions have no pallet label** in the dummy, so pick allocation (which works only on `inv_pallet`) sees none of their stock. Only the 27 positions that have pallets (25 matching, 1 partly labelled, 1 with surplus labels) can be allocated. FACT (query; `PickAllocator.php:57`). Every Pick List therefore ends mostly SHORT until arrival labels exist for the rest.
+2. **Code comment points to a method that does not exist**: the `InvPallet` header comment says the gap is computed by `PalletService::gaps`; the real method is `worklist`. FACT, `InvPallet.php:11`.
+3. **Ids show deleted rows**: `inv_pallet` ids run 35-65, 73, 83-91 (gaps) and the 41 CREATED log rows equal the 41 pallets, so older pallets were removed by hand or by a re-seed. FACT (query); cause not known.
+4. **Pallet numbering is per year only** (`PL26#####`, `substr($last, 4)`); the year rolls over by the clock, not the arrival date. FACT, `InvPallet.php:58-64`.
+5. **Silent exactness rule**: a transfer line without a pallet moves pallets only if their quantities add up exactly to the line quantity; otherwise nothing moves and the officer finds out only by looking at the label work list. FACT, `PalletService.php:241-260`.
+6. **Expired pallets stay in their bins**: the pick allocator skips expired batches/pallets (`PickAllocator.php:71`), but two ACTIVE pallets in the dummy are expired and nothing moves them to a Reject area; they are only tagged on the label and in the reports. FACT.
+
+## Already exists? Searched where
+Searched `inv_pallet`, `InvPallet`, `PalletService`, `Pallets`, `Labels`, mockup-parts `pallet-label`, EngineRegistry key `pallet-labels`, `docs/warehouselayout_tier1.md` section titles (FROM DOCUMENT). Result: exists; no new concept proposed.

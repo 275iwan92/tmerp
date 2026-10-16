@@ -1,0 +1,40 @@
+# Concept card: Receiving & Putaway
+
+> Written 2026-10-16 (group Inventory-Warehouse). Verified: 2026-10-16. FACT = mockup DB (`ddt*` through `tm2*`, `--env=mockup`) and code with line numbers, seen this session. FROM DOCUMENT = not checked. Tests were NOT run (brief: no DB writes); test names are read from the files.
+
+- **Document type**: concept card (a work list, not a numbered document; the document that moves stock is the Stock Transfer it creates). **Module/sub-module**: Inventory > Warehouse > Receiving & Putaway (`WH_RCV` group, item `INV_WH_RCV` `v2:wh-receiving-putaway`; FACT `sys_app_menu`).
+- **Canonical name**: Putaway task = row of `tm2inv.wh_task` with `task_type='PUTAWAY'` (number `WT` + yy + 5 digits, `WhTask::nextNo`). The goods receipt itself is `tm2pur.pv_receipt` (Procurement, not this card).
+- **Synonyms**: penerimaan, putaway, simpan ke bin, dock-to-line, "Send to line", receiving, SPB (Surat Penerimaan Barang).
+- **NOT the same as**: Goods Receipt / SPB (Procurement, posts the stock), the QC sampling decision (Batch group, `../batch-quality/`), Print Pallet Label (card `14_card_pallet.md`), Stock Transfer (card `15_card_stock-transfer-and-in-transit.md`).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Where the goods first land | A posted goods receipt (SPB) writes a Stock In RM document into a bin chosen per line: the typed location code (`i_location_code`), else the item's default location (`mat_raw.def_location_id`); otherwise posting fails with an error. Nothing forces that bin to be in a RECEIVING area. | FACT, `app/Services/Pur/PvPostingService.php:226-265` |
+| Batch is born at posting | After posting, `ReceiptBatchService::forPostedReceipt` makes one batch per item + supplier lot: URGENT line with QC quality still PENDING = batch CONDITIONAL; normal line = RELEASED plus an automatic decision SAMPLING_DOCK. It also stamps `batch_id` on the stock document lines and stock card rows. A failure only returns a warning; the receipt stays posted. | FACT, `app/Services/Inventory/ReceiptBatchService.php:11-61`; `PvPostingService.php:123-127` |
+| Task source | A putaway task exists for every ACTIVE pallet with qty > 0 whose bin is in an area of type RECEIVING or QC_HOLD. The list is (re)built by `WarehouseTaskService::sync` every time the Receiving & Putaway screen is opened. Tasks of pallets that left the area are set CANCELLED ("Pallet is no longer in a receiving area."). | FACT, `app/Services/Inventory/WarehouseTaskService.php:40-63`; `resources/views/v2/screens/wh-receiving-putaway.blade.php:17` |
+| Task state | From the batch quality: QUARANTINE = WAITING (no bin yet), CONDITIONAL = TO_LINE (send to a WIP/Staging area), REJECTED or BLOCKED = BLOCKED, otherwise (also no batch) = READY. | FACT, `WarehouseTaskService.php:66-81` |
+| Suggested bin | READY: up to 3 (panel 5) bins from `PutawayPlanner` (card `21_engine_putaway-planner.md`); TO_LINE: first usable bin of a WIP area, else Staging; WAITING/BLOCKED: none. | FACT, `WarehouseTaskService.php:85-99` |
+| Confirmation | The officer scans the pallet code then the bin code (QR address, `PLT:`/`LOC:` prefix or plain code). Refusals: task already closed; pallet no longer where the task expects; batch waiting or not available; wrong pallet scanned; scanned code not a bin; bin blocked; bin locked for counting; same bin; area not Storage (or WIP/Staging for TO_LINE); area does not take the stock class; Mixing rule; a bin other than the top suggestion without a reason. Success creates a real Stock Transfer (reason OTHER, note "Putaway <task> / <pallet>"), posts it at once, and marks the task DONE with `to_location_id`, scans, reason, `transfer_id`. Engine card `26_engine_warehouse-task-service.md`. | FACT, `WarehouseTaskService.php:102-193`; `routes/v2_warehouse.php:246-258` |
+| Screen | Grid `ReceivingPutawayGrid` (columns Pallet, Receipt, Item, Batch, Qty, Unit, Arrived, Quality, Suggested Bin + reason, Action; stat boxes All today, Waiting sampling, Ready to put away, URGENT to line, Done) plus a rules card "How the bin is suggested". Open a row: panel with suggestions, fields Scan pallet, Scan bin, Reason, buttons Back and Confirm. Shows tasks OPEN plus DONE since the start of today. | FACT, `app/Support/V2/Grid/Inv/ReceivingPutawayGrid.php:70-95`; `app/Support/V2/Data/ReceivingPutaway.php:47-76`; blade lines 26-63 |
+| Urgency | URGENT flag and waiting WO come from the receipt line (`pv_line.is_urgent`, `urgent_wo_id`) matched by receipt number and item; only RM has this. Shown as priority High on the Task Board. | FACT, `WarehouseTaskService.php:198-216`; `app/Support/V2/Data/WarehouseTaskBoard.php:47` |
+| Data in the dummy | `wh_task`: 0 PUTAWAY rows (12 rows, all COUNT). No pallet sits in a RECEIVING or QC_HOLD bin (all 41 pallets are in storage bins), so the screen is empty. | FACT, query |
+| Tests (read, not run) | `WarehouseTaskServiceTest` (15 tests: sync idempotent, suggestion rules, Mixing, rejected/quarantine, scans, reason, locked bin, conditional to line, cancel stale, screen rows, confirm route), `WarehouseMapLayerTest` (putaway marks). | FACT, test files |
+
+## Relations
+- **source**: Procurement receipt (`pv_receipt`, `pv_line`), Batch (`inv_batch.qc_status`), pallet labels (`inv_pallet`), areas/bins (card `10_card_location-hierarchy.md`).
+- **used_by**: Task Board (card `17_card_warehouse-task-and-board.md`), Warehouse Map putaway layer, Purchase Receipt form buttons to the label screens.
+- **flows**: SPB Posted (stock into a bin) -> batch created -> pallet labels printed for what arrived (otherwise no task) -> task READY/WAITING/TO_LINE -> scan pallet + bin -> Stock Transfer posted -> pallet follows (`PalletService::followTransfer`).
+- **frozen_zone**: not a frozen flow, but it posts through Stock Transfer; the receipt posting is Procurement's.
+
+## Findings (recorded, not fixed)
+1. **A putaway task needs a pallet label first.** Tasks come only from `inv_pallet` rows in the receiving area; stock that arrived without a label creates no task (the SPB form must lead the officer to Print Pallet Label first). FROM CODE (`WarehouseTaskService.php:44`).
+2. **The receipt does not target a receiving area.** Where the stock lands is whatever bin the line names or the item default; no rule sends receipts to RECEIVING/QC_HOLD, so the whole putaway chain depends on the data entered. FROM CODE (`PvPostingService.php:258-265`). Not checked: the SPB form's bin picker.
+3. **`sync()` runs while rendering a GET page** and writes tasks. Two people opening the screen at once can create two OPEN tasks for the same pallet: `wh_task` has no unique key on (`pallet_id`, `task_type`, `status`) (keys: `ix_wh_task_type_status`, `fk_wh_task_pallet` are plain). FACT (`show index`), race not tried.
+4. **Dock-to-line cannot be satisfied by area type WIP in the dummy**: no WIP area exists; the planner falls back to the Staging area `STG` of A10 (first bin by code), without checking Mixing or capacity. FACT, `PutawayPlanner.php:106-121`.
+5. **Zone types without code**: the design (FROM DOCUMENT) says goods in RECEIVING/QC_HOLD may not be used or shipped; only the pick allocator enforces it (it allows STORAGE and CONSIGN areas only). Other stock documents (Stock Out, transfer-out) were not checked for this rule.
+6. **Unused task types**: `WhTask::TYPES` lists RECEIVE, PICK, MOVE but nothing creates them (only PUTAWAY and COUNT). FACT, grep.
+7. **Putaway is exempt from Stock Transfer approval** by design (comment in `WarehouseTaskService.php:25`); the transfer is posted directly even when module TF approval is switched on.
+
+## Already exists? Searched where
+Searched `wh_task`, `WarehouseTaskService`, `PutawayPlanner`, `ReceiptBatchService`, `ReceivingPutaway`, `ReceivingPutawayGrid`, EngineRegistry keys `warehouse-task`, `putaway-planner`, design notes 05 (FROM DOCUMENT). Result: exists, no new concept proposed. Batch and QC concepts: see the batch-quality cards under `docs/tg/inventory/batch-quality/` (written by another group, not read here).

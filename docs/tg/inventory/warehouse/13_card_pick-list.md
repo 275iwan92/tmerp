@@ -1,0 +1,42 @@
+# Concept card: Pick List (per Work Order)
+
+> Written 2026-10-16 (group Inventory-Warehouse). Verified: 2026-10-16. FACT = mockup DB (`ddt*` through `tm2*`, `--env=mockup`) and code with line numbers, seen this session. FROM DOCUMENT = not checked. Tests were NOT run (brief: no DB writes); test names are read from the files.
+
+- **Document type**: concept card (numbered document, but it has its own status words, not `stat_confirm`). **Module/sub-module**: Inventory > Warehouse > Pick List (`WH_PICK` group, item `INV_WH_PICK` `v2:wh-pick-list`; FACT `sys_app_menu`).
+- **Canonical name**: Pick List = `tm2inv.wh_pick_list` (header, number `PK` + yy + 5 digits) + `wh_pick_list_line` (one line per pallet allocation, or one SHORT line per uncovered part). Print key `pick-list`.
+- **Synonyms**: pick list, daftar ambil bahan, picking, alokasi bahan, "Confirm Pick", `pick_no`.
+- **NOT the same as**: Material Booking (`rm_booking`, Production > Planning, the reservation it is made from), Stock Out RM document (what Confirm Pick creates), BOM Form WO release/purchase quantities (Production).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Header | `wh_pick_list`: 16 rows (all CANCELLED). Columns `pick_no` UNIQUE, `pick_date`, `wo_id`, `wo_no`, `booking_id`, `co_id`, `customer_id`, `need_date`, `deliver_to_location_id`, `status`, `stock_out_doc_id`, `stock_out_doc_no`, `notes`, `cancel_reason`, `confirmed_by/_at`. | FACT, `show columns`; count |
+| Lines | `wh_pick_list_line`: 32 rows (all CANCELLED). `booking_detail_id`, `material_id`, `requirement`, `qty_need` (whole booking line, repeated), `qty_allocated`, `qty_picked`, `pallet_id`, `batch_id`, `from_location_id`, scan stamps `scan_pallet_at/_by`, `scan_bin_at/_by`, `note`, `status`. | FACT, `show columns` |
+| Status | Header: DRAFT (allocated) -> IN_PROGRESS (first scan) -> DONE (Stock Out posted) or CANCELLED; DRAFT and IN_PROGRESS are "open" (`WhPickList::OPEN`). Screen words: Draft / In progress / Done / Cancelled; form badge: working / closed / cancelled. Line: ALLOCATED, PICKED, SHORT, CANCELLED. No `stat_confirm/_cancel/_close` columns. | FACT, `app/Models/Inventory/WhPickList.php:12-17`; `app/Models/Inventory/WhPickListLine.php:14`; `app/Support/V2/Data/PickLists.php:20-35` |
+| Create | New Record: pick a Work Order (open WO that has a Confirmed, not cancelled/closed booking and no open pick list) and optionally a "Deliver To" staging bin. One open list per WO. The booking is the WO's own or the booking of the CO that produced the WO. Needs: bookable lines for this product/delivery/part, not FG, `qty_need` > 0. Afterwards the booking `stage` becomes B4. | FACT, `app/Services/Inventory/PickListService.php:32-65,67-84`; `PickLists.php:38-47` |
+| Allocation | Per booking line: remaining = `qty_need` - `qty_issued` - what open lists already hold; `PickAllocator` picks pallets in pick order; the uncovered part becomes ONE `SHORT` line with the note "Short <qty>: no allowed stock left. Open a Supplier Shortage Request or a substitute proposal." Engine cards `22_engine_pick-list.md`, `22_engine_pick-list.md`. | FACT, `PickListService.php:86-110` |
+| Scan | Per line: scan the pallet, then its bin. A single scan box accepts either (bin of a line whose pallet was scanned, else pallet of an unscanned line); anything else is refused without telling the correct code. Second scan sets the line PICKED with `qty_picked=qty_allocated`. | FACT, `PickListService.php:151-209` |
+| Confirm Pick | Refused while any line is SHORT or still ALLOCATED, when nothing is picked, or when a picked bin is locked for counting. Otherwise one Stock Out RM document per warehouse (`doc_cat` STOCK, `doc_type` -1, `ref_doc_type` PICK_LIST) is created, its lines get `batch_id`, `qty_booked`, owner, and is posted through `StockPostingService`; a refusal cancels that draft. Then each picked pallet is relabelled with what is left (0 = closed), `rm_booking_d.qty_issued` goes up and the list becomes DONE. | FACT, `PickListService.php:254-338` |
+| Cancel | Reason required (max 255); not allowed after a Stock Out exists; all lines CANCELLED; the allocation is released. | FACT, `PickListService.php:342-355` |
+| Reallocate | Deletes ALLOCATED/SHORT lines that have no pallet scan and allocates again (PICKED lines and lines with a scanned pallet stay). | FACT, `PickListService.php:131-147` |
+| Screen | Grid `PickListGrid` (stat boxes All, Draft, In progress, Done, Cancelled; filter Short); form with strip (Pick List, Work Order, Booking, Need Date, Deliver To), buttons Reallocate and Confirm Pick (open lists), Cancel with reason, Print; a Scan card; one card per material with its pallet lines and a red alert for the short quantity; a card "Allocation That Could Not Be Covered". Routes `v2.wh.pick.create`, `.act` (confirm / reallocate / cancel), `.scan`. | FACT, `resources/views/v2/screens/wh-pick-list.blade.php:26-130`; `routes/v2_picklist.php:16-63`; `app/Support/V2/Grid/Inv/PickListGrid.php:62-103` |
+| Data in the dummy | 16 lists PK2600001-16, all for work order `ZZWO12`, all CANCELLED with reason "Test screen cancel", created by `johiwan` 08-Oct to 13-Oct-2026; the 16 lines that have a `from_location_id` point to bins that no longer exist in `wh_loc` (the other 16 lines have no bin). No real pick list exists. | FACT, queries |
+| Constant | `INV_PICK_CONDITIONAL_ALLOWED` = 1 (1 allows a Conditional batch for non-class-A jobs; 0 never). | FACT, `sys_constant` query |
+| Tests (read, not run) | `PickListServiceTest` (13 tests: FIFO/FEFO and allowed batches, grain/certification, shortage and refused confirm, owner rule, no double allocation, one open list per WO, no booking, scan flow to Stock Out, cancel, scan box, screens/print, map layer). | FACT, test file |
+
+## Relations
+- **source**: `rm_booking` + `rm_booking_d` (Production > Planning), `prd_wo`, `inv_pallet`, `inv_batch`, bins/areas (card `10_card_location-hierarchy.md`), stock cards (owner of the stock).
+- **used_by**: Task Board (open lists in Open / In progress, Done for 7 days), Warehouse Map layer "Pick allocation", Print `pick-list` (`PickListPrint`), Production (qty issued to the WO).
+- **flows**: Booking Confirmed -> Pick List (DRAFT) -> scans (IN_PROGRESS) -> Confirm Pick -> Stock Out RM posted to the WO (journal through the posting service) -> pallets relabelled, booking `qty_issued` up -> DONE.
+- **frozen_zone**: Booking and the Work Order / material-release flow belong to Production (see `docs/claude_vital_flows.md`, FROM DOCUMENT); do not change them from here. Rule A.26: pick list is in Warehouse, booking stays in Production > Planning (FROM DOCUMENT).
+
+## Findings (recorded, not fixed)
+1. **Test residue in the dummy**: 16 cancelled lists on a fake WO, with bins that were deleted afterwards. They hold document numbers PK2600001-16, so the first real list will be PK2600017. FACT.
+2. **Confirm Pick is not atomic across warehouses**: for a pick spanning two warehouses the first Stock Out is posted before the second is tried; if the second is refused (for example not enough stock) the first stays posted but `stock_out_doc_id` is not saved, and a second Confirm would issue the first group again. Only the "finish" step is documented as safe to repeat. FROM CODE (`PickListService.php:273-277,294-316`), not reproduced.
+3. **"Deliver To" is information only**: `deliver_to_location_id` is shown and drawn on the map route; Confirm Pick issues stock to the WO and does not move anything to the staging bin. FACT (grep: only PickLists/Warehouse data classes read it).
+4. **Status words differ from the document standard** (Draft / In progress / Done instead of Draft / Confirmed / Closed); the form maps them to "working / closed / cancelled". FACT.
+5. **No right finer than module**: any Inventory user can Confirm Pick (posts a Stock Out and its journal) or Cancel. FACT, `routes/v2_picklist.php:12`.
+6. **SHORT has no follow-up button**: the screen text says "open a Supplier Shortage Request", but no link/button to `inv_shortage_request` is on the pick list screen (the table exists in the Batch/Shortage area). FROM CODE (blade read), not opened on screen.
+
+## Already exists? Searched where
+Searched `wh_pick_list`, `PickListService`, `PickAllocator`, `PickRequirement`, `PickListRefused`, `PickLists`, `PickListGrid`, EngineRegistry keys `pick-list`, `pick-allocator`, `docs/design-notes/inventory/06_invwh-tech-workflow-outbound.md` (FROM DOCUMENT). Result: exists; no new concept proposed.

@@ -1,0 +1,40 @@
+# Concept card: Warehouse Map, Stack Monitor, Stock by Location
+
+> Written 2026-10-16 (group Inventory-Warehouse). Verified: 2026-10-16. FACT = mockup DB (`ddt*` through `tm2*`, `--env=mockup`) and code with line numbers, seen this session. FROM DOCUMENT = not checked. No screenshots were taken and tests were NOT run (brief: no DB writes); screens are described from the blade, route and data-class code.
+
+- **Document type**: concept card (three read screens over the same stock numbers, no table of their own). **Module/sub-module**: Inventory > Warehouse > Map & Monitor (`WH_MAP`): Warehouse Map `v2:warehouse-map`, Stack Monitor `v2:stack-monitor`, Stock by Location `v2:inv-rpt-location` (FACT `sys_app_menu`, all active, status READY_FOR_QC).
+- **Canonical name**: Warehouse Map = object `x-mp::inv.warehouse-desk` (class `packages/mockup-parts/src/Components/Inv/WarehouseDesk.php`) filled by `App\Support\V2\Data\Warehouse::desk()`. Stack Monitor = `StackMonitorReport`. Stock by Location = `StockByLocationReport`.
+- **Synonyms**: peta gudang, denah, layout; pemantau tumpukan; stok per lokasi, "Stock by Location", item per gudang.
+- **NOT the same as**: Stock Card / Stock Summary (value reports of the Stock group, written elsewhere), Stock Opname (counting, card `16_card_count-task.md`).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Source of every number | All three screens read `WarehouseStock::positions` / `binSummaries` (stock per bin from views `v_rm_onhand`, `v_sfg_onhand`, `v_fg_onhand`); no number is computed in the screen. Engine registry key `warehouse-stock`, class `app/Services/Inventory/WarehouseStock.php`, no separate card yet. | FACT, `app/Services/Inventory/WarehouseStock.php:19-30,70-106,317-374` |
+| Stock in the dummy | RM 105 positions in 79 bins, SFG 1 position in 1 bin, FG 5 positions in 4 bins. | FACT, query views |
+| Map content | Per building: outline (rectangle / L / custom), floors 1-3, each area as a rectangle, bins inside an area as cells (lane to the right, slot downwards; a rack column = one cell with several levels; a bin with its own `map_x`/`map_y` overrides). Colours by area type; bin status BLOCKED / EMPTY / IN_USE / FULL (>= `WH_BIN_FULL_PCT` of capacity, 90) / OVER (> 100%); dead stock red. Virtual areas and bins without an area are not drawn. | FACT, `app/Support/V2/Data/Warehouse.php:52-84,111-141`; `WarehouseStock.php:362-369` |
+| Map actions | Select building; layer "Pick allocation" (an open pick list: numbered bins and a dashed route to its staging bin); layer "Putaway" (dashed P on the suggested bin of every open putaway task); buttons Buildings, Storage Areas, Bins, Stack Monitor, Generate Bins; per selected bin: Transfer (creates a Draft Stock Transfer with everything in the bin), Label (one bin label), Block (reason required) / Unblock; per pallet in the bin: move up / down in the stack; Edit Layout (drag/resize an area). | FACT, `Warehouse.php:304-341`; `routes/v2_warehouse.php:29-81,218-243`; `packages/devlib/resources/views/components/warehouse-desk.blade.php` |
+| Capacity table | "Capacity per Floor": floor area, clear height, room volume, storage area share, storage volume (area x stacking height), in use (m3, kg). A floor without a clear height shows no volume (warning). | FACT, `Warehouse.php:86-109`; blade lines 36-49 |
+| Bin size rule | Footprint of a bin = area of the Storage Area divided by the number of positions (lane/slot or rack/column cells) in that area; bin height = stacking height of the area (or the building's clear height of that floor) divided by the levels of that position; volume = footprint x height. | FACT, `WarehouseStock.php:229-262` |
+| Stack Monitor | One row per labelled pallet/pack in each bin with stack number (1 = bottom), age, estimated height in bin versus the area's stacking height, flags Remnant / Old remnant / Buried, and "Stack not recorded" for unlabelled stock. Stat boxes: All, Buried, Near height limit, Over height limit, Remnant, Old remnant, Stack not recorded. Row button Open goes to the pallet label screen. | FACT, `app/Support/V2/Grid/Inv/StackMonitorReport.php:17-21,64-67,141-185` |
+| Buried | A unit is "Buried" when it is the unit to use first for its item (packs first, then earliest expiry, then oldest arrival, compared with ALL active units of that item in any bin) and another non-twin pallet sits on top of it. | FACT, `WarehouseStock.php:263-266,303-305` |
+| Stock by Location | One row per item per bin across all buildings: class, building, area, floor, bin, on hand, unit, weight, volume, stock value, arrived, pallets, expiry, last movement, idle days, badge OK / Dead stock / Expired / Expires soon / Blocked bin. Stat boxes: All, Dead stock, Expired, Expires soon. | FACT, `app/Support/V2/Grid/Inv/StockByLocationReport.php:123-149` |
+| Dead stock | Item with no real movement for more than `ASSISTANT_DEADSTOCK_MONTHS` (6) months, or never moved; a transfer does NOT count as movement. Same definition as the assistant answer and the Deadstock Value widget. | FACT, `WarehouseStock.php:37-40,99`; constant value query |
+| Estimated weight/volume | Only for unit KG, or sheets (LBR/SHEET/RIM) with grammage and size (from `mat_raw` or parsed from a paper item name); everything else has no weight and is left out of the bin total, and the screen says so. | FACT, `WarehouseStock.php:157-229` |
+| Unit tests (read, not run) | `WarehouseMapLayerTest` (7 tests: layers, route, putaway P marks), `PalletServiceTest::test_bin_capacity_comes_from_floor_area_and_height`, `test_stack_height_and_the_stack_limit_of_the_area`, `test_units_are_numbered_from_the_bottom_and_move_down_when_one_below_is_used_up`, `test_the_unit_to_use_first_is_buried_when_a_pallet_sits_on_it`. | FACT, test files read |
+
+## Relations
+- **source**: card `10_card_location-hierarchy.md` (buildings, areas, bins), `inv_pallet` (card `14_card_pallet.md`), stock card views (Stock group), open pick lists (`13_card_pick-list.md`), open putaway tasks (`12_card_receiving-and-putaway.md`).
+- **used_by**: Stock Transfer (capacity check per line uses `binSummaries`), labels (location/item labels), Scan Track (a bin result), Pallet Label screen, Count Tasks (positions).
+- **flows**: read only, except Block/Unblock, Edit Layout and Generate Bins which write master tables (`wh_loc`, `wh_zone`) and "Transfer" which creates a Draft transfer.
+- **frozen_zone**: user rule 2026-10-08: "Stock Card, Stock Summary and Warehouse Map yang ada sudah benar: tidak diubah; perbaikan boleh tetapi selalu lewat preview dulu" (A.26, FROM DOCUMENT `docs/globaluserrules.md`). Treat the Map as a protected screen.
+
+## Findings (recorded, not fixed)
+1. **`map_x` is empty on all 225 bins**, so the map always uses the computed grid positions; the per-bin override described in the code comment is unused. FACT (query).
+2. **Writes from a read screen with module-level rights only**: Block/Unblock, `zone-move` and Generate Bins are POST routes guarded by `module:INV` and no finer right; any Inventory user can block a bin or move an area. FACT, `routes/v2_warehouse.php:22-81`.
+3. **Block does not check stock**: blocking a bin that holds stock only stops new stock (putaway, transfer in, pick allocation); nothing warns that stock is sitting in it. FROM CODE (`routes/v2_warehouse.php:43-51`).
+4. **Weight/volume are partial**: ink, glue and finished goods have no size data, so most bins show a capacity percentage based only on the paper they hold ("unknown_weight"/"unknown_volume" counters exist). FROM DOCUMENT `docs/warehouselayout_tier1.md` 14.7 and code `binSummaries`.
+5. **"Task Board belum dibangun" in `docs/design-notes/inventory/02_invwh-tech-menu.md` is outdated** (screen exists). FACT.
+
+## Already exists? Searched where
+Searched `WarehouseDesk`, `WhMap`, `Warehouse.php`, `StackMonitorReport`, `StockByLocationReport`, menu `WH_MAP`, EngineRegistry key `warehouse-stock`, `docs/warehouselayout_tier1.md` headings. Result: exists; this card only summarises. The map JavaScript (drag, zoom) was not read.

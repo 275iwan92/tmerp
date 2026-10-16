@@ -8,7 +8,7 @@
 | Sales (SALES) | Inquiry & Quotation (23), Order (9), Delivery (4), CRM (6) | **exists**: [sales/](./sales/) |
 | Management Reports (MGMT) | Summary (1), Reports (6) | not yet |
 | Procurement (PROC) | Requisition (3), Order (4), Receive (4), Return (2) | not yet |
-| Inventory (INV) | Stock (56), Warehouse (19) | not yet (Design Notes exist: `docs/design-notes/inventory`) |
+| Inventory (INV) | Stock (56), Warehouse (19) | **exists**: [inventory/](./inventory/) (stock, warehouse, batch-quality) |
 | Manufacture (PROD) | Planning (11), PPIC (13), Production (1), Maintenance (19), QA (2) | not yet (Design Notes exist for ppic, maintenance; Guides for production) |
 | Human Resources (HRM) | Organization (5), Employee (4), Time Attendance (6), Payroll (8), Recruitment (11) | not yet |
 | Finance & Accounting (FINACC) | Control Center (2), Transaction Flows (8), Accounting (5), Controls & Tax (2), Financial Reports (7) | not yet |
@@ -25,6 +25,8 @@ Note: the Sales sub-modules in TG use the folders `inquiry-product`, `product-co
 5. Sales -> Finance: POD `do_line.qty_received` becomes the basis of the invoice (A.21, FROM DOCUMENT, not checked); returns from Complaint (NOT checked). Finance side: no card yet.
 6. Sales -> Inventory/QA: `QcTraceService` reads the DO; Complaint appears on the QA desk (Production > Complaint Review). Inventory/QA side: no card yet.
 7. Sales -> Master Data (reverse direction): at WIN, the transaction fills Master Product (`ProductMasterSync`).
+
+Inventory sub-modules: [stock](./inventory/stock/00_submodule_stock.md), [warehouse](./inventory/warehouse/00_submodule_warehouse.md), [batch-quality](./inventory/batch-quality/00_submodule_batch-quality.md). Cross-module: Purchase Receive -> Batch/Stock In; Work Order -> Pick List -> Stock Out; Stock Posting -> Finance journals and GR/IR. Delivery Shipped posts no FG stock out (see Sales DO card).
 
 Full relations list per pair: [02_relations.md](./02_relations.md). Engine map: [01_engine-map.md](./01_engine-map.md).
 
