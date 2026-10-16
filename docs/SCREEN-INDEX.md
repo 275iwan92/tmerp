@@ -2,6 +2,8 @@
 
 > **ATTENTION ENGINE:** butir engine yang menunggu keputusan ada di `docs/ENGINE-ATTENTION.md` (ATTENTION-ENGINE-01..08); layar membaca output engine apa adanya.
 
+> **Technical Guide (TG):** kondisi sistem per modul, kartu konsep, kartu ENGINE, relasi antarmodul: `docs/tg/` (mulai dari `docs/tg/00_peta-besar.md`; Sales sudah ditulis, modul lain belum). Layar Sales: baca kartunya sebelum mengubah.
+
 > Aturan (CLAUDE.md, user 2026-10-13): setiap perubahan kode memperbarui blok REMARK di file yang diubah
 > DAN baris layarnya di sini. Format REMARK enam butir: Tujuan, Sumber hulu, Input, Output, Dipakai oleh, Status.
 > Aturan DevLib-dulu (CLAUDE.md): layar memakai objek `x-dl::*` / `x-mp::*`; gaya hanya di objek atau token DevLib. Ratchet `DevlibOnlyRatchetTest` menghitung tag mentah, warna literal, kelas lokal; angka hanya boleh turun.
