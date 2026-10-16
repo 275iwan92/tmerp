@@ -1,0 +1,28 @@
+[
+  {
+    "key": "setup-tech-guide",
+    "type": "REPORT",
+    "module": "SETUP",
+    "title": "Technical Guide",
+    "purpose": {
+      "en": "How each module works today: concept cards (tables, columns, evidence), engine cards (trigger, flow, formula), relations between modules and findings. Written in English for agents and the owner. Read-only.",
+      "id": "Cara kerja tiap modul saat ini: kartu konsep (tabel, kolom, bukti), kartu engine (pemicu, alur, rumus), relasi antarmodul, dan temuan. Ditulis dalam bahasa Inggris untuk agen dan pemilik. Hanya baca."
+    },
+    "keywords": "technical guide, panduan teknis, kartu konsep, kartu engine, relasi modul, tabel, kolom, rumus, engine, tg",
+    "steps": [
+      {
+        "en": "Open Technical Guide. Each card is one concept or engine, with its module and sub-module in the box on top.",
+        "id": "Buka Technical Guide. Tiap kartu satu konsep atau engine, dengan modul dan sub-modulnya di kotak atas."
+      },
+      {
+        "en": "Search inside the cards, or use the boxes on top to narrow by module and sub-module.",
+        "id": "Cari di dalam kartu, atau pakai kotak di atas untuk menyaring menurut modul dan sub-modul."
+      },
+      {
+        "en": "Click Read article to read the whole card. For how to use a screen, use User's Guide instead.",
+        "id": "Klik Read article untuk membaca seluruh kartu. Untuk cara memakai layar, pakai User's Guide."
+      }
+    ],
+    "fields": []
+  }
+]
