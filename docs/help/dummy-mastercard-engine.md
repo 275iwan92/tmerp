@@ -98,3 +98,14 @@ Gejala umum:
 ## 7. Menghapus hasil engine (tombol Reset atau `--reset`; urutan yang dipakai, per inquiry)
 
 `co_order_delivery` -> `co_order_item` -> `co_order` -> `quo_quotation_item` -> `quo_quotation` -> `iqp_costing_part_coating`, `iqp_costing_part`, `iqp_costing_price_tier`, `iqp_costing` -> `prod_layout_group_part` -> `prod_layout_group` -> `prod_part_material/ink/process/finishing/artwork/attachment` -> `prod_part` -> `prod_product_acc`, `prod_product` -> `iqp_layout` -> `iqp_part_material/finishing/process/ink` -> `iqp_part` -> `iqp_tier` -> `iqp_inquiry`. WO dari CO itu dihapus dulu (`prd_wo_operation*`, `prd_wo_material`, `prd_wo`). Reset hanya menyentuh kartu Collection bersumber PDF (`source_kind = PDF`) beserta rantainya dan berkasnya; customer yang dibuat engine tetap ada.
+
+## 8. Status dan butir terbuka (16 Okt 2026)
+
+Engine selesai dan ada di `main`: reader PDF, `MasterCardDummyEngine` (level inquiry, prodev, procost, co, product), perintah `dummy:mastercard`, dan layar Developer > Database > Master Card Dummy (PDF). Delapan PDF semuanya sudah punya produk. Patch SpecEngine (izin Jo) selesai: ENGINE-ATTENTION-01.
+
+Terbuka, menunggu keputusan Jo:
+1. Gap SpecEngine 1-5 (`docs/mastercard-okt-analysis.md` bagian 4), dibahas setelah pekerjaan dummy selesai.
+2. Level Post to Production / WO / plan baru berupa hitungan di layar; ditambah hanya bila Jo minta.
+3. Kartu Buku Pedoman (T "-", tanpa ukuran pisau) dilaporkan, belum dibuat: isi kartunya atau longgarkan syarat.
+4. YAMA (CO2600023) belum punya WO karena artwork Part A tidak ada.
+5. Komori GL440 BREAKDOWN di `ddt*`, cetak offset jatuh ke mesin digital.
