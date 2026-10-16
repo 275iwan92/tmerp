@@ -40,14 +40,46 @@
       }
     ],
     "fields": [
-      {"label": "Pallet label (SSCC)", "en": "Item, gsm, size, grain direction, mill batch, sheet count, weight, receipt date and QC status.", "id": "Item, gsm, ukuran, arah serat, batch mill, jumlah lembar, berat, tanggal terima dan status QC."},
-      {"label": "Roll tag", "en": "Roll ID, starting weight, remaining weight and width. Updated after every use.", "id": "ID roll, berat awal, berat sisa dan lebar. Diperbarui tiap pemakaian."},
-      {"label": "Job traveler", "en": "Work order, customer, product, dieline version, quantity, next process and drying wait time. Scanned between processes.", "id": "Work order, customer, produk, versi dieline, qty, proses berikutnya dan waktu tunggu kering. Di-scan antar proses."},
-      {"label": "Die label", "en": "Die number, dieline version, size, customer and a QR code that opens the die record.", "id": "Nomor die, versi dieline, ukuran, customer dan QR yang membuka catatan die."},
-      {"label": "Mixed ink label", "en": "Pantone code, mixing date, source job and use-by date.", "id": "Kode Pantone, tanggal campur, job asal dan batas pakai."},
-      {"label": "Finished goods carton label", "en": "Customer, PO, product, count per carton, carton 3 of 10, batch and date. Often in the customer's own format.", "id": "Customer, PO, produk, isi per karton, karton 3 dari 10, batch dan tanggal. Sering dalam format milik customer."},
-      {"label": "QC status label", "en": "Green for released, yellow for hold, red for rejected.", "id": "Hijau untuk dirilis, kuning untuk ditahan, merah untuk ditolak."},
-      {"label": "Hazard label", "en": "Hazard symbols and a link to the safety data sheet for dangerous inks and solvents.", "id": "Simbol bahaya dan tautan ke lembar data keselamatan untuk tinta dan pelarut berbahaya."}
+      {
+        "label": "Pallet label (SSCC)",
+        "en": "Item, gsm, size, grain direction, mill batch, sheet count, weight, receipt date and QC status.",
+        "id": "Item, gsm, ukuran, arah serat, batch mill, jumlah lembar, berat, tanggal terima dan status QC."
+      },
+      {
+        "label": "Roll tag",
+        "en": "Roll ID, starting weight, remaining weight and width. Updated after every use.",
+        "id": "ID roll, berat awal, berat sisa dan lebar. Diperbarui tiap pemakaian."
+      },
+      {
+        "label": "Job traveler",
+        "en": "Work order, customer, product, dieline version, quantity, next process and drying wait time. Scanned between processes.",
+        "id": "Work order, customer, produk, versi dieline, qty, proses berikutnya dan waktu tunggu kering. Di-scan antar proses."
+      },
+      {
+        "label": "Die label",
+        "en": "Die number, dieline version, size, customer and a QR code that opens the die record.",
+        "id": "Nomor die, versi dieline, ukuran, customer dan QR yang membuka catatan die."
+      },
+      {
+        "label": "Mixed ink label",
+        "en": "Pantone code, mixing date, source job and use-by date.",
+        "id": "Kode Pantone, tanggal campur, job asal dan batas pakai."
+      },
+      {
+        "label": "Finished goods carton label",
+        "en": "Customer, PO, product, count per carton, carton 3 of 10, batch and date. Often in the customer's own format.",
+        "id": "Customer, PO, produk, isi per karton, karton 3 dari 10, batch dan tanggal. Sering dalam format milik customer."
+      },
+      {
+        "label": "QC status label",
+        "en": "Green for released, yellow for hold, red for rejected.",
+        "id": "Hijau untuk dirilis, kuning untuk ditahan, merah untuk ditolak."
+      },
+      {
+        "label": "Hazard label",
+        "en": "Hazard symbols and a link to the safety data sheet for dangerous inks and solvents.",
+        "id": "Simbol bahaya dan tautan ke lembar data keselamatan untuk tinta dan pelarut berbahaya."
+      }
     ]
   },
   {
@@ -91,14 +123,46 @@
       }
     ],
     "fields": [
-      {"label": "Weight of one sheet", "en": "Length in m x width in m x gsm gives grams. Example: 0.79 x 1.09 x 300 = 258.3 g per sheet.", "id": "Panjang m x lebar m x gsm menghasilkan gram. Contoh: 0,79 x 1,09 x 300 = 258,3 g per lembar."},
-      {"label": "Sheets to kilograms", "en": "Number of sheets x weight of one sheet. Always from the item specification, never a fixed constant.", "id": "Jumlah lembar x berat satu lembar. Selalu dari spesifikasi item, bukan konstanta tetap."},
-      {"label": "Ream (rim)", "en": "A count of sheets, commonly 500. Agree on one definition and write it in the unit master.", "id": "Hitungan lembar, umumnya 500. Sepakati satu definisi dan tuliskan di master satuan."},
-      {"label": "gsm and caliper", "en": "Weight per square meter and thickness in micrometres. Both decide stiffness and whether a die will fold it correctly.", "id": "Berat per meter persegi dan tebal dalam mikrometer. Keduanya menentukan kekakuan dan apakah die bisa melipatnya dengan benar."},
-      {"label": "Surface", "en": "Coated or uncoated, gloss, matt or silk, and which side is printable. Affects ink, varnish and glue.", "id": "Coated atau uncoated, gloss, matt atau silk, dan sisi mana yang dicetak. Mempengaruhi tinta, varnish dan lem."},
-      {"label": "Certification", "en": "FSC or PEFC status per batch, and whether the paper is food grade.", "id": "Status FSC atau PEFC per batch, dan apakah kertas food grade."},
-      {"label": "Flute profile", "en": "For corrugated board: E, B, C, F or combined, with liner and medium grades. Decides strength and thickness.", "id": "Untuk board corrugated: E, B, C, F atau gabungan, dengan grade liner dan medium. Menentukan kekuatan dan tebal."},
-      {"label": "Paper scrap", "en": "Sold by weight. Record the weight and the sale as non operating income.", "id": "Dijual per berat. Catat beratnya dan penjualannya sebagai pendapatan non operasional."}
+      {
+        "label": "Weight of one sheet",
+        "en": "Length in m x width in m x gsm gives grams. Example: 0.79 x 1.09 x 300 = 258.3 g per sheet.",
+        "id": "Panjang m x lebar m x gsm menghasilkan gram. Contoh: 0,79 x 1,09 x 300 = 258,3 g per lembar."
+      },
+      {
+        "label": "Sheets to kilograms",
+        "en": "Number of sheets x weight of one sheet. Always from the item specification, never a fixed constant.",
+        "id": "Jumlah lembar x berat satu lembar. Selalu dari spesifikasi item, bukan konstanta tetap."
+      },
+      {
+        "label": "Ream (rim)",
+        "en": "A count of sheets, commonly 500. Agree on one definition and write it in the unit master.",
+        "id": "Hitungan lembar, umumnya 500. Sepakati satu definisi dan tuliskan di master satuan."
+      },
+      {
+        "label": "gsm and caliper",
+        "en": "Weight per square meter and thickness in micrometres. Both decide stiffness and whether a die will fold it correctly.",
+        "id": "Berat per meter persegi dan tebal dalam mikrometer. Keduanya menentukan kekakuan dan apakah die bisa melipatnya dengan benar."
+      },
+      {
+        "label": "Surface",
+        "en": "Coated or uncoated, gloss, matt or silk, and which side is printable. Affects ink, varnish and glue.",
+        "id": "Coated atau uncoated, gloss, matt atau silk, dan sisi mana yang dicetak. Mempengaruhi tinta, varnish dan lem."
+      },
+      {
+        "label": "Certification",
+        "en": "FSC or PEFC status per batch, and whether the paper is food grade.",
+        "id": "Status FSC atau PEFC per batch, dan apakah kertas food grade."
+      },
+      {
+        "label": "Flute profile",
+        "en": "For corrugated board: E, B, C, F or combined, with liner and medium grades. Decides strength and thickness.",
+        "id": "Untuk board corrugated: E, B, C, F atau gabungan, dengan grade liner dan medium. Menentukan kekuatan dan tebal."
+      },
+      {
+        "label": "Paper scrap",
+        "en": "Sold by weight. Record the weight and the sale as non operating income.",
+        "id": "Dijual per berat. Catat beratnya dan penjualannya sebagai pendapatan non operasional."
+      }
     ]
   },
   {
@@ -142,14 +206,46 @@
       }
     ],
     "fields": [
-      {"label": "Ups", "en": "Number of boxes on one sheet. Best of both orientations, with gaps and gripper margin taken out.", "id": "Jumlah box pada satu lembar. Yang terbaik dari dua orientasi, dengan celah dan margin gripper dikurangkan."},
-      {"label": "Gripper margin and bleed", "en": "Unprintable edge where the machine holds the sheet, and the extra print area outside the cut line, usually 3 mm.", "id": "Tepi tak bisa dicetak tempat mesin memegang lembar, dan area cetak tambahan di luar garis potong, biasanya 3 mm."},
-      {"label": "Die owner", "en": "Customer owned or company owned. Decides whether it may be used for others and whether it is an asset or a charge.", "id": "Milik customer atau milik perusahaan. Menentukan boleh dipakai untuk pihak lain atau tidak dan apakah aset atau biaya."},
-      {"label": "Tooling charge", "en": "Billed to the customer once, or spread over the boxes made with the die.", "id": "Ditagihkan ke customer sekali, atau dibagi ke box yang dibuat dengan die itu."},
-      {"label": "Die life", "en": "Impression count against a limit. Status: good, needs sharpening, damaged.", "id": "Jumlah impresi terhadap batas. Status: baik, perlu diasah, rusak."},
-      {"label": "Plates and artwork", "en": "A plate per colour per job, kept for repeat orders with the artwork version. Scrap aluminium is sold by weight.", "id": "Satu plat per warna per job, disimpan untuk repeat order bersama versi artwork. Aluminium bekas dijual per berat."},
-      {"label": "Retention", "en": "How long tools and plates are kept after the last job. A setting, not a fixed rule.", "id": "Berapa lama alat dan plat disimpan setelah job terakhir. Berupa pengaturan, bukan aturan tetap."},
-      {"label": "Dieline version", "en": "A changed drawing means old finished goods and old tools may no longer match.", "id": "Gambar yang berubah berarti barang jadi dan alat lama mungkin tidak cocok lagi."}
+      {
+        "label": "Ups",
+        "en": "Number of boxes on one sheet. Best of both orientations, with gaps and gripper margin taken out.",
+        "id": "Jumlah box pada satu lembar. Yang terbaik dari dua orientasi, dengan celah dan margin gripper dikurangkan."
+      },
+      {
+        "label": "Gripper margin and bleed",
+        "en": "Unprintable edge where the machine holds the sheet, and the extra print area outside the cut line, usually 3 mm.",
+        "id": "Tepi tak bisa dicetak tempat mesin memegang lembar, dan area cetak tambahan di luar garis potong, biasanya 3 mm."
+      },
+      {
+        "label": "Die owner",
+        "en": "Customer owned or company owned. Decides whether it may be used for others and whether it is an asset or a charge.",
+        "id": "Milik customer atau milik perusahaan. Menentukan boleh dipakai untuk pihak lain atau tidak dan apakah aset atau biaya."
+      },
+      {
+        "label": "Tooling charge",
+        "en": "Billed to the customer once, or spread over the boxes made with the die.",
+        "id": "Ditagihkan ke customer sekali, atau dibagi ke box yang dibuat dengan die itu."
+      },
+      {
+        "label": "Die life",
+        "en": "Impression count against a limit. Status: good, needs sharpening, damaged.",
+        "id": "Jumlah impresi terhadap batas. Status: baik, perlu diasah, rusak."
+      },
+      {
+        "label": "Plates and artwork",
+        "en": "A plate per colour per job, kept for repeat orders with the artwork version. Scrap aluminium is sold by weight.",
+        "id": "Satu plat per warna per job, disimpan untuk repeat order bersama versi artwork. Aluminium bekas dijual per berat."
+      },
+      {
+        "label": "Retention",
+        "en": "How long tools and plates are kept after the last job. A setting, not a fixed rule.",
+        "id": "Berapa lama alat dan plat disimpan setelah job terakhir. Berupa pengaturan, bukan aturan tetap."
+      },
+      {
+        "label": "Dieline version",
+        "en": "A changed drawing means old finished goods and old tools may no longer match.",
+        "id": "Gambar yang berubah berarti barang jadi dan alat lama mungkin tidak cocok lagi."
+      }
     ]
   },
   {
@@ -197,15 +293,51 @@
       }
     ],
     "fields": [
-      {"label": "Level 1 identical", "en": "Same specification, another brand or mill. Automatic, only the supplier code changes.", "id": "Spesifikasi sama, merek atau mill lain. Otomatis, hanya kode supplier yang berubah."},
-      {"label": "Level 2 equivalent", "en": "Same function within tolerance, for example 300 gsm SBS for FBB. Planner or production approval.", "id": "Fungsi sama dalam toleransi, misalnya 300 gsm SBS untuk FBB. Persetujuan planner atau produksi."},
-      {"label": "Level 3 upgrade", "en": "Better grade or heavier paper. Extra cost is carried by the company.", "id": "Grade lebih baik atau kertas lebih berat. Selisih biaya ditanggung perusahaan."},
-      {"label": "Level 4 downgrade", "en": "Lower grade. Needs customer approval and a new proof.", "id": "Grade lebih rendah. Butuh persetujuan customer dan proof baru."},
-      {"label": "Level 5 other size", "en": "A different plano size. Production approval and a new layout calculation.", "id": "Ukuran plano berbeda. Persetujuan produksi dan hitung ulang layout."},
-      {"label": "Level 6 other process", "en": "For example UV varnish for matt lamination. Customer approval, because the look changes.", "id": "Misalnya varnish UV sebagai pengganti laminasi doff. Persetujuan customer, karena tampilan berubah."},
-      {"label": "Compare: paper", "en": "gsm, caliper, grain, size, finish, brightness, stiffness, moisture, certification, food grade, back colour.", "id": "gsm, caliper, serat, ukuran, finishing, kecerahan, kekakuan, kelembapan, sertifikasi, food grade, warna sisi belakang."},
-      {"label": "Compare: ink and glue", "en": "Ink system (conventional, UV, LED UV), colour tolerance, shelf life; glue type and compatibility with the surface.", "id": "Sistem tinta (konvensional, UV, LED UV), toleransi warna, umur simpan; jenis lem dan kecocokan dengan permukaan."},
-      {"label": "Required conditions", "en": "FSC and food grade status of the substitute must be the same or better. Colour critical jobs need a proof.", "id": "Status FSC dan food grade pengganti harus sama atau lebih baik. Job kritis warna butuh proof."}
+      {
+        "label": "Level 1 identical",
+        "en": "Same specification, another brand or mill. Automatic, only the supplier code changes.",
+        "id": "Spesifikasi sama, merek atau mill lain. Otomatis, hanya kode supplier yang berubah."
+      },
+      {
+        "label": "Level 2 equivalent",
+        "en": "Same function within tolerance, for example 300 gsm SBS for FBB. Planner or production approval.",
+        "id": "Fungsi sama dalam toleransi, misalnya 300 gsm SBS untuk FBB. Persetujuan planner atau produksi."
+      },
+      {
+        "label": "Level 3 upgrade",
+        "en": "Better grade or heavier paper. Extra cost is carried by the company.",
+        "id": "Grade lebih baik atau kertas lebih berat. Selisih biaya ditanggung perusahaan."
+      },
+      {
+        "label": "Level 4 downgrade",
+        "en": "Lower grade. Needs customer approval and a new proof.",
+        "id": "Grade lebih rendah. Butuh persetujuan customer dan proof baru."
+      },
+      {
+        "label": "Level 5 other size",
+        "en": "A different plano size. Production approval and a new layout calculation.",
+        "id": "Ukuran plano berbeda. Persetujuan produksi dan hitung ulang layout."
+      },
+      {
+        "label": "Level 6 other process",
+        "en": "For example UV varnish for matt lamination. Customer approval, because the look changes.",
+        "id": "Misalnya varnish UV sebagai pengganti laminasi doff. Persetujuan customer, karena tampilan berubah."
+      },
+      {
+        "label": "Compare: paper",
+        "en": "gsm, caliper, grain, size, finish, brightness, stiffness, moisture, certification, food grade, back colour.",
+        "id": "gsm, caliper, serat, ukuran, finishing, kecerahan, kekakuan, kelembapan, sertifikasi, food grade, warna sisi belakang."
+      },
+      {
+        "label": "Compare: ink and glue",
+        "en": "Ink system (conventional, UV, LED UV), colour tolerance, shelf life; glue type and compatibility with the surface.",
+        "id": "Sistem tinta (konvensional, UV, LED UV), toleransi warna, umur simpan; jenis lem dan kecocokan dengan permukaan."
+      },
+      {
+        "label": "Required conditions",
+        "en": "FSC and food grade status of the substitute must be the same or better. Colour critical jobs need a proof.",
+        "id": "Status FSC dan food grade pengganti harus sama atau lebih baik. Job kritis warna butuh proof."
+      }
     ]
   },
   {
@@ -245,12 +377,36 @@
       }
     ],
     "fields": [
-      {"label": "Manual issue", "en": "For valuable or tracked items: paper, special inks, foil. A pick list and a scan.", "id": "Untuk barang bernilai atau dilacak: kertas, tinta khusus, foil. Memakai pick list dan scan."},
-      {"label": "Backflush", "en": "For small items used in a known amount: glue, standard ink. Stock drops automatically when output is reported.", "id": "Untuk barang kecil dengan pemakaian yang diketahui: lem, tinta standar. Stok turun otomatis saat hasil produksi dilaporkan."},
-      {"label": "Overhead", "en": "For fountain solution, alcohol, wash, powder: not worth tracking per job. Charged per machine hour.", "id": "Untuk fountain solution, alkohol, pencuci, powder: tidak layak dilacak per job. Dibebankan per jam mesin."},
-      {"label": "Mix recipe", "en": "Components and proportions of a mixed ink. Output is a new batch with a short life.", "id": "Komponen dan proporsi tinta campuran. Hasilnya batch baru dengan umur singkat."},
-      {"label": "Coverage", "en": "Share of the sheet area covered by ink. Used to estimate ink need.", "id": "Bagian area lembar yang tertutup tinta. Dipakai untuk memperkirakan kebutuhan tinta."},
-      {"label": "Safety data sheet", "en": "Required for hazardous inks and solvents, with storage rules and a hazard label.", "id": "Wajib untuk tinta dan pelarut berbahaya, dengan aturan simpan dan label bahaya."}
+      {
+        "label": "Manual issue",
+        "en": "For valuable or tracked items: paper, special inks, foil. A pick list and a scan.",
+        "id": "Untuk barang bernilai atau dilacak: kertas, tinta khusus, foil. Memakai pick list dan scan."
+      },
+      {
+        "label": "Backflush",
+        "en": "For small items used in a known amount: glue, standard ink. Stock drops automatically when output is reported.",
+        "id": "Untuk barang kecil dengan pemakaian yang diketahui: lem, tinta standar. Stok turun otomatis saat hasil produksi dilaporkan."
+      },
+      {
+        "label": "Overhead",
+        "en": "For fountain solution, alcohol, wash, powder: not worth tracking per job. Charged per machine hour.",
+        "id": "Untuk fountain solution, alkohol, pencuci, powder: tidak layak dilacak per job. Dibebankan per jam mesin."
+      },
+      {
+        "label": "Mix recipe",
+        "en": "Components and proportions of a mixed ink. Output is a new batch with a short life.",
+        "id": "Komponen dan proporsi tinta campuran. Hasilnya batch baru dengan umur singkat."
+      },
+      {
+        "label": "Coverage",
+        "en": "Share of the sheet area covered by ink. Used to estimate ink need.",
+        "id": "Bagian area lembar yang tertutup tinta. Dipakai untuk memperkirakan kebutuhan tinta."
+      },
+      {
+        "label": "Safety data sheet",
+        "en": "Required for hazardous inks and solvents, with storage rules and a hazard label.",
+        "id": "Wajib untuk tinta dan pelarut berbahaya, dengan aturan simpan dan label bahaya."
+      }
     ]
   },
   {
@@ -294,12 +450,36 @@
       }
     ],
     "fields": [
-      {"label": "Over-run tolerance", "en": "A percent per customer order. Limits how much more than ordered may be produced and delivered.", "id": "Persen per customer order. Membatasi berapa banyak lebih dari pesanan yang boleh diproduksi dan dikirim."},
-      {"label": "Storage charge", "en": "Fee for holding finished goods beyond an agreed number of days.", "id": "Biaya menyimpan barang jadi melewati jumlah hari yang disepakati."},
-      {"label": "Owner of stock", "en": "Company, customer or supplier. Decides valuation and who may use it.", "id": "Perusahaan, customer atau supplier. Menentukan penilaian dan siapa yang boleh memakainya."},
-      {"label": "Repeat order package", "en": "Dieline, plates, artwork, colour recipe and approved proof kept together and called up for the next order.", "id": "Dieline, plat, artwork, resep warna dan proof yang disetujui disimpan bersama dan dipanggil untuk order berikutnya."},
-      {"label": "Retention period", "en": "Days finished goods may stay before the customer must decide. A setting.", "id": "Hari barang jadi boleh disimpan sebelum customer harus memutuskan. Pengaturan."},
-      {"label": "Disposition", "en": "Bill to customer, destroy with approval, or write off. Needs a document and a journal.", "id": "Tagihkan ke customer, musnahkan dengan persetujuan, atau hapus buku. Butuh dokumen dan jurnal."}
+      {
+        "label": "Over-run tolerance",
+        "en": "A percent per customer order. Limits how much more than ordered may be produced and delivered.",
+        "id": "Persen per customer order. Membatasi berapa banyak lebih dari pesanan yang boleh diproduksi dan dikirim."
+      },
+      {
+        "label": "Storage charge",
+        "en": "Fee for holding finished goods beyond an agreed number of days.",
+        "id": "Biaya menyimpan barang jadi melewati jumlah hari yang disepakati."
+      },
+      {
+        "label": "Owner of stock",
+        "en": "Company, customer or supplier. Decides valuation and who may use it.",
+        "id": "Perusahaan, customer atau supplier. Menentukan penilaian dan siapa yang boleh memakainya."
+      },
+      {
+        "label": "Repeat order package",
+        "en": "Dieline, plates, artwork, colour recipe and approved proof kept together and called up for the next order.",
+        "id": "Dieline, plat, artwork, resep warna dan proof yang disetujui disimpan bersama dan dipanggil untuk order berikutnya."
+      },
+      {
+        "label": "Retention period",
+        "en": "Days finished goods may stay before the customer must decide. A setting.",
+        "id": "Hari barang jadi boleh disimpan sebelum customer harus memutuskan. Pengaturan."
+      },
+      {
+        "label": "Disposition",
+        "en": "Bill to customer, destroy with approval, or write off. Needs a document and a journal.",
+        "id": "Tagihkan ke customer, musnahkan dengan persetujuan, atau hapus buku. Butuh dokumen dan jurnal."
+      }
     ]
   },
   {
@@ -335,12 +515,36 @@
       }
     ],
     "fields": [
-      {"label": "Waste percent of a process", "en": "(Input minus good output) divided by input, times 100.", "id": "(Masuk dikurangi hasil baik) dibagi masuk, dikali 100."},
-      {"label": "Cumulative yield", "en": "Product of the yields of all steps. Example: 0.99 x 0.96 x 0.98 x 0.97 x 0.99 is about 0.894, or 89.4 percent.", "id": "Hasil kali yield semua tahap. Contoh: 0,99 x 0,96 x 0,98 x 0,97 x 0,99 sekitar 0,894 atau 89,4 persen."},
-      {"label": "Start quantity", "en": "Finished quantity divided by cumulative yield. Replaces one flat waste percent.", "id": "Qty jadi dibagi yield kumulatif. Menggantikan satu persen waste tunggal."},
-      {"label": "Material variance", "en": "(Actual issue minus required quantity) times price.", "id": "(Issue aktual dikurangi qty kebutuhan) dikali harga."},
-      {"label": "Substitution variance", "en": "Price difference caused by a substitute material, listed apart from usage variance.", "id": "Selisih harga akibat material pengganti, dicatat terpisah dari varians pemakaian."},
-      {"label": "Die amortisation", "en": "Die cost divided by the expected number of boxes made with it.", "id": "Biaya die dibagi perkiraan jumlah box yang dibuat dengan die itu."}
+      {
+        "label": "Waste percent of a process",
+        "en": "(Input minus good output) divided by input, times 100.",
+        "id": "(Masuk dikurangi hasil baik) dibagi masuk, dikali 100."
+      },
+      {
+        "label": "Cumulative yield",
+        "en": "Product of the yields of all steps. Example: 0.99 x 0.96 x 0.98 x 0.97 x 0.99 is about 0.894, or 89.4 percent.",
+        "id": "Hasil kali yield semua tahap. Contoh: 0,99 x 0,96 x 0,98 x 0,97 x 0,99 sekitar 0,894 atau 89,4 persen."
+      },
+      {
+        "label": "Start quantity",
+        "en": "Finished quantity divided by cumulative yield. Replaces one flat waste percent.",
+        "id": "Qty jadi dibagi yield kumulatif. Menggantikan satu persen waste tunggal."
+      },
+      {
+        "label": "Material variance",
+        "en": "(Actual issue minus required quantity) times price.",
+        "id": "(Issue aktual dikurangi qty kebutuhan) dikali harga."
+      },
+      {
+        "label": "Substitution variance",
+        "en": "Price difference caused by a substitute material, listed apart from usage variance.",
+        "id": "Selisih harga akibat material pengganti, dicatat terpisah dari varians pemakaian."
+      },
+      {
+        "label": "Die amortisation",
+        "en": "Die cost divided by the expected number of boxes made with it.",
+        "id": "Biaya die dibagi perkiraan jumlah box yang dibuat dengan die itu."
+      }
     ]
   },
   {
@@ -380,11 +584,31 @@
       }
     ],
     "fields": [
-      {"label": "Certificate of analysis", "en": "Supplier document with the test results of a batch. Kept with the batch.", "id": "Dokumen supplier berisi hasil uji sebuah batch. Disimpan bersama batch."},
-      {"label": "Chain of custody", "en": "Proof that certified material stays separate from uncertified material from receipt to finished goods.", "id": "Bukti bahwa material bersertifikat tetap terpisah dari yang tidak bersertifikat sejak terima sampai barang jadi."},
-      {"label": "QC status", "en": "Quarantine, Released or Rejected, per batch. Only Released can be picked.", "id": "Quarantine, Released atau Rejected, per batch. Hanya Released yang bisa di-pick."},
-      {"label": "Colour tolerance", "en": "Allowed colour difference of an ink against the standard, measured as delta E.", "id": "Selisih warna tinta yang diizinkan terhadap standar, diukur sebagai delta E."},
-      {"label": "Recall", "en": "Finding and stopping all goods made from a faulty batch, using forward tracing.", "id": "Menemukan dan menghentikan semua barang yang dibuat dari batch bermasalah, memakai telusur maju."}
+      {
+        "label": "Certificate of analysis",
+        "en": "Supplier document with the test results of a batch. Kept with the batch.",
+        "id": "Dokumen supplier berisi hasil uji sebuah batch. Disimpan bersama batch."
+      },
+      {
+        "label": "Chain of custody",
+        "en": "Proof that certified material stays separate from uncertified material from receipt to finished goods.",
+        "id": "Bukti bahwa material bersertifikat tetap terpisah dari yang tidak bersertifikat sejak terima sampai barang jadi."
+      },
+      {
+        "label": "QC status",
+        "en": "Quarantine, Released or Rejected, per batch. Only Released can be picked.",
+        "id": "Quarantine, Released atau Rejected, per batch. Hanya Released yang bisa di-pick."
+      },
+      {
+        "label": "Colour tolerance",
+        "en": "Allowed colour difference of an ink against the standard, measured as delta E.",
+        "id": "Selisih warna tinta yang diizinkan terhadap standar, diukur sebagai delta E."
+      },
+      {
+        "label": "Recall",
+        "en": "Finding and stopping all goods made from a faulty batch, using forward tracing.",
+        "id": "Menemukan dan menghentikan semua barang yang dibuat dari batch bermasalah, memakai telusur maju."
+      }
     ]
   },
   {
@@ -432,175 +656,46 @@
       }
     ],
     "fields": [
-      {"label": "BOOKED", "en": "Covered by stock that is locked for this order.", "id": "Tertutup oleh stok yang dikunci untuk order ini."},
-      {"label": "PEGGED_PO", "en": "Covered by a purchase order that arrives in time. Becomes LATE_PO if the arrival date moves past the need date.", "id": "Tertutup PO yang tiba tepat waktu. Menjadi LATE_PO bila tanggal tiba bergeser melewati tanggal butuh."},
-      {"label": "PEGGED_PR", "en": "Covered by an open purchase request that is not yet an order.", "id": "Tertutup purchase request terbuka yang belum menjadi order."},
-      {"label": "SHORT", "en": "Not covered by anything. Triggers the shortage alert to management, PPIC, warehouse and finance.", "id": "Tidak tertutup apa pun. Memicu peringatan kekurangan ke manajemen, PPIC, gudang dan keuangan."},
-      {"label": "NEED_ITEM", "en": "The bill of materials only names a specification. PPIC picks the item, kept in the booking and not in the product master.", "id": "BOM hanya menyebut spesifikasi. PPIC memilih item, disimpan di booking dan bukan di master produk."},
-      {"label": "Commitment value", "en": "(Booked quantity minus issued quantity) times average price. Reported, but no journal is made for a booking.", "id": "(Qty booking dikurangi qty issued) dikali harga rata-rata. Dilaporkan, tetapi booking tidak membuat jurnal."},
-      {"label": "Booking aging", "en": "Days since Confirm while no work order exists. Used to spot stale bookings.", "id": "Hari sejak Confirm selagi belum ada work order. Dipakai untuk menemukan booking basi."},
-      {"label": "Requirement of sheets", "en": "Quantity divided by ups, rounded up, times (1 + waste percent), plus make ready sheets of each process.", "id": "Qty dibagi ups, dibulatkan ke atas, dikali (1 + persen waste), ditambah lembar make ready tiap proses."}
-    ]
-  },
-  {
-    "key": "guide-inv-booking-decisions",
-    "type": "GUIDE",
-    "module": "INV",
-    "title": "Booking: Seven Decisions With Reference Answers",
-    "purpose": {
-      "en": "Seven open questions about booking, each with how SAP, Oracle NetSuite, Odoo, Dynamics 365 and ERPNext handle it, and a recommended answer. Recommendations are proposals for the user to confirm.",
-      "id": "Tujuh pertanyaan terbuka tentang booking, masing-masing dengan cara SAP, Oracle NetSuite, Odoo, Dynamics 365 dan ERPNext menanganinya, serta jawaban yang disarankan. Saran adalah usulan untuk dikonfirmasi user."
-    },
-    "keywords": "keputusan booking, over-run, booking basi, hot job, substitusi, die tidak tersedia, cancel setelah issue, delta, rekomendasi, referensi erp, sap, odoo, netsuite",
-    "steps": [
       {
-        "en": "Over-run. SAP accepts a goods receipt only up to order quantity plus an overdelivery tolerance, and scrap raises the material need in planning. Recommend: booking includes waste but no hidden over-run; the tolerance is a limit on receipt.",
-        "id": "Over-run. SAP menerima penerimaan barang hanya sampai qty order ditambah toleransi overdelivery, dan scrap menaikkan kebutuhan material di planning. Saran: booking memuat waste tetapi tanpa over-run tersembunyi; toleransi adalah batas penerimaan."
+        "label": "BOOKED",
+        "en": "Covered by stock that is locked for this order.",
+        "id": "Tertutup oleh stok yang dikunci untuk order ini."
       },
       {
-        "en": "Stale booking. SAP reservation clean-up marks items whose requirement date is older than a base date minus a number of days (standard 30). Odoo can reserve only a set number of days before the date. Recommend: warn first, release after a set limit.",
-        "id": "Booking basi. Pembersihan reservasi SAP menandai item yang tanggal butuhnya lebih tua dari tanggal dasar dikurangi sekian hari (standar 30). Odoo mereservasi hanya sekian hari sebelum tanggal. Saran: peringatan dulu, lepas setelah batas tertentu."
+        "label": "PEGGED_PO",
+        "en": "Covered by a purchase order that arrives in time. Becomes LATE_PO if the arrival date moves past the need date.",
+        "id": "Tertutup PO yang tiba tepat waktu. Menjadi LATE_PO bila tanggal tiba bergeser melewati tanggal butuh."
       },
       {
-        "en": "Order changed after Confirm. In SAP a changed quantity re-runs the availability check and the confirmed quantity follows stock. Recommend: automatic difference; release the surplus at once and try to book the extra, keep the locked part.",
-        "id": "Order berubah setelah Confirm. Di SAP perubahan qty menjalankan ulang cek ketersediaan dan qty terkonfirmasi mengikuti stok. Saran: selisih otomatis; lepas kelebihan segera dan coba booking tambahannya, bagian terkunci tetap."
+        "label": "PEGGED_PR",
+        "en": "Covered by an open purchase request that is not yet an order.",
+        "id": "Tertutup purchase request terbuka yang belum menjadi order."
       },
       {
-        "en": "Hot job. SAP backorder processing sorts by customer priority, rush priority, creation date or availability date. NetSuite commits oldest orders first and has a manual Reallocate Items page. Recommend rules plus a restricted takeover with a log.",
-        "id": "Hot job. Backorder processing SAP mengurutkan menurut prioritas customer, prioritas rush, tanggal dibuat atau ketersediaan. NetSuite mengikat order tertua dulu, dengan halaman Reallocate Items manual. Saran: aturan plus ambil alih terbatas, ber-log."
+        "label": "SHORT",
+        "en": "Not covered by anything. Triggers the shortage alert to management, PPIC, warehouse and finance.",
+        "id": "Tidak tertutup apa pun. Memicu peringatan kekurangan ke manajemen, PPIC, gudang dan keuangan."
       },
       {
-        "en": "Notice to the order that lost stock. The sources read do not describe one, so this is our own addition. Recommend a popup notice to PPIC and the order owner, saying who took the stock and why.",
-        "id": "Pemberitahuan ke order yang kehilangan stok. Sumber yang dibaca tidak menjelaskannya, jadi ini tambahan kita sendiri. Saran: pemberitahuan popup ke PPIC dan pemilik order, berisi siapa yang mengambil stok dan alasannya."
+        "label": "NEED_ITEM",
+        "en": "The bill of materials only names a specification. PPIC picks the item, kept in the booking and not in the product master.",
+        "id": "BOM hanya menyebut spesifikasi. PPIC memilih item, disimpan di booking dan bukan di master produk."
       },
       {
-        "en": "Substitute when Short. SAP planning can take alternative item groups into account by usage probability; Odoo substitutes a fallback component by priority and lets users add a substitute on an order. Recommend: system proposes in order, PPIC confirms.",
-        "id": "Pengganti saat Short. Planning SAP bisa memperhitungkan grup item alternatif menurut probabilitas pemakaian; Odoo memakai komponen cadangan berprioritas dan membolehkan menambah pengganti di order. Saran: sistem mengusulkan berurutan, PPIC mengonfirmasi."
+        "label": "Commitment value",
+        "en": "(Booked quantity minus issued quantity) times average price. Reported, but no journal is made for a booking.",
+        "id": "(Qty booking dikurangi qty issued) dikali harga rata-rata. Dilaporkan, tetapi booking tidak membuat jurnal."
       },
       {
-        "en": "Die not available. SAP checks production tools for an order and posts a tool shortage status when one is missing. Recommend: a warning when booking, and no release of the work order without the die or an override with a reason.",
-        "id": "Die tidak tersedia. SAP memeriksa alat produksi untuk sebuah order dan mencatat status kekurangan alat bila ada yang hilang. Saran: peringatan saat booking, dan work order tidak dirilis tanpa die atau tanpa override beralasan."
+        "label": "Booking aging",
+        "en": "Days since Confirm while no work order exists. Used to spot stale bookings.",
+        "id": "Hari sejak Confirm selagi belum ada work order. Dipakai untuk menemukan booking basi."
       },
       {
-        "en": "Order cancelled after issue. SAP reverses issued components with a reversal that refers to the order, so reservations update. Recommend: unused material returns to free stock; printed or consumed material is written off or billed by contract.",
-        "id": "Order dibatalkan setelah issue. SAP membalik komponen yang sudah keluar lewat pembalikan yang merujuk ke order, sehingga reservasi ikut diperbarui. Saran: material tak terpakai kembali ke stok bebas; yang tercetak atau terpakai dihapus buku atau ditagih."
+        "label": "Requirement of sheets",
+        "en": "Quantity divided by ups, rounded up, times (1 + waste percent), plus make ready sheets of each process.",
+        "id": "Qty dibagi ups, dibulatkan ke atas, dikali (1 + persen waste), ditambah lembar make ready tiap proses."
       }
-    ],
-    "fields": [
-      {"label": "Reference: SAP", "en": "Requirements, availability check with confirmed schedule lines, backorder processing, alternative item groups, tool availability, reservation clean-up, goods issue reversal.", "id": "Requirement, cek ketersediaan dengan schedule line terkonfirmasi, backorder processing, grup item alternatif, ketersediaan alat, pembersihan reservasi, pembalikan goods issue."},
-      {"label": "Reference: NetSuite", "en": "Commitment of inventory to sales orders, oldest first, and a manual Reallocate Items page. No notice is documented.", "id": "Pengikatan inventory ke sales order, tertua dulu, dan halaman Reallocate Items manual. Tidak ada pemberitahuan yang didokumentasikan."},
-      {"label": "Reference: Odoo", "en": "Reservation methods: at confirmation, manual, or before the scheduled date. Fallback components with priority. Substitute can be added on an order.", "id": "Metode reservasi: saat konfirmasi, manual, atau sebelum tanggal terjadwal. Komponen cadangan berprioritas. Pengganti bisa ditambah di order."},
-      {"label": "Reference: Dynamics 365", "en": "Reservation hierarchy decides the order of dimensions reserved, with earliest expiry first for batches. Priority based planning ranks orders by type.", "id": "Hierarki reservasi menentukan urutan dimensi yang direservasi, dengan kedaluwarsa terdekat dulu untuk batch. Priority based planning mengurutkan order menurut jenis."},
-      {"label": "Reference: ERPNext", "en": "Stock reservation entries per sales order item, unreserved from the order or by cancelling the entries.", "id": "Stock reservation entry per item sales order, dilepas dari order atau dengan membatalkan entry."},
-      {"label": "Limits of these answers", "en": "From documentation and community pages found by search; not every detail was verified in the product. Confirm each recommendation with the user.", "id": "Dari dokumentasi dan halaman komunitas hasil pencarian; tidak semua detail diverifikasi di produknya. Konfirmasikan tiap saran dengan user."}
-    ]
-  },
-  {
-    "key": "guide-inv-missed-checklist",
-    "type": "GUIDE",
-    "module": "INV",
-    "title": "What Is Most Often Missed: The Checklist",
-    "purpose": {
-      "en": "A checklist of the points that are most often missing in inventory and warehouse systems for printing and packaging, in order of impact. Tick each one against your own design.",
-      "id": "Daftar periksa hal-hal yang paling sering terlewat di sistem inventory dan gudang untuk percetakan dan packaging, berurut menurut dampak. Cocokkan satu per satu dengan desain Anda."
-    },
-    "keywords": "checklist inventory, yang terlewat, daftar periksa, gap analysis, audit desain, prioritas, kelengkapan inventory, rekomendasi",
-    "steps": [
-      {
-        "en": "High: append only ledger; posting date and period lock; staged quantities; reservations; automatic journals with daily reconciliation to the general ledger.",
-        "id": "Tinggi: ledger hanya tambah; tanggal posting dan kunci periode; qty bertingkat; reservasi; jurnal otomatis dengan rekonsiliasi harian ke buku besar."
-      },
-      {
-        "en": "High: GR/IR clearing, landed cost, no negative stock rule, repost of backdated entries, stock count with freeze and approval, separation of duties.",
-        "id": "Tinggi: GR/IR penampung, landed cost, aturan tanpa stok minus, repost transaksi bertanggal mundur, stock opname dengan freeze dan persetujuan, pemisahan tugas."
-      },
-      {
-        "en": "High: two step transfer through In Transit with a rule for differences, and virtual locations so every movement has a from and a to.",
-        "id": "Tinggi: transfer dua langkah lewat In Transit dengan aturan selisih, dan lokasi virtual agar setiap pergerakan punya asal dan tujuan."
-      },
-      {
-        "en": "Printing: grain direction; dual unit for paper; sheets turn into pieces at die cut; die, plate and block as located assets with life; substitution with approval and recalculation.",
-        "id": "Percetakan: arah serat; dual unit untuk kertas; lembar menjadi pcs saat die cut; die, plat dan blok sebagai aset berlokasi dengan umur; substitusi dengan persetujuan dan hitung ulang."
-      },
-      {
-        "en": "Printing: customer owned finished goods, over-run, bill and hold, customer supplied material, partial rolls, offcut policy, mixed ink as an item, paper rest time.",
-        "id": "Percetakan: barang jadi milik customer, over-run, bill and hold, material titipan customer, roll sisa, kebijakan offcut, tinta campuran sebagai item, waktu istirahat kertas."
-      },
-      {
-        "en": "Medium: batch and expiry with FEFO, forward and backward tracing, QC quarantine, reorder point and safety stock, ABC and aging reports, returns with reference to the source document.",
-        "id": "Menengah: batch dan kedaluwarsa dengan FEFO, telusur maju dan mundur, karantina QC, reorder point dan stok pengaman, laporan ABC dan aging, retur dengan referensi dokumen sumber."
-      },
-      {
-        "en": "Medium: subcontract stock at the vendor, consignment, alternate items, several barcodes per item, destruction reports, multi currency purchases, receipt tolerance.",
-        "id": "Menengah: stok subkontrak di vendor, konsinyasi, item alternatif, beberapa barcode per item, berita acara pemusnahan, pembelian multi mata uang, toleransi penerimaan."
-      },
-      {
-        "en": "Booking: delta on order change, stale booking rule, rush takeover with log and notice, one Available source for finished goods, die need, lock against two people confirming at once.",
-        "id": "Booking: selisih saat order berubah, aturan booking basi, pengambilalihan mendesak dengan log dan pemberitahuan, satu sumber Available untuk barang jadi, kebutuhan die, kunci terhadap dua orang yang mengonfirmasi bersamaan."
-      },
-      {
-        "en": "Later: wave picking, slotting, cross docking, kitting, RFID, forecasting, interactive warehouse map and warehouse KPI dashboards.",
-        "id": "Nanti: wave picking, slotting, cross docking, kitting, RFID, forecasting, peta gudang interaktif dan dashboard KPI gudang."
-      }
-    ],
-    "fields": [
-      {"label": "Reports to have", "en": "Stock card, balance as of a date, valuation, aging, dead stock, expiry, ABC, reorder, movement analysis, count variance, in transit, reservation, GR/IR aging, traceability.", "id": "Kartu stok, saldo per tanggal, valuasi, aging, dead stock, kedaluwarsa, ABC, reorder, analisis pergerakan, selisih opname, in transit, reservasi, aging GR/IR, telusur."},
-      {"label": "Warehouse KPIs", "en": "Space use, lines picked per hour, pick accuracy, dock to stock time, inventory accuracy, fill rate, shrinkage.", "id": "Pemakaian ruang, baris di-pick per jam, akurasi pick, waktu dari dok ke stok, akurasi inventory, fill rate, susut."},
-      {"label": "Every value is an input", "en": "Every limit and percentage in this guide must be a setting that an authorised user can change on a screen.", "id": "Setiap batas dan persentase di panduan ini harus berupa pengaturan yang bisa diubah user berwenang lewat layar."}
-    ]
-  },
-  {
-    "key": "guide-inv-open-decisions",
-    "type": "GUIDE",
-    "module": "INV",
-    "title": "Open Decisions for Inventory, With Recommended Answers",
-    "purpose": {
-      "en": "The decisions that shape the inventory design, each with a recommended answer and the reason. Marked as proposals until the user confirms them.",
-      "id": "Keputusan yang membentuk desain inventory, masing-masing dengan jawaban yang disarankan dan alasannya. Berlabel usulan sampai user mengonfirmasi."
-    },
-    "keywords": "keputusan inventory, rekomendasi, valuasi, stok minus, offcut, die owner, substitusi, fsc, persetujuan customer, waste standar",
-    "steps": [
-      {
-        "en": "Valuation: weighted average, perpetual. It is accepted by Indonesian standards, supported by the big systems, and simple to explain. Add FIFO layers only if auditors or customers ask for them.",
-        "id": "Valuasi: rata-rata tertimbang, perpetual. Diterima standar Indonesia, didukung sistem besar, dan mudah dijelaskan. Tambah lapisan FIFO hanya bila auditor atau customer memintanya."
-      },
-      {
-        "en": "Negative stock: not allowed by default. An issue before the receipt is recorded corrupts the average. Allow it only per location with a correction rule.",
-        "id": "Stok minus: tidak diizinkan sebagai default. Pengeluaran sebelum penerimaan dicatat merusak rata-rata. Izinkan hanya per lokasi dengan aturan koreksi."
-      },
-      {
-        "en": "Substitution rules: all three layers, customer over product over global, so one customer can refuse what the global rule allows.",
-        "id": "Aturan substitusi: ketiga lapisan, customer di atas produk di atas global, supaya satu customer bisa menolak yang diizinkan aturan global."
-      },
-      {
-        "en": "Customer approval: record it in the system with who, when and an attachment, for downgrade and process changes.",
-        "id": "Persetujuan customer: catat di sistem dengan siapa, kapan dan lampiran, untuk downgrade dan perubahan proses."
-      },
-      {
-        "en": "Die ownership: record it per die. Charge customer owned dies as tooling, and company owned dies as an asset spread over the boxes made.",
-        "id": "Kepemilikan die: catat per die. Die milik customer ditagih sebagai tooling, die milik perusahaan sebagai aset yang dibagi ke box yang dibuat."
-      },
-      {
-        "en": "Offcuts and partial rolls: track them above a minimum size and weight, in a dedicated rack, and scrap the rest by weight.",
-        "id": "Offcut dan roll sisa: lacak di atas ukuran dan berat minimum, di rak khusus, dan scrap sisanya per berat."
-      },
-      {
-        "en": "Waste standard: one value per machine and process in the master, compared with actual from production reports, instead of one percent per product.",
-        "id": "Standar waste: satu nilai per mesin dan proses di master, dibandingkan dengan aktual dari laporan produksi, bukan satu persen per produk."
-      },
-      {
-        "en": "Leftover customer finished goods: a retention period as a setting, then the customer is asked to decide, with a default of bill or destroy by contract.",
-        "id": "Sisa barang jadi customer: masa retensi sebagai pengaturan, lalu customer diminta memutuskan, dengan default tagih atau musnahkan sesuai kontrak."
-      },
-      {
-        "en": "FSC and food grade: include the batch attribute from the start. Adding certification fields later means touching every stock record.",
-        "id": "FSC dan food grade: masukkan atribut batch sejak awal. Menambah kolom sertifikasi belakangan berarti menyentuh setiap catatan stok."
-      }
-    ],
-    "fields": [
-      {"label": "Status of these answers", "en": "Proposals based on common practice of large ERP systems and the rules of this factory. Not final until the user confirms each one.", "id": "Usulan berdasarkan praktik umum ERP besar dan aturan pabrik ini. Belum final sampai user mengonfirmasi tiap butirnya."},
-      {"label": "Accounting standard", "en": "LIFO is not allowed under PSAK 14 and IAS 2. Average and FIFO are.", "id": "LIFO tidak diperbolehkan oleh PSAK 14 dan IAS 2. Rata-rata dan FIFO diperbolehkan."},
-      {"label": "Settings", "en": "Every threshold chosen above is stored as a setting the user can edit, not as a fixed value in the code.", "id": "Setiap ambang yang dipilih di atas disimpan sebagai pengaturan yang bisa diubah user, bukan nilai tetap di kode."}
     ]
   },
   {
@@ -644,16 +739,56 @@
       }
     ],
     "fields": [
-      {"label": "Sampling plan", "en": "Table of sample size by lot size and an intensity: tightened, normal, reduced or skip with a supplier certificate. All values are settings.", "id": "Tabel ukuran sampel menurut jumlah lot dan intensitas: ketat, normal, ringan atau lewati dengan sertifikat supplier. Semua nilai adalah pengaturan."},
-      {"label": "Intensity change", "en": "A supplier passing several lots in a row moves to reduced checks; one rejection moves it back to tightened.", "id": "Supplier yang lulus beberapa lot berturut-turut pindah ke pemeriksaan ringan; satu penolakan memindahkannya kembali ke ketat."},
-      {"label": "URGENT", "en": "A mark on the receipt line with who, why and which work order. Only authorised roles may set it.", "id": "Tanda pada baris penerimaan berisi siapa, mengapa dan work order mana. Hanya peran berwenang yang boleh memasangnya."},
-      {"label": "Conditional", "en": "Posted and usable, but not yet released by QC. Counted as Available with a mark.", "id": "Sudah diposting dan bisa dipakai, tetapi belum dirilis QC. Dihitung Available dengan tanda."},
-      {"label": "Dock to line", "en": "Delivery from the dock directly to the production area, without putaway into a storage bin.", "id": "Pengantaran dari dok langsung ke area produksi, tanpa putaway ke bin penyimpanan."},
-      {"label": "Decision deadline", "en": "A setting in hours. When it passes, or the job ends first, a usage decision is required and QC and operations managers are alerted.", "id": "Pengaturan dalam jam. Bila lewat, atau job selesai lebih dulu, wajib ada usage decision dan kepala QC serta Ops Manager diberi tahu."},
-      {"label": "Shortfall", "en": "Output plus standard waste, in material units, minus the quantity issued to the work order.", "id": "Output ditambah waste standar, dalam satuan material, dikurangi qty yang dikeluarkan ke work order."},
-      {"label": "Standard waste only", "en": "Waste above the standard is a usage variance, not a short delivery, and is never claimed from the supplier.", "id": "Waste di atas standar adalah varians pemakaian, bukan kurang kirim, dan tidak pernah ditagihkan ke supplier."},
-      {"label": "Request to send shortfall", "en": "A document with source (supplier, subcontractor or customer), quantity, proof of recount, need date and links to the receipt and the order.", "id": "Dokumen berisi sumber (supplier, subkon atau customer), qty, bukti hitung ulang, tanggal butuh dan tautan ke penerimaan dan order."},
-      {"label": "If the supplier refuses", "en": "Recorded as a claim: debit note or deduction from the invoice. The rule is still to be decided by the user.", "id": "Dicatat sebagai klaim: debit note atau potongan tagihan. Aturannya masih menunggu keputusan user."}
+      {
+        "label": "Sampling plan",
+        "en": "Table of sample size by lot size and an intensity: tightened, normal, reduced or skip with a supplier certificate. All values are settings.",
+        "id": "Tabel ukuran sampel menurut jumlah lot dan intensitas: ketat, normal, ringan atau lewati dengan sertifikat supplier. Semua nilai adalah pengaturan."
+      },
+      {
+        "label": "Intensity change",
+        "en": "A supplier passing several lots in a row moves to reduced checks; one rejection moves it back to tightened.",
+        "id": "Supplier yang lulus beberapa lot berturut-turut pindah ke pemeriksaan ringan; satu penolakan memindahkannya kembali ke ketat."
+      },
+      {
+        "label": "URGENT",
+        "en": "A mark on the receipt line with who, why and which work order. Only authorised roles may set it.",
+        "id": "Tanda pada baris penerimaan berisi siapa, mengapa dan work order mana. Hanya peran berwenang yang boleh memasangnya."
+      },
+      {
+        "label": "Conditional",
+        "en": "Posted and usable, but not yet released by QC. Counted as Available with a mark.",
+        "id": "Sudah diposting dan bisa dipakai, tetapi belum dirilis QC. Dihitung Available dengan tanda."
+      },
+      {
+        "label": "Dock to line",
+        "en": "Delivery from the dock directly to the production area, without putaway into a storage bin.",
+        "id": "Pengantaran dari dok langsung ke area produksi, tanpa putaway ke bin penyimpanan."
+      },
+      {
+        "label": "Decision deadline",
+        "en": "A setting in hours. When it passes, or the job ends first, a usage decision is required and QC and operations managers are alerted.",
+        "id": "Pengaturan dalam jam. Bila lewat, atau job selesai lebih dulu, wajib ada usage decision dan kepala QC serta Ops Manager diberi tahu."
+      },
+      {
+        "label": "Shortfall",
+        "en": "Output plus standard waste, in material units, minus the quantity issued to the work order.",
+        "id": "Output ditambah waste standar, dalam satuan material, dikurangi qty yang dikeluarkan ke work order."
+      },
+      {
+        "label": "Standard waste only",
+        "en": "Waste above the standard is a usage variance, not a short delivery, and is never claimed from the supplier.",
+        "id": "Waste di atas standar adalah varians pemakaian, bukan kurang kirim, dan tidak pernah ditagihkan ke supplier."
+      },
+      {
+        "label": "Request to send shortfall",
+        "en": "A document with source (supplier, subcontractor or customer), quantity, proof of recount, need date and links to the receipt and the order.",
+        "id": "Dokumen berisi sumber (supplier, subkon atau customer), qty, bukti hitung ulang, tanggal butuh dan tautan ke penerimaan dan order."
+      },
+      {
+        "label": "If the supplier refuses",
+        "en": "Recorded as a claim: debit note or deduction from the invoice. The rule is still to be decided by the user.",
+        "id": "Dicatat sebagai klaim: debit note atau potongan tagihan. Aturannya masih menunggu keputusan user."
+      }
     ]
   }
 ]

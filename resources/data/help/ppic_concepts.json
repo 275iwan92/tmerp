@@ -328,52 +328,6 @@
     "fields": []
   },
   {
-    "key": "guide-ppic-review-open-decisions",
-    "type": "GUIDE",
-    "module": "PROD",
-    "title": "PPIC: Review of the Source Specification and Open Decisions",
-    "purpose": {
-      "en": "What was kept, changed and added compared with the Strategic Scheduling specification, and the decisions the user must make before any screen is planned.",
-      "id": "Apa yang dipertahankan, diubah dan ditambah dibanding spesifikasi Strategic Scheduling, serta keputusan yang harus diambil user sebelum layar apa pun direncanakan."
-    },
-    "keywords": "review, ulasan, keputusan terbuka, open decisions, spesifikasi ppic, strategic scheduling, catatan, referensi",
-    "steps": [
-      {
-        "en": "Kept: scope after Inquiry and ProDev, setup matrix, grouping by ink, paper and size, finite capacity with bottleneck, tooling gate, waste allowance per process, anchor job and the 8 to 12 hour lock.",
-        "id": "Dipertahankan: ruang lingkup setelah Inquiry dan ProDev, matriks setup, pengelompokan tinta, kertas dan ukuran, kapasitas terbatas dengan bottleneck, gerbang tooling, toleransi waste per proses, job jangkar dan kunci 8 sampai 12 jam."
-      },
-      {
-        "en": "Changed: the priority formula (units, equal value for all late jobs); slack counts the whole remaining routing and waits; setup grouping reorders only similar-urgency jobs; waste is fixed plus variable, calculated backwards.",
-        "id": "Diubah: rumus prioritas (satuan, nilai sama untuk semua job telat); slack menghitung seluruh sisa routing dan waktu tunggu; pengelompokan setup hanya mengurutkan job yang urgensinya mirip; waste = tetap + variabel, dihitung mundur."
-      },
-      {
-        "en": "Added: drying and curing waits, UV against conventional ink, caliper and grain, tooling use counter, WIP release (rope), split lots, subcontract, maintenance windows, event-based re-plan and KPIs.",
-        "id": "Ditambah: waktu tunggu kering dan curing, tinta UV lawan konvensional, caliper dan arah serat, penghitung pemakaian tooling, pelepasan WIP (rope), pecah lot, subkon, jendela perawatan, rencana ulang berbasis kejadian dan KPI."
-      },
-      {
-        "en": "Corrected: Yellow, Magenta, Cyan, Black is the colour order inside a job set by prepress, not a rule between jobs. Between jobs the rule is lighter before darker and the same spot colour together.",
-        "id": "Dikoreksi: Yellow, Magenta, Cyan, Black adalah urutan warna di dalam satu job yang diatur prepress, bukan aturan antar job. Antar job aturannya terang sebelum gelap dan spot color yang sama dikelompokkan."
-      },
-      {
-        "en": "Decided 1: start with assumed setup minutes, waste ranges and weights (0.50 / 0.35 / 0.15); a learning engine then adjusts them from actual results.",
-        "id": "Diputuskan 1: mulai dari menit setup, rentang waste dan bobot (0,50 / 0,35 / 0,15) asumsi; lalu mesin pembelajar menyesuaikannya dari hasil aktual."
-      },
-      {
-        "en": "Decided 2: customer class (Tier 1 to 3) is kept in the Customer master and maintained by Sales. Decided 3: the tooling master is built, with setup time per tool.",
-        "id": "Diputuskan 2: kelas pelanggan (Tier 1 sampai 3) disimpan di master Customer dan dirawat Sales. Diputuskan 3: master tooling dibangun, dengan waktu setup per tooling."
-      },
-      {
-        "en": "Still open: which machine groups are bottleneck candidates, the lock length (8 or 12 hours), and the policy for subcontracted die-cutting.",
-        "id": "Masih terbuka: grup mesin mana yang kandidat bottleneck, panjang masa kunci (8 atau 12 jam), dan kebijakan die-cutting yang disubkontrakkan."
-      },
-      {
-        "en": "References: SMED (changeover reduction), the ATCS rule of Lee et al. 1997 for setup-dependent scheduling, Theory of Constraints Drum-Buffer-Rope, critical ratio, and published print-industry make-ready and spoilage practice.",
-        "id": "Referensi: SMED (pengurangan changeover), aturan ATCS Lee dkk. 1997 untuk penjadwalan dengan setup bergantung urutan, Drum-Buffer-Rope dari Theory of Constraints, critical ratio, dan praktik makeready serta spoilage industri cetak."
-      }
-    ],
-    "fields": []
-  },
-  {
     "key": "guide-ppic-learning-engine",
     "type": "GUIDE",
     "module": "PROD",
