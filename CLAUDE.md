@@ -7,7 +7,7 @@
 ## 1. Bisnis dan aturan keras
 - OFFSET PRINTING (karton box/kemasan). Semua data dummy mulai dari INQUIRY dan wajib punya **Master Card + artwork + dieline** dengan ukuran jelas (P x L x T, datar, mm). Berkas asli Jo di `docs/attachments/MC-*.xlsx` dan `docs/attachments/mastercard/` dipakai apa adanya; dieline tidak digambar ulang.
 - **Semua zona beku**: flow data dan flow dokumen tidak diubah kecuali Jo meminta; jangan pernah mengubahnya tanpa seizin Jo. Ragu = tanya dulu (file, elemen, sebelum -> sesudah). Teks UI Indonesia -> English sudah diizinkan.
-- Master REAL (`prod_machine`, `prod_process`, `prod_process_machine`, pegawai) tidak disentuh, tidak diberi `data_origin='DUMMY'`; spek mesin tidak dikarang. Jangan menulis ke `tm2*` saat kerja UAT; dummy hanya di `ddt*`.
+- Master REAL (`prod_machine`, `prod_process`, `prod_process_machine`, pegawai) tidak disentuh, tidak diberi `data_origin='DUMMY'`; spek mesin tidak dikarang. Dummy hanya di `ddt*`, data real di `tm2*`. **Sebelum UAT dimulai (Jo 2026-10-16): apa pun yang berubah di mockup.test (kode, skema, migration) wajib diterapkan juga di tmerp.test; cara kerja identik, beda hanya data dan penanda (mis. logo).** Setelah UAT berjalan, tmerp.test tidak diuji agen.
 - **ATTENTION ENGINE (Jo 2026-10-13):** baca `docs/ENGINE-ATTENTION.md` sebelum menyentuh engine (ProDev / ProCost / solver PPIC); butir terbuka ATTENTION-ENGINE-01..08.
 - MRP/MPS lama sengaja ditinggalkan (tag `arsip/mrp-mps-2026-08-30`); tabel `prd_mrp_*` dibiarkan.
 
