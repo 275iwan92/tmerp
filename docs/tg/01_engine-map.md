@@ -160,7 +160,7 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 4. Engines without a TG card: 51 of 61. Registry vs code findings for the 10 Sales engines: `sales/90_findings_engine-group-c.md`.
 
 ## Diagram
-[img/engine-map.svg](./img/engine-map.svg), text twin = the schedule table above.
+![Engine map](./img/engine-map.svg), text twin = the schedule table above.
 
 > Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.
 

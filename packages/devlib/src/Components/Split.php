@@ -17,10 +17,16 @@ class Split extends DevlibComponent
         return 'x-dl::split'.($this->side === 'left' ? ' side=left' : '');
     }
 
+    // The slot named side shadows the side prop inside the template, so the template asks this method instead.
+    public function isLeft(): bool
+    {
+        return $this->side === 'left';
+    }
+
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class(['dl-split', 'dl-split--left' => $side === 'left']) }} {!! $dl() !!} style="--dl-aside:{{ $aside }}">
+            <div {{ $attributes->class(['dl-split', 'dl-split--left' => $isLeft()]) }} {!! $dl() !!} style="--dl-aside:{{ $aside }}">
                 <div class="dl-split__main">{{ $slot }}</div>
                 <aside class="dl-split__aside">{{ $side ?? '' }}</aside>
             </div>

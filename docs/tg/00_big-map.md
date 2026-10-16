@@ -1,6 +1,6 @@
 # Big map ERP TM (TG Phase 3)
 
-> 2026-10-16. Modules and sub-modules = the `sys_app_menu` tree (FACT, mockup query: 9 modules, 394 active menu rows). Flows between modules are only those written in the TG Sales cards (already verified by the cards themselves). Modules without a TG card are marked "not yet"; do not read a missing arrow as a missing flow. Diagram: [img/big-map.svg](./img/big-map.svg) (text twin = the table and the flow list below).
+> 2026-10-16. Modules and sub-modules = the `sys_app_menu` tree (FACT, mockup query: 9 modules, 394 active menu rows). Flows between modules are only those written in the TG Sales cards (already verified by the cards themselves). Modules without a TG card are marked "not yet"; do not read a missing arrow as a missing flow. Diagram: ![Big map of the ERP](./img/big-map.svg) (text twin = the table and the flow list below).
 
 ## Modules and sub-modules
 | Module (code) | Sub-module (screen count) | TG |
