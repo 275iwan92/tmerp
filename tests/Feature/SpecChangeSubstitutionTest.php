@@ -132,4 +132,13 @@ class SpecChangeSubstitutionTest extends TestCase
             SysNotification::query()->where('title', $title)->delete();
         }
     }
+
+    public function test_cost_impact_is_the_price_difference_times_the_required_quantity(): void
+    {
+        $line = new PrdWoMaterial(['qty_required' => 10, 'wo_id' => 0]);
+        $impact = SpecChangeService::costImpact($line, new MatRaw(['avg_unitprice' => 100]), new MatRaw(['avg_unitprice' => null, 'last_unitprice' => 150]));
+
+        $this->assertSame(500.0, $impact['delta']);
+        $this->assertNull($impact['order_value']);
+    }
 }

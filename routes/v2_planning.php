@@ -103,4 +103,12 @@ Route::prefix('v2/planning')->name('v2.planning.')->middleware('module:PROD')->g
         return redirect(route('v2.screen', 'purchase-requisition').'?id='.$made[0]->pr_id)
             ->with('v2_flash', str_replace(':n', (string) count($made), Dictionary::t(':n Purchase Requisition(s) created as Draft from Material Planning.')));
     })->name('create-pr');
+
+    Route::post('/buy', function (Request $r) {
+        $d = $r->validate(['material_id' => ['required', 'integer']]);
+        [$pr, $po] = MaterialPlanning::buy((int) $d['material_id']);
+
+        return redirect(route('v2.screen', 'purchase-requisition').'?id='.$pr->pr_id)
+            ->with('v2_flash', $po ? tf('PR :pr and PO :po were created as Draft. Both still need their normal approval.', ['pr' => $pr->doc_no, 'po' => $po->doc_no]) : tf('PR :pr was created as Draft. The material has no suggested supplier, so no PO was made.', ['pr' => $pr->doc_no]));
+    })->name('buy');
 });

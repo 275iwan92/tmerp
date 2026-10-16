@@ -8,6 +8,7 @@ use App\Models\Master\MatRaw;
 use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PqLine;
+use App\Models\Pur\PrLine;
 use App\Models\Pur\PrLineAlloc;
 use App\Models\Sys\SysConstant;
 use App\Services\Flow\FlowEngineService;
@@ -197,6 +198,11 @@ final class PurchaseOrder
             if ($po->lines()->where('is_stock', false)->whereNull('i_coa_account_id')->exists()) {
                 return t('Non-stock lines of a Cash PO need an expense account.');
             }
+        }
+        // PO yang lahir dari PR yang belum Approved (Buy di Material Planning) menunggu approval PR dulu.
+        if (PrLine::whereIn('pr_line_id', PrLineAlloc::whereIn('alloc_id', $po->lines()->pluck('alloc_id'))->pluck('pr_line_id'))
+            ->whereHas('requisition', fn ($q) => $q->where('status', '<>', 'APPROVED'))->exists()) {
+            return t('A PR on this PO is not Approved yet.');
         }
         $c = self::component($po->po_id);
         $c->submit(app(FlowEngineService::class));

@@ -4,10 +4,13 @@ namespace App\Support\V2\Data;
 
 use App\Models\Inventory\RmBooking;
 use App\Models\Inventory\RmBookingD;
+use App\Models\Master\MatRaw;
 use App\Models\Pur\PrLine;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sys\SysConstant;
 use App\Services\Planning\MaterialPlanningEngine;
+use App\Services\Pur\PoBuilderService;
+use App\Services\Pur\PrAllocationService;
 use App\Support\V2\Print\PrintDocs;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
@@ -42,7 +45,8 @@ final class MaterialPlanning
                     ['Short', Locale::number($m['short'], 2).' '.$m['uom']],
                     ['First Needed', Locale::d($m['first_need']) ?? '—'],
                     ['Order By (latest)', (Locale::d($m['order_by']) ?? '—').' · '.t('lead').' '.$m['lead'].' '.t('working days')],
-                ]];
+                ],
+                'buy' => $m['short'] > 0 && $m['id'] > 0 ? ['action' => route('v2.planning.buy'), 'id' => $m['id']] : null];
         }
         $short = collect($rows)->where('short', '>', 0)->where('id', '>', 0);
         $noItem = collect($rows)->whereIn('status', ['Need item', 'Need layout'])->count();
@@ -218,6 +222,25 @@ final class MaterialPlanning
         self::changed();
 
         return $made;
+    }
+
+    // Buy satu bahan: PR Draft (createPr) + PO Draft dari baris PR itu untuk supplier usulan, harga = harga beli terakhir. PR tetap lewat approval
+    // OPM dan PO lewat approval Product Costing > OPM (Jo 2026-10-16); PQ dilewati. Tanpa supplier usulan: hanya PR.
+    public static function buy(int $materialId): array
+    {
+        $supplierId = (int) collect(self::engine()->plan()['materials'])->firstWhere('material_id', $materialId)['supplier_id'];
+        $pr = self::createPr([$materialId])[0];
+        $line = PrLine::where('pr_id', $pr->pr_id)->firstOrFail();
+        $line->update(['i_est_price' => $line->i_est_price ?: MatRaw::query()->whereKey($materialId)->value('last_unitprice')]);
+        $alloc = PrAllocationService::ensureDefaultAllocation($line);
+        $supplierId = $supplierId ?: (int) $alloc->i_supplier_id;
+        $po = null;
+        if ($supplierId) {
+            $po = PoBuilderService::findOrCreateDraft($supplierId);
+            PoBuilderService::addAllocation($po, $alloc);
+        }
+
+        return [$pr, $po];
     }
 
     public static function changed(): void

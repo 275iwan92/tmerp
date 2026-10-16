@@ -13,6 +13,12 @@
                     <x-dl::badge :label="$p['code']" />
                     <x-dl::badge :label="$p['status']" :tone="$p['statusTone']" />
                 </x-dl::chips>
+                @if ($p['buy'])
+                    <x-dl::action-form action="{{ $p['buy']['action'] }}">
+                        <input type="hidden" name="material_id" value="{{ $p['buy']['id'] }}">
+                        <x-dl::button type="submit" icon="fa-cart-shopping" :label="Lang::text('Buy (PR + PO)')" />
+                    </x-dl::action-form>
+                @endif
             </x-dl::action-bar>
             <x-dl::headline>{{ $p['material'] }}</x-dl::headline>
             <x-dl::form.row cols="4">

@@ -6,7 +6,7 @@
  * Sumber hulu  : tm2prd.prd_wo_material (is_substituted, substitute_material_id dibaca GateService), mat_raw (harga rata-rata / terakhir), CO delivery + item (nilai order), SpecLock, SpecOtpService.
  * Input        : id baris BOM, bahan pengganti, alasan, pilihan simpan cadangan, login pemohon; kode OTP.
  * Output       : spc_change_request (PENDING lalu APPLIED / REJECTED); baris WO bertanda pengganti; prod_material_alt bila cadangan; notifikasi dampak biaya ke grup GM dan DIREKSI.
- * Dipakai oleh : Form WO (kartu substitusi), antrean persetujuan.
+ * Dipakai oleh : Modul MRP ProCost (substitusi bahan; Form WO tidak lagi menyediakan substitusi, Jo 2026-10-16).
  * Status       : Aktif. Dampak biaya = selisih harga bahan x qty yang sama (ukuran lembar berbeda belum dimodelkan; ditandai di basis hitung).
  */
 
