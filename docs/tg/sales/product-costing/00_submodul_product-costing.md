@@ -1,6 +1,6 @@
 # Sub-modul: Product Costing (Pro-Cost)
 
-> CONTOH FASE 1 (2026-10-16). Halaman sub-modul hanya merangkum dan menautkan; fakta tabel/kolom ada di kartu.
+> Halaman sub-modul hanya merangkum dan menautkan; fakta tabel/kolom ada di kartu. Diperbarui 2026-10-16 (Fase 2).
 
 - **Modul**: Sales > Inquiry & Quotation > Pro-Cost. Menu (FAKTA, `sys_app_menu` mockup): Pro-Cost New, Revise, Recalc, Instant (`v2:sales-procost*`).
 - **Tujuan**: menghitung HPP dan harga jual per tier qty dari Inquiry + ProDev; costing rahasia (A.8-A.9), publish = deklasifikasi ke Sales.
@@ -11,15 +11,17 @@
 - **dipakai_oleh**: Quotation (harga published, wajib integrated A.1), lalu Customer Order.
 - **tanda**: `stat_confirm_procost` di `iqp_inquiry` (A.20).
 
-## Engine di sub-modul ini
-| Engine | Kartu | Pemicu |
-|---|---|---|
-| Costing Advisor | `10_engine_costing-advisor.md` | layar costing (tanpa background) |
-| Costing Engine (rumus harga) | BELUM ditulis | layar costing, tombol Calculate (dari kode: dipanggil sebelum `learn`) |
-| Reverse Costing | BELUM ditulis | BELUM dicek |
+## Kartu dan engine
+| Isi | Berkas |
+|---|---|
+| Antarmuka ProCost (sisi Sales) | `11_kartu_antarmuka-procost.md` |
+| Costing Advisor | `10_engine_costing-advisor.md` |
+| Costing Engine (rumus harga) | `20_engine_costing-engine.md` |
+| Reverse Costing | `30_engine_reverse-costing.md` |
+| Quotation (penerima harga) | `../quotation/10_kartu_quotation.md` |
 
 ## Diagram
-`../img/costing-advisor.svg` (kembaran teks di kartu, bagian "Alur").
+`../img/costing-advisor.svg`, `../img/costing-engine.svg` (kembaran teks ada di kartu, bagian "Alur").
 
 ## Panduan pemakai (UG) yang sudah ada
 `docs/guides/sales/03_procost.md` (section guide). TG tidak mengulang isinya.

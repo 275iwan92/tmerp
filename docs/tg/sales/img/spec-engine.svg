@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" font-family="sans-serif" font-size="13">
+  <!-- Kembaran teks: docs/tg/sales/prodev/20_engine_spec.md bagian "Alur". Teks hitam di latar putih, tanpa abu-abu. -->
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000"/></marker></defs>
+  <rect width="760" height="400" fill="#fff"/>
+  <g fill="#fff" stroke="#000" stroke-width="1.5">
+    <rect x="10" y="150" width="170" height="90" rx="6"/>
+    <rect x="230" y="20" width="200" height="70" rx="6"/>
+    <rect x="230" y="165" width="200" height="60" rx="6"/>
+    <rect x="230" y="300" width="200" height="70" rx="6"/>
+    <rect x="490" y="165" width="260" height="60" rx="6"/>
+    <rect x="490" y="300" width="260" height="70" rx="6"/>
+    <rect x="490" y="20" width="260" height="70" rx="6" stroke-dasharray="6 4"/>
+  </g>
+  <g fill="#000" text-anchor="middle">
+    <text x="95" y="175">1. Konteks</text><text x="95" y="193">Inquiry + layout ProDev</text><text x="95" y="211">+ aturan prod_bop_rule</text><text x="95" y="229">(fakta: PLANO_NEEDS_CUT, dst)</text>
+    <text x="330" y="45">3. INK</text><text x="330" y="63">notasi a/b + artwork</text><text x="330" y="81">baris tinta, cm2</text>
+    <text x="330" y="190">5. BOP</text><text x="330" y="208">langkah dari aturan</text>
+    <text x="330" y="325">4. BOM</text><text x="330" y="343">kertas, sheet, tinta,</text><text x="330" y="361">bahan finishing</text>
+    <text x="620" y="190">6. Rantai qty MUNDUR</text><text x="620" y="208">out, waste, toleransi, in</text>
+    <text x="620" y="325">7. Kebutuhan BOM</text><text x="620" y="343">per lembar x printSheets</text><text x="620" y="361">+ status stok</text>
+    <text x="620" y="45">Override officer</text><text x="620" y="63">menggantikan hasil engine</text><text x="620" y="81">per bagian (bop / bom / inks)</text>
+  </g>
+  <g stroke="#000" stroke-width="1.5" fill="none" marker-end="url(#a)">
+    <path d="M180,170 H205 V55 H228"/><path d="M180,195 H228"/><path d="M180,220 H205 V335 H228"/>
+    <path d="M430,195 H488"/><path d="M620,225 V298"/><path d="M430,335 H488"/>
+    <path d="M620,90 V160"/>
+  </g>
+  <text x="330" y="120" fill="#000" text-anchor="middle">baris tinta masuk ke BOM (4)</text>
+  <text x="380" y="392" fill="#000" text-anchor="middle">hanya persist() menulis (prod_part_* dan iqp_part_*); bagian non-ENGINE tidak ditimpa</text>
+</svg>
