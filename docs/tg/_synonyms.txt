@@ -1,0 +1,14 @@
+# One group per line, words separated by '='. concept:find searches every word of the group that contains the term.
+product type = type_code = tipe produk = tipe dieline = box style
+material = bahan = rawmat = raw material = bahan baku
+customer = pelanggan = cust
+quotation = penawaran = quo
+customer order = co = order pelanggan = sales order
+delivery order = do = surat jalan = delivery note
+master card = mastercard = kartu master
+inquiry = permintaan = iqp
+costing = hpp = procost = pro-cost
+sales person = sales pic = pic sales = salesman
+tolerance = toleransi
+due date = jatuh tempo = tanggal kirim
+work order = wo = perintah kerja
