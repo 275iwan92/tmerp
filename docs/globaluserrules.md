@@ -755,6 +755,7 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     - **Rahasia.** Angka dan rumus harga hanya di bawah `<!-- johiwan-only -->` (A.8-A.9).
     - **Zona beku.** Menyentuh antarmuka beku: peringatkan Jo lebih dulu, seperti aturan biasa.
     - **Sebelum commit docs/tg:** `php artisan docs:check` harus 0 ERROR.
+    - **Peta baca-tulis dan relasi tabel (user 2026-10-17).** Tiap halaman sub-modul (`00_submodule_*.md`) wajib punya dua bagian: `## Read/Write map` (tabel Process | Trigger | Reads | Writes | Evidence; semua proses sub-modul, tabel yang dibaca dan ditulis dengan jenis C/U/D, bukti file:baris) dan `## Table relations` (tabel Parent | Child | Cardinality 1:N, 1:1 atau N:M | Column | Link FK atau logical). Gambar matriks dan diagram relasi (SVG, kaki gagak) dibangun otomatis dari kedua tabel itu dengan `php artisan docs:rw`, jangan digambar tangan; `docs:check` memberi peringatan bila bagian hilang atau gambar usang. Tujuannya mempermudah debugging: siapa membaca dan menulis tabel apa, dan bagaimana tabel saling terkait.
 
 ## E. Help & Asisten AI
 
@@ -932,3 +933,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-16 | D.24: **Technical Guide (docs/tg) = ingatan agen**; protokol baca, bukti ketiadaan lewat concept:find, hook kartu (user: "Agen yang memperingatkan Jo bila sebuah usulan duplikat atau bertabrakan, bukan Jo"). |
 | 2026-10-17 | B.17: **batas data dummy per level: 2 set, paling banyak 3, dua set wajib benar-benar real dan lengkap** (user: "limit data dummy 2 set data every levels, maximum 3 set data. Make sure 2 set data really real and complete"). Level = stage B.15; Test/DEMO/Contoh bukan set sah. |
 | 2026-10-17 | B.12 dan B.15: **bagian yang bertentangan dengan B.17 dihapus** ("dummy jangan dihapus" dan "selalu sediakan dummy untuk layar baru" di B.12; set `mixed`, skrip contoh Pro-Dev/Pro-Cost, dan draft tak lengkap di B.15); B.17 ditambah: data transaksi cukup 2 set per level, dummy wajib bisa di-reset (user: "Aturan yang bertentangan di hapus saja. Data dummy memang harus bisa di reset"). |
+| 2026-10-17 | D.24: **halaman sub-modul TG wajib punya Read/Write map dan Table relations beserta gambarnya** (user: "Every submodules you must have diagram for process read write, so easier to debugging"; "Diagram relations like one to many, many to many ... put in images ... clear to understand"). Gambar dibangun otomatis oleh `php artisan docs:rw`. |

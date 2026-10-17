@@ -12,6 +12,8 @@
 
 namespace App\Console\Commands;
 
+use App\Support\Docs\ErdMap;
+use App\Support\Docs\RwMap;
 use App\Support\Engines\EngineRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -77,6 +79,7 @@ class DocsCheck extends Command
         $this->checkStale();
         $this->checkRelations($root);
         $this->checkMenuMap($root);
+        $this->checkRw($root);
 
         if ($this->option('staged')) {
             $this->checkStaged();
@@ -196,6 +199,26 @@ class DocsCheck extends Command
             $key = basename(dirname($dir)).'/'.basename($dir);
             if (basename($dir) !== 'img' && ! isset($map[$key])) {
                 $this->warns[] = "$rel: TG folder $key has no menu mapping";
+            }
+        }
+    }
+
+    // Every sub-module page needs a Read/Write map and its generated SVG must be current (WARN; run php artisan docs:rw).
+    private function checkRw(string $root): void
+    {
+        foreach (glob("$root/*/*/00_submodule_*.md") ?: [] as $md) {
+            $rel = $this->rel($md);
+            $rows = RwMap::parse((string) file_get_contents($md));
+            if ($rows === null) {
+                $this->warns[] = "$rel: no Read/Write map section";
+            } elseif (! is_file($svg = RwMap::svgPath($md)) || file_get_contents($svg) !== RwMap::svg($rows, $rel)) {
+                $this->warns[] = "$rel: Read/Write diagram is missing or stale (run php artisan docs:rw)";
+            }
+            $erd = ErdMap::parse((string) file_get_contents($md));
+            if ($erd === null) {
+                $this->warns[] = "$rel: no Table relations section";
+            } elseif (! is_file($svg = ErdMap::svgPath($md)) || file_get_contents($svg) !== ErdMap::svg($erd, $rel)) {
+                $this->warns[] = "$rel: Table relations diagram is missing or stale (run php artisan docs:rw)";
             }
         }
     }
