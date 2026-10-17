@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Layanan Master Card dummy / impor: membuat inquiry, produk, dan kartu dari berkas; tarif PPN inquiry awal dibaca dari Tax Rate.
+ * Sumber hulu  : Berkas Master Card (docs/attachments), CustCustomer, ProductMasterSync, TaxRate::ppn().
+ * Input        : Data kartu, berkas gambar.
+ * Output       : iqp_inquiry, prod_master_card, berkas.
+ * Dipakai oleh : MasterCardDummyEngine, perintah dummy:master-card.
+ * Status       : Aktif.
+ */
+
 namespace App\Services\MasterCard;
 
 use App\Models\Master\CustCustomer;
@@ -8,6 +18,7 @@ use App\Models\Master\ProdMasterCardFile;
 use App\Models\Master\ProdProduct;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\Sales\ProductMasterSync;
+use App\Support\Finance\TaxRate;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -329,7 +340,7 @@ final class MasterCardService
             'customer_id' => $first->customer_id, 'is_prospect' => 0, 'deadline_quotation' => $o['deadline'] ?? null, 'product_draft_name' => $name,
             'design_number' => $first->design_no, 'sales_note' => trim('From legacy master card '.($first->card_code ?? '#'.$first->id_master_card).'. '.($first->notes ?? '')),
             'inquiry_type' => 'NEW', 'revision_no' => 0, 'material_source' => 'OWN', 'job_nature' => 'PRODUCT', 'tax_scheme' => 'PPN', 'pph_applicable' => 0,
-            'ppn_percent' => 11, 'pph_percent' => 2, 'sub_state' => $o['state'], 'stat_confirm_sales' => $o['confirm'] ? 1 : 0, 'stat_cancel' => 0, 'is_approved' => $o['confirm'] ? 1 : 0,
+            'ppn_percent' => TaxRate::ppn(), 'pph_percent' => 2, 'sub_state' => $o['state'], 'stat_confirm_sales' => $o['confirm'] ? 1 : 0, 'stat_cancel' => 0, 'is_approved' => $o['confirm'] ? 1 : 0,
         ]));
         if (! empty($o['qty'])) {
             $sdi->table('iqp_tier')->insert($row(['inquiry_id' => $inqId, 'tier_seq' => 1, 'qty' => $o['qty'], 'is_primary' => 1]));

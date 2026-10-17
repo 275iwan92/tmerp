@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Header Quotation; totals() menghitung subtotal, DPP, PPN (tarif pada tanggal terbit), grand total untuk Entry dan Print.
+ * Sumber hulu  : quo_item, tax_scheme (EXCL/INCL), TaxRate::ppn(issued_date) (layar Tax Rate).
+ * Input        : Baris quotation, issued_date, tax_scheme.
+ * Output       : Array totals (subtotal, dpp, ppn, ppn_pct, grand).
+ * Dipakai oleh : Quotation v2, Quotation Entry, QuotationPrint, CoOrderBuilder.
+ * Status       : Aktif.
+ */
+
 namespace App\Models\Sdi;
 
 use App\Models\Master\CustCustomer;
@@ -84,7 +94,7 @@ class QuoQuotation extends Model
     public function totals(): array
     {
         $subtotal = (float) $this->items->sum('subtotal');
-        $ppnPct = TaxRate::ppn(); // Settings > Constants (PPN), sama dengan Customer Order & Purchase Order
+        $ppnPct = TaxRate::ppn($this->issued_date); // Master Data > Tax Rate menurut tanggal quotation, sama dengan CO & PO
 
         if ($this->tax_scheme === 'INCL') {
             $dpp = round($subtotal / (1 + $ppnPct / 100), 2);

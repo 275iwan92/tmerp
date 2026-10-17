@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Layar entri Quotation (komponen v1); label skema pajak membaca tarif PPN dari totals() (Tax Rate pada tanggal terbit), bukan angka tetap.
+ * Sumber hulu  : QuoQuotation::totals(), quo_item, CO builder.
+ * Input        : Baris quotation, tax_scheme.
+ * Output       : quo_quotation + item.
+ * Dipakai oleh : Quotation (v1 entry yang masih dipakai v2).
+ * Status       : Aktif.
+ */
+
 use App\Models\Master\CustCustomer;
 use App\Models\Master\CustCustomerContact;
 use App\Models\Master\FinCurrency;
@@ -586,7 +596,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                         <div class="relative">
                             <x-form.select label="Skema Pajak" :disabled="! $this->editable" wire:change="updateHeader('tax_scheme', $event.target.value)" class="disabled:bg-field-soft"
-                                :placeholder="false" :selected="$this->quotation->tax_scheme" :options="['EXCL' => 'Exclusive PPN 11%', 'INCL' => 'Inclusive PPN 11%']" />
+                                :placeholder="false" :selected="$this->quotation->tax_scheme" :options="['EXCL' => 'Exclusive PPN '.number_format($this->totals['ppn_pct'], 0).'%', 'INCL' => 'Inclusive PPN '.number_format($this->totals['ppn_pct'], 0).'%']" />
                             <x-form.auto-chip field="tax_scheme" :state="$this->autoState['tax_scheme'] ?? null" class="absolute top-0 right-0" />
                         </div>
                         <div class="relative">

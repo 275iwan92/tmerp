@@ -38,3 +38,5 @@ Searched: columns `source`/`channel`/`lead` in tm2sdi and tm2mst (`information_s
 
 > Checked 2026-10-16 after the ProCost Book button (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.
 
+
+> Re-checked 2026-10-17: `MasterCardService` now sets the default `ppn_percent` with `TaxRate::ppn()` and the Inquiry nota print falls back to `TaxRate::ppn(inquiry_date)` instead of a fixed 11; nothing else in this card changed.

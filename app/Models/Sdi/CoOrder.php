@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Header Customer Order; totals() menghitung DPP, diskon, PPN (tarif pada tanggal CO), PPh 23 jasa, total tagihan, net piutang.
+ * Sumber hulu  : co_order_item, biaya luar, TaxRate::ppn(co_date) (layar Tax Rate), konstanta PPH23_JASA.
+ * Input        : Baris CO, co_date, is_ppn, diskon dokumen / qty.
+ * Output       : Array totals untuk layar CO, cetak CO, tagihan.
+ * Dipakai oleh : Customer Order v2, CustomerOrderPrint, CoOrderBuilder, CustomerInvoiceService.
+ * Status       : Aktif.
+ */
+
 namespace App\Models\Sdi;
 
 use App\Models\Master\CustCustomer;
@@ -194,8 +204,8 @@ class CoOrder extends Model
         $externalCostTotal = (float) $this->externalCosts->sum('nominal');
 
         $dpp = $itemSubtotal - $discountAmount + $externalCostTotal;
-        // Non PPN (is_ppn = 0) = tanpa PPN; tarif dari Settings > Constants (PPN), sama dengan Purchase Order.
-        $ppnPct = $this->is_ppn ? TaxRate::ppn() : 0.0;
+        // Non PPN (is_ppn = 0) = tanpa PPN; tarif PPN menurut tanggal CO (Master Data > Tax Rate).
+        $ppnPct = $this->is_ppn ? TaxRate::ppn($this->co_date) : 0.0;
         $ppn = round($dpp * $ppnPct / 100, 2);
         $totalBilling = $dpp + $ppn;
 

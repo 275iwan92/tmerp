@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Master Customer (komponen v1); label profil pajak membaca tarif PPN dari Tax Rate. Kode PPN_11 tetap sebagai kunci data (artinya kena PPN).
+ * Sumber hulu  : cust_customer, TaxRate::ppn().
+ * Input        : Data customer.
+ * Output       : cust_customer + kontak + alamat.
+ * Dipakai oleh : Master Data > Customer.
+ * Status       : Aktif.
+ */
+
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\CustCategory;
 use App\Models\Master\CustCustomer;
@@ -1048,7 +1058,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                             :options="$this->divisions->pluck('division_name', 'division_id')->all()" />
                         <x-form.input label="Price List" wire:model="price_list_code" maxlength="50" />
                         <x-form.select label="Profil Pajak" wire:model="tax_profile" :placeholder="false"
-                            :options="['PPN_11' => 'PPN 11% - Domestic Taxable', 'EXEMPT' => 'Bebas PPN (Kawasan Berikat)']" />
+                            :options="['PPN_11' => 'PPN '.\App\Support\Finance\TaxRate::ppn().'% - Domestic Taxable', 'EXEMPT' => 'Bebas PPN (Kawasan Berikat)']" />
                     </div>
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Termin &amp; Kredit</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-3">

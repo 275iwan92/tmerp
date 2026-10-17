@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Membuat dan memposting tagihan penjualan (invoice, uang muka, pelunasan) dari Customer Order / Delivery Order; tarif PPN dibekukan di faktur menurut tanggal faktur.
+ * Sumber hulu  : CoOrder, DoDelivery + POD, TaxRate::ppn(tanggal faktur) (layar Tax Rate), konstanta DP_VAT_ON_RECEIPT.
+ * Input        : CO, tanggal faktur, user.
+ * Output       : fin_invoice + baris + jurnal (tax_rate disimpan di faktur sebagai snapshot).
+ * Dipakai oleh : To Invoice, Customer Invoice v2, Down Payment.
+ * Status       : Aktif.
+ */
+
 namespace App\Services\Acc;
 
 use App\Models\Acc\FinCompanyBank;
@@ -135,7 +145,7 @@ class CustomerInvoiceService
 
         return [
             'invoice_number' => null, 'invoice_type' => $type, 'partner_type' => 'CUSTOMER', 'partner_id' => $customer->id_customer, 'co_id' => $co->id_order,
-            'is_ppn' => $ppn, 'tax_rate' => $ppn ? TaxRate::ppn() : 0, 'payment_term_code' => $term, 'customer_po_no' => $co->customer_po_no,
+            'is_ppn' => $ppn, 'tax_rate' => $ppn ? TaxRate::ppn($date) : 0, 'payment_term_code' => $term, 'customer_po_no' => $co->customer_po_no,
             'bill_to_name' => $customer->customer_name, 'bill_to_address' => $customer->default_address, 'company_bank_id' => $bank?->id_company_bank,
             'invoice_date' => $date, 'due_date' => $this->dueDate($date, $term), 'subtotal' => 0, 'tax_amount' => 0, 'total_amount' => 0, 'paid_amount' => 0,
             'payment_status' => 'UNPAID', 'doc_status' => 'DRAFT', 'revenue_account_id' => $this->arap->accountId('411000') ?: null,

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Layar Hutang (komponen v1); label PPN Masukan membaca tarif efektif dari Tax Rate (bukan teks 12% x DPP 11/12).
+ * Sumber hulu  : ArApService::taxRate (FinTaxScheme -> TaxRate), fin_invoice.
+ * Input        : Data tagihan supplier.
+ * Output       : fin_invoice + jurnal.
+ * Dipakai oleh : Finance > Payables.
+ * Status       : Aktif.
+ */
+
 use App\Livewire\Concerns\OpensFromQuery;
 use App\Livewire\Concerns\FinanceScreen;
 use App\Models\Acc\FinAccount;
@@ -402,7 +412,7 @@ new #[Title('Procure to Pay — TELASIH MAKMUR ERP')] class extends Component
                     <select wire:model.live="pph_code" x-data x-effect="$el.value = @js($pph_code)"><option value="">None</option><option value="PPH23">PPh 23 (jasa, 2%)</option><option value="PPH22">PPh 22 (1.5%)</option></select>
                 </x-ledger.field>
                 <x-ledger.field label="Tax code" :hint="$with_ppn && $subtotal ? 'PPN Masukan '.Fmt::rp((float) $subtotal * app(\App\Services\Acc\ArApService::class)->taxRate('PPN_IN')) : null">
-                    <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" wire:model.live="with_ppn"> PPN Masukan 12% × DPP 11/12</label>
+                    <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" wire:model.live="with_ppn"> PPN Masukan {{ rtrim(rtrim(number_format(\App\Support\Finance\TaxRate::ppn(), 2, '.', ''), '0'), '.') }}%</label>
                 </x-ledger.field>
                 <x-ledger.field label="No. Faktur Pajak (e-Faktur)" name="tax_invoice_no"><input wire:model="tax_invoice_no" placeholder="kosongkan bila belum diterima"></x-ledger.field>
             </div>

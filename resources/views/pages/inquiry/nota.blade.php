@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Cetak Nota Inquiry; bila inquiry belum punya persen PPN, dipakai tarif Tax Rate pada tanggal inquiry (bukan 11 tetap).
+ * Sumber hulu  : iqp_inquiry, iqp_costing.ppn_pct, TaxRate::ppn(inquiry_date).
+ * Input        : Id inquiry.
+ * Output       : Dokumen cetak nota.
+ * Dipakai oleh : Inquiry Product (cetak).
+ * Status       : Aktif.
+ */
+
 use App\Models\Master\OrgCompany;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\Inquiry\TierPricingResolver;
@@ -166,7 +176,7 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
             </x-print.party>
         </x-print.parties>
 
-        <x-print.section number="1" title="Penawaran Harga" hint="per pcs · IDR · PPN {{ $this->inquiry->costing?->ppn_pct ?? $this->inquiry->ppn_percent ?? 11 }}%">
+        <x-print.section number="1" title="Penawaran Harga" hint="per pcs · IDR · PPN {{ $this->inquiry->costing?->ppn_pct ?? $this->inquiry->ppn_percent ?? \App\Support\Finance\TaxRate::ppn($this->inquiry->inquiry_date) }}%">
             @if ($this->priced && $this->primaryRow)
                 <div class="pricing">
                     <div class="hero">

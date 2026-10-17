@@ -53,3 +53,5 @@ Searched: `show columns` + `information_schema` tm2sdi/tm2mst/tm2sys; `grep` `ap
 
 > Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
 
+
+> Re-checked 2026-10-17: `MasterCardService` now sets the default `ppn_percent` with `TaxRate::ppn()` and the Inquiry nota print falls back to `TaxRate::ppn(inquiry_date)` instead of a fixed 11; nothing else in this card changed.

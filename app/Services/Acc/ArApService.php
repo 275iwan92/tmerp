@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Faktur penjualan (AR) dan tagihan supplier (AP) manual + pembayaran; pajak dihitung dari tarif pada tanggal dokumen.
+ * Sumber hulu  : fin_tax_scheme (PPh, akun, jatuh tempo), TaxRate::ppn(tanggal) lewat FinTaxScheme::effectiveRate (PPN, layar Tax Rate).
+ * Input        : Data faktur (invoice_date, subtotal, ppn, pph_code, akun), user.
+ * Output       : fin_invoice + jurnal.
+ * Dipakai oleh : Finance > Receivables / Payables.
+ * Status       : Aktif.
+ */
+
 namespace App\Services\Acc;
 
 use App\Models\Acc\FinAccount;
@@ -22,9 +32,10 @@ class ArApService
 {
     public function __construct(private JournalPostingService $journal, private FinPeriodGuard $guard) {}
 
-    public function taxRate(string $code): float
+    // Tarif efektif (desimal) pada tanggal dokumen; PPN dari Master Data > Tax Rate, PPh dari fin_tax_scheme.
+    public function taxRate(string $code, ?string $date = null): float
     {
-        return FinTaxScheme::find($code)?->effectiveRate() ?? 0.0;
+        return FinTaxScheme::find($code)?->effectiveRate($date) ?? 0.0;
     }
 
     public function accountId(string $code): int
@@ -69,7 +80,7 @@ class ArApService
         $customer = CustCustomer::withoutGlobalScopes()->findOrFail($data['customer_id']);
         $subtotal = round((float) $data['subtotal'], 2);
         abort_if($subtotal <= 0, 422, t('The invoice amount must be more than zero.'));
-        $tax = ! empty($data['ppn']) ? round($subtotal * $this->taxRate('PPN_OUT'), 2) : 0.0;
+        $tax = ! empty($data['ppn']) ? round($subtotal * $this->taxRate('PPN_OUT', $data['invoice_date'] ?? null), 2) : 0.0;
 
         // Kontrol duplikat (blueprint validasi §2): customer + nilai + tanggal sama.
         $dupe = FinInvoice::withoutGlobalScopes()->where('invoice_type', 'CUSTOMER_INVOICE')
@@ -135,7 +146,7 @@ class ArApService
         $supplier = SupSupplier::withoutGlobalScopes()->findOrFail($data['supplier_id']);
         $subtotal = round((float) $data['subtotal'], 2);
         abort_if($subtotal <= 0, 422, t('The bill amount must be more than zero.'));
-        $tax = ! empty($data['ppn']) ? round($subtotal * $this->taxRate('PPN_IN'), 2) : 0.0;
+        $tax = ! empty($data['ppn']) ? round($subtotal * $this->taxRate('PPN_IN', $data['invoice_date'] ?? null), 2) : 0.0;
         $pph = ! empty($data['pph_code']) ? round($subtotal * $this->taxRate($data['pph_code']), 2) : 0.0;
 
         $dupe = FinInvoice::withoutGlobalScopes()->where('invoice_type', 'SUPPLIER_BILL')

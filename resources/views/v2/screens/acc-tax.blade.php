@@ -113,7 +113,7 @@
         </x-dl::form.row>
         <x-dl::action-bar><x-dl::button variant="secondary" icon="fa-filter" label="Filter" /></x-dl::action-bar>
     </x-dl::action-form>
-    <x-dl::alert tone="info" :message="raw(tf('Active rates: PPN :rate% × DPP :dpp', ['rate' => rtrim(rtrim(number_format((float) ($schemes['PPN_OUT']->rate ?? 0), 2), '0'), '.'), 'dpp' => round((float) ($schemes['PPN_OUT']->dpp_factor ?? 1), 4)]))" />
+    <x-dl::alert tone="info" :message="raw(tf('Active rate: PPN :rate% (Master Data > Tax Rate)', ['rate' => rtrim(rtrim(number_format(\App\Support\Finance\TaxRate::ppn(), 2), '0'), '.')]))" />
     <x-dl::table :columns="['type' => 'Tax Type / Period', 'desc' => 'Description', 'base' => ['Output / Base', 'num' => true], 'credit' => ['Input / Credit', 'num' => true], 'payable' => ['Payable', 'num' => true],
             'pay_due' => 'Payment Due', 'file_due' => 'Filing Due', 'status' => 'Workpaper Status']"
         :rows="$registers->map(fn ($r) => ['type' => raw(($schemes[$r->tax_code]->tax_name ?? $r->tax_code).' — '.($r->period_no ? Tax::monthName(sprintf('%04d-%02d', $r->fiscal_year, $r->period_no)) : $r->fiscal_year)),

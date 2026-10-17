@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Layar entri Purchase Order (komponen v1); label PPN di total membaca tarif pada tanggal PO dari Tax Rate.
+ * Sumber hulu  : PoOrder (c_ppn dari recalcTax), TaxRate::ppn(i_doc_date).
+ * Input        : Header + baris PO.
+ * Output       : po_order + po_line.
+ * Dipakai oleh : Purchase Order (v1 entry yang masih dipakai v2).
+ * Status       : Aktif.
+ */
+
 use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
@@ -396,7 +406,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             <h3 class="text-xs text-navy uppercase font-bold mb-2">{{ Translator::t('proc_po_entry_tax_summary', 'Ringkasan Pajak') }}</h3>
             <div class="text-sm space-y-1">
                 <div class="flex justify-between"><span class="text-muted">{{ Translator::t('proc_po_entry_dpp', 'DPP') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_dpp, 0, ',', '.') }}</span></div>
-                <div class="flex justify-between"><span class="text-muted">{{ Translator::t('proc_po_entry_ppn11', 'PPN 11%') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_ppn, 0, ',', '.') }}</span></div>
+                <div class="flex justify-between"><span class="text-muted">PPN {{ number_format(\App\Support\Finance\TaxRate::ppn($this->po->i_doc_date), 0) }}%</span><span class="font-mono">{{ number_format((float) $this->po->c_ppn, 0, ',', '.') }}</span></div>
                 <div class="flex justify-between border-t border-[#eef1f5] pt-1 font-bold"><span>{{ Translator::t('proc_po_entry_total_bill', 'Total Tagihan') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_grand_total, 0, ',', '.') }}</span></div>
                 <div class="flex justify-between text-[#a3241f]"><span>{{ Translator::t('proc_po_entry_pph23', 'PPh 23 (jasa) 2%') }}</span><span class="font-mono">({{ number_format((float) $this->po->c_pph, 0, ',', '.') }})</span></div>
                 <div class="flex justify-between border-t border-[#eef1f5] pt-1 font-bold text-navy"><span>{{ Translator::t('proc_po_entry_net_payable', 'Dibayar ke Supplier') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_net_payable, 0, ',', '.') }}</span></div>

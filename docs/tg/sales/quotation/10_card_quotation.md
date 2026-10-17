@@ -49,3 +49,5 @@ Searched: tables `quo_*` and `%quotation%` in all `ddt*`; `grep` `Quotation` in 
 - Total: scheme `EXCL`: `ppn = round(dpp x ppn%/100, 2)`, `grand = dpp + ppn`; scheme `INCL`: `dpp = round(subtotal/(1+ppn%/100), 2)`. `QuoQuotation.php:84-101` (`totals()`).
 - HPP and margin are not read in this card (there is no HPP/margin column in `quo_*`).
 
+
+> Re-checked 2026-10-17: `QuoQuotation::totals()` now reads the PPN rate with `TaxRate::ppn(issued_date)` (table `fin_tax_rate`, screen Master Data > Tax Rate); the rate for current documents is unchanged (11).

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Layar Kas & Bank (komponen v1); label perlakuan PPN membaca tarif dari Tax Rate. Kode MASUKAN_11 / KELUARAN_11 tetap sebagai kunci data.
+ * Sumber hulu  : fin_voucher, TaxRate::ppn().
+ * Input        : Voucher kas / bank.
+ * Output       : fin_voucher + jurnal.
+ * Dipakai oleh : Finance > Cash & Bank.
+ * Status       : Aktif.
+ */
+
 use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinVoucher;
@@ -537,7 +547,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                     @elseif ($activeTab === 'tax')
                         <div class="grid">
                             <x-form.select label="{{ Translator::t('fin_cb_field_ppn_treatment', 'Perlakuan PPN') }}" wire:model="ppn_type" :disabled="$readOnly" :placeholder="false"
-                                :options="['NONE' => Translator::t('fin_cb_ppn_none', 'Non-PPN'), 'MASUKAN_11' => Translator::t('fin_cb_ppn_in', 'PPN Masukan 11%'), 'KELUARAN_11' => Translator::t('fin_cb_ppn_out', 'PPN Keluaran 11%')]" />
+                                :options="['NONE' => Translator::t('fin_cb_ppn_none', 'Non-PPN'), 'MASUKAN_11' => str_replace('11%', \App\Support\Finance\TaxRate::ppn().'%', Translator::t('fin_cb_ppn_in', 'PPN Masukan 11%')), 'KELUARAN_11' => str_replace('11%', \App\Support\Finance\TaxRate::ppn().'%', Translator::t('fin_cb_ppn_out', 'PPN Keluaran 11%'))]" />
                             <x-form.input label="{{ Translator::t('fin_cb_field_efaktur', 'Nomor Faktur Pajak (e-Faktur)') }}" wire:model="efaktur_no" :disabled="$readOnly" placeholder="010.003-25.00000000" />
                             <x-form.select label="{{ Translator::t('fin_cb_field_pph_type', 'Jenis Pemotongan PPh') }}" wire:model="pph_type" :disabled="$readOnly" :placeholder="false"
                                 :options="['NONE' => Translator::t('fin_cb_pph_none', 'Tanpa PPh'), 'PPH23_2' => Translator::t('fin_cb_pph_23', 'PPh Pasal 23 (2% - Jasa)'), 'PPH4_2_10' => Translator::t('fin_cb_pph_4_2', 'PPh Pasal 4(2) (10% - Sewa/Bangunan)'), 'PPH21' => Translator::t('fin_cb_pph_21', 'PPh Pasal 21 (Bukan Pegawai)')]" />
