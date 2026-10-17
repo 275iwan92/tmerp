@@ -41,3 +41,5 @@
 
 ## Already exists? Searched where
 Searched: `do_*`, `v_co_delivery_outstanding`, `DispatchService`, `DeliveryOrder`, `DoDelivery/DoLine`, menu Sales > Delivery, engine registry (no DO-specific key; `DispatchService` is not registered). Result: the concept ALREADY EXISTS; no new table needed. The old document `dispatch_tier*.md` is mentioned in code comments (FROM DOCUMENT, not read; tier4 is written as already archived).
+
+> Re-checked 2026-10-17: `DeliveryOrderPrint` now reads the PPN rate with `TaxRate::ppn(do_date)` (table `fin_tax_rate`, screen Master Data > Tax Rate) instead of the constant `PPN`; the printed rate today is unchanged (11).

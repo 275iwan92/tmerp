@@ -71,3 +71,5 @@ Customer Order screens v2 and v1, Quotation (WIN), dummy seeders, Planning (read
 No test for `CoOrderBuilder` (grep `tests/`: zero). Tests touching related parts: `tests/Feature/CoDueDateTest.php` (passed 2/2), `CoListExpandRowTest.php`, `QtyMinimLumpSumTest.php`. Proposal (needs Jo's approval, not done): one WIN -> submit -> confirm test that cleans up its own data.
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.
+
+> Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: the `paper-price` entry text now names the Tax Rate screen (`fin_tax_rate`) for PPN; nothing in this card changed.

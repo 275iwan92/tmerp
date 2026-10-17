@@ -7954,6 +7954,11 @@
                         "name": "cutFromRoll",
                         "type": "bool",
                         "default": null
+                    },
+                    {
+                        "name": "on",
+                        "type": "?CarbonInterface",
+                        "default": "null"
                     }
                 ],
                 "returns": "?float",
@@ -8018,6 +8023,11 @@
                         "name": "basis",
                         "type": "string",
                         "default": null
+                    },
+                    {
+                        "name": "on",
+                        "type": "?CarbonInterface",
+                        "default": "null"
                     }
                 ],
                 "returns": "?float",
@@ -8080,13 +8090,13 @@
             "Finds the active Supplier Paper Price row whose effective date is on or before the document date and whose paper kind appears in the material name; a matching grammage wins over an empty one.",
             "Ream weight (kg) = length (m) x width (m) x grammage / 2.",
             "Ream price = price per kg x ream weight / divisor; cut from a roll the price per kg is roll price (per kg, ton / 1000) + cut cost.",
-            "Divisor = 1 + PPN / 100 using the PPN constant when the price includes PPN, otherwise 1.",
+            "Divisor = 1 + PPN / 100 when the price includes PPN, otherwise 1; PPN is the Tax Rate screen rate in force on the document date (10% before 01-Apr-2022, 11% after).",
             "LBR price = ream price / 500; KG price = roll price per kg / divisor."
         ],
         "reads": [
             "tm2mst.sup_paper_price",
             "tm2mst.mat_grammage",
-            "tm2sys.sys_constant (PPN)"
+            "tm2mst.fin_tax_rate (PPN)"
         ],
         "writes": [
             "Nothing."

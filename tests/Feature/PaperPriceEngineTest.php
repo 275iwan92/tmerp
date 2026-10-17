@@ -12,14 +12,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Master\FinTaxRate;
 use App\Models\Master\MatGrammage;
 use App\Models\Master\MatRaw;
 use App\Models\Master\SupPaperPrice;
 use App\Models\Master\SupSupplier;
 use App\Models\Sys\SecUser;
-use App\Models\Sys\SysConstant;
 use App\Services\Pur\PaperPriceEngine;
+use App\Support\Finance\TaxRate;
 use App\Support\V2\Grid\Master\SupplierPaperPriceLookup;
+use App\Support\V2\Grid\Master\TaxRateLookup;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -33,6 +35,7 @@ class PaperPriceEngineTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        TaxRate::flush();
         SupPaperPrice::query()->where('paper_kind', self::KIND)->delete();
         $this->actingAs(SecUser::query()->where('is_admin', 1)->firstOrFail());
         $this->supplier = (int) SupSupplier::query()->orderBy('id_supplier')->value('id_supplier');
@@ -58,14 +61,35 @@ class PaperPriceEngineTest extends TestCase
 
     private function divisor(): float
     {
-        return 1 + SysConstant::number('PPN') / 100;
+        return 1 + TaxRate::ppn() / 100;
     }
 
-    public function test_divisor_follows_the_ppn_constant_and_excl_price_is_not_divided(): void
+    public function test_divisor_follows_the_ppn_rate_in_force_on_the_document_date_and_excl_price_is_not_divided(): void
     {
         $e = new PaperPriceEngine;
         $this->assertEqualsWithDelta($this->divisor(), $e->divisor('INCL'), 1e-9);
+        $this->assertEqualsWithDelta(1.10, $e->divisor('INCL', Carbon::parse('2022-03-31')), 1e-9, 'Before 01-Apr-2022 PPN was 10%.');
+        $this->assertEqualsWithDelta(1.11, $e->divisor('INCL', Carbon::parse('2022-04-01')), 1e-9, 'From 01-Apr-2022 PPN is 11%.');
         $this->assertSame(1.0, $e->divisor('EXCL'));
+    }
+
+    public function test_tax_rate_screen_adds_a_dated_rate_keeps_the_old_one_and_refuses_the_same_date(): void
+    {
+        $grid = new TaxRateLookup;
+        $row = ['id' => null, 'tax_code' => 'PPN', 'rate' => 12, 'effective_date' => '2099-01-01', 'activate' => true];
+        try {
+            $grid->save([$row]);
+            $this->assertEquals(12, TaxRate::ppn('2099-06-01'), 'The new rate applies from its date.');
+            $this->assertEquals(11, TaxRate::ppn('2026-10-17'), 'An earlier document keeps its rate.');
+            $this->assertEqualsWithDelta(1.12, (new PaperPriceEngine)->divisor('INCL', Carbon::parse('2099-06-01')), 1e-9);
+
+            $this->expectException(ValidationException::class);
+            $grid->save([$row]);
+        } finally {
+            FinTaxRate::query()->whereDate('effective_date', '2099-01-01')->delete();
+            TaxRate::flush();
+            $this->assertSame(0, FinTaxRate::query()->whereDate('effective_date', '2099-01-01')->count());
+        }
     }
 
     public function test_ream_price_standard_size_and_cut_from_roll_follow_the_formula(): void

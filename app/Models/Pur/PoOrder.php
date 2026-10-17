@@ -1,7 +1,18 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Header Purchase Order; recalcTax() menghitung DPP, PPN (tarif pada tanggal PO), PPh 23 jasa, grand total, net payable.
+ * Sumber hulu  : po_line, TaxRate::ppn(tanggal) (layar Tax Rate), konstanta PPH23_JASA.
+ * Input        : Baris PO, i_doc_date, jenis PO (Kontan = tanpa pajak terpisah).
+ * Output       : Kolom c_dpp, c_ppn, c_pph, c_grand_total, c_net_payable.
+ * Dipakai oleh : Purchase Order v2, PoBuilderService, persetujuan PO.
+ * Status       : Aktif.
+ */
+
 namespace App\Models\Pur;
 
+use App\Support\Finance\TaxRate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +70,7 @@ class PoOrder extends Model
         $lines = $this->lines;
 
         $dpp = $lines->sum('c_line_net');
-        $ppnRate = (float) (DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PPN')->value('constant_number') ?? 11);
+        $ppnRate = TaxRate::ppn($this->i_doc_date);
         $pphRate = (float) (DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PPH23_JASA')->value('constant_number') ?? 2);
 
         // PO Kontan: harga = nilai nota toko (sudah termasuk pajak bila ada), tanpa PPN/PPh terpisah.

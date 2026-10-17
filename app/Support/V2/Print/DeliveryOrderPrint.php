@@ -1,9 +1,19 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Cetak Delivery Order (format A, memuat harga); tarif PPN dibaca menurut tanggal DO.
+ * Sumber hulu  : do_delivery + do_line (tm2sdi), TaxRate::ppn(tanggal) (layar Tax Rate).
+ * Input        : id DO, opsi pencetak.
+ * Output       : Dokumen cetak DO; harga hanya untuk yang berhak melihat harga jual.
+ * Dipakai oleh : Rute cetak v2 (PrintDocs), tombol Print di layar Delivery Order.
+ * Status       : Aktif.
+ */
+
 namespace App\Support\V2\Print;
 
 use App\Models\Sdi\DoDelivery;
-use App\Models\Sys\SysConstant;
+use App\Support\Finance\TaxRate;
 use Devlib\PrintDoc\Document;
 use Illuminate\Support\Facades\Auth;
 
@@ -52,7 +62,7 @@ final class DeliveryOrderPrint extends Document
 
         return new self([
             'number' => $do->do_no ?: 'Draft #'.$do->id_delivery, 'date' => $do->do_date?->toDateString(), 'status' => $do->status, 'printedBy' => $opt['printedBy'] ?? null,
-            'ppn' => $do->is_ppn ? SysConstant::number('PPN', 11) : 0, 'email' => $party?->email,
+            'ppn' => $do->is_ppn ? TaxRate::ppn($do->do_date) : 0, 'email' => $party?->email,
             'do_type' => $do->do_type, 'planned_date' => $do->scheduled_ship_date?->toDateString(), 'actual_date' => $do->actual_ship_date?->toDateString(),
             'tax' => $do->is_ppn ? 'PPN' : 'Non PPN', 'region' => $do->ship_address_label,
             'contact' => implode(' · ', array_filter([$party?->contact_name, $party?->phone])),

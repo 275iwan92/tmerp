@@ -3,8 +3,8 @@
 /*
  * REMARK
  * Tujuan       : Engine harga kertas per supplier: harga per rim (ukuran standar atau potong dari roll), jumlah rim dari roll, harga per satuan beli bahan.
- * Sumber hulu  : Konstanta sup_paper_price (layar Supplier Paper Price), SysConstant PPN, Master Raw Material (gramasi, ukuran cm, satuan beli).
- * Input        : MatRaw, id supplier, tanggal dokumen; atau SupPaperPrice + panjang/lebar (m) + gramasi.
+ * Sumber hulu  : Konstanta sup_paper_price (layar Supplier Paper Price), tarif PPN pada tanggal dokumen (TaxRate, layar Tax Rate), Master Raw Material (gramasi, ukuran cm, satuan beli).
+ * Input        : MatRaw, id supplier, tanggal dokumen; atau SupPaperPrice + panjang/lebar (m) + gramasi + tanggal.
  * Output       : Harga di luar PPN per satuan beli (RIM, LBR, KG) atau null bila data kurang; engine menyarankan, petugas memutuskan.
  * Dipakai oleh : Purchase Requisition (isi harga taksiran), PoBuilderService (harga baris PO), tes PaperPriceEngineTest.
  * Status       : Aktif. Rumus Jo 2026-10-17: rim = P x L x (gsm/2) kg; harga rim = (harga/kg x berat rim) / (1 + PPN/100); tidak menulis apa pun.
@@ -15,20 +15,20 @@ namespace App\Services\Pur;
 use App\Models\Master\MatGrammage;
 use App\Models\Master\MatRaw;
 use App\Models\Master\SupPaperPrice;
-use App\Models\Sys\SysConstant;
+use App\Support\Finance\TaxRate;
 use Carbon\CarbonInterface;
 
 final class PaperPriceEngine
 {
     private const SHEETS_PER_REAM = 500;
 
-    // Pembagi PPN = 1 + PPN/100 (konstanta PPN); harga Excl PPN tidak dibagi. Null bila harga Incl tapi PPN belum diisi.
-    public function divisor(string $basis): ?float
+    // Pembagi PPN = 1 + tarif PPN pada tanggal dokumen / 100 (layar Tax Rate: 10% sebelum 01-Apr-2022, 11% sesudahnya); harga Excl PPN tidak dibagi.
+    public function divisor(string $basis, ?CarbonInterface $on = null): ?float
     {
         if ($basis === 'EXCL') {
             return 1.0;
         }
-        $ppn = SysConstant::number('PPN', 0.0);
+        $ppn = TaxRate::ppn($on);
 
         return $ppn > 0 ? 1 + $ppn / 100 : null;
     }
@@ -47,10 +47,10 @@ final class PaperPriceEngine
     }
 
     // Harga 1 rim di luar PPN. $cutFromRoll = beli roll lalu dipotong (harga roll + biaya potong), kalau tidak = harga ream ukuran standar.
-    public function rimPrice(SupPaperPrice $p, float $lengthM, float $widthM, float $gsm, bool $cutFromRoll): ?float
+    public function rimPrice(SupPaperPrice $p, float $lengthM, float $widthM, float $gsm, bool $cutFromRoll, ?CarbonInterface $on = null): ?float
     {
         $perKg = $cutFromRoll ? $this->rollPerKg($p) + (float) $p->cut_cost_per_kg : (float) $p->sheet_price_per_kg;
-        $div = $this->divisor($p->price_basis);
+        $div = $this->divisor($p->price_basis, $on);
         if ($perKg <= 0 || ! $div || $lengthM <= 0 || $widthM <= 0 || $gsm <= 0) {
             return null;
         }
@@ -67,11 +67,11 @@ final class PaperPriceEngine
             return null;
         }
         if ($uom === 'KG') {
-            $div = $this->divisor($p->price_basis);
+            $div = $this->divisor($p->price_basis, $on);
 
             return $div && $this->rollPerKg($p) > 0 ? round($this->rollPerKg($p) / $div, 4) : null;
         }
-        $rim = $this->rimPrice($p, (float) $m->cm_length / 100, (float) $m->cm_width / 100, (float) $m->gram_weight, false);
+        $rim = $this->rimPrice($p, (float) $m->cm_length / 100, (float) $m->cm_width / 100, (float) $m->gram_weight, false, $on);
 
         return match ($uom) {
             'RIM' => $rim,

@@ -60,7 +60,8 @@
 
 | Jalur menu | Slug / rute | Tujuan | File utama | Engine / service yang dipakai | Menu |
 |---|---|---|---|---|---|
-| Master Data > Supplier Paper Price | `v2:md-supplier-paper-price` | Input harga kertas per supplier seperti kurs: jenis kertas, gramasi opsional, harga roll per kg/ton, biaya potong, harga ream per kg, dasar PPN (Incl/Excl), tanggal berlaku; baris baru dengan tanggal baru = riwayat (2026-10-17) | `SupplierPaperPriceLookup` (`sup_paper_price`, `SupPaperPrice`) | `PaperPriceEngine` (divisor = 1 + konstanta `PPN` / 100); harga terisi di baris PR (`pages/pur/pr/entry.blade.php`) dan baris PO (`PoBuilderService::addAllocation`) | tampil |
+| Master Data > Supplier Paper Price | `v2:md-supplier-paper-price` | Input harga kertas per supplier seperti kurs: jenis kertas, gramasi opsional, harga roll per kg/ton, biaya potong, harga ream per kg, dasar PPN (Incl/Excl), tanggal berlaku; baris baru dengan tanggal baru = riwayat (2026-10-17) | `SupplierPaperPriceLookup` (`sup_paper_price`, `SupPaperPrice`) | `PaperPriceEngine` (divisor = 1 + tarif PPN pada tanggal dokumen / 100, dari Tax Rate); harga terisi di baris PR (`pages/pur/pr/entry.blade.php`) dan baris PO (`PoBuilderService::addAllocation`) | tampil |
+| Master Data > Tax Rate | `v2:md-tax-rate` | Input tarif pajak (PPN) menurut tanggal berlaku seperti kurs: PPN 10% sejak 01-Apr-1985, 11% sejak 01-Apr-2022; dokumen memakai tarif pada tanggalnya sendiri; konstanta `PPN` tinggal cadangan bila tabel kosong (2026-10-17) | `TaxRateLookup` (`fin_tax_rate`, `FinTaxRate`) | `TaxRate::ppn(tanggal)` dipakai `PaperPriceEngine`, `PoOrder::recalcTax`, `DeliveryOrderPrint`, Customer Order, Quotation, invoice (tanpa tanggal = hari ini) | tampil |
 
 ## Belum tercatat (isi bertahap saat layar disentuh)
 
