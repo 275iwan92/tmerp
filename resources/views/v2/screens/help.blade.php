@@ -2,7 +2,7 @@
      Tujuan: pusat bantuan (F1): peta menu + panduan per layar, pedoman, alur (Peta Alur besar + alur Planning Produksi + Flows), tiket.
      Sumber hulu: sys_app_menu (lewat App\Support\V2\HelpMap), sys_help_topic / sys_help_line, App\Support\V2\Flows, sys_support_ticket;
      gambar Peta Alur di public/images/peta-alur/ (docs/attachments/peta-alur/).
-     Input: ?tab=topics|guide|flow|tickets, ?topic=<slug layar> (dikirim Shell saat F1 dari layar aktif).
+     Input: ?tab=topics|guide|flow|tg|tickets (tg = Technical Guide, ?doc= id kartu), ?topic=<slug layar> (dikirim Shell saat F1 dari layar aktif).
      Output: halaman di laci Side Screen; tombol Buka layar -> Shell membuka tab, laci tetap terbuka (melayang).
      Dipakai oleh: rute v2.help. Status: aktif (dummy mockup). --}}
 {{-- Help & support v2: laci LEBAR dari kanan (F1 / Profile > Help & support). Empat bagian (user 2026-10-04):
@@ -31,7 +31,7 @@
     $statusTone = ['OPEN' => 'warn', 'IN_PROGRESS' => 'info', 'DONE' => 'success', 'CLOSED' => 'neutral'];
 @endphp
 
-<x-dl::side-screen.layout :sections="['topics' => ['Help Topics', 'fa-life-ring'], 'guide' => ['User\'s Guide', 'fa-book-open'], 'flow' => ['Application\'s Flow', 'fa-diagram-project'], 'tickets' => ['Tickets', 'fa-ticket', $tickets->whereIn('status', ['OPEN', 'IN_PROGRESS'])->count() ?: null]]" :active="$tab" :hints="['topics' => 'Pick a screen in the menu tree to read its guide: purpose, steps and each field. Filter by module or type; F1 opens the guide of the screen you are on.', 'guide' => 'Read the guides from top to bottom the first time; later, open the one you need. Each guide = numbered steps plus an explanation of the parts of the screen.', 'flow' => 'Point the mouse at a block to see its short rule; click a block to open its screen.', 'tickets' => 'Send a ticket to the developer team with screenshots; the reply appears here.']" :crumbs="$crumbs">
+<x-dl::side-screen.layout :sections="['topics' => ['Help Topics', 'fa-life-ring'], 'guide' => ['User\'s Guide', 'fa-book-open'], 'flow' => ['Application\'s Flow', 'fa-diagram-project'], 'tg' => ['Technical Guide', 'fa-code-branch'], 'tickets' => ['Tickets', 'fa-ticket', $tickets->whereIn('status', ['OPEN', 'IN_PROGRESS'])->count() ?: null]]" :active="$tab" :hints="['topics' => 'Pick a screen in the menu tree to read its guide: purpose, steps and each field. Filter by module or type; F1 opens the guide of the screen you are on.', 'guide' => 'Read the guides from top to bottom the first time; later, open the one you need. Each guide = numbered steps plus an explanation of the parts of the screen.', 'tg' => 'How each module works today, in English: concept cards, engine cards, relations. Pick a card in the tree on the left.', 'flow' => 'Point the mouse at a block to see its short rule; click a block to open its screen.', 'tickets' => 'Send a ticket to the developer team with screenshots; the reply appears here.']" :crumbs="$crumbs">
     <x-slot:top>
         @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
         @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
@@ -171,6 +171,21 @@
             @endforeach
     </x-slot:flow>
 
+    <x-slot:tg>
+        @php
+            $tgGrid = (new \App\Support\V2\Grid\Setup\TechGuideLookup)->withDocBase(route('v2.help').'?tab=tg&doc=');
+            $tgDoc = (int) request('doc') ?: $tgGrid->firstId();
+            $tgArticle = $tgDoc ? $tgGrid->article($tgDoc) : null;
+        @endphp
+        <x-dl::split side="left" aside="300px">
+            <x-slot:side>
+                <x-dl::side-menu id="tech-guide-help" title="Technical Guide" :items="$tgGrid->tree()" :active="$tgArticle ? (string) $tgArticle['id'] : null" :favorites="false" />
+            </x-slot:side>
+            @if ($tgArticle)
+                <x-dl::review-feed :posts="[$tgArticle]" :search="false" :source="'sys_guide'" />
+            @endif
+        </x-dl::split>
+    </x-slot:tg>
     <x-slot:tickets>
         <x-dl::form.row :cols="2">
             <x-dl::action-form action="{{ route('v2.support.ticket') }}" enctype="multipart/form-data" data-dl-guard>

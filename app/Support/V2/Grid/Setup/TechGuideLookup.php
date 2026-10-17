@@ -17,6 +17,21 @@ use App\Models\Sys\SysGuide;
 class TechGuideLookup extends GuidesLookup
 {
     // Folder names are headlined by guides:import (Crm, Prodev); the tree shows the product names.
+    // When shown inside the Help panel, links to cards keep that panel (set by withDocBase).
+    private string $docBase = '';
+
+    public function withDocBase(string $base): static
+    {
+        $this->docBase = $base;
+
+        return $this;
+    }
+
+    private function docUrl(int|string $id): string
+    {
+        return ($this->docBase ?: $this->url().'?doc=').$id;
+    }
+
     private const NAMES = ['Crm' => 'CRM', 'Prodev' => 'ProDev', 'Product Costing' => 'Pro-Cost'];
 
     public function slug(): string
@@ -50,7 +65,7 @@ class TechGuideLookup extends GuidesLookup
         $groups = [];
         foreach (SysGuide::query()->where('section', 'tg')->orderBy('sort_order')->orderBy('title')->get(['id_guide', 'module', 'title', 'slug']) as $g) {
             [$mod, $sub] = array_map(fn ($s) => $s === null ? null : (self::NAMES[$s] ?? $s), array_pad(explode(' · ', $g->module, 2), 2, null));
-            $groups[$mod][$sub ?? ''][] = ['label' => $this->shortTitle($g->title), 'key' => (string) $g->getKey(), 'url' => $this->url().'?doc='.$g->getKey(),
+            $groups[$mod][$sub ?? ''][] = ['label' => $this->shortTitle($g->title), 'key' => (string) $g->getKey(), 'url' => $this->docUrl($g->getKey()),
                 'badge' => preg_match('/^ENGINE card/i', $g->title) ? 'ENGINE' : (preg_match('/^Concept card/i', $g->title) ? 'CARD' : null)];
         }
         $tree = [];
@@ -83,7 +98,7 @@ class TechGuideLookup extends GuidesLookup
             }
             $id = $ids[implode('/', $parts)] ?? null;
 
-            return $id ? "[{$m[1]}](".$this->url().'?doc='.$id.')' : $m[1];
+            return $id ? "[{$m[1]}](".$this->docUrl($id).')' : $m[1];
         }, preg_replace('~\[([^\]]+)\]\(\.{1,2}/[^)\s]*/\)~', '$1', $body) ?? $body) ?? $body;
     }
 
