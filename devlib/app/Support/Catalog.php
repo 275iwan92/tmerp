@@ -297,7 +297,7 @@ final class Catalog
             ]],
             'p2-display' => ['Status', 'fa-solid fa-tag', [
                 'badge' => ['Badge', $c('Badge'), 'ro'], 'stat-box' => ['Stat Box', $c('StatBox'), 'ro'], 'status-card' => ['Status Card', $c('StatusCard'), 'ro'],
-                'avatar-progress' => ['Avatar · Progress', $c('Avatar', 'Progress'), 'ro'], 'login-card' => ['Login Card (new employee, print once)', $c('LoginCard', 'Button'), 'ro'], 'tooltip' => ['Tooltip', $c('Tooltip'), 'ro'], 'misc' => ['Alert · Divider · Brand · Language', $c('Alert', 'Divider', 'Brand', 'LangSwitch'), 'ro'],
+                'avatar-progress' => ['Avatar · Progress', $c('Avatar', 'Progress'), 'ro'], 'login-card' => ['Login Card (new employee, print once)', $c('LoginCard', 'Button'), 'ro'], 'photo-box' => ['Photo Box (3x4 photo, click to crop)', $c('PhotoBox', 'Modal', 'Button'), 'rw'], 'profile-banner' => ['Profile Banner (photo, grouped chips, KPI tiles)', $c('ProfileBanner', 'PhotoBox', 'Badge', 'Progress', 'Kpi'), 'ro'], 'tooltip' => ['Tooltip', $c('Tooltip'), 'ro'], 'misc' => ['Alert · Divider · Brand · Language', $c('Alert', 'Divider', 'Brand', 'LangSwitch'), 'ro'],
                     'feed' => ['Feed (blog / news: narratives read in one page)', $c('Feed', 'Badge'), 'ro'],
                     'review-feed' => ['Review Feed (blog-style review: read a card, decide with big buttons)', $c('ReviewFeed', 'Feed'), 'rw'],
             ]],

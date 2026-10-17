@@ -6,6 +6,7 @@ use App\Models\Master\EmpEmployee;
 use App\Models\Sys\SecUser;
 use App\Services\Hrm\EmployeeProfileService;
 use App\Support\V2\Data\EmployeeProfile;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -56,6 +57,36 @@ class EmployeeProfileScreenTest extends TestCase
             $this->assertSame('Zz Test Profil B', $e2->fresh()->full_name);
             $this->expectException(ValidationException::class);
             $svc->save($e2, ['nik_ktp' => '12'] + $base + ['position_id' => $pos], $admin);
+        } finally {
+            DB::connection('tm2sys')->rollBack();
+            DB::connection('tm2mst')->rollBack();
+        }
+    }
+
+    public function test_replacing_the_photo_deletes_the_old_file_and_the_banner_has_a_photo_box(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+        DB::connection('tm2mst')->beginTransaction();
+        DB::connection('tm2sys')->beginTransaction();
+        try {
+            $svc = app(EmployeeProfileService::class);
+            [$e] = $svc->save(null, ['full_name' => 'Zz Test Foto Baru', 'staff_type' => 'NON_STAFF', 'payment_frequency' => 'MONTHLY',
+                'position_id' => DB::connection('tm2mst')->table('org_position')->where('activate', true)->value('position_id')], $admin, UploadedFile::fake()->image('a.jpg', 600, 800));
+            $first = $e->fresh()->photo_path;
+            Storage::disk('public')->assertExists($first);
+
+            $svc->save($e->fresh(), ['full_name' => 'Zz Test Foto Baru', 'staff_type' => 'NON_STAFF', 'payment_frequency' => 'MONTHLY'], $admin, UploadedFile::fake()->image('b.jpg', 600, 800));
+            $second = $e->fresh()->photo_path;
+            $this->assertNotSame($first, $second);
+            Storage::disk('public')->assertMissing($first);
+            Storage::disk('public')->assertExists($second);
+
+            $html = $this->actingAs($admin)->get(route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id)->assertOk()->getContent();
+            $this->assertStringContainsString('data-dl-photobox', $html);
+            $this->assertStringContainsString('data-pb-canvas', $html);
+            $this->assertStringNotContainsString('dl-ring', $html, 'cincin persen sudah diganti chip');
+            $this->assertStringContainsString('% complete', $html);
         } finally {
             DB::connection('tm2sys')->rollBack();
             DB::connection('tm2mst')->rollBack();

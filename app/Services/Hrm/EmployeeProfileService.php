@@ -87,6 +87,10 @@ final class EmployeeProfileService
             $this->saveBpjs($e, $data, $input, $user);
         }
         if ($photo) {
+            // Foto lama ikut dihapus saat diganti (tanpa ini berkasnya tertinggal di disk).
+            if ($e->photo_path) {
+                Storage::disk('public')->delete($e->photo_path);
+            }
             $e->update(['photo_path' => $photo->store("hrm/{$e->employee_id}/profile", 'public')]);
         }
 

@@ -1,6 +1,6 @@
 {{--
  REMARK
- Tujuan       : Form Master Employee v2 (konsep A2 disetujui Jo): banner pegawai (foto, nama, chip status, cincin kelengkapan), empat KPI (masa kerja, sisa cuti, absen, disiplin), tab Profile / Job / Contract / Family / Education / Documents / BPJS / Bank / Discipline / Account (hanya Admin App) dan History bawaan.
+ Tujuan       : Form Master Employee v2 (konsep A2 disetujui Jo): banner pegawai lewat x-dl::profile-banner (kotak pas foto 3x4 x-dl::photo-box yang bisa di-crop, nama, chip berkelompok Status / Employment, batang kelengkapan), empat KPI (masa kerja, sisa cuti, absen, disiplin), tab Profile / Job / Contract / Family / Education / Documents / BPJS / Bank / Discipline / Account (hanya Admin App) dan History bawaan.
  Sumber hulu  : App\Support\V2\Data\EmployeeProfile (KPI, kelengkapan, opsi); tabel tm2mst.emp_employee dan tab anak emp_contract, emp_family, emp_education, emp_disciplinary, emp_bank_account.
  Input        : Query id (pegawai) atau new=1; session v2_flash dan errors.
  Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate / Remove Photo) -> EmployeeProfileService. POST v2.hrm.employee.contract / family / deceased / education / discipline -> EmployeeRecordService (tiap dialog menyimpan sendiri; tanpa edit / hapus baris).
@@ -39,6 +39,20 @@
         + ($new ? [] : ['documents' => 'Documents', 'bpjs' => 'BPJS']) + ['bank' => 'Bank', 'discipline' => 'Discipline'] + ($isAdmin && ! $new ? ['account' => 'Account'] : []);
     $seeSalary = fn ($c) => $user->is_admin || (! $e->position?->salary_hidden_from_hr && $c && in_array($c->employment_type, ['KONTRAK', 'BORONGAN'], true));
     $statusTone = ['WORKING' => 'success', 'DIRUMAHKAN' => 'warn', 'CUTI' => 'info'];
+    $dept = $e->position?->department?->department_name ?? '—';
+    $bannerSub = $new ? t('Fill the Profile and Job tabs, then Save.') : raw($e->employee_code.' · '.($e->position?->position_name ?? '—').' · '.$dept);
+    $groups = $new ? [] : [
+        ['label' => 'Status', 'badges' => [
+            ['label' => t(['WORKING' => 'Working', 'DIRUMAHKAN' => 'Furloughed', 'CUTI' => 'On Leave'][$e->work_status] ?? $e->work_status), 'tone' => $statusTone[$e->work_status] ?? 'neutral'],
+            ['label' => $e->staff_type === 'STAFF' ? 'Staff' : 'Non-staff', 'tone' => 'info', 'icon' => 'fa-lock'],
+            ['label' => $e->payment_frequency === 'WEEKLY' ? 'Weekly' : 'Monthly', 'tone' => 'info', 'icon' => 'fa-lock'],
+        ]],
+        ['label' => 'Employment', 'badges' => array_values(array_filter([
+            $e->activeContract ? ['label' => $e->activeContract->employment_type] : null,
+            $e->join_date ? ['label' => tf('Joined :d', ['d' => Locale::date($e->join_date)])] : null,
+        ]))],
+    ];
+    $progressText = $new ? null : ($missing ? tf(':p% complete · :n items to go', ['p' => Data::percent($e), 'n' => count($missing)]) : tf(':p% complete', ['p' => Data::percent($e)]));
 @endphp
 
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
@@ -56,25 +70,23 @@
         </x-slot:special>
     @endif
     <x-slot:strip>
-        <x-dl::avatar size="lg" :name="raw($new ? 'New Employee' : $e->full_name)" :photo="$e->photo_path ? asset('storage/'.$e->photo_path) : null" :sub="$new ? t('Fill the Profile and Job tabs, then Save.') : raw($e->employee_code.' · '.($e->position?->department?->department_name ?? '—'))" />
-        @unless ($new)
-            <x-dl::chips>
-                <x-dl::badge :label="t(['WORKING' => 'Working', 'DIRUMAHKAN' => 'Furloughed', 'CUTI' => 'On Leave'][$e->work_status] ?? $e->work_status)" :tone="$statusTone[$e->work_status] ?? 'neutral'" />
-                <x-dl::badge :label="$e->staff_type === 'STAFF' ? 'Staff' : 'Non-staff'" tone="info" icon="fa-lock" />
-                <x-dl::badge :label="$e->payment_frequency === 'WEEKLY' ? 'Weekly' : 'Monthly'" tone="info" icon="fa-lock" />
-                @if ($e->activeContract)<x-dl::badge :label="$e->activeContract->employment_type" tone="neutral" />@endif
-                @if ($e->join_date)<x-dl::badge :label="tf('Joined :d', ['d' => Locale::date($e->join_date)])" tone="neutral" />@endif
-            </x-dl::chips>
-            <x-dl::progress-ring :value="Data::percent($e)" :size="64" :caption="count($missing) ? tf(':n to complete', ['n' => count($missing)]) : t('Complete')" />
-            <x-dl::kpi-row>
-                @foreach (Data::kpis($e) as $k)
-                    <x-dl::kpi :label="$k['label']" :value="$k['value']" :tone="$k['tone']" :icon="$k['icon']" :note="$k['note']" />
-                @endforeach
-            </x-dl::kpi-row>
-            @if ($missing)
-                <x-dl::alert tone="warn" :message="$todo" />
-            @endif
-        @endunless
+        <x-dl::profile-banner :name="raw($new ? t('New Employee') : $e->full_name)" :subtitle="$bannerSub" :groups="$groups" :progress="$new ? null : Data::percent($e)" :progress-text="$progressText">
+            <x-slot:photo>
+                <x-dl::photo-box name="photo" :label="raw($new ? '' : $e->full_name)" :photo="$e->photo_path ? '/storage/'.$e->photo_path : null" />
+            </x-slot:photo>
+            @unless ($new)
+                <x-slot:kpis>
+                    <x-dl::kpi-row>
+                        @foreach (Data::kpis($e) as $k)
+                            <x-dl::kpi :label="$k['label']" :value="$k['value']" :tone="$k['tone']" :icon="$k['icon']" :note="$k['note']" />
+                        @endforeach
+                    </x-dl::kpi-row>
+                </x-slot:kpis>
+                @if ($missing)
+                    <x-slot:notice><x-dl::alert tone="warn" :message="$todo" /></x-slot:notice>
+                @endif
+            @endunless
+        </x-dl::profile-banner>
     </x-slot:strip>
 
     <x-slot:profile>
@@ -94,7 +106,6 @@
                 <x-dl::field.text name="no_kk" label="Family card (KK) no." :case-toggle="false" :value="$v('no_kk')" :source="$s('no_kk')" />
                 <x-dl::field.text name="npwp_number" label="NPWP" :case-toggle="false" :value="$v('npwp_number')" :source="$s('npwp_number')" />
             </x-dl::form.row>
-            <x-dl::field.upload name="photo" label="Profile photo" accept=".jpg,.jpeg,.png,.webp" :source="$s('photo_path')" />
         </x-dl::card>
         <x-dl::card title="Contact and address">
             <x-dl::form.row :cols="2">
