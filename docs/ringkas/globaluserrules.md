@@ -55,6 +55,7 @@
 14. Master hanya diubah user; sistem hanya mengubah transaksi (default boleh diperbarui, bisa di-override).
 15. Dummy per STAGE (`ddt:stage`): set dump `.sql` per langkah alur, dibangun lewat aturan aplikasi yang sama dengan tombol.
 16. **[L]** Material Category = PEMBENTUK KODE ITEM: rantai 5 tingkat, kode = prefix1+..+prefix5 (mis. `PCC02002`); layar = dropdown terkait; jangan tanyakan lagi.
+17. **[L]** Dummy per LEVEL (stage B.15): 2 set, paling banyak 3; dua set wajib benar-benar real dan lengkap (Master Card asli + artwork + dieline dari `docs/attachments`); Test/DEMO/Contoh bukan set sah; kelebihan dirapikan per B.12 (cek rujukan tes dulu).
 
 ## C. Tampilan (UI/UX)
 

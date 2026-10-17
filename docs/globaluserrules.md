@@ -385,6 +385,19 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     - Kategori dan Type 2 tingkat di `tm2old` (`mst_item_material_cat` / `mst_item_material_type`) adalah klasifikasi
       sistem ScriptCase lama dan **bukan** pembentuk kode; jangan dipakai untuk menggantikan rantai 5 tingkat.
     - Rinci (struktur tabel, kejanggalan data, pola kode yang ada sekarang): `md_for_systems/matcategory_delta.md` §5.
+17. **Batas data dummy per LEVEL (2026-10-17).** Kata user: *"limit data dummy 2 set data every levels, maximum 3 set
+    data. Make sure 2 set data really real and complete. Make sure this rules for data dummy"*; contoh level: *"Inquiry
+    NEW belum confirm 2 set data"* dan *"inquiry sudah ready, sudah confirm, 2 set data"*.
+    - **Level** = stage di B.15 (Inquiry NEW belum Confirm · Inquiry sudah Confirm Sales · ProDev Confirm belum ProCost ·
+      ProCost Confirm · Quotation Draft / Published · CO Draft / Confirmed · CPDEL · WO · DO · Invoice, dan seterusnya).
+    - **Tiap level: 2 set, paling banyak 3.** Dua set itu wajib **benar-benar real dan lengkap**: Master Card asli +
+      artwork + dieline (ukuran P x L x T datar, mm) dari berkas asli user di `docs/attachments/`, bahan, finishing, qty,
+      dan customer yang masuk akal; dibangun lewat aturan aplikasi (B.15), bukan mengetik baris ke tabel.
+    - **Bukan set yang sah:** data bernama Test / DEMO / Contoh, tanpa ukuran, artwork, atau dieline. Itu tidak dihitung
+      sebagai set dan, bila sudah digantikan, dihapus per baris (B.12) setelah dicek tidak dirujuk tes atau migration.
+    - Level yang berisi lebih dari 3 set dirapikan ke batas itu (B.12). Berlaku untuk dummy `ddt*`; data real `tm2*`
+      tidak disentuh. Penerapan ke data yang sudah ada dilakukan per level, diawali preview ke user.
+
 
 ## C. Tampilan (UI/UX)
 
@@ -919,3 +932,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-16 | C.35: **menu Reports = judul `heading` + jarak, laporan di bawahnya**; All Inquiries jadi laporan read-only (user). |
 | 2026-10-16 | A.28: **Master Card satu wujud** = perpaduan Master Product dan layout Inquiry Product + ProDev + ProCost (user). Penyatuan kode belum dikerjakan (zona beku). |
 | 2026-10-16 | D.24: **Technical Guide (docs/tg) = ingatan agen**; protokol baca, bukti ketiadaan lewat concept:find, hook kartu (user: "Agen yang memperingatkan Jo bila sebuah usulan duplikat atau bertabrakan, bukan Jo"). |
+| 2026-10-17 | B.17: **batas data dummy per level: 2 set, paling banyak 3, dua set wajib benar-benar real dan lengkap** (user: "limit data dummy 2 set data every levels, maximum 3 set data. Make sure 2 set data really real and complete"). Level = stage B.15; Test/DEMO/Contoh bukan set sah. |
