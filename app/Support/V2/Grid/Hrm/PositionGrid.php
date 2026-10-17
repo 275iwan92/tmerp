@@ -1,16 +1,28 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Grid Master Position: daftar jabatan, departemen, level, atasan, jumlah pemegang (utama + tambahan); Open / + New Record membuka layar form v2 hrm-position-form.
+ * Sumber hulu  : tm2mst.org_position, org_department, org_level, emp_employee, emp_employee_position (via PositionDesk::holderCounts).
+ * Input        : Query string saringan grid.
+ * Output       : x-dl::grid lewat DbGrid; alamat buka = v2:hrm-position-form?id={id}, New = ?new=1.
+ * Dipakai oleh : Menu HRM > Organization > Master Position (slug hrm-position).
+ * Status       : Aktif. Layar v1 pages::hrm.position dipensiunkan (2026-10-17); rute lama /hrm/position mengalihkan ke grid ini.
+ */
+
 namespace App\Support\V2\Grid\Hrm;
 
 use App\Models\Master\EmpEmployee;
+use App\Models\Master\EmpEmployeePosition;
 use App\Models\Master\OrgDepartment;
 use App\Models\Master\OrgLevel;
 use App\Models\Master\OrgPosition;
+use App\Support\V2\Data\PositionDesk;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Posisi (v1: pages::hrm.position).
+// Master Position: grid + form v2 (hrm-position-form).
 class PositionGrid extends HrmGrid
 {
     private array $holders = [];
@@ -35,19 +47,24 @@ class PositionGrid extends HrmGrid
         return 'Organization';
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.position';
+        return route('v2.screen', 'hrm-position-form').'?id={id}';
     }
 
-    protected function v1Component(): ?string
+    public function newUrl(): ?string
     {
-        return 'pages::hrm.position';
+        return route('v2.screen', 'hrm-position-form').'?new=1';
+    }
+
+    protected function canCreate(): bool
+    {
+        return true;
     }
 
     protected function models(): array
     {
-        return [OrgPosition::class, OrgDepartment::class, OrgLevel::class, EmpEmployee::class];
+        return [OrgPosition::class, OrgDepartment::class, OrgLevel::class, EmpEmployee::class, EmpEmployeePosition::class];
     }
 
     public function search(): string
@@ -62,8 +79,7 @@ class PositionGrid extends HrmGrid
 
     protected function prefetch(Collection $items): void
     {
-        $this->holders = EmpEmployee::query()->where('activate', true)->whereIn('position_id', $items->modelKeys())
-            ->groupBy('position_id')->selectRaw('position_id, COUNT(*) n')->pluck('n', 'position_id')->all();
+        $this->holders = PositionDesk::holderCounts($items->modelKeys());
     }
 
     public function columns(): array

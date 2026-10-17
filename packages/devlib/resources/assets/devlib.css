@@ -3906,3 +3906,8 @@ input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--dl-ink) 7
 .dl-pbanner__progtxt{font-size:calc(12px * var(--dl-font-scale));color:var(--dl-ink)}
 .dl-pbanner__kpis .dl-grid__stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 .dl-pbanner__notice > .dl-alert{margin-bottom:0}
+/* ================= SWITCHER (dropdown menukar panel) ================= */
+.dl-switcher__bar{margin-bottom:10px}
+.dl-switcher__bar label{display:flex;flex-direction:column;gap:3px;max-width:340px;font-size:calc(11px * var(--dl-font-scale));font-weight:600;color:var(--dl-ink)}
+.dl-switcher__bar select{font:inherit;padding:6px 8px;border:1px solid var(--dl-border-hover);border-radius:var(--dl-radius);background:var(--dl-surface);color:var(--dl-ink-strong)}
+.dl-switcher__case[hidden]{display:none}

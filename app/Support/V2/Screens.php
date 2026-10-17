@@ -199,6 +199,7 @@ final class Screens
                 ]],
                 ['label' => 'Organization', 'items' => [
                     $it('hrm-employee-form', ['Master Employee Form', 'fa-solid fa-id-badge', 'v2 baru: profil pegawai (banner + KPI + tab) di atas tm2mst.emp_employee; dibuka dari grid hrm-employee', null]),
+                    $it('hrm-position-form', ['Master Position Form', 'fa-solid fa-user-tie', 'v2 baru: jabatan, job description (HR Officer) dan KPI jabatan di atas tm2mst.org_position + org_position_kpi; dibuka dari grid hrm-position', null]),
                     $it('hrm-org-chart', ['Organization Chart', 'fa-solid fa-sitemap', 'v2: App\Support\V2\Data\OrgStructure + x-dl::org-chart (org_position)', null]),
                     $it('approval-acting', ['Temporary Acting Officer', 'fa-solid fa-people-arrows', 'v2 baru: tm2mst.flow_position_acting (dipindah dari Setup > Security, user 2026-10-04)', null]),
                 ]],

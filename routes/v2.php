@@ -34,7 +34,11 @@ use App\Services\Master\MaterialCategoryService;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpFamily;
 use App\Services\Hrm\EmployeeAccountService;
+use App\Models\Master\OrgPosition;
+use App\Models\Master\OrgPositionKpi;
 use App\Services\Hrm\EmployeeProfileService;
+use App\Services\Hrm\EmployeeRoleService;
+use App\Services\Hrm\PositionService;
 use App\Services\Hrm\EmployeeRecordService;
 use App\Services\Payroll\PayrollAccess;
 use App\Services\ProDev\PartDieline;
@@ -166,7 +170,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::get('/item/{code}', function (string $code) {
         [$kind, $url, $item] = AppMenu::resolve($code);
 
-        return $url ? redirect($url) : view('v2.missing', ['item' => $item]);
+        // ?mi = baris menu yang dibuka, supaya breadcrumb layar yang muncul di beberapa menu menunjuk ke cabang asal user.
+        return $url ? redirect($kind === 'v2' ? $url.(str_contains($url, '?') ? '&' : '?').'mi='.urlencode($code) : $url) : view('v2.missing', ['item' => $item]);
     })->name('item');
 
     // QC cepat (user 2026-10-07): Approved / Need improvement + catatan per layar; hanya situs UAT dan akun developer.
@@ -335,6 +340,53 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $open($employee, 'account', t($msg))->with('v2_login_card', $card);
         })->whereIn('action', ['create', 'reset', 'activate', 'deactivate'])->name('account');
+        // Jabatan ganda: posisi utama = emp_employee.position_id; yang lain di emp_employee_position (EmployeeRoleService).
+        Route::post('/position', function (Request $r, int $employee, EmployeeRoleService $svc) use ($open, $emp) {
+            $svc->add($emp($employee), (int) $r->input('position_id'), $r->input('since_date'), Auth::user());
+
+            return $open($employee, 'job', t('Position added.'));
+        })->name('position');
+        Route::post('/position/remove', function (Request $r, int $employee, EmployeeRoleService $svc) use ($open, $emp) {
+            $svc->remove($emp($employee), (int) $r->input('position_id'), Auth::user());
+
+            return $open($employee, 'job', t('Position removed.'));
+        })->name('position.remove');
+        Route::post('/position/primary', function (Request $r, int $employee, EmployeeRoleService $svc) use ($open, $emp) {
+            $svc->makePrimary($emp($employee), (int) $r->input('position_id'), Auth::user());
+
+            return $open($employee, 'job', t('Primary position changed. Approvals, the organization chart and payroll follow the new primary position.'));
+        })->name('position.primary');
+    });
+
+    // Master Position v2 (hrm-position-form): save / activate / deactivate jabatan, dan KPI jabatan (hanya HR Officer). Aturan = PositionService.
+    Route::prefix('hrm/position')->name('hrm.position.')->group(function () {
+        $form = fn (int $id, string $tab, string $msg) => redirect(route('v2.screen', 'hrm-position-form').'?id='.$id.'&tab='.$tab)->with('v2_flash', $msg);
+        Route::post('/save', function (Request $r, PositionService $svc) use ($form) {
+            abort_unless(Auth::user()->canAccessModule('HRM'), 403);
+            $p = $r->filled('id') ? OrgPosition::findOrFail((int) $r->input('id')) : null;
+            $action = (string) $r->input('action', 'save');
+            if ($p && in_array($action, ['activate', 'deactivate'], true)) {
+                $svc->setActive($p, $action === 'activate', Auth::user());
+                $msg = $action === 'activate' ? ':name activated.' : ':name deactivated.';
+            } else {
+                $p = $svc->save($p, $r->except(['id', 'action']), Auth::user());
+                $msg = ':name saved.';
+            }
+
+            return $form($p->position_id, 'general', tf($msg, ['name' => $p->position_name]));
+        })->name('save');
+        Route::post('/{position}/kpi', function (Request $r, int $position, PositionService $svc) use ($form) {
+            abort_unless(Auth::user()->canAccessModule('HRM'), 403);
+            $svc->addKpi(OrgPosition::findOrFail($position), $r->all(), Auth::user());
+
+            return $form($position, 'kpi', t('KPI added.'));
+        })->whereNumber('position')->name('kpi');
+        Route::post('/{position}/kpi/remove', function (Request $r, int $position, PositionService $svc) use ($form) {
+            abort_unless(Auth::user()->canAccessModule('HRM'), 403);
+            $svc->removeKpi(OrgPositionKpi::where('position_id', $position)->findOrFail((int) $r->input('kpi_id')), Auth::user());
+
+            return $form($position, 'kpi', t('KPI removed.'));
+        })->whereNumber('position')->name('kpi.remove');
     });
 
     // Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru; logika = App\Services\Sales\InquiryDuplicator (sama dgn v1).

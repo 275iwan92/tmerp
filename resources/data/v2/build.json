@@ -1,8 +1,8 @@
 {
-    "generated": "2026-10-17 21:39",
+    "generated": "2026-10-17 22:47",
     "database": "ddtsys",
     "totals": {
-        "objects": 173,
+        "objects": 175,
         "modules": 9,
         "modules_done": 6,
         "screens": 295,
@@ -19,14 +19,14 @@
         "report_grids": 47,
         "engines": 65,
         "engine_groups": 14,
-        "tables": 430,
+        "tables": 432,
         "databases": 10,
-        "models": 382,
-        "migrations": 633,
-        "tests": 197,
-        "dictionary": 13939,
+        "models": 384,
+        "migrations": 634,
+        "tests": 198,
+        "dictionary": 14493,
         "languages": 4,
-        "commits": "1397",
+        "commits": "1400",
         "since": "2026-08-06"
     },
     "modules": [
@@ -154,16 +154,16 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 131,
+            "commits": 132,
             "days": 8,
             "last": "2026-10-17",
             "screens": 159,
-            "objects": 16,
+            "objects": 18,
             "engines": 50,
             "tests": 80
         }
     ],
-    "untracked": 1175,
+    "untracked": 1177,
     "days": [
         {
             "date": "2026-10-04",
@@ -246,8 +246,8 @@
         {
             "date": "2026-10-17",
             "iwan": 0,
-            "jo": 7,
-            "other": 1
+            "jo": 8,
+            "other": 3
         }
     ],
     "weeks": [
@@ -314,8 +314,8 @@
         {
             "week": "2026-W42",
             "iwan": 10,
-            "jo": 55,
-            "other": 55
+            "jo": 56,
+            "other": 57
         }
     ],
     "items": [
@@ -5627,10 +5627,10 @@
             "name": "PhotoBox",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -5682,10 +5682,10 @@
             "name": "ProfileBanner",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -5982,6 +5982,28 @@
             "built_at": "2026-10-14",
             "built_by": null,
             "changed_at": "2026-10-14",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:SwitchCase",
+            "name": "SwitchCase",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Switcher",
+            "name": "Switcher",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {

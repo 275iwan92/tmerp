@@ -266,7 +266,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
         });
 
         Route::middleware('module:HRM')->group(function () {
-            Route::livewire('/hrm/position', 'pages::hrm.position')->name('hrm.position');
+            // Layar v1 Master Position dipensiunkan 2026-10-17: alamat lama -> grid v2; nama rute dipertahankan.
+            Route::redirect('/hrm/position', '/v2/s/hrm-position')->name('hrm.position');
             Route::livewire('/hrm/sop', 'pages::hrm.sop-documents')->name('hrm.sop-documents');
             Route::livewire('/hrm/org-chart', 'pages::hrm.org-chart')->name('hrm.org-chart');
             // Layar v1 Master Employee dipensiunkan 2026-10-16: alamat lama (bookmark, tautan v1) -> grid v2; nama rute dipertahankan.

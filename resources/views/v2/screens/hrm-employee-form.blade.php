@@ -1,6 +1,6 @@
 {{--
  REMARK
- Tujuan       : Form Master Employee v2 (konsep A2 disetujui Jo): banner pegawai lewat x-dl::profile-banner (kotak pas foto 3x4 x-dl::photo-box yang bisa di-crop, nama, chip berkelompok Status / Employment, batang kelengkapan), empat KPI (masa kerja, sisa cuti, absen, disiplin), tab Profile / Job / Contract / Family / Education / Documents / BPJS / Bank / Discipline / Account (hanya Admin App) dan History bawaan.
+ Tujuan       : Form Master Employee v2 (konsep A2 disetujui Jo): banner pegawai lewat x-dl::profile-banner (kotak pas foto 3x4 x-dl::photo-box yang bisa di-crop, nama, chip berkelompok Status / Employment, batang kelengkapan), empat KPI (masa kerja, sisa cuti, absen, disiplin), tab Profile / Job (Positions held + dropdown posisi -> job description dan KPI) / Contract / Family / Education / Documents / BPJS / Bank / Discipline / Account (hanya Admin App) dan History bawaan.
  Sumber hulu  : App\Support\V2\Data\EmployeeProfile (KPI, kelengkapan, opsi); tabel tm2mst.emp_employee dan tab anak emp_contract, emp_family, emp_education, emp_disciplinary, emp_bank_account.
  Input        : Query id (pegawai) atau new=1; session v2_flash dan errors.
  Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate / Remove Photo) -> EmployeeProfileService. POST v2.hrm.employee.contract / family / deceased / education / discipline -> EmployeeRecordService (tiap dialog menyimpan sendiri; tanpa edit / hapus baris).
@@ -13,6 +13,8 @@
     use App\Services\Hrm\EmployeeBankService;
     use App\Services\Hrm\EmployeeProfileService as Profile;
     use App\Services\Hrm\EmployeeRecordService as Records;
+    use App\Services\Hrm\EmployeeRoleService as Roles;
+    use App\Services\Hrm\PositionService as Positions;
     use App\Support\V2\Data\EmployeeProfile as Data;
     use App\Support\V2\Src;
     use Devlib\Locale;
@@ -39,6 +41,10 @@
         + ($new ? [] : ['documents' => 'Documents', 'bpjs' => 'BPJS']) + ['bank' => 'Bank', 'discipline' => 'Discipline'] + ($isAdmin && ! $new ? ['account' => 'Account'] : []);
     $seeSalary = fn ($c) => $user->is_admin || (! $e->position?->salary_hidden_from_hr && $c && in_array($c->employment_type, ['KONTRAK', 'BORONGAN'], true));
     $statusTone = ['WORKING' => 'success', 'DIRUMAHKAN' => 'warn', 'CUTI' => 'info'];
+    $held = $new ? collect() : app(Roles::class)->held($e);
+    $roleOptions = $held->mapWithKeys(fn ($h) => [$h['position']->position_id => $h['position']->position_name.($h['primary'] ? ' · '.t('primary') : '')])->all();
+    $heldIds = $held->pluck('position.position_id')->all();
+    $extraOptions = $held->reject(fn ($h) => $h['primary'])->mapWithKeys(fn ($h) => [$h['position']->position_id => $h['position']->position_name])->all();
     $dept = $e->position?->department?->department_name ?? '—';
     $bannerSub = $new ? t('Fill the Profile and Job tabs, then Save.') : raw($e->employee_code.' · '.($e->position?->position_name ?? '—').' · '.$dept);
     $groups = $new ? [] : [
@@ -153,6 +159,38 @@
                 <x-dl::field.select name="default_shift_id" label="Default shift" :options="Data::shiftOptions()" :value="$v('default_shift_id')" :source="Src::of('tm2mst.emp_employee.default_shift_id', 'tm2mst.emp_shift')" />
             </x-dl::form.row>
         </x-dl::card>
+        @unless ($new)
+            <x-dl::card title="Positions held" description="One person can hold several positions. The primary position decides approvals, the organization chart and payroll; every position brings its own job description and KPI.">
+                <x-dl::action-bar>
+                    <x-dl::button type="button" size="sm" variant="secondary" icon="fa-plus" label="Add Position" data-dl-open="emp-position-add" />
+                    @if ($extraOptions)
+                        <x-dl::button type="button" size="sm" variant="secondary" icon="fa-star" label="Make Primary" data-dl-open="emp-position-primary" />
+                        <x-dl::button type="button" size="sm" variant="secondary" icon="fa-trash" label="Remove Position" data-dl-open="emp-position-remove" />
+                    @endif
+                </x-dl::action-bar>
+                <x-dl::table :columns="['position' => 'Position', 'dept' => 'Department', 'since' => 'Since', 'role' => 'In the system']"
+                    :rows="$held->map(fn ($h) => ['position' => raw($h['position']->position_name), 'dept' => raw($h['position']->department?->department_name ?? '—'), 'since' => $h['since'] ? Locale::date($h['since']) : '—', 'role' => $h['primary'] ? 'Primary' : 'Also holds'])->all()"
+                    empty="No position yet. Choose the main position above and Save." :source="Src::of('tm2mst.emp_employee.position_id', 'tm2mst.emp_employee_position')" />
+            </x-dl::card>
+            @if ($held->isNotEmpty())
+                <x-dl::card title="Job description and KPI">
+                    <x-dl::switcher label="Position" :options="$roleOptions">
+                        @foreach ($held as $h)
+                            @php($pos = $h['position'])
+                            @php($posKpis = app(Positions::class)->kpis($pos))
+                            <x-dl::switch-case :value="(string) $pos->position_id">
+                                <x-dl::field.display label="Job description" :value="raw($pos->job_description ?: '—')" :source="Src::of('tm2mst.org_position.job_description')" />
+                                @unless ($pos->job_description)<x-dl::badge label="Not filled yet" tone="warn" />@endunless
+                                <x-dl::table :columns="['name' => 'KPI', 'unit' => 'Unit', 'dir' => 'Better when', 'target' => ['Target', 'num' => true, 'raw' => true], 'weight' => ['Weight', 'num' => true, 'raw' => true]]"
+                                    :rows="$posKpis->map(fn ($k) => ['name' => raw($k->kpi_name), 'unit' => raw($k->unit ?: '—'), 'dir' => $k->direction === 'HIGHER' ? 'Higher is better' : 'Lower is better', 'target' => Locale::decimal($k->target_value, 2), 'weight' => Locale::decimal($k->weight_pct, 2).'%'])->all()"
+                                    empty="No KPI defined for this position yet." :source="Src::of('tm2mst.org_position_kpi')" />
+                                <x-dl::button size="sm" variant="secondary" icon="fa-up-right-from-square" label="Edit in Master Position" :href="route('v2.screen', 'hrm-position-form').'?id='.$pos->position_id" />
+                            </x-dl::switch-case>
+                        @endforeach
+                    </x-dl::switcher>
+                </x-dl::card>
+            @endif
+        @endunless
     </x-slot:job>
 
     <x-slot:contract>
@@ -388,6 +426,44 @@
             </x-dl::action-bar>
         </x-dl::action-form>
     </x-dl::modal>
+
+    <x-dl::modal id="emp-position-add" title="Add Position" icon="fa-user-tie">
+        <x-dl::action-form action="{{ route('v2.hrm.employee.position', $e->employee_id) }}">
+            <x-dl::form.row :cols="2">
+                <x-dl::field.select name="position_id" label="Position" required :options="array_diff_key(Data::positionOptions(), array_flip($heldIds))" :source="Src::of('tm2mst.emp_employee_position.position_id', 'tm2mst.org_position')" />
+                <x-dl::field.date name="since_date" label="Since" :value="now()->toDateString()" :source="Src::of('tm2mst.emp_employee_position.since_date')" />
+            </x-dl::form.row>
+            <x-dl::alert tone="info" message="The position is added next to the primary one. Approvals, the organization chart and payroll keep following the primary position." />
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                <x-dl::button preset="save" />
+            </x-dl::action-bar>
+        </x-dl::action-form>
+    </x-dl::modal>
+
+    @if ($extraOptions)
+        <x-dl::modal id="emp-position-primary" title="Make Primary" icon="fa-star">
+            <x-dl::action-form action="{{ route('v2.hrm.employee.position.primary', $e->employee_id) }}">
+                <x-dl::field.select name="position_id" label="New primary position" required :options="$extraOptions" :source="Src::of('tm2mst.emp_employee.position_id')" />
+                <x-dl::alert tone="warn" message="The current primary position becomes an additional one. Approvals, the organization chart and payroll scope follow the new primary position." />
+                <x-dl::action-bar>
+                    <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                    <x-dl::button preset="save" label="Make Primary" data-dl-confirm="{{ t('Change the primary position of this employee?') }}" />
+                </x-dl::action-bar>
+            </x-dl::action-form>
+        </x-dl::modal>
+
+        <x-dl::modal id="emp-position-remove" title="Remove Position" icon="fa-trash">
+            <x-dl::action-form action="{{ route('v2.hrm.employee.position.remove', $e->employee_id) }}">
+                <x-dl::field.select name="position_id" label="Position" required :options="$extraOptions" :source="Src::of('tm2mst.emp_employee_position.activate')" />
+                <x-dl::alert tone="info" message="The position is switched off, not deleted. The primary position cannot be removed here." />
+                <x-dl::action-bar>
+                    <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                    <x-dl::button preset="save" label="Remove Position" />
+                </x-dl::action-bar>
+            </x-dl::action-form>
+        </x-dl::modal>
+    @endif
 
     <x-dl::modal id="emp-document" title="Upload Document" icon="fa-file-arrow-up">
         <x-dl::action-form action="{{ route('v2.hrm.employee.document', $e->employee_id) }}" enctype="multipart/form-data">
