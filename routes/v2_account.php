@@ -39,7 +39,7 @@ Route::prefix('v2')->name('v2.')->middleware(['auth', 'locale', 'force.password'
 Route::prefix('v2/profile')->name('v2.profile')->middleware(['auth', 'locale', 'force.password'])->group(function () {
     Route::get('/', function () {
         $screen = ['slug' => 'profile', 'label' => 'Edit Profile', 'icon' => 'fa-solid fa-user-pen', 'module' => 'Account', 'group' => 'Profile',
-            'url' => route('v2.profile'), 'filters' => ['tab'], 'side' => true, 'view' => 'v2.screens.profile', 'ref' => 'self-service/index.blade.php', 'mockup' => null];
+            'url' => route('v2.profile'), 'filters' => ['tab'], 'side' => true, 'view' => 'v2.screens.profile', 'ref' => 'self-service v1 (dihapus 2026-10-18)', 'mockup' => null];
 
         return view('v2.screen', ['screen' => $screen, 'built' => true, 'code' => file_get_contents(resource_path('views/v2/screens/profile.blade.php'))]);
     })->name('');

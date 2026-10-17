@@ -51,3 +51,5 @@ Searched: `co_order*`, `crm_*`, `do_*` in `information_schema` (ddtsdi/tm2sdi), 
 > Checked 2026-10-16 after adding the Technical Guide diagram route (`routes/web.php`: one `require` appended to an existing line, no line numbers moved). Content of this card is not affected.
 
 > Re-checked 2026-10-17: `CoOrder::totals()` now reads the PPN rate with `TaxRate::ppn(co_date)` (table `fin_tax_rate`, screen Master Data > Tax Rate) instead of today's constant; the rate for current documents is unchanged (11), an older CO uses the rate of its own date.
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.

@@ -1,5 +1,13 @@
 @php use App\Support\Localization\Translator; @endphp
 {{--
+    REMARK
+    Tujuan       : Panel dropdown user (drawer kanan) di layout laporan v1; User Configuration dan My Security membuka layar v2 /v2/profile (self-service v1 dihapus 2026-10-18).
+    Sumber hulu  : App\Livewire\Shell\UserPanels; rute v2.profile (App\Support\V2\Data\SelfService).
+    Input        : Flag buka/tutup dari x-data shell pembungkus.
+    Output       : Drawer notifikasi, chat, AI, password, profil, bantuan, konfigurasi.
+    Dipakai oleh : layouts/report (Laporan Manajemen v1) lewat Shell\UserMenu.
+    Status       : Aktif, menunggu laporan v1 dipindah ke v2 lalu dihapus.
+
     Panel dropdown user -- SATU implementasi utk Menu Operasional & Laporan
     Manajemen (lihat App\Livewire\Shell\UserPanels). SEMUA panel = drawer
     kanan x-ui.drawer (keputusan user 2026-09-23); flag & openDrawer() dari
@@ -140,14 +148,14 @@
          dimuat saat pertama dibuka, tidak dikosongkan saat ditutup. --}}
     @if (auth()->user()->employee_id)
         <x-ui.drawer open="portalOpen" icon="fa-solid fa-id-card" title="User Configuration" size="2xl">
-            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (portalOpen && ! src) src = @js(route('self-service.index'))" :src="src" title="User Configuration"></iframe>
+            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (portalOpen && ! src) src = @js(route('v2.profile'))" :src="src" title="User Configuration"></iframe>
         </x-ui.drawer>
     @endif
 
     {{-- Drawer My Security --}}
     @if (auth()->user()->employee_id)
         <x-ui.drawer open="securityOpen" icon="fa-solid fa-shield-halved" :title="Translator::t('shell_mysecurity_title', 'My Security')" size="2xl">
-            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (securityOpen && ! src) src = @js(route('self-service.index', ['tab' => 'security']))" :src="src" title="My Security"></iframe>
+            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (securityOpen && ! src) src = @js(route('v2.profile', ['tab' => 'security']))" :src="src" title="My Security"></iframe>
         </x-ui.drawer>
     @endif
 

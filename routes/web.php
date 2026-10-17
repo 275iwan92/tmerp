@@ -198,10 +198,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
         // akses (tanpa middleware 'admin' seperti /security di atas).
         Route::livewire('/bantuan', 'pages::help.index')->name('help.index');
 
-        // Portal self-service karyawan — bukan modul HR administratif (tanpa
-        // module: gate), tapi personal & hanya milik akun sendiri. Guard
-        // "linked employee" ditangani di dalam komponen (masteremployee_tier1.md §5.1).
-        Route::livewire('/self-service', 'pages::self-service.index')->name('self-service.index');
+        // Self-service v1 dihapus 2026-10-18 (aturan D.25): layar resmi = Edit profile v2 (v2.profile).
+        // URL lama hanya diteruskan ke sana (?tab ikut dibawa) supaya bookmark tidak 404.
+        // Jumlah baris blok ini sengaja tetap 4 supaya nomor baris yang dikutip kartu TG tidak bergeser.
+        Route::get('/self-service', fn (\Illuminate\Http\Request $r) => redirect()->route('v2.profile', $r->query()));
 
         // Personal, bukan modul administratif -- sama pola dgn self-service (tanpa module: gate).
         Route::livewire('/notifications', 'pages::notification.index')->name('notifications.index');

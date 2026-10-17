@@ -143,3 +143,5 @@ Relations of the tables this sub-module uses. Solid line = real foreign key (dat
 | `iqp_inquiry` | `prod_product` | 1:N | `source_inquiry_id` | logical |
 | `prod_product` | `iqp_inquiry` | 1:N | `product_id` | logical |
 | `prod_product` | `co_order_item` | 1:N | `product_id` | logical |
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.

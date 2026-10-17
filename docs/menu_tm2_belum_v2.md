@@ -80,7 +80,7 @@ Perlu dibangun atau diputuskan dibiarkan v1. Kolom terakhir = rute layar v1 dari
 | HRM_PAYROLL_BANKXFER | Bank Transfer Generator | Payroll | READY_FOR_QC | hrm.payroll.bank-transfer |
 | HRM_PAYROLL_CASHROSTER | Cash Roster & Denominations | Payroll | READY_FOR_QC | hrm.payroll.cash-roster |
 | HRM_ORG_CHART | Organization Chart | Organization | READY_FOR_QC | hrm.org-chart |
-| HRM_SELFSERVICE | Employee Self-Service | Employee | READY_FOR_QC | self-service.index (profil v2 sudah ada di menu akun) |
+| HRM_SELFSERVICE | Employee Self-Service | Employee | DIHAPUS 2026-10-18 | menu alias dihapus (migrasi 2026_10_18_000100); jalur resmi = panel Profile > Edit profile (/v2/profile); layar v1 dihapus |
 | HRM_RCR_PIPELINE | Pipeline Board | Recruitment | READY_FOR_QC | hrm.recruitment.pipeline-board |
 | HRM_RCR_PORTAL | Portal Candidate | Recruitment | READY_FOR_QC | careers.landing (portal publik, tetap) |
 | FIN_DASH | Dashboard | Control Center | READY_FOR_QC | finance.dashboard |

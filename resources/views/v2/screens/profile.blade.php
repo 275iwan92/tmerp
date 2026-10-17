@@ -1,7 +1,7 @@
 {{--
  REMARK
  Tujuan       : Edit profile layar penuh: data pribadi, cuti, dokumen, shift dan keamanan akun; perubahan data pribadi = pengajuan dengan approval HR, akun login dan pertanyaan pemulihan diubah langsung.
- Sumber hulu  : App\Support\V2\Data\SelfService::desk (port layar self-service v1 pages/self-service/index); data user dari Auth::user.
+ Sumber hulu  : App\Support\V2\Data\SelfService::desk (satu-satunya layar self-service; v1 dihapus 2026-10-18, URL lama /self-service diteruskan ke sini); data user dari Auth::user.
  Input        : User login (Auth::user), variabel crumbs dari layout.
  Output       : Objek form khusus x-mp::hrm.self-service; layar hanya satu baris deklarasi.
  Dipakai oleh : Rute v2.profile (menu Profile > Edit profile)

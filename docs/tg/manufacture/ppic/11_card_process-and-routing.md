@@ -39,3 +39,5 @@
 
 ## Already exists? Searched where, result
 `concept:find "machine"`: nothing for processes. Searched code: a single process master; the stage list is used as a string in several places (`PlanLoader`, `SetupTimeEngine`, `WoPlanningEnricher`) without a constant list. User's guide for masters: `docs/guides/production/02_planning_scheduling.md`.
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.

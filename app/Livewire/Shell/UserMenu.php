@@ -11,6 +11,15 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
+/* REMARK
+ * Tujuan       : Dropdown avatar user di layout laporan v1; My Security membuka /v2/profile?tab=security (self-service v1 dihapus 2026-10-18).
+ * Sumber hulu  : sys_user_menu (tm2sys), rute v2.profile.
+ * Input        : Auth::user, prop standalone.
+ * Output       : Daftar item menu user dan URL halaman untuk mode standalone.
+ * Dipakai oleh : layouts/report (Laporan Manajemen v1), Shell\UserPanels.
+ * Status       : Aktif, menunggu laporan v1 dipindah ke v2 lalu dihapus.
+ */
+
 // Dropdown avatar/user -- diekstrak dari main-menu.blade.php (instruksi
 // user 2026-09-14: "user menu di management report dan di operational
 // menu harus sama", lalu screenshot dropdown lengkap "drop down ini ya
@@ -31,7 +40,7 @@ class UserMenu extends Component
     public function standalonePageUrl(object $item): ?string
     {
         if ($item->code === 'UM_MYSECURITY') {
-            return route('self-service.index', ['tab' => 'security']);
+            return route('v2.profile', ['tab' => 'security']);
         }
 
         return $item->action_type === 'menu'

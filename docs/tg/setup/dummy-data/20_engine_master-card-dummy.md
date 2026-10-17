@@ -109,3 +109,5 @@ Since 2026-10-18 `tests/Feature/MasterCardDummyEngineLevelTest.php` covers the `
 
 ## Used by
 Command `dummy:mastercard`; Developer screen `v2/dummy/mastercard`; engine catalog (devlib.test > Engines and `v2.engines`); `docs/tg/01_engine-map.md` row `master-card-dummy`.
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.

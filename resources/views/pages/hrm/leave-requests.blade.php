@@ -11,7 +11,7 @@ use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Layar approval Cuti/Sakit/Izin/Cuti Khusus (masteremployee_state.yaml ->
-// sop_perizinan_resmi). Self-service (resources/views/pages/self-service/index.blade.php)
+// sop_perizinan_resmi). Self-service (v2: App\Support\V2\Data\SelfService)
 // sudah bisa submit sejak awal & sudah menegakkan aturan SOP (H+7/H-7, maks 3
 // hari, dokumen wajib, lock Izin selama saldo cuti > 0, dst) -- tapi TIDAK
 // PERNAH punya sisi approval, jadi request numpuk PENDING & used_days tidak

@@ -2,6 +2,15 @@
 
 namespace App\Support\Menu;
 
+/* REMARK
+ * Tujuan       : Peta code sys_app_menu -> URL layar v1 untuk item yang belum punya layar v2.
+ * Sumber hulu  : sys_app_menu (tm2sys), rute v1 di routes/web.php.
+ * Input        : -
+ * Output       : array code => URL; HRM_SELFSERVICE dihapus 2026-10-18 (menu Employee Self-Service dihapus, jalur resmi Edit profile v2).
+ * Dipakai oleh : pages/main-menu (v1), App\Support\V2\AppMenu.
+ * Status       : Aktif; dikosongkan bertahap sampai semua layar v1 diganti v2.
+ */
+
 // code sys_app_menu -> URL layar v1 (Livewire tmerp). Dipakai menu v1 (pages/main-menu) DAN menu v2
 // (App\Support\V2\AppMenu) untuk item yang belum punya layar v2 -- satu peta, jangan dibuat dua.
 final class MenuRoutes
@@ -220,7 +229,6 @@ final class MenuRoutes
             'HRM_ROSTER' => route('v2.screen', 'hrm-roster'),
             'HRM_CORRECTION' => route('hrm.correction-requests'),
             'HRM_CONTACT_GAP' => route('v2.screen', 'hrm-contact-gap'),
-            'HRM_SELFSERVICE' => route('self-service.index'),
             'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
             'HRM_CLOCKIN' => route('v2.screen', 'hrm-clockin'),
             'HRM_ATTENDANCE_UPLOAD' => route('v2.screen', 'hrm-attendance-upload'),

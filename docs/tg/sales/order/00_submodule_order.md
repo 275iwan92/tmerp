@@ -173,3 +173,5 @@ Relations of the tables this sub-module uses. Solid line = real foreign key (ver
 | `sec_user` | `flow_log` | 1:N | `actual_user_id` | logical |
 | `sec_user` | `flow_position_acting` | 1:N | `acting_user_id` | logical |
 | `emp_employee` | `sec_user` | 1:1 | `employee_id` | logical |
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.

@@ -41,3 +41,5 @@
 
 ## Already exists? Searched where
 Searched: menu `INV_TRX_*`, tables `*_stock`, `*_stock_d`, models in `app/Models/Inventory`, services `StockDocumentService`, `StockPostingService`, `StockReversalService`, grids `app/Support/V2/Grid/Inv`, v1 pages `resources/views/pages/inventory`, design notes `docs/design-notes/inventory/` (FROM DOCUMENT, intent only: ledger as book of movements, correction by counter-document, rules 03 and 08). The concept ALREADY EXISTS in full; no new table is needed.
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.

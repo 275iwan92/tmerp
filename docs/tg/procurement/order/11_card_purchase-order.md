@@ -54,3 +54,5 @@
 2. PO2600008 (Subcon, 01-Oct-2026, two SERVICE lines 750,000 + 600,000): DPP 1,350,000; PPN 148,500; PPh 23 at 2 = 27,000; grand total 1,498,500; net payable 1,471,500. Stored values equal these.
 3. Level count by amount: PO2600001 (grand total above 1,000,000) has three approvals in `flow_log`; PO2600005 (277,500) has two.
 **Price source**: a PO line price comes from the supplier price tables when the material is paper (see `13_card_paper-price-tables.md`); otherwise from the PR estimate. In the mockup data the tables hold one row (supplier 15, IVORY), no PO line used it (`po_line.i_price` values are dummy numbers: 25,000 / 22,500 / 999,999 and similar).
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.
