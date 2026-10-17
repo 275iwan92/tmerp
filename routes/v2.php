@@ -33,6 +33,7 @@ use App\Services\Docs\DocShareService;
 use App\Services\Master\MaterialCategoryService;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpFamily;
+use App\Services\Hrm\EmployeeAccountService;
 use App\Services\Hrm\EmployeeProfileService;
 use App\Services\Hrm\EmployeeRecordService;
 use App\Services\Payroll\PayrollAccess;
@@ -307,6 +308,33 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $open($employee, 'discipline', t('Discipline record added.'));
         })->name('discipline');
+        Route::post('/document', function (Request $r, int $employee, EmployeeRecordService $svc) use ($open, $emp) {
+            $svc->addDocument($emp($employee), $r->all(), $r->file('file'), Auth::user());
+
+            return $open($employee, 'documents', t('Document saved.'));
+        })->name('document');
+        // Tab Account = hanya Admin App (is_admin, seperti v1). Password baru tampil sekali di kartu login.
+        Route::post('/account/{action}', function (int $employee, string $action, EmployeeAccountService $svc) use ($open, $emp) {
+            abort_unless(Auth::user()->is_admin, 403);
+            $e = $emp($employee);
+            $user = $svc->userOf($e);
+            $card = null;
+            if ($action === 'create') {
+                $cred = $svc->createLogin($e, Auth::user());
+                $card = $cred ? $cred + ['code' => $e->employee_code] : null;
+                $msg = $cred ? 'Login created.' : 'This employee already has a login.';
+            } else {
+                abort_unless($user, 404);
+                match ($action) {
+                    'reset' => $card = $svc->resetPassword($user) + ['code' => $e->employee_code, 'title' => 'New password'],
+                    'activate' => $svc->setActive($user, true, Auth::user()),
+                    'deactivate' => $svc->setActive($user, false, Auth::user()),
+                };
+                $msg = ['reset' => 'Password reset. Give the new password to the employee.', 'activate' => 'Account activated.', 'deactivate' => 'Account deactivated.'][$action];
+            }
+
+            return $open($employee, 'account', t($msg))->with('v2_login_card', $card);
+        })->whereIn('action', ['create', 'reset', 'activate', 'deactivate'])->name('account');
     });
 
     // Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru; logika = App\Services\Sales\InquiryDuplicator (sama dgn v1).

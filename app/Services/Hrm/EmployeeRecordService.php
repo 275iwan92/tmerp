@@ -2,7 +2,7 @@
 
 /*
  * REMARK
- * Tujuan       : Catatan anak pegawai dari layar v2 Master Employee Form: kontrak baru, keluarga (tambah, tandai meninggal), pendidikan, kedisiplinan. Tiap tambah tersimpan sendiri.
+ * Tujuan       : Catatan anak pegawai dari layar v2 Master Employee Form: kontrak baru, keluarga (tambah, tandai meninggal), pendidikan, kedisiplinan, dokumen. Tiap tambah tersimpan sendiri.
  * Sumber hulu  : Aturan sama dengan dialog v1 pages::master.employee (zona beku): satu kontrak aktif per pegawai, anak maks 20, keluarga wajib sekali, cek silang keluarga-pekerjaan.
  * Input        : Pegawai (EmpEmployee), array isian dialog, user yang menyimpan.
  * Output       : Baris tersimpan di tm2mst.emp_contract / emp_family / emp_education / emp_disciplinary; ValidationException bila isian salah; kredensial login bila keluarga wajib lengkap (mode strict).
@@ -14,13 +14,16 @@ namespace App\Services\Hrm;
 
 use App\Models\Master\EmpContract;
 use App\Models\Master\EmpDisciplinary;
+use App\Models\Master\EmpDocument;
 use App\Models\Master\EmpEducation;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpFamily;
 use App\Models\Sys\SecUser;
 use App\Services\Migration\EmployeeLoginProvisionService;
 use Devlib\Locale;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -37,6 +40,9 @@ final class EmployeeRecordService
     public const FAMILY_RELATIONS = ['SUAMI' => 'Husband', 'ISTRI' => 'Wife', 'ANAK' => 'Child', 'AYAH' => 'Father', 'IBU' => 'Mother', 'MERTUA_AYAH' => 'Father-in-law', 'MERTUA_IBU' => 'Mother-in-law'];
 
     public const DISCIPLINARY_TYPES = ['TEGURAN_VERBAL' => 'Verbal warning', 'SP1' => 'SP1', 'SP2' => 'SP2', 'SP3' => 'SP3', 'ALPHA' => 'Alpha'];
+
+    public const DOCUMENT_TYPES = ['KTP' => 'ID card (e-KTP)', 'NPWP' => 'Tax ID (NPWP)', 'SIM' => 'Driving licence (SIM C)', 'KK' => 'Family card (KK)', 'PASSPORT' => 'Passport',
+        'SKCK' => 'Police clearance (SKCK)', 'IJAZAH' => 'Diploma', 'KONTRAK' => 'Contract', 'LAINNYA' => 'Other'];
 
     private const MAX_CHILDREN = 20;
 
@@ -125,6 +131,28 @@ final class EmployeeRecordService
         ])->validate();
 
         return EmpDisciplinary::create(['employee_id' => $e->employee_id, 'type' => $d['type'], 'incident_date' => $d['incident_date'], 'reason' => $d['reason'], 'issued_by' => $user->login]);
+    }
+
+    // Satu dokumen per jenis per pegawai (sama dengan self-service): unggah ulang menggantikan berkas lama. Unggahan HR mengunci dokumen dari self-service.
+    public function addDocument(EmpEmployee $e, array $in, ?UploadedFile $file, SecUser $user): EmpDocument
+    {
+        $d = Validator::make($in + ['file' => $file], [
+            'document_type' => ['required', 'in:'.implode(',', array_keys(self::DOCUMENT_TYPES))],
+            'document_no' => ['nullable', 'string', 'max:50'],
+            'expiry_date' => ['nullable', 'date'],
+            'file' => ['required', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf'],
+        ])->validate();
+
+        $doc = EmpDocument::firstOrNew(['employee_id' => $e->employee_id, 'document_type' => $d['document_type']]);
+        if ($doc->file_path) {
+            Storage::disk('public')->delete($doc->file_path);
+        }
+        $doc->fill(['document_no' => ($d['document_no'] ?? null) ?: null, 'expiry_date' => ($d['expiry_date'] ?? null) ?: null, 'uploaded_by_role' => 'HR', 'activate' => true,
+            'file_path' => $file->store("hrm/{$e->employee_id}/documents", 'public'), 'updated_by' => $user->login]);
+        $doc->created_by ??= $user->login;
+        $doc->save();
+
+        return $doc;
     }
 
     // Mode strict menunda login sampai keluarga wajib lengkap (sama dengan v1); provisioning idempotent.

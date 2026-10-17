@@ -26,6 +26,9 @@ class EmpBpjsKetenagakerjaan extends Model
         'program_jht',
         'program_jp',
         'program_jkp',
+        'enrollment_status',
+        'bpjs_category',
+        'enrollment_note',
         'updated_by',
     ];
 

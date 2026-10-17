@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-17 11:19",
+    "generated": "2026-10-17 11:48",
     "database": "ddtsys",
     "totals": {
         "objects": 171,
         "modules": 9,
         "modules_done": 6,
-        "screens": 290,
-        "v2": 283,
+        "screens": 291,
+        "v2": 284,
         "v1": 5,
         "not_built": 2,
-        "waiting_qc": 287,
+        "waiting_qc": 288,
         "locked": 1,
         "forms": 114,
-        "grids": 106,
+        "grids": 107,
         "reports": 70,
-        "grid_classes": 181,
-        "lookups": 53,
+        "grid_classes": 182,
+        "lookups": 54,
         "report_grids": 47,
         "engines": 62,
         "engine_groups": 14,
-        "tables": 425,
+        "tables": 426,
         "databases": 10,
-        "models": 377,
-        "migrations": 629,
-        "tests": 194,
-        "dictionary": 13855,
+        "models": 378,
+        "migrations": 630,
+        "tests": 195,
+        "dictionary": 13894,
         "languages": 4,
-        "commits": "1391",
+        "commits": "1392",
         "since": "2026-08-06"
     },
     "modules": [
@@ -116,14 +116,14 @@
         },
         {
             "label": "Master Data",
-            "total": 22,
-            "v2": 22,
+            "total": 23,
+            "v2": 23,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 22,
+            "waiting_qc": 23,
             "locked": 0,
             "form": 7,
-            "grid": 15,
+            "grid": 16,
             "report": 0
         },
         {
@@ -154,13 +154,13 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 125,
+            "commits": 126,
             "days": 8,
             "last": "2026-10-17",
-            "screens": 152,
+            "screens": 153,
             "objects": 16,
-            "engines": 46,
-            "tests": 75
+            "engines": 47,
+            "tests": 77
         }
     ],
     "untracked": 1175,
@@ -246,7 +246,7 @@
         {
             "date": "2026-10-17",
             "iwan": 0,
-            "jo": 1,
+            "jo": 2,
             "other": 1
         }
     ],
@@ -314,7 +314,7 @@
         {
             "week": "2026-W42",
             "iwan": 10,
-            "jo": 49,
+            "jo": 50,
             "other": 55
         }
     ],
@@ -3020,10 +3020,10 @@
             "name": "Supplier Paper Price",
             "module": "Master Data",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -3485,6 +3485,17 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_TAX_RATE",
+            "name": "Tax Rate",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -4043,10 +4054,10 @@
             "name": "Paper Price Engine",
             "module": "Procurement",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "ENGINE",

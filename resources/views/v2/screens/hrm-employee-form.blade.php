@@ -1,14 +1,15 @@
 {{--
  REMARK
- Tujuan       : Form Master Employee v2 (konsep A2 disetujui Jo): banner pegawai (foto, nama, chip status, cincin kelengkapan), empat KPI (masa kerja, sisa cuti, absen, disiplin), tab Profile / Job / Contract / Family / Education / Bank / Discipline dan History bawaan.
+ Tujuan       : Form Master Employee v2 (konsep A2 disetujui Jo): banner pegawai (foto, nama, chip status, cincin kelengkapan), empat KPI (masa kerja, sisa cuti, absen, disiplin), tab Profile / Job / Contract / Family / Education / Documents / BPJS / Bank / Discipline / Account (hanya Admin App) dan History bawaan.
  Sumber hulu  : App\Support\V2\Data\EmployeeProfile (KPI, kelengkapan, opsi); tabel tm2mst.emp_employee dan tab anak emp_contract, emp_family, emp_education, emp_disciplinary, emp_bank_account.
  Input        : Query id (pegawai) atau new=1; session v2_flash dan errors.
  Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate / Remove Photo) -> EmployeeProfileService. POST v2.hrm.employee.contract / family / deceased / education / discipline -> EmployeeRecordService (tiap dialog menyimpan sendiri; tanpa edit / hapus baris).
- Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record), kembali dari dialog lewat ?tab=; flash v2_login_card = kartu login pegawai baru (sekali tampil). Tab Documents, BPJS, Account menyusul.
+ Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record), kembali dari dialog lewat ?tab=; flash v2_login_card = kartu login pegawai baru (sekali tampil). Documents = unggah dokumen HR (EmployeeRecordService::addDocument); BPJS ikut Save utama; Account = EmployeeAccountService (buat login, reset password, aktif / nonaktif), kartu login sekali tampil.
  Status       : Aktif (mockup.test dulu, keputusan Jo 2026-10-16). Gaji kontrak tersembunyi mengikuti aturan v1 (admin, posisi salary_hidden_from_hr, tipe KONTRAK / BORONGAN).
 --}}
 @php
     use App\Models\Master\EmpEmployee;
+    use App\Services\Hrm\EmployeeAccountService as Account;
     use App\Services\Hrm\EmployeeBankService;
     use App\Services\Hrm\EmployeeProfileService as Profile;
     use App\Services\Hrm\EmployeeRecordService as Records;
@@ -17,7 +18,7 @@
     use Devlib\Locale;
 
     $home = route('v2.screen', 'hrm-employee');
-    $e = request('id') ? EmpEmployee::with('position.department', 'activeContract', 'contracts', 'families', 'educations', 'disciplinaries')->find((int) request('id')) : null;
+    $e = request('id') ? EmpEmployee::with('position.department', 'activeContract', 'contracts', 'families', 'educations', 'disciplinaries', 'documents', 'bpjsKesehatan', 'bpjsKetenagakerjaan')->find((int) request('id')) : null;
     abort_if(request('id') && ! $e, 404);
     abort_unless($e || request('new'), 404);
     $new = ! $e;
@@ -30,6 +31,12 @@
     $tab = fn (string $label, string $key) => $byTab->has($key) ? $label.' ('.$byTab[$key].')' : $label;
     $todo = t('To complete').': '.collect($missing)->map(fn ($m) => t($m['label']).' ('.t(ucfirst($m['tab'])).')')->implode(', ');
     $bank = $new ? null : EmployeeBankService::primary($e->employee_id);
+    $kes = $e->bpjsKesehatan;
+    $ket = $e->bpjsKetenagakerjaan;
+    $isAdmin = (bool) $user->is_admin;
+    $acct = $isAdmin && ! $new ? app(Account::class)->userOf($e) : null;
+    $tabs = ['profile' => $tab('Profile', 'profile'), 'job' => $tab('Job', 'job'), 'contract' => 'Contract', 'family' => $tab('Family', 'family'), 'education' => 'Education']
+        + ($new ? [] : ['documents' => 'Documents', 'bpjs' => 'BPJS']) + ['bank' => 'Bank', 'discipline' => 'Discipline'] + ($isAdmin && ! $new ? ['account' => 'Account'] : []);
     $seeSalary = fn ($c) => $user->is_admin || (! $e->position?->salary_hidden_from_hr && $c && in_array($c->employment_type, ['KONTRAK', 'BORONGAN'], true));
     $statusTone = ['WORKING' => 'success', 'DIRUMAHKAN' => 'warn', 'CUTI' => 'info'];
 @endphp
@@ -40,8 +47,8 @@
 <x-dl::form id="hrm-employee-form" :title="$new ? 'New Employee' : raw($e->full_name)" :subtitle="$new ? null : raw($e->employee_code.' · '.($e->position?->position_name ?? '—'))"
     panel="top" kind="master" :status="$new ? 'new' : ($e->activate ? 'active' : 'inactive')"
     :action="route('v2.hrm.employee.save')" action-field="action" :back="$home" :new-url="$home.'?new=1'" enctype="multipart/form-data"
-    :hidden="$new ? [] : ['id' => $e->employee_id]"
-    :tabs="['profile' => $tab('Profile', 'profile'), 'job' => $tab('Job', 'job'), 'contract' => 'Contract', 'family' => $tab('Family', 'family'), 'education' => 'Education', 'bank' => 'Bank', 'discipline' => 'Discipline']"
+    :hidden="$new ? [] : ['id' => $e->employee_id, 'bpjs_present' => 1]"
+    :tabs="$tabs"
     :created-by="$e->created_by" :created-at="$e->created_at?->toDateTimeString()" :updated-by="$e->updated_by" :updated-at="$e->updated_at?->toDateTimeString()">
     @if ($e->photo_path)
         <x-slot:special>
@@ -213,6 +220,77 @@
                 empty="No discipline record." :source="Src::of('tm2mst.emp_disciplinary')" />
         @endif
     </x-slot:discipline>
+
+    @unless ($new)
+        <x-slot:documents>
+            <x-dl::action-bar>
+                <x-dl::button type="button" size="sm" variant="secondary" icon="fa-upload" label="Upload Document" data-dl-open="emp-document" />
+            </x-dl::action-bar>
+            <x-dl::table :columns="['type' => 'Type', 'no' => 'Document no.', 'valid' => 'Valid until', 'status' => 'Status', 'source' => 'Source', 'file' => 'File']"
+                :rows="$e->documents->where('activate', true)->map(function ($d) {
+                    [$label, $tone] = Data::documentStatus($d);
+
+                    return ['type' => t(Records::DOCUMENT_TYPES[$d->document_type] ?? $d->document_type), 'no' => raw($d->document_no ?: '—'), 'valid' => $d->expiry_date ? Locale::date($d->expiry_date) : '—',
+                        'status' => $label, 'source' => $d->uploaded_by_role === 'HR' ? 'HR (locked)' : 'Employee', 'file' => $d->file_path ? 'Uploaded' : 'No file'];
+                })->values()->all()"
+                empty="No document uploaded yet." :source="Src::of('tm2mst.emp_document')" />
+            @foreach ($e->documents->where('activate', true)->filter->file_path as $d)
+                <x-dl::button size="sm" variant="secondary" icon="fa-file" :label="t(Records::DOCUMENT_TYPES[$d->document_type] ?? $d->document_type)" :href="asset('storage/'.$d->file_path)" target="_blank" />
+            @endforeach
+        </x-slot:documents>
+
+        <x-slot:bpjs>
+            <x-dl::card title="BPJS Health" description="Reference data. The contribution amounts are calculated in Payroll.">
+                <x-dl::form.row :cols="3">
+                    <x-dl::field.text name="bpjs_kes_no" label="Membership no." :case-toggle="false" :value="old('bpjs_kes_no', $kes?->no_kepesertaan)" :source="Src::of('tm2mst.emp_bpjs_kesehatan.no_kepesertaan')" />
+                    <x-dl::field.select name="bpjs_kes_class" label="Care class" :options="array_map('t', Profile::BPJS_CLASSES)" :value="old('bpjs_kes_class', $kes?->kelas_rawat)" :source="Src::of('tm2mst.emp_bpjs_kesehatan.kelas_rawat')" />
+                    <x-dl::field.number name="bpjs_kes_dependents" label="Dependents" :value="old('bpjs_kes_dependents', $kes?->dependents_count ?? 0)" :source="Src::of('tm2mst.emp_bpjs_kesehatan.dependents_count')" />
+                </x-dl::form.row>
+            </x-dl::card>
+            <x-dl::card title="BPJS Employment">
+                <x-dl::form.row :cols="3">
+                    <x-dl::field.text name="bpjs_ket_no" label="Membership no." :case-toggle="false" :value="old('bpjs_ket_no', $ket?->no_kepesertaan)" :source="Src::of('tm2mst.emp_bpjs_ketenagakerjaan.no_kepesertaan')" />
+                    <x-dl::field.select name="bpjs_ket_status" label="Enrollment status" :options="array_map('t', Profile::BPJS_STATUSES)" :value="old('bpjs_ket_status', $ket?->enrollment_status)" :source="Src::of('tm2mst.emp_bpjs_ketenagakerjaan.enrollment_status')" />
+                    <x-dl::field.select name="bpjs_ket_category" label="Category" :options="array_map('t', Profile::BPJS_CATEGORIES)" :value="old('bpjs_ket_category', $ket?->bpjs_category)" :source="Src::of('tm2mst.emp_bpjs_ketenagakerjaan.bpjs_category')" />
+                </x-dl::form.row>
+                <x-dl::field.text name="bpjs_ket_note" label="Enrollment note" :value="old('bpjs_ket_note', $ket?->enrollment_note)" :source="Src::of('tm2mst.emp_bpjs_ketenagakerjaan.enrollment_note')" />
+                <x-dl::form.row :cols="5">
+                    @foreach (Profile::BPJS_PROGRAMS as $p => $label)
+                        <x-dl::field.checkbox :name="'bpjs_'.$p" :text="$label" :value="(bool) old('bpjs_'.$p, $ket?->{'program_'.$p} ?? true)" :source="Src::of('tm2mst.emp_bpjs_ketenagakerjaan.program_'.$p)" />
+                    @endforeach
+                </x-dl::form.row>
+            </x-dl::card>
+        </x-slot:bpjs>
+
+        @if ($isAdmin)
+            <x-slot:account>
+                @if (! $acct)
+                    <x-dl::alert tone="warn" message="This employee has no login yet." />
+                    <x-dl::action-bar>
+                        <x-dl::button type="button" size="sm" variant="secondary" icon="fa-user-plus" label="Create Login" data-dl-open="emp-account-create" />
+                    </x-dl::action-bar>
+                @else
+                    <x-dl::card title="Login account" description="Groups and permissions are managed in Setup > Security > Account.">
+                        <x-dl::form.row :cols="3">
+                            <x-dl::field.display label="Username" :value="raw($acct->login)" :source="Src::of('tm2sys.sec_user.login')" />
+                            <x-dl::field.display label="Status" :value="$acct->activate ? 'Active' : 'Inactive'" :source="Src::of('tm2sys.sec_user.activate')" />
+                            <x-dl::field.display label="Password" :value="$acct->must_change_password ? 'Must be changed at next login' : 'Changed by the user'" :source="Src::of('tm2sys.sec_user.must_change_password')" />
+                        </x-dl::form.row>
+                        <x-dl::form.row :cols="3">
+                            <x-dl::field.display label="Last password change" :value="Locale::stamp($acct->pswd_last_updated)" :source="Src::of('tm2sys.sec_user.pswd_last_updated')" />
+                            <x-dl::field.display label="E-mail verified" :value="$acct->email_verified ? 'Yes' : 'No'" :source="Src::of('tm2sys.sec_user.email_verified')" />
+                            <x-dl::field.display label="Groups" :value="raw($acct->groups->pluck('group_name')->implode(', ') ?: '—')" :source="Src::of('tm2sys.sec_user_group')" />
+                        </x-dl::form.row>
+                    </x-dl::card>
+                    <x-dl::action-bar>
+                        <x-dl::button type="button" size="sm" variant="secondary" icon="fa-key" label="Reset Password" data-dl-open="emp-account-reset" />
+                        <x-dl::button type="button" size="sm" variant="secondary" :icon="$acct->activate ? 'fa-user-lock' : 'fa-user-check'" :label="$acct->activate ? 'Deactivate Account' : 'Activate Account'" data-dl-open="emp-account-toggle" />
+                        <x-dl::button size="sm" variant="secondary" icon="fa-up-right-from-square" label="Open in Security" :href="route('security.index').'?tab=users&open='.$acct->id_user" />
+                    </x-dl::action-bar>
+                @endif
+            </x-slot:account>
+        @endif
+    @endunless
 </x-dl::form>
 
 {{-- Dialog tambah (tiap dialog = satu form sendiri, di luar x-dl::form agar form tidak bersarang). --}}
@@ -299,12 +377,64 @@
             </x-dl::action-bar>
         </x-dl::action-form>
     </x-dl::modal>
+
+    <x-dl::modal id="emp-document" title="Upload Document" icon="fa-file-arrow-up">
+        <x-dl::action-form action="{{ route('v2.hrm.employee.document', $e->employee_id) }}" enctype="multipart/form-data">
+            <x-dl::form.row :cols="2">
+                <x-dl::field.select name="document_type" label="Type" required :options="array_map('t', Records::DOCUMENT_TYPES)" value="KTP" :placeholder="null" :source="Src::of('tm2mst.emp_document.document_type')" />
+                <x-dl::field.text name="document_no" label="Document no." :case-toggle="false" :source="Src::of('tm2mst.emp_document.document_no')" />
+            </x-dl::form.row>
+            <x-dl::form.row :cols="2">
+                <x-dl::field.date name="expiry_date" label="Valid until" hint="Leave empty when the document has no expiry date (e-KTP is valid for life)." :source="Src::of('tm2mst.emp_document.expiry_date')" />
+                <x-dl::field.upload name="file" label="File" required accept=".jpg,.jpeg,.png,.pdf" :source="Src::of('tm2mst.emp_document.file_path')" />
+            </x-dl::form.row>
+            <x-dl::alert tone="info" message="One document per type. Uploading the same type again replaces the old file. Documents uploaded by HR cannot be changed by the employee." />
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                <x-dl::button preset="save" />
+            </x-dl::action-bar>
+        </x-dl::action-form>
+    </x-dl::modal>
+
+    @if ($isAdmin)
+        <x-dl::modal id="emp-account-create" title="Create Login" icon="fa-user-plus">
+            <x-dl::action-form action="{{ route('v2.hrm.employee.account', [$e->employee_id, 'create']) }}">
+                <x-dl::alert tone="info" message="A login is created for this employee. The initial password is shown once on a printable card." />
+                <x-dl::action-bar>
+                    <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                    <x-dl::button preset="save" label="Create Login" />
+                </x-dl::action-bar>
+            </x-dl::action-form>
+        </x-dl::modal>
+
+        @if ($acct)
+            <x-dl::modal id="emp-account-reset" title="Reset Password" icon="fa-key">
+                <x-dl::action-form action="{{ route('v2.hrm.employee.account', [$e->employee_id, 'reset']) }}">
+                    <x-dl::alert tone="warn" message="The current password stops working. A new password is made and shown once on a printable card." />
+                    <x-dl::action-bar>
+                        <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                        <x-dl::button preset="save" label="Reset Password" />
+                    </x-dl::action-bar>
+                </x-dl::action-form>
+            </x-dl::modal>
+
+            <x-dl::modal id="emp-account-toggle" :title="$acct->activate ? 'Deactivate Account' : 'Activate Account'" icon="fa-user-lock">
+                <x-dl::action-form action="{{ route('v2.hrm.employee.account', [$e->employee_id, $acct->activate ? 'deactivate' : 'activate']) }}">
+                    <x-dl::alert tone="info" :message="$acct->activate ? t('The employee can no longer log in. Your own account cannot be deactivated.') : t('The employee can log in again.')" />
+                    <x-dl::action-bar>
+                        <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                        <x-dl::button preset="save" :label="$acct->activate ? 'Deactivate Account' : 'Activate Account'" />
+                    </x-dl::action-bar>
+                </x-dl::action-form>
+            </x-dl::modal>
+        @endif
+    @endif
 @endunless
 
 {{-- Kartu login pegawai baru: kredensial dititipkan flash session, tampil sekali. --}}
 @if ($card = session('v2_login_card'))
-    <x-dl::modal id="emp-login-card" title="Login Card" icon="fa-id-card" :open="true">
-        <x-dl::login-card :name="raw($card['name'])" :code="$card['code']" :login="raw($card['login'])" :password="raw($card['password'])">
+    <x-dl::modal id="emp-login-card" :title="$card['title'] ?? 'Login Card'" icon="fa-id-card" :open="true">
+        <x-dl::login-card :title="$card['title'] ?? 'Login card'" :name="raw($card['name'])" :code="$card['code']" :login="raw($card['login'])" :password="raw($card['password'])">
             <x-dl::button type="button" variant="secondary" label="Close" data-dl-close-modal />
         </x-dl::login-card>
     </x-dl::modal>

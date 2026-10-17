@@ -4,13 +4,16 @@ namespace Tests\Feature;
 
 use App\Models\Master\EmpContract;
 use App\Models\Master\EmpDisciplinary;
+use App\Models\Master\EmpDocument;
 use App\Models\Master\EmpEducation;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpFamily;
 use App\Models\Sys\SecUser;
 use App\Services\Hrm\EmployeeProfileService;
 use App\Services\Hrm\EmployeeRecordService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -83,6 +86,26 @@ class EmployeeRecordServiceTest extends TestCase
 
             $this->expectException(ValidationException::class);
             $svc->addDiscipline($e, ['type' => 'NGAWUR', 'incident_date' => '2026-09-03', 'reason' => 'x'], $u);
+        });
+    }
+
+    public function test_document_upload_replaces_the_old_file_and_locks_it_for_hr(): void
+    {
+        Storage::fake('public');
+        $this->inTransaction(function (EmpEmployee $e, SecUser $u, EmployeeRecordService $svc) {
+            $first = $svc->addDocument($e, ['document_type' => 'SIM', 'document_no' => 'A-1', 'expiry_date' => '2027-01-31'], UploadedFile::fake()->image('a.jpg'), $u);
+            Storage::disk('public')->assertExists($first->file_path);
+            $second = $svc->addDocument($e, ['document_type' => 'SIM', 'document_no' => 'A-2'], UploadedFile::fake()->create('b.pdf', 10, 'application/pdf'), $u);
+
+            Storage::disk('public')->assertMissing($first->file_path);
+            Storage::disk('public')->assertExists($second->file_path);
+            $this->assertSame(1, EmpDocument::where('employee_id', $e->employee_id)->count());
+            $this->assertSame('HR', $second->fresh()->uploaded_by_role);
+            $this->assertSame('A-2', $second->fresh()->document_no);
+            $this->assertNull($second->fresh()->expiry_date);
+
+            $this->expectException(ValidationException::class);
+            $svc->addDocument($e, ['document_type' => 'SIM'], null, $u);
         });
     }
 

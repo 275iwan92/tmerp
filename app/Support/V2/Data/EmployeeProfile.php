@@ -13,6 +13,7 @@
 namespace App\Support\V2\Data;
 
 use App\Models\Master\AttDailyStatus;
+use App\Models\Master\EmpDocument;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpFamily;
 use App\Models\Master\EmpLeaveBalance;
@@ -101,6 +102,21 @@ final class EmployeeProfile
     public static function percent(EmpEmployee $e): int
     {
         return (int) round(100 * (self::total() - count(self::missing($e))) / self::total());
+    }
+
+    /** @return array{0: string, 1: string} [label, tone] status masa berlaku dokumen: tanpa tanggal = tidak ada batas, lewat = Expired, <= 30 hari = peringatan */
+    public static function documentStatus(EmpDocument $d): array
+    {
+        if (! $d->expiry_date) {
+            return ['No expiry date', 'neutral'];
+        }
+        $days = (int) now()->startOfDay()->diffInDays($d->expiry_date, false);
+
+        return match (true) {
+            $days < 0 => ['Expired', 'danger'],
+            $days <= 30 => [tf('Expires in :n days', ['n' => $days]), 'warn'],
+            default => ['Valid', 'success'],
+        };
     }
 
     public static function positionOptions(): array
