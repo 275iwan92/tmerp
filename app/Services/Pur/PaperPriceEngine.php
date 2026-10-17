@@ -2,7 +2,7 @@
 
 /*
  * REMARK
- * Tujuan       : Engine harga kertas per supplier: harga per rim (ukuran standar atau potong dari roll), jumlah rim dari roll, harga per satuan beli bahan.
+ * Tujuan       : Engine harga kertas per supplier: harga per rim ivory (ukuran standar atau potong dari roll), jumlah rim dari roll, harga per satuan beli bahan; pintu masuk harga PR dan PO yang meneruskan Single Face, duplex, dan lembar gelombang ke engine masing-masing.
  * Sumber hulu  : Konstanta sup_paper_price (layar Supplier Paper Price), tarif PPN pada tanggal dokumen (TaxRate, layar Tax Rate), Master Raw Material (gramasi, ukuran cm, satuan beli).
  * Input        : MatRaw, id supplier, tanggal dokumen; atau SupPaperPrice + panjang/lebar (m) + gramasi + tanggal.
  * Output       : Harga di luar PPN per satuan beli (RIM, LBR, KG) atau null bila data kurang; engine menyarankan, petugas memutuskan.
@@ -59,11 +59,20 @@ final class PaperPriceEngine
     }
 
     // Harga di luar PPN per satuan beli bahan: RIM / LBR (ukuran standar) atau KG (harga roll). Null = tidak ada harga untuk bahan ini.
-    public function priceFor(MatRaw $m, ?int $supplierId, ?CarbonInterface $on = null): ?float
+    // $qty (jumlah order dalam satuan beli) hanya dipakai lembar gelombang: tingkat diskon bergantung running meter.
+    public function priceFor(MatRaw $m, ?int $supplierId, ?CarbonInterface $on = null, ?float $qty = null): ?float
     {
         $sf = app(SingleFacePriceEngine::class);
         if ($sf->matches($m)) {
             return $sf->priceFor($m, $supplierId, $on);
+        }
+        $duplex = app(DuplexPriceEngine::class);
+        if ($duplex->matches($m)) {
+            return $duplex->priceFor($m, $supplierId, $on);
+        }
+        $sheet = app(CorrugatedSheetPriceEngine::class);
+        if ($sheet->matches($m)) {
+            return $sheet->priceFor($m, $supplierId, $qty, $on);
         }
         $p = $supplierId ? $this->row($m, $supplierId, $on) : null;
         $uom = strtoupper((string) $m->uom_purchase);

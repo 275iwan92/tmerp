@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Konversi Excel ke rumus engine - Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #eef2f8; color: #0f172a; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  th { background: #dfe7f5; color: #0f172a; font-weight: 600; text-align: left; padding: 6px 8px; font-size: 11px; border-bottom: 1px solid #c7d2e6; vertical-align: top; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e5eaf2; font-size: 11.5px; vertical-align: top; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  code { font-family: Consolas, 'Courier New', monospace; font-size: 11px; background: #f1f5f9; border-radius: 3px; padding: 0 3px; }
+  .ok { background: #d1fae5; color: #065f46; border-radius: 999px; padding: 1px 8px; font-weight: 700; font-size: 11px; white-space: nowrap; }
+  h2 { font-size: 13px; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
+  .note { background: #fef3c7; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: #78350f; }
+  .ask { background: #fee2e2; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: #7f1d1d; }
+</style>
+</head>
+<body class="text-xs">
+
+<div class="px-5 py-2 text-[11px] text-slate-700">Procurement &gt; Engine harga beli kertas &gt; <b class="text-accent">Konversi Excel ke rumus engine (preview)</b></div>
+
+<main class="px-5 pb-6 space-y-3 max-w-[1400px]">
+
+  <div class="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-[12px]">
+    Setiap contoh di Excel Jo dihitung ulang dengan rumus engine yang diusulkan. Angka Excel diambil dari nilai tersimpan di berkas (HITUNGAN DUPLEX.xlsx sheet INDEX; PERHITUNGAN BF, BCF, SINGLE WALL, DOUBLE WALL.xlsx sheet UJK, RCA, UJK KHUSUS WK, RCA KHUSU WK). Hasil: <b>10 dari 10 angka sama persis</b>.
+  </div>
+
+  <section class="card p-3">
+    <h2>1. Duplex: tiga metode di sheet INDEX</h2>
+    <table class="w-full">
+      <tr><th>Metode</th><th>Rumus di Excel</th><th>Rumus engine</th><th>Contoh</th><th class="num">Excel</th><th class="num">Engine</th><th>Cocok</th></tr>
+      <tr><td><b>A. Referensi rim</b><br>DP, DA, Indokertas</td><td><code>=B3*C3/B4/C4*D3</code> lalu <code>*G3</code> (PLUS), <code>/1.11</code></td><td><code>P x L / (79 x 109) x index_rim(gsm) x PLUS</code></td><td>400 gsm, 89 x 119,4, index 353.000, PLUS 4,8<br>incl PPN</td><td class="num">2.091.012,78</td><td class="num">2.091.012,78</td><td><span class="ok">sama</span></td></tr>
+      <tr><td></td><td><code>H3/1.11</code></td><td><code>incl PPN / (1 + PPN/100)</code></td><td>sebelum PPN</td><td class="num">1.883.795,30</td><td class="num">1.883.795,30</td><td><span class="ok">sama</span></td></tr>
+      <tr><td></td><td>blok "dayasa/indokertas"</td><td>sama dengan A</td><td>250 gsm, 86 x 120, index 255.000, PLUS 5,5</td><td class="num">1.680.850,08</td><td class="num">1.680.850,08</td><td><span class="ok">sama</span></td></tr>
+      <tr><td><b>B. Berat</b><br>CM, MSE, SI, Makmur Jaya</td><td><code>=A10*B10*C10/20000*D10</code> lalu <code>*G10</code>, <code>/1.11</code></td><td><code>gsm x P x L / 20.000 x index_kg(gsm) x PLUS</code></td><td>310 gsm, 79 x 109, index 2.173, PLUS 6<br>incl PPN</td><td class="num">1.740.188,38</td><td class="num">1.740.188,38</td><td><span class="ok">sama</span></td></tr>
+      <tr><td></td><td><code>H10/1.11</code></td><td><code>incl PPN / (1 + PPN/100)</code></td><td>sebelum PPN</td><td class="num">1.567.737,28</td><td class="num">1.567.737,28</td><td><span class="ok">sama</span></td></tr>
+      <tr><td><b>C. Berat, Budi Mitra</b></td><td><code>=A23*B23*C23/20000*D23</code> lalu <code>*G23</code></td><td>sama dengan B, tabel index sendiri</td><td>350 gsm, 89 x 120, index 2.083, PLUS 4,75</td><td class="num">1.849.235,33</td><td class="num">1.849.235,33</td><td><span class="ok">sama</span></td></tr>
+    </table>
+    <div class="mt-2 note">Tabel index (per gsm) dan PLUS (APKey, misalnya 4,8 = 480%) di Excel tersebar di kolom K sampai U dan berubah menurut tanggal. Di sistem keduanya jadi isian per supplier, grade, rentang gsm, dan tanggal berlaku. Pembagi 1,1 atau 1,11 di Excel diganti pembagi dari layar Tax Rate pada tanggal dokumen.</div>
+  </section>
+
+  <section class="card p-3">
+    <h2>2. Lembar gelombang (BF, BCF, single wall, double wall): sheet UJK dan RCA</h2>
+    <table class="w-full">
+      <tr><th>Langkah</th><th>Rumus di Excel</th><th>Rumus engine</th></tr>
+      <tr><td>Jumlah up (ISI/TRIM)</td><td><code>=INT((180-2)/B2)</code> UJK, <code>=INT((220-2)/B2)</code> RCA</td><td><code>INT((lebar_maks - 2) / lebar_serat)</code>; lebar_maks per supplier (UJK 180, RCA 220)</td></tr>
+      <tr><td>Lebar trim</td><td><code>=CEILING.PRECISE(B2*B4+2,5)</code></td><td><code>CEILING(lebar_serat x up + 2, 5)</code></td></tr>
+      <tr><td>Running meter</td><td><code>=B6/B4*(B3/100)</code></td><td><code>jumlah / up x panjang / 100</code></td></tr>
+      <tr><td>Tingkat diskon</td><td><code>=IF(B7&lt;300,"KURANG",IF(B7&lt;500,300RM, ...))</code></td><td>kurang dari 300 = "di bawah minimum" (tanpa harga); 300, 500, 1000, 2000 (RCA juga 5000)</td></tr>
+      <tr><td>Harga per lembar</td><td><code>=(((B5*B3)/10000)*C8/B4)*(1-B8)</code></td><td><code>(lebar_trim x panjang / 10.000 x index / up) x (1 - diskon)</code></td></tr>
+      <tr><td>Sebelum PPN</td><td><code>=B9/1.1</code> atau <code>/1.11</code></td><td><code>incl PPN / (1 + PPN/100)</code>, tarif dari Tax Rate</td></tr>
+    </table>
+    <table class="w-full mt-2">
+      <tr><th>Contoh</th><th>Hitungan</th><th class="num">Excel</th><th class="num">Engine</th><th>Cocok</th></tr>
+      <tr><td>UJK, SW, lebar 64 x panjang 78,5, 800 lbr, index 4.410, diskon -10%</td><td>up 2, trim 130, 314 RM (tingkat 300), 130 x 78,5 / 10.000 x 4.410 / 2 x 1,10</td><td class="num">2.475,22</td><td class="num">2.475,22</td><td><span class="ok">sama</span></td></tr>
+      <tr><td>RCA, SW, lebar 95 x panjang 57,5, 1.500 lbr, index 4.410, diskon 15%</td><td>up 2, trim 195, 431,25 RM (tingkat 300)</td><td class="num">2.101,50</td><td class="num">2.101,50</td><td><span class="ok">sama</span></td></tr>
+      <tr><td>RCA WK, 150 WL/125/125 KL, lebar 67 x 246,4, 370 lbr, index 5.285, diskon -25%</td><td>up 3, trim 205, 303,89 RM (tingkat 300)</td><td class="num">11.123,16</td><td class="num">11.123,16</td><td><span class="ok">sama</span></td></tr>
+      <tr><td>UJK WK, 150 WL/125/125 KL, lebar 34,4 x 113,3, 1.800 lbr, index 5.285, diskon -9%</td><td>up 5, trim 175, 407,88 RM (tingkat 300)</td><td class="num">2.284,39</td><td class="num">2.284,39</td><td><span class="ok">sama</span></td></tr>
+    </table>
+    <div class="mt-2 note">Index per m2 per substance diambil dari <code>mat_sheet_rate</code> (SW 4.410, DW 7.379, SDW K125/M125/K125 7.507, dan seterusnya). Diskon negatif berarti harga naik (1 - (-0,10) = 1,10).</div>
+  </section>
+
+  <section class="card p-3">
+    <h2>3. Yang berubah dibanding Excel, dan yang perlu diputuskan</h2>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>Pembagi PPN tidak lagi diketik 1,1 atau 1,11, tetapi 1 + tarif PPN pada tanggal dokumen (layar Tax Rate).</li>
+      <li>Tabel index, PLUS (APKey), dan diskon per tingkat jadi isian per supplier dan tanggal berlaku; satu perubahan harga = satu baris baru.</li>
+      <li>Pesanan di bawah 300 running meter: engine memberi tanda "di bawah minimum", tanpa harga.</li>
+    </ul>
+    <div class="mt-2 ask"><b>Perlu keputusan Jo:</b> (1) rumus Indokertas di Excel tanpa faktor gsm, berbeda dari rumus tertulis; (2) diskon di Excel sering diketik tangan (B8), bukan dari tabel: dipakai nilai tabel atau boleh ditimpa petugas per pesanan; (3) UJK dan RCA adalah supplier yang mana di master supplier.</div>
+  </section>
+
+</main>
+</body>
+</html>

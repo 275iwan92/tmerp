@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-17 13:32",
+    "generated": "2026-10-17 21:30",
     "database": "ddtsys",
     "totals": {
-        "objects": 171,
+        "objects": 172,
         "modules": 9,
         "modules_done": 6,
-        "screens": 292,
-        "v2": 285,
+        "screens": 295,
+        "v2": 288,
         "v1": 5,
         "not_built": 2,
-        "waiting_qc": 289,
+        "waiting_qc": 292,
         "locked": 1,
         "forms": 114,
-        "grids": 108,
+        "grids": 111,
         "reports": 70,
-        "grid_classes": 183,
-        "lookups": 55,
+        "grid_classes": 186,
+        "lookups": 58,
         "report_grids": 47,
-        "engines": 63,
+        "engines": 65,
         "engine_groups": 14,
-        "tables": 427,
+        "tables": 430,
         "databases": 10,
-        "models": 379,
-        "migrations": 632,
-        "tests": 196,
-        "dictionary": 13901,
+        "models": 382,
+        "migrations": 633,
+        "tests": 197,
+        "dictionary": 13933,
         "languages": 4,
-        "commits": "1395",
+        "commits": "1396",
         "since": "2026-08-06"
     },
     "modules": [
@@ -116,14 +116,14 @@
         },
         {
             "label": "Master Data",
-            "total": 24,
-            "v2": 24,
+            "total": 27,
+            "v2": 27,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 24,
+            "waiting_qc": 27,
             "locked": 0,
             "form": 7,
-            "grid": 17,
+            "grid": 20,
             "report": 0
         },
         {
@@ -154,12 +154,12 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 129,
+            "commits": 130,
             "days": 8,
             "last": "2026-10-17",
-            "screens": 155,
+            "screens": 156,
             "objects": 16,
-            "engines": 47,
+            "engines": 48,
             "tests": 79
         }
     ],
@@ -246,7 +246,7 @@
         {
             "date": "2026-10-17",
             "iwan": 0,
-            "jo": 5,
+            "jo": 6,
             "other": 1
         }
     ],
@@ -314,7 +314,7 @@
         {
             "week": "2026-W42",
             "iwan": 10,
-            "jo": 53,
+            "jo": 54,
             "other": 55
         }
     ],
@@ -3042,10 +3042,10 @@
             "name": "Supplier Single Face Price",
             "module": "Master Data",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -3214,6 +3214,17 @@
         },
         {
             "type": "GRID",
+            "key": "menu:MD_DUPLEX_PRICE",
+            "name": "Supplier Duplex Price",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
             "key": "menu:MD_UOM_CONV",
             "name": "Unit Conversion",
             "module": "Master Data",
@@ -3222,6 +3233,28 @@
             "built_by": null,
             "changed_at": "2026-10-05",
             "changed_by": "iwan"
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_CORR_RULE",
+            "name": "Supplier Corrugated Rule",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_CORR_INDEX",
+            "name": "Supplier Corrugated Index",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "REPORT",
@@ -4074,6 +4107,28 @@
             "type": "ENGINE",
             "key": "engine:single-face-price",
             "name": "Single Face Price Engine",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:duplex-price",
+            "name": "Duplex Price Engine",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:corrugated-sheet-price",
+            "name": "Corrugated Sheet Price Engine",
             "module": "Procurement",
             "qc": "READY_FOR_QC",
             "built_at": null,
@@ -5568,6 +5623,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:PhotoBox",
+            "name": "PhotoBox",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
             "key": "object:PickMatrix",
             "name": "PickMatrix",
             "module": "DevLib",
@@ -6623,6 +6689,22 @@
                     "purpose": "Suggests the purchase price of a Single Face sheet per supplier: index per square metre x length x width, divided by the PPN divisor.",
                     "mode": "suggest",
                     "used": 3,
+                    "tests": 0
+                },
+                {
+                    "key": "duplex-price",
+                    "name": "Duplex Price Engine",
+                    "purpose": "Suggests the purchase price of duplex per ream or sheet for a supplier, with the two formulas of the buyer Excel (Reference sheet and Weight).",
+                    "mode": "suggest",
+                    "used": 3,
+                    "tests": 0
+                },
+                {
+                    "key": "corrugated-sheet-price",
+                    "name": "Corrugated Sheet Price Engine",
+                    "purpose": "Suggests the purchase price per sheet of corrugated sheets (BF, BCF, single wall, double wall) for a supplier from the buyer Excel: ups, trim width, running meter, discount tier.",
+                    "mode": "suggest",
+                    "used": 2,
                     "tests": 0
                 },
                 {

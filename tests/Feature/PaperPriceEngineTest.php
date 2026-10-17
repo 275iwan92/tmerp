@@ -20,6 +20,7 @@ use App\Models\Master\SupSingleFacePrice;
 use App\Models\Master\SupSupplier;
 use App\Models\Sys\SecUser;
 use App\Services\Pur\PaperPriceEngine;
+use App\Services\Pur\PaperSpec;
 use App\Services\Pur\SingleFacePriceEngine;
 use App\Support\Finance\TaxRate;
 use App\Support\V2\Grid\Master\SupplierPaperPriceLookup;
@@ -171,8 +172,8 @@ class PaperPriceEngineTest extends TestCase
         $this->assertNull($e->priceFor($mat('SF M/K 72 x 52 CM'), $this->supplier, $on), 'No substance or flute in the name.');
         $this->assertNull($e->priceFor($mat('SF EF M125/K125'), $this->supplier, $on), 'No size in the name.');
         $this->assertNull($e->priceFor($mat('SF EF M125/K125 72 x 52 CM', 'KG'), $this->supplier, $on), 'Per kg is not a sheet price.');
-        $this->assertSame('M125K125', $sf->substanceKey('S FACE 125 M / 125 K'));
-        $this->assertSame('EF', $sf->fluteKey('E/F'));
+        $this->assertSame('M125K125', PaperSpec::substanceKey('S FACE 125 M / 125 K'));
+        $this->assertSame('EF', PaperSpec::fluteKey('E/F'));
     }
 
     public function test_the_input_screen_saves_upper_case_kind_keeps_history_and_refuses_a_row_without_price(): void

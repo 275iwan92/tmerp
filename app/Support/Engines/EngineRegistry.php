@@ -40,6 +40,8 @@ use App\Services\ProDev\SpecEngine;
 use App\Services\ProDev\UsageRateEngine;
 use App\Services\Production\RoutingTemplateService;
 use App\Services\Production\SpeedTarget\SpeedTargetEngine;
+use App\Services\Pur\CorrugatedSheetPriceEngine;
+use App\Services\Pur\DuplexPriceEngine;
 use App\Services\Pur\PaperPriceEngine;
 use App\Services\Pur\PqMatcher;
 use App\Services\Pur\ShortageAutoDetector;
@@ -1669,7 +1671,7 @@ final class EngineRegistry
                 'key' => 'single-face-price', 'name' => 'Single Face Price Engine', 'group' => 'Procurement', 'mode' => 'suggest',
                 'purpose' => 'Suggests the purchase price of a Single Face sheet per supplier: index per square metre x length x width, divided by the PPN divisor.',
                 'class' => SingleFacePriceEngine::class,
-                'methods' => ['priceFor', 'row', 'matches', 'substanceKey', 'fluteKey', 'sizeM'],
+                'methods' => ['priceFor', 'row', 'matches'],
                 'inputs' => [
                     ['material', 'Raw material whose name says SF, S FACE or SINGLE FACE, with substance, flute and size.'],
                     ['supplierId', 'Supplier of the PR suggestion or of the PO.'],
@@ -1686,6 +1688,52 @@ final class EngineRegistry
                 'reads' => ['tm2mst.sup_single_face_price', 'tm2mst.fin_tax_rate (PPN)'],
                 'writes' => ['Nothing.'],
                 'used' => ['Purchase Requisition (estimated price)', 'Purchase Order (line price)', 'Supplier Single Face Price (input screen)'],
+            ],
+            [
+                'key' => 'duplex-price', 'name' => 'Duplex Price Engine', 'group' => 'Procurement', 'mode' => 'suggest',
+                'purpose' => 'Suggests the purchase price of duplex per ream or sheet for a supplier, with the two formulas of the buyer Excel (Reference sheet and Weight).',
+                'class' => DuplexPriceEngine::class,
+                'methods' => ['priceFor', 'row', 'reamPrice', 'matches'],
+                'inputs' => [
+                    ['material', 'Raw material whose name says DUPLEX, with grammage and size (master columns, otherwise read from the name).'],
+                    ['supplierId', 'Supplier of the PR suggestion or of the PO.'],
+                    ['on', 'Document date; the price row in force on that date is used.'],
+                ],
+                'outputs' => [
+                    ['Price', 'Price per ream (LBR = ream / 500) excluding PPN; empty when data is missing or the grade is ambiguous.'],
+                ],
+                'steps' => [
+                    'Finds the active Supplier Duplex Price rows of the supplier in force on the document date whose gsm range holds the material grammage; a grade written in the material name wins, then rows without a grade.',
+                    'Reference sheet: ream = length cm x width cm / (79 x 109) x index x APKey / 100. Weight: ream = gsm x length cm x width cm / 20000 x index x APKey / 100.',
+                    'Price = ream / divisor; divisor = 1 + PPN / 100 (Tax Rate screen, rate on the document date) when the price includes PPN, otherwise 1.',
+                ],
+                'reads' => ['tm2mst.sup_duplex_price', 'tm2mst.fin_tax_rate (PPN)'],
+                'writes' => ['Nothing.'],
+                'used' => ['Purchase Requisition (estimated price)', 'Purchase Order (line price)', 'Supplier Duplex Price (input screen)'],
+            ],
+            [
+                'key' => 'corrugated-sheet-price', 'name' => 'Corrugated Sheet Price Engine', 'group' => 'Procurement', 'mode' => 'suggest',
+                'purpose' => 'Suggests the purchase price per sheet of corrugated sheets (BF, BCF, single wall, double wall) for a supplier from the buyer Excel: ups, trim width, running meter, discount tier.',
+                'class' => CorrugatedSheetPriceEngine::class,
+                'methods' => ['priceFor', 'quote', 'rule', 'index', 'tier', 'matches'],
+                'inputs' => [
+                    ['material', 'Raw material named SH or SHEET with substance (for example K150/M125/K125) and size (grain width first, then length).'],
+                    ['supplierId', 'Supplier of the PO.'],
+                    ['qty', 'Order quantity in sheets (RIM x 500); without it there is no price.'],
+                    ['on', 'Document date; the rule and index rows in force on that date are used.'],
+                ],
+                'outputs' => [
+                    ['Quote', 'Ups, trim width, running meter, tier, discount, index and the price per sheet excluding PPN, or the reason there is no price.'],
+                ],
+                'steps' => [
+                    'Ups = INT((max trim width - 2) / grain width); trim width = CEILING(grain width x ups + 2, 5); running meter = sheets / ups x length / 100.',
+                    'Tier = highest of 5000, 2000, 1000, 500, 300 running metres reached whose discount is filled; below 300 there is no price (below minimum).',
+                    'Index = the supplier row whose substance equals the material substance, otherwise the generic row SW or DW.',
+                    'Price = (trim width x length / 10000 x index / ups) x (1 - discount / 100), then / divisor (1 + PPN / 100 on the document date) when the index includes PPN. The officer may overwrite the line price.',
+                ],
+                'reads' => ['tm2mst.sup_corrugated_rule', 'tm2mst.sup_corrugated_index', 'tm2mst.fin_tax_rate (PPN)'],
+                'writes' => ['Nothing.'],
+                'used' => ['Purchase Order (line price)', 'Supplier Corrugated Rule and Supplier Corrugated Index (input screens)'],
             ],
             [
                 'key' => 'pq-matcher', 'name' => 'Purchase Quotation Matcher', 'group' => 'Procurement', 'mode' => 'suggest',

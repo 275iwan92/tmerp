@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Engine harga beli kertas - diagram dan rumus</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #eef2f8; color: #0f172a; }
+  .box { background: #fff; border: 1.5px solid #2c3e69; border-radius: 8px; padding: 8px 10px; }
+  .eng { background: #e6f1fb; border: 1.5px solid #2c7be5; border-radius: 8px; padding: 8px 10px; }
+  .data { background: #f1f5f9; border: 1.5px dashed #64748b; border-radius: 8px; padding: 6px 10px; }
+  .out { background: #d1fae5; border: 1.5px solid #059669; border-radius: 8px; padding: 8px 10px; }
+  .arrow { text-align: center; font-size: 18px; color: #2c3e69; line-height: 1; }
+  code { font-family: Consolas, 'Courier New', monospace; font-size: 11.5px; background: #f1f5f9; border-radius: 3px; padding: 0 3px; }
+  th { background: #dfe7f5; font-weight: 600; text-align: left; padding: 6px 8px; font-size: 11px; border-bottom: 1px solid #c7d2e6; vertical-align: top; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e5eaf2; font-size: 11.5px; vertical-align: top; }
+  .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .ok { background: #d1fae5; color: #065f46; border-radius: 999px; padding: 1px 8px; font-weight: 700; font-size: 11px; }
+  h2 { font-size: 13px; font-weight: 700; margin: 0 0 6px; }
+</style>
+</head>
+<body class="text-xs">
+<main class="px-5 py-3 space-y-3 max-w-[1400px]">
+
+  <section class="bg-white border border-slate-200 rounded-lg p-3">
+    <h2>1. Alur: dari baris PR / PO ke harga</h2>
+    <div class="grid grid-cols-12 gap-2 items-start">
+      <div class="col-span-2">
+        <div class="box"><b>Baris PR atau PO</b><br>bahan, supplier, tanggal dokumen, jumlah order</div>
+        <div class="arrow mt-1" style="font-size:26px">&#10140;</div>
+      </div>
+      <div class="col-span-2">
+        <div class="eng"><b>PaperPriceEngine</b><br><code>priceFor(bahan, supplier, tanggal, jumlah)</code><br>memilih engine dari nama bahan</div>
+      </div>
+      <div class="col-span-8">
+        <div class="grid grid-cols-4 gap-2">
+          <div>
+            <div class="eng"><b>Ivory</b><br>nama bukan SF / DUPLEX / SH<br><b>PaperPriceEngine</b></div>
+            <div class="arrow">&#9660;</div>
+            <div class="data"><code>sup_paper_price</code><br>harga roll, biaya potong, harga ream per kg</div>
+          </div>
+          <div>
+            <div class="eng"><b>Single Face</b><br>nama memuat SF / S FACE / SINGLE FACE<br><b>SingleFacePriceEngine</b></div>
+            <div class="arrow">&#9660;</div>
+            <div class="data"><code>sup_single_face_price</code><br>index per m2 per substance + flute</div>
+          </div>
+          <div>
+            <div class="eng"><b>Duplex</b><br>nama memuat DUPLEX<br><b>DuplexPriceEngine</b></div>
+            <div class="arrow">&#9660;</div>
+            <div class="data"><code>sup_duplex_price</code><br>grade, rentang gsm, rumus, index, APKey %</div>
+          </div>
+          <div>
+            <div class="eng"><b>Lembar gelombang</b><br>nama diawali SH / SHEET + substance<br><b>CorrugatedSheetPriceEngine</b></div>
+            <div class="arrow">&#9660;</div>
+            <div class="data"><code>sup_corrugated_rule</code> lebar trim maks, diskon per tingkat<br><code>sup_corrugated_index</code> index per m2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow my-1">&#9660; semua engine memakai</div>
+    <div class="grid grid-cols-12 gap-2">
+      <div class="col-span-4 data"><b>Pilih baris konstanta:</b> aktif, tanggal berlaku &lt;= tanggal dokumen, yang terbaru. Harga berubah = baris baru bertanggal baru; baris lama jadi riwayat. Diisi di layar Master Data, tiap hari atau sesekali.</div>
+      <div class="col-span-4 data"><b>Pembagi PPN</b> = 1 + tarif PPN / 100 dari layar Tax Rate pada tanggal dokumen (10% sebelum 01-Apr-2022, 11% sesudahnya), bila harga Incl PPN; Excl PPN = 1.</div>
+      <div class="col-span-4 out"><b>Hasil:</b> harga di luar PPN per satuan beli (RIM, LBR = rim / 500, lembar). Bila data kurang atau di bawah minimum: kosong. Disarankan saja, petugas boleh menimpa harga di baris PR / PO.</div>
+    </div>
+  </section>
+
+  <section class="bg-white border border-slate-200 rounded-lg p-3">
+    <h2>2. Rumus per engine, diuji terhadap angka di Excel Jo</h2>
+    <table class="w-full">
+      <tr><th>Engine</th><th>Rumus</th><th>Contoh dari Excel</th><th class="num">Excel</th><th class="num">Engine</th><th>Cocok</th></tr>
+      <tr><td><b>Duplex, Reference sheet</b><br>Indokertas, DP, DA</td><td><code>rim = P cm x L cm / (79 x 109) x index x APKey / 100</code></td><td>400 gsm, 89 x 119,4, index 353.000, APKey 480, incl PPN</td><td class="num">2.091.012,78</td><td class="num">2.091.012,78</td><td><span class="ok">sama</span></td></tr>
+      <tr><td><b>Duplex, Weight</b><br>CM, MSE, SI</td><td><code>rim = gsm x P cm x L cm / 20.000 x index x APKey / 100</code></td><td>310 gsm, 79 x 109, index 2.173, APKey 600, incl PPN</td><td class="num">1.740.188,38</td><td class="num">1.740.188,38</td><td><span class="ok">sama</span></td></tr>
+      <tr><td><b>Lembar gelombang</b><br>BF, BCF, SW, DW</td><td><code>up = INT((lebar maks - 2) / lebar serat)</code><br><code>trim = CEILING(lebar serat x up + 2, 5)</code><br><code>RM = lembar / up x panjang / 100</code><br><code>harga = (trim x panjang / 10.000 x index / up) x (1 - diskon/100)</code></td><td>UJK: SW lebar 64 x 78,5, 800 lembar, maks 180, diskon -10%, index 4.410</td><td class="num">2.475,22</td><td class="num">2.475,22</td><td><span class="ok">sama</span></td></tr>
+      <tr><td></td><td>Tingkat: RM &lt; 300 tidak ada harga; 300, 500, 1000, 2000, 5000 = tingkat tertinggi yang terlewati dan diskonnya terisi</td><td>RCA WK: lebar 67 x 246,4, 370 lembar, maks 220, diskon -25%, index 5.285</td><td class="num">11.123,16</td><td class="num">11.123,16</td><td><span class="ok">sama</span></td></tr>
+      <tr><td><b>Single Face</b></td><td><code>lembar = index x P m x L m</code></td><td>dari rumus Jo (bukan dari Excel)</td><td class="num">-</td><td class="num">-</td><td>diuji sendiri</td></tr>
+      <tr><td><b>Ivory</b></td><td><code>rim = (harga/kg x P m x L m x gsm / 2)</code>; potong roll: (harga roll + biaya potong) / kg</td><td>250 gsm 79 x 109, 12.500/kg, incl PPN (sebelum dibagi pembagi PPN)</td><td class="num">1.345.468,75</td><td class="num">1.345.468,75</td><td><span class="ok">sama</span></td></tr>
+    </table>
+    <div class="mt-2 text-[11.5px] text-slate-700">Semua rumus di atas, setelah dibagi pembagi PPN, menghasilkan harga sebelum PPN. Contoh Excel yang dibandingkan: 10 dari 10 sama persis (lihat tes <code>PaperPurchaseEnginesTest</code>).</div>
+  </section>
+
+  <section class="bg-white border border-slate-200 rounded-lg p-3">
+    <h2>3. Batasan yang perlu diketahui</h2>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>Lembar gelombang butuh jumlah order untuk tingkat diskon: harga terisi di baris <b>PO</b>; baris PR (jumlah belum ada) tidak mendapat harga lembar gelombang dan memakai harga terakhir.</li>
+      <li>Ukuran di nama bahan: angka pertama = lebar serat, kedua = panjang (cm atau MM; tanpa satuan dan keduanya kurang dari 250 dianggap cm). Gramasi dan ukuran dibaca dari kolom master bila terisi, kalau tidak dari nama.</li>
+      <li>Diskon dan APKey adalah nilai tabel; petugas boleh menimpa harga di baris PR atau PO.</li>
+      <li>Potongan duplex roll (+10 APKey) dan perbedaan flute E / B belum dihitung.</li>
+    </ul>
+  </section>
+
+</main>
+</body>
+</html>

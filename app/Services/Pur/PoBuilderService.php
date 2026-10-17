@@ -85,7 +85,7 @@ class PoBuilderService
                 'i_uom' => $line->i_uom,
                 'c_uom_stock' => $line->material?->uom_stock,
                 'c_conv_to_stock' => $line->material?->conversion_to_stock,
-                'i_price' => ($line->material ? app(PaperPriceEngine::class)->priceFor($line->material, (int) $po->i_supplier_id, Carbon::parse($po->i_doc_date)) : null)
+                'i_price' => ($line->material ? app(PaperPriceEngine::class)->priceFor($line->material, (int) $po->i_supplier_id, Carbon::parse($po->i_doc_date), (float) $alloc->i_qty) : null)
                     ?? $line->i_est_price ?? 0,
                 'i_disc_pct' => 0,
                 'i_department_id' => $line->i_department_id,

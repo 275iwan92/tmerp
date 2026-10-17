@@ -7901,7 +7901,7 @@
     {
         "class": "App\\Services\\Pur\\PaperPriceEngine",
         "file": "app/Services/Pur/PaperPriceEngine.php",
-        "lines": 105,
+        "lines": 114,
         "entries": [
             {
                 "method": "priceFor",
@@ -7920,6 +7920,11 @@
                     {
                         "name": "on",
                         "type": "?CarbonInterface",
+                        "default": "null"
+                    },
+                    {
+                        "name": "qty",
+                        "type": "?float",
                         "default": "null"
                     }
                 ],
@@ -8110,7 +8115,7 @@
     {
         "class": "App\\Services\\Pur\\SingleFacePriceEngine",
         "file": "app/Services/Pur/SingleFacePriceEngine.php",
-        "lines": 86,
+        "lines": 57,
         "entries": [
             {
                 "method": "priceFor",
@@ -8170,45 +8175,6 @@
                 ],
                 "returns": "bool",
                 "note": null
-            },
-            {
-                "method": "substanceKey",
-                "static": false,
-                "params": [
-                    {
-                        "name": "text",
-                        "type": "string",
-                        "default": null
-                    }
-                ],
-                "returns": "string",
-                "note": null
-            },
-            {
-                "method": "fluteKey",
-                "static": false,
-                "params": [
-                    {
-                        "name": "text",
-                        "type": "string",
-                        "default": null
-                    }
-                ],
-                "returns": "string",
-                "note": null
-            },
-            {
-                "method": "sizeM",
-                "static": false,
-                "params": [
-                    {
-                        "name": "text",
-                        "type": "string",
-                        "default": null
-                    }
-                ],
-                "returns": "?array",
-                "note": null
             }
         ],
         "key": "single-face-price",
@@ -8252,6 +8218,329 @@
             "Purchase Requisition (estimated price)",
             "Purchase Order (line price)",
             "Supplier Single Face Price (input screen)"
+        ]
+    },
+    {
+        "class": "App\\Services\\Pur\\DuplexPriceEngine",
+        "file": "app/Services/Pur/DuplexPriceEngine.php",
+        "lines": 85,
+        "entries": [
+            {
+                "method": "priceFor",
+                "static": false,
+                "params": [
+                    {
+                        "name": "m",
+                        "type": "MatRaw",
+                        "default": null
+                    },
+                    {
+                        "name": "supplierId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "on",
+                        "type": "?CarbonInterface",
+                        "default": "null"
+                    }
+                ],
+                "returns": "?float",
+                "note": null
+            },
+            {
+                "method": "row",
+                "static": false,
+                "params": [
+                    {
+                        "name": "m",
+                        "type": "MatRaw",
+                        "default": null
+                    },
+                    {
+                        "name": "supplierId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "gsm",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "on",
+                        "type": "?CarbonInterface",
+                        "default": "null"
+                    }
+                ],
+                "returns": "?SupDuplexPrice",
+                "note": null
+            },
+            {
+                "method": "reamPrice",
+                "static": false,
+                "params": [
+                    {
+                        "name": "r",
+                        "type": "SupDuplexPrice",
+                        "default": null
+                    },
+                    {
+                        "name": "gsm",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "lengthCm",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "widthCm",
+                        "type": "float",
+                        "default": null
+                    }
+                ],
+                "returns": "?float",
+                "note": null
+            },
+            {
+                "method": "matches",
+                "static": false,
+                "params": [
+                    {
+                        "name": "m",
+                        "type": "MatRaw",
+                        "default": null
+                    }
+                ],
+                "returns": "bool",
+                "note": null
+            }
+        ],
+        "key": "duplex-price",
+        "name": "Duplex Price Engine",
+        "group": "Procurement",
+        "mode": "suggest",
+        "purpose": "Suggests the purchase price of duplex per ream or sheet for a supplier, with the two formulas of the buyer Excel (Reference sheet and Weight).",
+        "inputs": [
+            [
+                "material",
+                "Raw material whose name says DUPLEX, with grammage and size (master columns, otherwise read from the name)."
+            ],
+            [
+                "supplierId",
+                "Supplier of the PR suggestion or of the PO."
+            ],
+            [
+                "on",
+                "Document date; the price row in force on that date is used."
+            ]
+        ],
+        "outputs": [
+            [
+                "Price",
+                "Price per ream (LBR = ream / 500) excluding PPN; empty when data is missing or the grade is ambiguous."
+            ]
+        ],
+        "steps": [
+            "Finds the active Supplier Duplex Price rows of the supplier in force on the document date whose gsm range holds the material grammage; a grade written in the material name wins, then rows without a grade.",
+            "Reference sheet: ream = length cm x width cm / (79 x 109) x index x APKey / 100. Weight: ream = gsm x length cm x width cm / 20000 x index x APKey / 100.",
+            "Price = ream / divisor; divisor = 1 + PPN / 100 (Tax Rate screen, rate on the document date) when the price includes PPN, otherwise 1."
+        ],
+        "reads": [
+            "tm2mst.sup_duplex_price",
+            "tm2mst.fin_tax_rate (PPN)"
+        ],
+        "writes": [
+            "Nothing."
+        ],
+        "used": [
+            "Purchase Requisition (estimated price)",
+            "Purchase Order (line price)",
+            "Supplier Duplex Price (input screen)"
+        ]
+    },
+    {
+        "class": "App\\Services\\Pur\\CorrugatedSheetPriceEngine",
+        "file": "app/Services/Pur/CorrugatedSheetPriceEngine.php",
+        "lines": 119,
+        "entries": [
+            {
+                "method": "priceFor",
+                "static": false,
+                "params": [
+                    {
+                        "name": "m",
+                        "type": "MatRaw",
+                        "default": null
+                    },
+                    {
+                        "name": "supplierId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "qty",
+                        "type": "?float",
+                        "default": "null"
+                    },
+                    {
+                        "name": "on",
+                        "type": "?CarbonInterface",
+                        "default": "null"
+                    }
+                ],
+                "returns": "?float",
+                "note": null
+            },
+            {
+                "method": "quote",
+                "static": false,
+                "params": [
+                    {
+                        "name": "m",
+                        "type": "MatRaw",
+                        "default": null
+                    },
+                    {
+                        "name": "supplierId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "qty",
+                        "type": "?float",
+                        "default": "null"
+                    },
+                    {
+                        "name": "on",
+                        "type": "?CarbonInterface",
+                        "default": "null"
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "rule",
+                "static": false,
+                "params": [
+                    {
+                        "name": "supplierId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "on",
+                        "type": "?CarbonInterface",
+                        "default": "null"
+                    }
+                ],
+                "returns": "?SupCorrugatedRule",
+                "note": null
+            },
+            {
+                "method": "index",
+                "static": false,
+                "params": [
+                    {
+                        "name": "supplierId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "on",
+                        "type": "?CarbonInterface",
+                        "default": "null"
+                    }
+                ],
+                "returns": "?SupCorrugatedIndex",
+                "note": null
+            },
+            {
+                "method": "tier",
+                "static": false,
+                "params": [
+                    {
+                        "name": "rule",
+                        "type": "SupCorrugatedRule",
+                        "default": null
+                    },
+                    {
+                        "name": "rm",
+                        "type": "float",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": null
+            },
+            {
+                "method": "matches",
+                "static": false,
+                "params": [
+                    {
+                        "name": "m",
+                        "type": "MatRaw",
+                        "default": null
+                    }
+                ],
+                "returns": "bool",
+                "note": null
+            }
+        ],
+        "key": "corrugated-sheet-price",
+        "name": "Corrugated Sheet Price Engine",
+        "group": "Procurement",
+        "mode": "suggest",
+        "purpose": "Suggests the purchase price per sheet of corrugated sheets (BF, BCF, single wall, double wall) for a supplier from the buyer Excel: ups, trim width, running meter, discount tier.",
+        "inputs": [
+            [
+                "material",
+                "Raw material named SH or SHEET with substance (for example K150/M125/K125) and size (grain width first, then length)."
+            ],
+            [
+                "supplierId",
+                "Supplier of the PO."
+            ],
+            [
+                "qty",
+                "Order quantity in sheets (RIM x 500); without it there is no price."
+            ],
+            [
+                "on",
+                "Document date; the rule and index rows in force on that date are used."
+            ]
+        ],
+        "outputs": [
+            [
+                "Quote",
+                "Ups, trim width, running meter, tier, discount, index and the price per sheet excluding PPN, or the reason there is no price."
+            ]
+        ],
+        "steps": [
+            "Ups = INT((max trim width - 2) / grain width); trim width = CEILING(grain width x ups + 2, 5); running meter = sheets / ups x length / 100.",
+            "Tier = highest of 5000, 2000, 1000, 500, 300 running metres reached whose discount is filled; below 300 there is no price (below minimum).",
+            "Index = the supplier row whose substance equals the material substance, otherwise the generic row SW or DW.",
+            "Price = (trim width x length / 10000 x index / ups) x (1 - discount / 100), then / divisor (1 + PPN / 100 on the document date) when the index includes PPN. The officer may overwrite the line price."
+        ],
+        "reads": [
+            "tm2mst.sup_corrugated_rule",
+            "tm2mst.sup_corrugated_index",
+            "tm2mst.fin_tax_rate (PPN)"
+        ],
+        "writes": [
+            "Nothing."
+        ],
+        "used": [
+            "Purchase Order (line price)",
+            "Supplier Corrugated Rule and Supplier Corrugated Index (input screens)"
         ]
     },
     {

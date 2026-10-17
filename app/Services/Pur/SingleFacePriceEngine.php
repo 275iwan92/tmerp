@@ -30,7 +30,7 @@ final class SingleFacePriceEngine
     public function priceFor(MatRaw $m, ?int $supplierId, ?CarbonInterface $on = null): ?float
     {
         $uom = strtoupper((string) $m->uom_purchase);
-        $size = $this->sizeM((string) $m->material_name);
+        $size = PaperSpec::sizeM((string) $m->material_name);
         $row = $supplierId && $size ? $this->row($m, $supplierId, $on) : null;
         $div = $row ? app(PaperPriceEngine::class)->divisor($row->price_basis, $on) : null;
         if (! $row || ! $div || ! in_array($uom, ['', 'LBR', 'PCS', 'RIM'], true)) {
@@ -44,43 +44,14 @@ final class SingleFacePriceEngine
     // Baris harga yang berlaku: aktif, tanggal berlaku <= tanggal dokumen, substance dan flute sama dengan nama bahan; yang tanggalnya paling baru.
     public function row(MatRaw $m, int $supplierId, ?CarbonInterface $on = null): ?SupSingleFacePrice
     {
-        $key = $this->substanceKey((string) $m->material_name);
-        $flute = $this->fluteKey((string) $m->material_name);
+        $key = PaperSpec::substanceKey((string) $m->material_name);
+        $flute = PaperSpec::fluteKey((string) $m->material_name);
         if ($key === '' || $flute === '') {
             return null;
         }
 
         return SupSingleFacePrice::query()->where('supplier_id', $supplierId)->where('activate', true)
             ->whereDate('effective_date', '<=', ($on ?? now())->toDateString())->orderByDesc('effective_date')->orderByDesc('id_sf_price')->get()
-            ->first(fn (SupSingleFacePrice $r) => $this->substanceKey($r->substance_name) === $key && $this->fluteKey($r->flute_type) === $flute);
-    }
-
-    // Kunci substance berurutan, mis. "SF M 125 / K 125", "S FACE 125 M / 125 K", dan "M125/K125" semuanya jadi "M125K125".
-    public function substanceKey(string $text): string
-    {
-        preg_match_all('/\b(WK|KL|K|M)\s*(\d{2,3})\b|\b(\d{2,3})\s*(WK|KL|K|M)\b/i', strtoupper($text), $t, PREG_SET_ORDER);
-
-        return implode('', array_map(fn ($x) => ($x[1] !== '' ? $x[1].$x[2] : $x[4].$x[3]), $t));
-    }
-
-    // Flute: E/F, EF, B/F, BF, C/F, BC/F dan sejenisnya jadi "EF", "BF", "CF", "BCF".
-    public function fluteKey(string $text): string
-    {
-        return preg_match('/\b(BC|B|C|E)\s*\/?\s*F\b/i', strtoupper($text), $x) ? strtoupper($x[1]).'F' : '';
-    }
-
-    // Ukuran dari nama, "A x B" dengan satuan CM atau MM; tanpa satuan: kedua sisi <= 250 dianggap CM, selain itu MM. Hasil dalam meter.
-    public function sizeM(string $text): ?array
-    {
-        if (! preg_match_all('/(\d+(?:[.,]\d+)?)\s*[xX]\s*(\d+(?:[.,]\d+)?)\s*(MM|CM)?/i', $text, $all, PREG_SET_ORDER)) {
-            return null;
-        }
-        $s = end($all);
-        $a = (float) str_replace(',', '.', $s[1]);
-        $b = (float) str_replace(',', '.', $s[2]);
-        $unit = strtoupper($s[3] ?? '') ?: (max($a, $b) <= 250 ? 'CM' : 'MM');
-        $div = $unit === 'MM' ? 1000 : 100;
-
-        return $a > 0 && $b > 0 ? [$a / $div, $b / $div] : null;
+            ->first(fn (SupSingleFacePrice $r) => PaperSpec::substanceKey($r->substance_name) === $key && PaperSpec::fluteKey($r->flute_type) === $flute);
     }
 }
