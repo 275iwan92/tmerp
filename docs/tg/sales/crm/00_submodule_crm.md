@@ -28,3 +28,76 @@ There is no CRM file yet in `docs/guides/sales/` (folder content: 00 to 04, no C
 
 ## Cross-card findings (short; details in the cards)
 Table `quo_activity` no longer exists but class `QuoActivity` and comments still mention it; Cancel Complaint has no `cancelled_at/by`; the Customer 360 segment counts archive DRAFT/UNKNOWN as orders and REJECTED CO is not excluded; Customer 360 tabs are silently cut at 100/200 rows.
+
+
+## Read/Write map
+
+[![Read/Write map](../img/rw-crm.svg)](../img/rw-crm.svg) Click the picture to open it full size.
+Every process of the CRM sub-module (menu Customer 360, Activities & Follow-up, Complaint & Return, plus the QA answer in Production > Complaint Review) with the tables it reads and writes (C create, U update, D delete), checked in code on 2026-10-18 against the dummy DBs (ddtsdi, ddtmst, ddtsys, ddtprd: all table names exist; no DB triggers found in ddtsdi, ddtmst, ddtprd, ddtsys, ddtacc). The Master Customer and Sales Person shortcuts in the CRM menu, and Win-Rate Sales, are mapped on the sub-module pages that own them (Master Data, Quotation). No CRM process writes a file to disk.
+
+| Process | Trigger | Reads | Writes | Evidence |
+|---|---|---|---|---|
+| Open Customer 360 list | Menu Customer 360, GET v2.screen crm-customer (no id) | `cust_customer`, `co_order_legacy`, `co_order`, `quo_quotation`, `quo_quotation_item`, `iqp_inquiry`, `crm_activity`, `crm_complaint`, `sys_constant`, `sys_holiday`, `sys_office_hour` | - | `resources/views/v2/screens/crm-customer.blade.php:29`, `app/Support/V2/Grid/Sales/CustomerListGrid.php:36-38`, `app/Support/V2/Data/Crm.php:38-73`, `app/Support/V2/Data/Crm.php:85-89`, `app/Support/V2/Data/CrmActivities.php:48-74` |
+| Open Customer 360 page (one customer) | Customer 360 list, open a row (GET v2.screen crm-customer ?id) | `cust_customer`, `cust_customer_contact`, `cust_customer_branch`, `fin_payment_term`, `quo_quotation`, `quo_quotation_item`, `iqp_inquiry`, `co_order`, `co_order_item`, `co_order_external_cost`, `co_order_legacy`, `co_order_legacy_detail`, `do_delivery`, `co_delivery_legacy`, `crm_activity`, `crm_complaint`, `crm_complaint_item`, `qc_complaint_review`, `prod_product`, `sec_user`, `fin_tax_rate`, `sys_constant`, `sys_holiday`, `sys_office_hour` | - | `resources/views/v2/screens/crm-customer.blade.php:15`, `resources/views/v2/screens/crm-customer.blade.php:32`, `app/Support/V2/Data/Crm.php:91-94`, `app/Support/V2/Data/Crm.php:97-149`, `app/Support/V2/Data/Crm.php:152-188`, `app/Support/V2/Data/Crm.php:193-243`, `app/Support/V2/Data/CrmActivities.php:29-44`, `app/Support/V2/Data/CrmComplaints.php:35-53`, `app/Models/Sdi/QuoQuotation.php:94-110`, `app/Models/Sdi/CoOrder.php:193-215`, `app/Support/Finance/TaxRate.php:26-31` |
+| Open Activities list | Menu Activities & Follow-up, GET v2.screen crm-activity (no id) | `crm_activity`, `quo_quotation`, `cust_customer`, `sec_user`, `sys_constant`, `sys_holiday`, `sys_office_hour` | - | `resources/views/v2/screens/crm-activity.blade.php:29`, `app/Support/V2/Grid/Sales/CrmActivityListGrid.php:27-29`, `app/Support/V2/Data/CrmActivities.php:29-44`, `app/Support/V2/Data/CrmActivities.php:76-79` |
+| Open Activity form (new, edit, Log Result) | Activities list, + New Record or open a row or Log Result (GET v2.screen crm-activity ?id, ?new, ?from, ?customer_id) | `crm_activity`, `cust_customer`, `cust_customer_contact`, `quo_quotation` | - | `resources/views/v2/screens/crm-activity.blade.php:17-20`, `resources/views/v2/screens/crm-activity.blade.php:46-50`, `resources/views/v2/screens/crm-activity.blade.php:76`, `app/Support/V2/Data/CrmActivities.php:24-27`, `app/Support/V2/Data/CrmActivities.php:86-97`, `app/Support/V2/Data/CrmActivities.php:100-104` |
+| Save a new activity (and close the follow-up it answers) | Activity form, Save (POST v2.crm.activity.store, optional from) | `cust_customer`, `cust_customer_contact`, `quo_quotation`, `crm_activity` | `crm_activity` (CU) | `routes/v2.php:1112-1118`, `app/Support/V2/Data/CrmActivities.php:114-148`, `app/Models/Sdi/CrmActivity.php:36-40` |
+| Edit an activity | Activity form, Save (POST v2.crm.activity.save, action=save) | `crm_activity`, `cust_customer_contact`, `quo_quotation` | `crm_activity` (U) | `routes/v2.php:1120-1138`, `app/Support/V2/Data/CrmActivities.php:106-111`, `app/Support/V2/Data/CrmActivities.php:114-148` |
+| Follow-up Done or Reopen | Activity form, Follow-up Done / Reopen (POST v2.crm.activity.save, action=done or reopen) | `crm_activity` | `crm_activity` (U) | `routes/v2.php:1129-1132`, `app/Support/V2/Data/CrmActivities.php:150-154` |
+| Delete an activity | Activity form, Delete (POST v2.crm.activity.save, action=delete) | `crm_activity` | `crm_activity` (D) | `routes/v2.php:1124-1127`, `app/Support/V2/Data/CrmActivities.php:156-160` |
+| Open Complaint list | Menu Complaint & Return, GET v2.screen crm-complaint (no id) | `crm_complaint`, `crm_complaint_item`, `cust_customer`, `qc_complaint_review`, `co_order` | - | `resources/views/v2/screens/crm-complaint.blade.php:32`, `app/Support/V2/Grid/Sales/CrmComplaintListGrid.php:27-29`, `app/Support/V2/Data/CrmComplaints.php:35-53` |
+| Open Complaint form | Complaint list, open a row (GET v2.screen crm-complaint ?id) | `crm_complaint`, `crm_complaint_item`, `cust_customer`, `qc_complaint_review`, `co_order`, `cust_customer_contact`, `prod_product`, `sec_user` | - | `resources/views/v2/screens/crm-complaint.blade.php:22`, `resources/views/v2/screens/crm-complaint.blade.php:52`, `resources/views/v2/screens/crm-complaint.blade.php:75`, `resources/views/v2/screens/crm-complaint.blade.php:79`, `app/Support/V2/Data/CrmComplaints.php:30-33`, `app/Support/V2/Data/CrmComplaints.php:55-64`, `app/Support/V2/Data/CrmComplaints.php:210-221` |
+| Create a complaint draft | Complaint list, + New Record, Create (POST v2.crm.complaint.create) | `cust_customer` | `crm_complaint` (C) | `routes/v2.php:1142-1147`, `app/Support/V2/Data/CrmComplaints.php:66-73` |
+| Save a complaint (Draft: whole document; Confirmed: resolution only) | Complaint form, Save (POST v2.crm.complaint.save, action=save) | `crm_complaint`, `crm_complaint_item`, `cust_customer_contact`, `co_order`, `prod_product` | `crm_complaint` (U), `crm_complaint_item` (CUD) | `routes/v2.php:1149-1173`, `app/Support/V2/Data/CrmComplaints.php:76-134` |
+| Confirm a complaint (Save first, then Confirm) | Complaint form, Confirm (POST v2.crm.complaint.save, action=confirm) | `crm_complaint`, `crm_complaint_item`, `cust_customer_contact`, `co_order`, `prod_product` | `crm_complaint` (U), `crm_complaint_item` (CUD) | `routes/v2.php:1165-1170`, `app/Support/V2/Data/CrmComplaints.php:136-157`, `app/Support/V2/Data/CrmComplaints.php:163-174`, `app/Models/Sdi/CrmComplaint.php:70-76` |
+| Close a complaint | Complaint form, Close (POST v2.crm.complaint.save, action=close) | `crm_complaint`, `qc_complaint_review` | `crm_complaint` (U) | `routes/v2.php:1165-1170`, `app/Support/V2/Data/CrmComplaints.php:175-187`, `app/Models/Sdi/CrmComplaint.php:65-68` |
+| Cancel a complaint | Complaint form, Cancel with reason (POST v2.crm.complaint.save, action=cancel) | `crm_complaint` | `crm_complaint` (U) | `routes/v2.php:1158-1162`, `app/Support/V2/Data/CrmComplaints.php:175-177`, `app/Support/V2/Data/CrmComplaints.php:189-193` |
+| Delete a Draft complaint | Complaint form, Delete (POST v2.crm.complaint.save, action=delete) | `crm_complaint` | `crm_complaint` (D), `crm_complaint_item` (D) | `routes/v2.php:1153-1157`, `app/Support/V2/Data/CrmComplaints.php:198-202` |
+| Print the complaint | Complaint form, Print (GET v2.print type customer-complaint) | `crm_complaint`, `crm_complaint_item`, `cust_customer`, `qc_complaint_review`, `co_order`, `org_company`, `sys_constant` | - | `routes/v2.php:204-213`, `app/Support/V2/Print/PrintDocs.php:45`, `app/Support/V2/Print/CustomerComplaintPrint.php:42-47`, `app/Support/V2/Print/PrintDocs.php:106-109`, `app/Support/V2/Print/PrintDocs.php:121-124` |
+| Open the QA desk (Production > Complaint Review) | Menu Complaint Review (QA), GET v2.screen qc-complaint-review (list or ?id) | `crm_complaint`, `crm_complaint_item`, `cust_customer`, `qc_complaint_review`, `co_order` | - | `app/Support/V2/Grid/Prod/QcComplaintReviewListGrid.php:26-29`, `resources/views/v2/screens/qc-complaint-review.blade.php:17`, `app/Support/V2/Data/CrmComplaints.php:225-240` |
+| QA answers the complaint (Save, then Confirm) | QA form, Save or Confirm (POST v2.qc.complaint-review.save) | `crm_complaint`, `crm_complaint_item`, `qc_complaint_review` | `qc_complaint_review` (CU) | `routes/v2.php:1177-1185`, `app/Support/V2/Data/CrmComplaints.php:242-271`, `app/Models/Prd/QcComplaintReview.php:15-17` |
+
+Notes for debugging
+- Activities have no transaction anywhere. Log Result saves the new activity first (`app/Support/V2/Data/CrmActivities.php:142`) and only then closes the follow-up it answers (`app/Support/V2/Data/CrmActivities.php:143-145`): a failure between the two leaves the old follow-up open. The contact and the quotation of a saved activity are filtered against the lists of that customer, a foreign id is silently turned into empty (`app/Support/V2/Data/CrmActivities.php:119-130`). A quotation-only activity (from the Quotation screen) gets its customer from the quotation in the `creating` hook (`app/Models/Sdi/CrmActivity.php:36-40`).
+- Edit right: only the creator or an admin may Save or Delete an activity (`app/Support/V2/Data/CrmActivities.php:106-111`, enforced inside `save()` and `delete()`), but the route for Follow-up Done and Reopen calls `done()` directly with no such check (`routes/v2.php:1129-1132`, `app/Support/V2/Data/CrmActivities.php:150-154`): any user who passes the SALES module gate can close or reopen another person's follow-up. Seen in code, not tried on screen.
+- Complaint Save writes the header and all lines in ONE tm2sdi transaction (`app/Support/V2/Data/CrmComplaints.php:105-133`); lines flagged for removal are deleted one by one, lines missing from the form are never deleted. Confirm is a SECOND, separate transaction after Save (`app/Support/V2/Data/CrmComplaints.php:170-171`): if Confirm is refused (error list, `app/Support/V2/Data/CrmComplaints.php:167-169`) the Save has already been kept as a Draft. The number `CCyyNNNNN` is born only there, inside that transaction, with `lockForUpdate` on the last number (`app/Models/Sdi/CrmComplaint.php:70-76`).
+- After Confirm the complaint is locked: Save only takes `resolution` and `resolution_note` (`app/Support/V2/Data/CrmComplaints.php:80-84`); a Closed or Cancelled one is refused with 422 (`app/Support/V2/Data/CrmComplaints.php:85`). Close and Cancel are plain `forceFill()->save()` with no transaction, and no code in `app/` mentions the table `doc_state_log` (grep), so these transitions leave no log row; Cancel keeps its time and actor in `updated_at` and `updated_by` only. Delete is allowed on a Draft only and takes the lines with it through the CASCADE foreign key (checked in ddtsdi).
+- The QA answer lives in another database (tm2prd) with no foreign key to `crm_complaint`; only a UNIQUE index on `qc_complaint_review.complaint_id` keeps one answer per complaint (checked in ddtprd). The first QA Save, even a Confirm that fails validation, already creates the row (`app/Support/V2/Data/CrmComplaints.php:257`, `app/Support/V2/Data/CrmComplaints.php:262`), so an answer row with empty fields can exist and the complaint then shows the stage WAITING (`app/Models/Sdi/CrmComplaint.php:65-68`). A Confirmed answer cannot be changed (`app/Support/V2/Data/CrmComplaints.php:246-248`). Cancelling a complaint does not touch an existing answer row.
+- Not checked: which tables `hasGroup` and `maxMgmtLevel` behind the price test read (`app/Models/Sys/SecUser.php:287-290`); the Customer 360 page object `x-mp::sales.customer-card` (view only, not opened); the board widgets that count complaints (`app/Support/V2/Board/Widgets/OpenComplaints.php`) and `app/Support/V2/Board/Numbers.php` (read only, not traced); the dummy builder `app/Support/Dummy/StageBuilder.php` (no CRM write found in the lines read); other readers of `qc_complaint_review` in Production; access gates (`module:SALES`, `canAccessModule`) and screen chrome (menu, QC bar, dictionary register) are not mapped.
+
+## Table relations
+
+Relations of the tables this sub-module uses. Solid line = real foreign key (database `tm2sdi` or `tm2mst`). Dashed line = logical link without foreign key (cross-database or matched in code). Facts: foreign keys read from `information_schema` of ddtsdi, ddtmst, ddtprd and ddtsys in the mockup database; the logical links from the columns and the code read for this page (the target table of a logical link is taken from the code that matches it, for example `app/Support/V2/Data/Crm.php:42-50`). No foreign key crosses a database (checked: no cross-schema foreign key in any `ddt*` schema).
+
+[![Table relations](../img/rel-crm.svg)](../img/rel-crm.svg) Click the picture to open it full size.
+
+| Parent | Child | Cardinality | Column | Link |
+|---|---|---|---|---|
+| `quo_quotation` | `crm_activity` | 1:N | `quotation_id` | FK |
+| `co_order` | `crm_complaint` | 1:N | `co_order_id` | FK |
+| `crm_complaint` | `crm_complaint_item` | 1:N | `complaint_id` | FK |
+| `quo_quotation` | `quo_quotation_item` | 1:N | `quotation_id` | FK |
+| `iqp_inquiry` | `quo_quotation_item` | 1:N | `inquiry_id` | FK |
+| `quo_quotation` | `co_order` | 1:1 | `quotation_id` | FK |
+| `co_order` | `co_order_item` | 1:N | `order_id` | FK |
+| `co_order` | `co_order_external_cost` | 1:N | `order_id` | FK |
+| `iqp_inquiry` | `co_order_item` | 1:N | `inquiry_id` | FK |
+| `co_order` | `iqp_inquiry` | 1:N | `co_id` | FK |
+| `co_order_legacy` | `co_order_legacy_detail` | 1:N | `co_legacy_id` | FK |
+| `cust_customer` | `cust_customer_contact` | 1:N | `customer_id` | FK |
+| `cust_customer` | `cust_customer_branch` | 1:N | `customer_id` | FK |
+| `fin_payment_term` | `cust_customer` | 1:N | `payment_term` | FK |
+| `cust_customer` | `prod_product` | 1:N | `customer_id` | FK |
+| `cust_customer` | `crm_activity` | 1:N | `customer_id` | logical |
+| `cust_customer_contact` | `crm_activity` | 1:N | `contact_id` | logical |
+| `cust_customer` | `crm_complaint` | 1:N | `customer_id` | logical |
+| `cust_customer_contact` | `crm_complaint` | 1:N | `contact_id` | logical |
+| `prod_product` | `crm_complaint_item` | 1:N | `product_id` | logical |
+| `crm_complaint` | `qc_complaint_review` | 1:1 | `complaint_id` | logical |
+| `cust_customer` | `quo_quotation` | 1:N | `customer_id` | logical |
+| `cust_customer` | `co_order` | 1:N | `customer_id` | logical |
+| `cust_customer` | `co_order_legacy` | 1:N | `customer_id` | logical |
+| `cust_customer` | `do_delivery` | 1:N | `customer_id` | logical |
+| `cust_customer` | `co_delivery_legacy` | 1:N | `customer_id` | logical |
+| `prod_product` | `co_order_item` | 1:N | `product_id` | logical |
+| `prod_product` | `co_order_legacy_detail` | 1:N | `product_id` | logical |
