@@ -1,11 +1,22 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Membuat / mengisi PO Draft dari alokasi baris PR; harga baris PO = saran PaperPriceEngine untuk supplier PO (kertas), kalau tidak ada = harga taksiran PR.
+ * Sumber hulu  : pr_line_alloc, Supplier Paper Price (lewat PaperPriceEngine).
+ * Input        : PoOrder, PrLineAlloc.
+ * Output       : po_line (Draft), alokasi ditandai terkonversi.
+ * Dipakai oleh : Purchase Order v2, Material Planning > Buy.
+ * Status       : Aktif; petugas boleh mengubah harga baris PO.
+ */
+
 namespace App\Services\Pur;
 
 use App\Models\Master\MatCategory;
 use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrLineAlloc;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -74,7 +85,8 @@ class PoBuilderService
                 'i_uom' => $line->i_uom,
                 'c_uom_stock' => $line->material?->uom_stock,
                 'c_conv_to_stock' => $line->material?->conversion_to_stock,
-                'i_price' => $line->i_est_price ?? 0,
+                'i_price' => ($line->material ? app(PaperPriceEngine::class)->priceFor($line->material, (int) $po->i_supplier_id, Carbon::parse($po->i_doc_date)) : null)
+                    ?? $line->i_est_price ?? 0,
                 'i_disc_pct' => 0,
                 'i_department_id' => $line->i_department_id,
                 'i_coa_account_id' => $line->i_coa_account_id,

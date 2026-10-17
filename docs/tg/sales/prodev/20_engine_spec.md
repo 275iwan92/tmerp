@@ -100,3 +100,5 @@ ATTENTION-ENGINE-01 (SpecEngine patch, DONE 14 Oct), ATTENTION-ENGINE-02 (two de
 
 > Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
 
+
+> Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.

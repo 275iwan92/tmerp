@@ -41,6 +41,7 @@ final class Grids
         Master\UomConversionLookup::class,
         Master\CurrencyLookup::class,
         Master\ExchangeRateLookup::class,
+        Master\SupplierPaperPriceLookup::class,
         Master\SupplierCategoryLookup::class,
         Master\ProductCategoryLookup::class,
         Master\OfficeHoursLookup::class,

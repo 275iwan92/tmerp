@@ -56,6 +56,12 @@
 | `x-dl::queue-board` | `packages/devlib/src/Components/QueueBoard.php`, `js/components/queue-board.js` | Antrean per proses per mesin: Process lalu Machine bertaut, daftar hanya-baca (status, progres, start, end) disaring di browser |
 | `x-dl::lookup-grid` / `x-dl::sheet` | `packages/devlib/src/Components/{LookupGrid,Sheet}.php`, `js/components/sheet.js` | Grid sel BOP/BOM; links (sel terhitung), Reason sekali saat Save |
 
+## Master Data > Procurement
+
+| Jalur menu | Slug / rute | Tujuan | File utama | Engine / service yang dipakai | Menu |
+|---|---|---|---|---|---|
+| Master Data > Supplier Paper Price | `v2:md-supplier-paper-price` | Input harga kertas per supplier seperti kurs: jenis kertas, gramasi opsional, harga roll per kg/ton, biaya potong, harga ream per kg, dasar PPN (Incl/Excl), tanggal berlaku; baris baru dengan tanggal baru = riwayat (2026-10-17) | `SupplierPaperPriceLookup` (`sup_paper_price`, `SupPaperPrice`) | `PaperPriceEngine` (divisor = 1 + konstanta `PPN` / 100); harga terisi di baris PR (`pages/pur/pr/entry.blade.php`) dan baris PO (`PoBuilderService::addAllocation`) | tampil |
+
 ## Belum tercatat (isi bertahap saat layar disentuh)
 
 Layar v2 lain di luar daftar di atas (Sales, Inventory, HRM, Finance, Maintenance, dst.). Tambahkan baris saat file layarnya diubah.

@@ -40,6 +40,7 @@ use App\Services\ProDev\SpecEngine;
 use App\Services\ProDev\UsageRateEngine;
 use App\Services\Production\RoutingTemplateService;
 use App\Services\Production\SpeedTarget\SpeedTargetEngine;
+use App\Services\Pur\PaperPriceEngine;
 use App\Services\Pur\PqMatcher;
 use App\Services\Pur\ShortageAutoDetector;
 use App\Services\Pur\ShortageDetector;
@@ -1637,6 +1638,31 @@ final class EngineRegistry
                 'writes' => ['Nothing: read only.'],
                 'used' => ['Backward scheduling', 'Scheduling Board', 'Manual reschedule validation'],
                 'tests' => ['tests/Feature/MaintenanceSchedulingBlockTest.php'],
+            ],
+            [
+                'key' => 'paper-price', 'name' => 'Paper Price Engine', 'group' => 'Procurement', 'mode' => 'suggest',
+                'purpose' => 'Suggests the purchase price of paper per supplier: price per ream (standard size or cut from a roll), reams from a roll, price per purchase unit.',
+                'class' => PaperPriceEngine::class,
+                'methods' => ['priceFor', 'rimPrice', 'reamsFromRoll', 'rimWeightKg', 'divisor', 'row'],
+                'inputs' => [
+                    ['material', 'Raw material with grammage, size in cm and purchase unit.'],
+                    ['supplierId', 'Supplier of the PR suggestion or of the PO.'],
+                    ['on', 'Document date; the price row in force on that date is used.'],
+                ],
+                'outputs' => [
+                    ['Price', 'Price per purchase unit (RIM, LBR or KG) excluding PPN; empty when data is missing.'],
+                    ['Reams', 'Reams from one roll of a given weight.'],
+                ],
+                'steps' => [
+                    'Finds the active Supplier Paper Price row whose effective date is on or before the document date and whose paper kind appears in the material name; a matching grammage wins over an empty one.',
+                    'Ream weight (kg) = length (m) x width (m) x grammage / 2.',
+                    'Ream price = price per kg x ream weight / divisor; cut from a roll the price per kg is roll price (per kg, ton / 1000) + cut cost.',
+                    'Divisor = 1 + PPN / 100 using the PPN constant when the price includes PPN, otherwise 1.',
+                    'LBR price = ream price / 500; KG price = roll price per kg / divisor.',
+                ],
+                'reads' => ['tm2mst.sup_paper_price', 'tm2mst.mat_grammage', 'tm2sys.sys_constant (PPN)'],
+                'writes' => ['Nothing.'],
+                'used' => ['Purchase Requisition (estimated price)', 'Purchase Order (line price)', 'Supplier Paper Price (input screen)'],
             ],
             [
                 'key' => 'pq-matcher', 'name' => 'Purchase Quotation Matcher', 'group' => 'Procurement', 'mode' => 'suggest',

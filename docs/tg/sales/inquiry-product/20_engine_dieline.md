@@ -72,3 +72,5 @@ No ATTENTION-ENGINE item specific to this engine (read in full).
 
 ## Tests
 `tests/Unit/TmDielineTest.php` (3 tests: flat equals the knife of real Master Cards for 3 cards, PHP SVG equals JS for one case, expression evaluator). No JS tests.
+
+> Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.

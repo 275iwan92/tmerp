@@ -1,11 +1,22 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Layar entri Purchase Requisition (komponen v1 yang dipakai v2); harga taksiran baris bahan master diisi PaperPriceEngine bila ada harga kertas supplier usulan.
+ * Sumber hulu  : Master Raw Material (supplier usulan, gramasi, ukuran), Supplier Paper Price.
+ * Input        : Pilihan bahan master / teks bebas, qty, tanggal butuh.
+ * Output       : pr_line + pr_requisition (Draft).
+ * Dipakai oleh : Purchase Requisition v2 (PurchaseRequisition::component), Material Planning > Buy.
+ * Status       : Aktif; harga kertas = saran engine, petugas boleh menimpa.
+ */
+
 use App\Models\Master\MatCategory;
 use App\Models\Master\MatRaw;
 use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PrLine;
 use App\Models\Pur\PrRequisition;
 use App\Services\Flow\FlowEngineService;
+use App\Services\Pur\PaperPriceEngine;
 use App\Services\Pur\PrAllocationService;
 use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
@@ -191,7 +202,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
             'i_description' => $material->material_name,
             'i_qty' => 1,
             'i_uom' => $material->uom_purchase ?: 'PCS',
-            'i_est_price' => $material->last_unitprice,
+            'i_est_price' => app(PaperPriceEngine::class)->priceFor($material, $material->suggest_supplier_id) ?? $material->last_unitprice,
             'i_department_id' => $this->pr->i_department_id,
             'i_coa_account_id' => $prefix1?->default_coa_account_id,
             'is_stock' => $prefix1?->stock_class !== 'SERVICE',
