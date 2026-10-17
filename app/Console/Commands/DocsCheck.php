@@ -75,6 +75,8 @@ class DocsCheck extends Command
         }
 
         $this->checkStale();
+        $this->checkRelations($root);
+        $this->checkMenuMap($root);
 
         if ($this->option('staged')) {
             $this->checkStaged();
@@ -140,6 +142,60 @@ class DocsCheck extends Command
             $this->stat['bare']++;
             if (! isset($tables[$tok]) && ! isset($anyColumn[$tok]) && ! in_array($tok, $engineKeys, true)) {
                 $this->warns[] = "$rel: unknown name $tok (no table or column with this name)";
+            }
+        }
+    }
+
+    // One-sided relation: card A names card B in its Relations section, but B never names A anywhere (WARN).
+    private function checkRelations(string $root): void
+    {
+        $text = [];
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)) as $f) {
+            if (str_ends_with((string) $f, '.md') && preg_match('/^\d\d_(card|engine)_/', basename((string) $f))) {
+                $text[basename((string) $f)] = [$this->rel((string) $f), (string) file_get_contents((string) $f)];
+            }
+        }
+        foreach ($text as $a => [$relA, $body]) {
+            if (! preg_match('/^## Relations\b.*?(?=^## |\z)/ms', $body, $m)) {
+                continue;
+            }
+            preg_match_all('/\d\d_(?:card|engine)_[a-z0-9-]+\.md/', $m[0], $refs);
+            foreach (array_unique($refs[0]) as $b) {
+                if ($b !== $a && isset($text[$b]) && ! str_contains($text[$b][1], $a)) {
+                    $this->warns[] = "$relA: one-sided relation: names $b in Relations, but $b never names $a";
+                }
+            }
+        }
+    }
+
+    // TG folder module/sub-module must match a sys_app_menu path (docs/tg/_menu-map.txt).
+    private function checkMenuMap(string $root): void
+    {
+        $file = "$root/_menu-map.txt";
+        $map = [];
+        foreach (is_file($file) ? file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [] as $line) {
+            if (! str_starts_with($line, '#') && str_contains($line, '=')) {
+                [$folder, $path] = array_map('trim', explode('=', $line, 2));
+                $map[$folder] = $path;
+            }
+        }
+        $rows = DB::connection('tm2sys')->table('sys_app_menu')->where('activate', 1)->get(['id', 'parent_id', 'label'])->keyBy('id');
+        $label = function ($id) use (&$label, $rows) {
+            $r = $rows[$id];
+
+            return ($r->parent_id && isset($rows[$r->parent_id]) ? $label($r->parent_id).' > ' : '').$r->label;
+        };
+        $menu = array_flip(array_map(fn ($r) => mb_strtolower($label($r->id)), $rows->all()));
+        $rel = $this->rel($file);
+        foreach ($map as $folder => $path) {
+            if (! isset($menu[mb_strtolower($path)])) {
+                $this->errors[] = "$rel: folder $folder maps to a menu path that does not exist: $path";
+            }
+        }
+        foreach (glob("$root/*/*", GLOB_ONLYDIR) ?: [] as $dir) {
+            $key = basename(dirname($dir)).'/'.basename($dir);
+            if (basename($dir) !== 'img' && ! isset($map[$key])) {
+                $this->warns[] = "$rel: TG folder $key has no menu mapping";
             }
         }
     }
