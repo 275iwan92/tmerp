@@ -12,7 +12,8 @@
 
 | Level | Posisi set di alur | Contoh jumlah |
 |---|---|---|
-| 1 | Baru Inquiry saja | 2 set |
+| 0 | Inquiry NEW belum Confirm (draft, ditambah 2026-10-18) | 2 set |
+| 1 | Baru Inquiry saja (sudah Confirm Sales) | 2 set |
 | 2 | Sudah di ProDev | 2 set |
 | 3 | Sudah di ProCost | 2 set |
 | 4 | Sudah masuk CO | 2 set |
@@ -39,8 +40,14 @@ php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,
 - Kartu tanpa artwork, ukuran P x L x T, ukuran pisau, atau bahan **tidak dibuat**, dilaporkan alasannya. Produk yang sudah ada dilewati.
 - Kode: `MasterCardPdfReader` (PDF -> data kartu), `MasterCardDummyEngine` (level), `DummyMasterCard` (perintah). Butuh program `pdftotext` (PATH atau env `PDFTOTEXT_BIN`).
 
+## Sudah diputuskan Jo (2026-10-17, rulebook B.17)
+
+- Jumlah per level: 2 set, paling banyak 3; data transaksi cukup 2 set per level. Dua set itu benar-benar real dan lengkap.
+- Dummy harus bisa di-reset (baseline / stage) setelah dicoba-coba.
+- Pemindahan produk ke level lain: `php artisan dummy:mastercard --env=mockup --set="DS002908:draft,Side Rack:prodev"` (rantai dan kartu produk itu dihapus, lalu dibangun ulang di level yang disebut).
+
 ## Belum diputuskan Jo (jangan diisi sendiri)
 
-- Jumlah set total dan jumlah per level.
 - Apakah ada level setelah CO (Post to Production / WO / plan) dan berapa set per level itu.
-- Set mana dari PDF yang masuk level mana.
+- BOX BTP OMEGAMOTO SPOTLIGHT: bahan #2 "SHEET E/FLUTE K125/M125/M125, 81 x 63 cm" belum punya kategori di master bahan, jadi kartunya tidak lengkap dan produk ini belum ada di dummy (rantai lamanya terhapus saat relevel 2026-10-18).
+- Nama tinta lebih dari 40 karakter (kolom `ink_name`): dummy memakai nama pemasok pertama; melebarkan kolom belum diputuskan.

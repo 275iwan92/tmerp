@@ -5,11 +5,11 @@
 
 ## 1. Fungsi
 
-PDF Master Card baru di `docs/attachments/mastercard/` dibaca, lalu dibuat data dummy **berlevel**: Inquiry, ProDev, ProCost, CO. Level N membawa semua level di belakangnya. Setiap set selalu punya dieline, artwork, ukuran P x L x T, dan ukuran datar (mm); kartu yang kurang tidak dibuat, alasannya dilaporkan.
+PDF Master Card baru di `docs/attachments/mastercard/` dibaca, lalu dibuat data dummy **berlevel**: Draft (Inquiry belum Confirm), Inquiry (sudah Confirm Sales), ProDev, ProCost, CO. Level N membawa semua level di belakangnya. Setiap set selalu punya dieline, artwork, ukuran P x L x T, dan ukuran datar (mm); kartu yang kurang tidak dibuat, alasannya dilaporkan.
 
 Menjalankan:
 - Layar: **Developer > Database > Master Card Dummy (PDF)** (`/v2/dummy/mastercard`, developer saja, hanya ddt*): info input / output (jumlah set per level) dan tiga tombol tanpa isian: **Make Master Product** (tiap PDF siap jadi Master Product langsung dari kartu), **Make dummy data** (PDF siap dibagi bergiliran ke Inquiry, ProDev, ProCost, CO; qty 5000, due 21), dan **Reset** (hapus semua hasil engine supaya data tidak bertumpuk; perintah: `--reset`). Perintah di bawah = cara dari terminal dengan kuota sendiri.
-- Perintah: `php artisan dummy:mastercard --env=mockup --levels=inquiry:2,prodev:2,procost:2,co:2 [--qty=5000] [--due=21] [--path=docs/attachments/mastercard]`. Tanpa `--levels`: semua produk baru ke level Inquiry.
+- Perintah: `php artisan dummy:mastercard --env=mockup --levels=draft:2,inquiry:2,prodev:2,procost:2,co:2 [--qty=5000] [--due=21] [--path=docs/attachments/mastercard]`. Tanpa `--levels`: semua produk baru ke level Inquiry. Memindahkan produk yang sudah ada: `--set="DS002908:draft,Side Rack:prodev"` (rantai dan kartunya dihapus lalu dibangun ulang di level itu; kartu yang tidak lengkap dilaporkan dan tidak dihapus).
 
 ## 2. Alur proses
 
@@ -19,6 +19,7 @@ PDF + gambar extracted/<slug nama pdf>.png|jpg
   2. skipReason()                     sudah ada (no. desain / kode item / produk aktif)  -> dilewati
                                       artwork / P x L x T / ukuran pisau / bahan kurang  -> dilewati + alasan
   3. kuota level                      urut berkas; kuota habis -> dilewati
+  Level 0 draft       : sama dengan level 1 tetapi berhenti sebelum Sales Confirm
   Level 1 inquiry()   : kartu Collection -> makeInquiry -> flat = ukuran pisau per potong -> urut bagian -> Sales Confirm
   Level 2 toProdev()  : openInProdev -> Prodev::saveLayout(layout dari kartu, confirm) -> SpecEngine: BOP, BOM, tinta
   Level 3 toProcost() : priceAndPublish (CostingEngine, harga contoh)

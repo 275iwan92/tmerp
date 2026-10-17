@@ -2,10 +2,11 @@
 
 /*
  * REMARK
- * Tujuan       : Mengubah PDF Master Card baru di docs/attachments menjadi data dummy BERLEVEL (Inquiry, ProDev, ProCost, CO), selalu lengkap
+ * Tujuan       : Mengubah PDF Master Card baru di docs/attachments menjadi data dummy BERLEVEL (Draft, Inquiry, ProDev, ProCost, CO), selalu lengkap
  *                dengan dieline, artwork, ukuran produk (P x L x T) dan ukuran datar (mm). Set di level lebih maju membawa semua level di belakangnya.
+ *                relevel() memindahkan produk yang sudah ada ke level lain (rantai + kartunya dihapus, lalu dibangun ulang). Batas set per level: B.17.
  * Sumber hulu  : MasterCardPdfReader (isi kartu), MasterCardService (kartu Collection, tipe dieline, Inquiry), Prodev (layout), CostingEngine, Quotation, CustomerOrder.
- * Input        : Folder PDF, kuota set per level (inquiry:2,prodev:2,procost:2,co:2), qty order contoh, hari due date.
+ * Input        : Folder PDF, kuota set per level (draft:2,inquiry:2,prodev:2,procost:2,co:2) atau daftar produk:level untuk relevel, qty order contoh, hari due date.
  * Output       : Kartu Collection + Inquiry (+ layout ProDev, costing published, Quotation WIN, CO Confirmed) per produk baru; laporan per produk.
  * Dipakai oleh : Command dummy:mastercard. Patokan: docs/PATOKAN-DATA-DUMMY.md.
  * Status       : Aktif, hanya ddt*. Idempotent: produk dengan no. desain / kode item yang sudah ada dilewati, bukan ditimpa.
@@ -38,10 +39,10 @@ final class MasterCardDummyEngine
 {
     use PricedDummyChain;
 
-    // Chain levels carry every level behind them; 'product' is a branch: the card becomes a Master Product directly (no costing, no CO).
+    // Chain levels carry every level behind them; 'draft' = Inquiry NEW not yet confirmed by Sales; 'product' is a branch: the card becomes a Master Product directly (no costing, no CO).
     public const CHAIN = ['inquiry', 'prodev', 'procost', 'co'];
 
-    public const LEVELS = [...self::CHAIN, 'product'];
+    public const LEVELS = ['draft', ...self::CHAIN, 'product'];
 
     // Teks kartu -> machine.legacy_machine_names (mesin cetak). Tanpa kecocokan = Komori GL440 ("Lithrone G40" / "GL440").
     private const PRESS = ['/VERSAFIRE/i' => 'VERSAFIRE', '/HANWAY/i' => 'HANWAY', '/SUNTHINK/i' => 'DIGITAL SUNTHINKS', '/SAKURA/i' => 'SAKURA'];
@@ -49,6 +50,9 @@ final class MasterCardDummyEngine
     private const KOMORI = 'KOMORI_GL440*';
 
     private const BEDS = [1030, 720];
+
+    // Kartu yang hanya berisi teks "Nama pelanggan.." (no. desain => pelanggan master). DS002904: rantai lamanya memakai pelanggan ini (Jo 2026-10-18).
+    private const CUSTOMER_FALLBACK = ['DS002904' => 'RINAL ASFURIN'];
 
     private int $dueDays = 21;
 
@@ -98,6 +102,7 @@ final class MasterCardDummyEngine
         $byStage = $orders->map($stage)->countBy();
 
         return [
+            'draft' => $open->where('stat_confirm_sales', 0)->whereNull('product_id')->count(),
             'inquiry' => $open->where('stat_confirm_sales', 1)->where('stat_confirm_prodev', 0)->where('stat_confirm_procost', 0)->whereNull('product_id')->count(),
             'prodev' => $open->where('stat_confirm_prodev', 1)->where('stat_confirm_procost', 0)->count(),
             'procost' => $open->where('stat_confirm_procost', 1)->reject(fn ($r) => isset($quoted[$r->id_inquiry]))->count(),
@@ -151,7 +156,7 @@ final class MasterCardDummyEngine
 
     private function assertDummy(): void
     {
-        foreach (['tm2mst', 'tm2sdi', 'tm2prd'] as $c) {
+        foreach (['tm2mst', 'tm2sdi', 'tm2prd', 'tm2inv'] as $c) {
             if (! str_starts_with(DB::connection($c)->getDatabaseName(), 'ddt')) {
                 throw new RuntimeException('The dummy data engine only runs on ddt* databases (--env=mockup).');
             }
@@ -181,7 +186,79 @@ final class MasterCardDummyEngine
         return $ids->count();
     }
 
-    // Delete order follows the foreign keys: WO and delivery lines, quotation, costing, layout, product parts, inquiry parts, inquiry.
+    /**
+     * Rebuilds chosen products at a chosen level. Each "term => level" (design no., item code or part of the product name) drops the whole chain and
+     * Collection cards of that product, then builds it again from its PDF. A card that is incomplete is reported and left untouched (nothing dropped).
+     *
+     * @param  array<string,string>  $sets
+     * @return list<array{design: ?string, name: string, level: ?string, note: string}>
+     */
+    public function relevel(string $dir, array $sets, int $qty, int $dueDays): array
+    {
+        $this->dueDays = $dueDays;
+        $groups = $this->groups($dir);
+        $actor = Auth::user();
+        $report = [];
+        try {
+            foreach ($sets as $term => $level) {
+                $parts = collect($groups)->first(fn ($p) => $term !== '' && stripos($p[0][0]['design_no'].'|'.$p[0][0]['card_code'].'|'.$p[0][0]['product_name'], (string) $term) !== false);
+                $row = ['design' => $parts[0][0]['design_no'] ?? $term, 'name' => $parts[0][0]['product_name'] ?? '-', 'level' => null, 'note' => ''];
+                try {
+                    $row['note'] = match (true) {
+                        ! $parts => 'not found in the PDF folder',
+                        ! in_array($level, self::LEVELS, true) => "unknown level {$level}",
+                        (bool) ($gap = $this->missing($parts)) => 'card incomplete: '.implode(', ', $gap),
+                        default => '',
+                    };
+                    if ($row['note'] === '') {
+                        $this->forget($parts[0][0]);
+                        $quota = array_fill_keys(self::LEVELS, 0);
+                        $quota[$level] = 1;
+                        $row = [...$row, ...$this->one($parts, $quota, $qty)];
+                    }
+                } catch (ValidationException $e) {
+                    $row['note'] = 'incomplete: '.implode(' ', array_merge(...array_values($e->errors())));
+                }
+                $report[] = $row;
+            }
+        } finally {
+            $actor ? Auth::setUser($actor) : Auth::logout();
+        }
+
+        return $report;
+    }
+
+    // One product (design no. / item code / name): drops its inquiry chain and Collection cards so it can be built again.
+    private function forget(array $d): void
+    {
+        $cards = ProdMasterCard::where(fn ($q) => $q
+            ->when($d['design_no'], fn ($x) => $x->orWhere('design_no', $d['design_no']))
+            ->when($d['card_code'], fn ($x) => $x->orWhere('card_code', $d['card_code']))
+            ->when($d['product_name'], fn ($x) => $x->orWhere('product_name', $d['product_name'])))->get();
+        $ids = $cards->pluck('inquiry_id')->filter()
+            ->merge(DB::connection('tm2sdi')->table('iqp_inquiry')->whereIn('product_id', $cards->pluck('product_id')->filter()->all())->pluck('id_inquiry'))->unique();
+        foreach ($ids as $id) {
+            $this->dropInquiry((int) $id);
+        }
+        foreach ($cards as $card) {
+            Storage::disk('public')->deleteDirectory("master-card/{$card->id_master_card}");
+            $card->files()->delete();
+            $card->delete();
+        }
+    }
+
+    // Material bookings of an inquiry or its orders (header, lines, allocations); left behind they would be orphans.
+    private function dropBookings(int $inquiryId, array $orders): void
+    {
+        $inv = DB::connection('tm2inv');
+        $bookings = $inv->table('rm_booking')->where(fn ($q) => $q->where('inquiry_id', $inquiryId)->orWhereIn('co_id', $orders))->pluck('booking_id');
+        $lines = $inv->table('rm_booking_d')->whereIn('booking_id', $bookings)->pluck('booking_detail_id');
+        $inv->table('rm_booking_alloc')->whereIn('booking_detail_id', $lines)->delete();
+        $inv->table('rm_booking_d')->whereIn('booking_id', $bookings)->delete();
+        $inv->table('rm_booking')->whereIn('booking_id', $bookings)->delete();
+    }
+
+    // Delete order follows the foreign keys: bookings, WO and delivery lines, quotation, costing, layout, product parts, inquiry parts, inquiry.
     private function dropInquiry(int $id): void
     {
         $sdi = DB::connection('tm2sdi');
@@ -192,6 +269,7 @@ final class MasterCardDummyEngine
             return;
         }
         $orders = $sdi->table('co_order_item')->where('inquiry_id', $id)->pluck('order_id')->unique();
+        $this->dropBookings($id, $orders->all());
         $wos = $prd->table('prd_wo')->whereIn('source_co_id', $orders)->pluck('wo_id');
         $ops = $prd->table('prd_wo_operation')->whereIn('wo_id', $wos)->pluck('operation_id');
         foreach (['prd_wo_operation_machine', 'prd_operation_time_log', 'prd_wo_operation_output'] as $t) {
@@ -263,8 +341,8 @@ final class MasterCardDummyEngine
         if ($level === 'product') {
             return ['level' => $level, 'note' => 'Master Product #'.$this->product($parts).', '.count($parts).' card(s)'];
         }
-        $inquiry = $this->inquiry($parts, $qty);
-        foreach (array_slice(self::CHAIN, 1, array_search($level, self::CHAIN, true)) as $stage) {
+        $inquiry = $this->inquiry($parts, $qty, $level !== 'draft');
+        foreach (array_slice(self::CHAIN, 1, (int) array_search($level, self::CHAIN, true)) as $stage) {
             $this->{'to'.ucfirst($stage)}($inquiry);
         }
 
@@ -306,22 +384,28 @@ final class MasterCardDummyEngine
         foreach ($parts as [$d, $pdf]) {
             $artwork = $d['artwork'];
             unset($d['artwork']);
+            // Warna khusus kadang memuat dua pemasok ("DGM 11021 S Champion Red (DIC) / Kopiko Red (Tanindo)"); kolom nama tinta hanya 40 karakter: pakai nama pertama.
+            foreach (['first', 'second'] as $side) {
+                $d['colors'][$side] = array_map(fn ($c) => mb_strlen($c) > 40 ? mb_substr(trim(explode(' / ', $c)[0]), 0, 40) : $c, $d['colors'][$side] ?? []);
+            }
             $card = $this->cards->fromData($d + ['images' => []], 'PDF', 'DUMMY', new UploadedFile($pdf, basename($pdf), 'application/pdf', null, true));
             $this->cards->storeFile($card, 'ARTWORK', file_get_contents($artwork), basename($artwork), mime_content_type($artwork), 1, $d['part_label']);
-            $card->update(['group_key' => $key, 'customer_id' => $card->customer_id ?: $this->customer((string) $d['customer_text'])]);
+            $card->update(['group_key' => $key, 'customer_id' => $card->customer_id ?: $this->customer((string) $d['customer_text'], (string) $d['design_no'])]);
             $made[] = $this->cards->refresh($card);
         }
 
         return $made;
     }
 
-    private function inquiry(array $parts, int $qty): IqpInquiry
+    private function inquiry(array $parts, int $qty, bool $confirm = true): IqpInquiry
     {
         $made = $this->cards($parts);
         $this->cards->makeInquiry($made[0], ['qty' => $qty, 'deadline' => now()->addDays(7)->toDateString(), 'pic_sales' => 'Firman']);
         $inquiry = IqpInquiry::withoutGlobalScopes()->findOrFail($made[0]->refresh()->inquiry_id);
         $this->shapeParts($inquiry, collect($made));
-        (new InquiryWriter($this->user('yuna')->login))->confirm($inquiry);
+        if ($confirm) {
+            (new InquiryWriter($this->user('yuna')->login))->confirm($inquiry);
+        }
 
         return $inquiry->refresh();
     }
@@ -341,9 +425,13 @@ final class MasterCardDummyEngine
     }
 
     // Customer yang belum ada di master dibuat (izin Jo 2026-10-14), supaya kartu tidak berhenti di Incomplete.
-    private function customer(string $text): ?int
+    private function customer(string $text, string $design = ''): ?int
     {
-        return $text === '' || preg_match('/^nama pelanggan/i', $text) ? null : ($this->cards->customerId($text)
+        if ($text === '' || preg_match('/^nama pelanggan/i', $text)) {
+            $text = self::CUSTOMER_FALLBACK[$design] ?? '';
+        }
+
+        return $text === '' ? null : ($this->cards->customerId($text)
             ?? CustCustomer::create(['customer_name' => $text, 'activate' => true, 'created_by' => 'dummy', 'updated_by' => 'dummy', 'data_origin' => 'DUMMY'])->id_customer);
     }
 

@@ -17,7 +17,7 @@ Searched in `routes/console.php` (none), `app/Jobs` (none), Observers (none). FA
 | ProDev: initial screen data | `saved`, `tierQty` | `prodev.blade.php:673-674` |
 | WO creation from the CPDEL delivery schedule | `forWorkOrder` | `WoGenerationService.php:105` (`generateFromDelivery`) |
 | PROCESS button in PPIC (re-arrange operations) | `forWorkOrder` | `WoGenerationService.php:190` (`rebuildOperations`), `:263` (`engineBomCount`), `:279` (`regenerateBom`); controller `PpicController.php:444` (`processWo`) |
-| Master Card dummy data generator | `persist` (via `saveLayout`) | `app/Services/MasterCard/MasterCardDummyEngine.php:396` |
+| Master Card dummy data generator | `persist` (via `saveLayout`) | `app/Services/MasterCard/MasterCardDummyEngine.php:473` |
 | Library `x-mp::prodev.workbench` (devlib.test) | does not call | `packages/mockup-parts/resources/assets/js/components/prodev/workbench.js:38` only returns sample data (`this.data.spec`) |
 `ProductMasterSync` only mentions this engine in a comment (FACT, grep: no call).
 
