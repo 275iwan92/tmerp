@@ -20,6 +20,8 @@ Searched in `routes/console.php` (none), `app/Jobs` (none), Observers (none), al
 **Does not call this engine** (FACT, grep): the active ProDev screen `pages::production.prodev` (menu `v2:prodev`, `v2:prodev-new`, `v2:prodev-revise`): nesting is drawn and computed in JS on the client, the Save button only stores the result (`saveLayout`). `CostingEngine` does not call it either.
 
 ## Flow (text twin of diagram `../img/imposition.svg`)
+
+![Flow diagram](../img/imposition.svg)
 1. `run(plano, flat, gap, gripper, margin)` computes the usable area = plano minus margin and gripper.
 2. Compute the TEGAK arrangement (flat as is) and PUTAR (flat rotated 90 degrees); the one with more UP wins (tie = TEGAK).
 3. Try CAMPUR: main block TEGAK, then the remaining width is filled with a PUTAR block; used only if the total UP is higher AND the rotated block is not empty.

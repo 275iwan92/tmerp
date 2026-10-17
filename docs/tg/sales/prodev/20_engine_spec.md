@@ -22,6 +22,8 @@ Searched in `routes/console.php` (none), `app/Jobs` (none), Observers (none). FA
 `ProductMasterSync` only mentions this engine in a comment (FACT, grep: no call).
 
 ## Flow (text twin of diagram `../img/spec-engine.svg`)
+
+![Flow diagram](../img/spec-engine.svg)
 1. Prepare the context: finishing (from `iqp_part_finishing`, or `prod_part_finishing` when without Inquiry = Mode #2), material chosen by Sales, active rules `prod_bop_rule` (`part_type` empty or equal to the part type), layout decision (sheet, plano, machine, UP, qty).
 2. Determine the conditional facts: `PLANO_NEEDS_CUT`, `MULTI_LAYER`, `NEEDS_GLUE`.
 3. **Ink**: from the colour notation `a/b` (front/back) and the artwork analysis, build ink rows (CMYK if >= 4 units, the rest spot).

@@ -17,6 +17,8 @@ None in `routes/console.php`, Jobs, Observers. FACT, all callers of `new Costing
 Not called by the Advisor, Quotation, or Reverse (FACT, grep).
 
 ## Flow (text twin of diagram `../img/costing-engine.svg`)
+
+![Flow diagram](../img/costing-engine.svg)
 1. Take the main tier qty (`is_primary`, if none: the first tier) as the base qty.
 2. For each part, choose the rule by part type: DC, DC+SF, DC+SHEET, KRAFT = offset family; SHEET, SHEET_DIGITAL = corrugated; any other type throws the error `part_type_code '...' belum diimplementasi CostingEngine`.
 3. Offset: paper, base processes (print, die-cut, glue, others), coating per layer, lamination/SF EF (only DC+SF and DC+SHEET), tooling per order (film, plate, knife).

@@ -16,6 +16,8 @@ Searched in `routes/console.php` (none), Jobs (no folder), Observers (only 2 oth
 | Screen renders (only for those allowed to see formulas) | `report`, `recsFor`, `missing` | 171, 163, 766 |
 
 ## Flow (text twin of diagram `../img/costing-advisor.svg`)
+
+![Flow diagram](../img/costing-advisor.svg)
 1. Costing document opened -> `prefill` -> for each **empty box**:
    - grammage: Inquiry BOM; if empty, template; then the nearest ACTIVE grammage in the master.
    - geometry (plano, UP, print size): if a ProDev layout exists, it is used as-is; otherwise a simulation by `ImpositionEngine` (read only) over all active planos, marked ESTIMATE.
