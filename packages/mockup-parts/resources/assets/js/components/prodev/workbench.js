@@ -4,7 +4,14 @@
      data           : data awal (jobs, machines, dieCutters, planos, lookups, gripper/margin) dari data-config
      server(m, ...a): panggilan server (saveLayout, generateSpec, saveArtworkColors, searchMaterials,
                       createPurchase, subcontract) — di sini jawaban CONTOH tanpa database
-     uploadArtwork(): upload artwork job aktif (tmerp: Livewire WithFileUploads) */
+     uploadArtwork(): upload artwork job aktif (tmerp: Livewire WithFileUploads)
+   REMARK
+   Tujuan      : layar Imposition Plano Optimizer ProDev (imposisi, BOP, BOM, tinta); susunan rapat dijalankan otomatis saat dibuka.
+   Sumber hulu : data-config dari App\Support\V2\Data\Prodev (part, dieline, mesin, plano) hasil InquiryWriter::sendToProDev.
+   Input       : data-config (JSON); aksi officer (geser, Suggestion, Auto Nesting).
+   Output      : susunan di canvas, upCount ke SpecEngine::generate; disimpan lewat Save/Confirm (server).
+   Dipakai oleh: halaman /v2/s/prodev (x-mp::prodev-workbench).
+   Status      : aktif. 2026-10-18: MASK_MAX 700 -> 1100 dan guard autoNest (blank > 70 cm tadi mengecil, susunan salah baca mm). */
 (function (Devlib) {
   'use strict';
 
@@ -322,7 +329,9 @@
       // confirms") -- object tetap bisa digeser manual sesudahnya, dan
       // rotasi tiap object ikut tersimpan lewat Save/Confirm.
       const MASK_RES = 1;      // px per mm
-      const MASK_MAX = 700;    // batas sisi bitmap, jaga-jaga blank raksasa
+      // Susunan membaca piksel mask sebagai 0,1 mm, jadi mask TIDAK boleh diperkecil
+      // untuk blank yang muat di mesin (meja terbesar 103 cm); 1100 px = 110 cm.
+      const MASK_MAX = 1100;   // batas sisi bitmap, jaga-jaga blank raksasa
       const maskCache = new Map();
 
       function rasterize(svg, w, h) {
@@ -920,6 +929,11 @@
 
           try {
               const base = await maskFor(S.p);
+              // Mask yang diperkecil (blank > MASK_MAX) membuat susunan salah ukuran: jangan nesting, minta officer menyusun manual.
+              if (base.mmPerPx > 1.01) {
+                  if (!silent) msg(Devlib.h.t('This blank is too large for auto nesting; arrange it manually.'), 'bad');
+                  return;
+              }
               const gap = Math.max(0, Math.round(S.g * 10));
               const best = bestLattice(patternConfigs(base), Math.round(S.L * 10), Math.round(S.W * 10), gap, true);
 
