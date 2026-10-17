@@ -1,0 +1,74 @@
+# Cross-card findings: Manufacture > Planning and PPIC
+
+> Written 2026-10-17 (Manufacture group). Only RECORDED, nothing fixed. Label FACT = seen first-hand this session (code with line numbers, mockup DB with `--env=mockup`, tests I ran). Details and evidence are in each card; this page ranks them and lists what I could not verify and what is left. The status of the ENGINE-ATTENTION items stays in `docs/ENGINE-ATTENTION.md` (not copied).
+
+## A. Most important findings (ranked by effect on the plan)
+| # | Finding | Card |
+|---|---|---|
+| 1 | **Changeover learning can never learn, and a learned value would not be used.** Nobody writes `prd_operation_time_log.change_kind` (the engine's only sample source: 3 SETUP rows, all NULL), and no planning code reads `prod_machine_changeover` (0 rows). The user guide lists the loop as working. | `27_engine_learning.md`, `25_engine_setup-time.md`, `17_card_learning-changeover.md` (all in `planning/`) |
+| 2 | **The Work Order header stops at SCHEDULED.** No v2 code sets IN_PROGRESS or COMPLETED; the usage-rate engine reads only COMPLETED, so ProDev's feedback from production is dead for v2 WOs. | `10_card_work-order.md` |
+| 3 | **The planner has its own calendar** (machine `shifts_per_day` x `hours_per_shift` from 07:00, Mon to Sat, holidays) and ignores the shift master, the roster, Assign Crew and Maintenance windows; the old backward scheduler at WO creation uses a different calendar (roster or 08:00 to 20:00). | `23_engine_auto-plan-runner.md`, `ppic/12_card_shift-and-calendar.md` |
+| 4 | **Whole-plan Confirm skips the "all material ready" check** that single-WO APPLY enforces (`PlanConfirmService.php:49`). The 4 applied WOs would be refused today (material gate WAIT). | `26_engine_plan-confirm.md` |
+| 5 | **Speed target suggestions have no screen.** 26 PENDING rows; `accept` and `reject` have no caller. | `ppic/20_engine_speed-target.md` |
+| 6 | **14 process flags are stored and read by no code** (is_bottleneck, allow_parallel, qc flags, lot sizes, skill, cost basis ...); `is_certified` of the capability pair is not read; `setup_repeat_min` of tooling is not read. | `ppic/11_card_process-and-routing.md`, `ppic/14_card_tooling.md` |
+| 7 | **Three engines serve only the old v1 board**: `PdrEngine`, rule library, hot-job options (their data tables hold 0 rows; two different "hot job" flags exist). | `29_engine_pdr.md`, `30_engine_scheduling-rules.md`, `31_engine_interruption.md` |
+| 8 | **Release default exceeds Required** (rule A text says not above Required; code releases the whole Available: Required 0, Release 10 in WO2600301). 110 of 110 ink lines have Required 0 while Material Planning blocks 12 WOs for ink. | `12_card_wo-material-bom.md`, `22_engine_gate-service.md` |
+| 9 | **Operator timer actions are not restricted on the server** to a CONFIRMED operation or to the crew; output can be added after Stop. | `ppic/21_engine_operator-timer.md` |
+| 10 | **Live Schedule Gantt is empty while the table lists 13 operations** (the Gantt drops operations that ended before yesterday midnight); `LiveScheduleTest` fails on this today. | `13_card_plan-draft-and-live.md` |
+| 11 | **Four crew models with no join** (Assign Crew, Master Crew with no employee link, `prd_crew_assignment` with no writer, HR work-center skills); the planner uses none as capacity. `PPIC_INVENTORY` flag is never checked. | `19_card_assign-crew.md`, `ppic/13_card_crew-master.md`, `ppic/16_card_planning-parameters.md` |
+| 12 | **Scheduled runs are not recorded** (no DAILY or SHIFT run in `prd_plan_run`; the shift run times read `config`, not the constants). Both offset presses lack `max_colors_per_pass`; one is in BREAKDOWN since 1 Oct. | `23_engine_auto-plan-runner.md`, `ppic/10_card_machine.md` |
+
+## B. Old documents versus code (claims taken from `docs/design-notes/ppic` and the registry, checked)
+| Claim | Result |
+|---|---|
+| Services `CapacityLoadService`, `WasteAllowanceService`, `MonitoringService`, table prd_learning_proposal exist (plan note 05/06) | NOT found (no class, no table) |
+| `CompositePriorityScorer` and `PdrEngine` were extended with tier, ageing, setup score (note 06) | NOT extended; the solver has its own score (urgency, setup, tier; no age) |
+| Gate reads customer goods, capacity, proof approval (note 06) | NOT in the code; only material, tooling, artwork (constant READY) |
+| `is_bottleneck` is a manual override of the load-based bottleneck (note 08 item 6) | the load percent exists; the flag is not read |
+| Machines are eligible only with certification and a matching die/plate (note 15 item 4) | certification and tooling are not part of eligibility |
+| `prd_wo` keeps a frozen copy of grain, yield and model (note 15) | no such columns |
+| Setup values per machine override the start values (config comment, registry, screen guide) | NOT true for planning |
+| Registry `ppic-auto-plan` lists "overload" as an exception | added on screen from stored loads, not by the planner |
+| Registry `pdr` / `interruption` "used by Scheduling Board" | the v1 board only |
+| Registry `speed-target` "used by Master Machine" | no screen shows the suggestions |
+| Registry `wo-generation` methods | `rebuildOperations`, `regenerateBom`, `engineBomCount` are used daily but not registered |
+| Engine map: `ppic:auto-plan` / `ppic:learn` run only if `$ppicReady` ("condition not read") | read: the table `prd_plan_run` exists in `tm2prd` (`routes/console.php:39`) |
+| Old plan note 05 item 2: operation has no `process_id` and setup columns | both exist now |
+| User guide `docs/guides/production/00_alur_data_dan_sistem.md` section 3, path 2 (timer corrects changeover) and path 4 (usage rate from good and defect) | paths not closed in code (findings 1 and 2) |
+Verified as TRUE: lock default 1 shift, similar-urgency window 8 hours, weights 0.50 / 0.35 / 0.15, learning limits 5 / 20 percent / 0.3, hot job > critical ratio < 1 > due date ranking, die grouping tolerances, the speed-source order of the registry, the 30-pair and 20-percent hold-out gate of job order learning.
+
+## C. Tests run this session
+Without `--env=mockup` the test command uses the databases named `tm2*`; tests marked "Dummy database only" then SKIP. With `--env=mockup` they use `ddt*`.
+| Test | Run | Result |
+|---|---|---|
+| `tests/Unit/Ppic/ScheduleSolverTest.php` (pure) | plain | 23 passed, 47 assertions |
+| `tests/Unit/SpeedTargetEngineTest.php` | plain | 14 passed, 38 assertions |
+| `tests/Feature/MaintenanceSchedulingBlockTest.php` | plain (`tm2*`) | 3 passed, 7 |
+| `tests/Feature/WoQueueTest.php` | plain / mockup | 1 passed (91 / 2051 assertions) |
+| `tests/Feature/WoBomFromInquiryTest.php` | plain / mockup | 1 passed (60 / 145) |
+| `tests/Feature/ProductionWoDetailRebuildTest.php`, `MachineIdleTest.php`, `ShiftRosterTest.php` | plain (`tm2*`) | 7, 4, 4 passed |
+| `WoEngineVerifyTest` (23), `WoApplyGateTest` (4), `WoProcessApplyTest` (3), `WoBomWasteSpillTest` (3), `WoBopTimesTest` (5), `WoRowsTest` (6), `WoAvailableTest` (5), `PlanHeldJobTest` (1), `ScheduleGuardTest` (2), `SequenceLearningTest` (6), `MachineCrewServiceTest` (12), `WoBomRequiredEditTest` (5), `WoImpactPreviewTest` (3), `WoSimulationLinkedTest` (2), `WoPendingHeaderTest` (3), `WoActorTest` (2) | `--env=mockup` | all passed (1362, 18, 27, 14, 11, 38, 12, 2, 5, 42, 51, 12, 37, 15, 26, 9 assertions) |
+| `WoResetTest` (7), `ProductionOutputTest` (7) | `--env=mockup` | 6 passed + 1 skipped each (39 and 37 assertions) |
+| `tests/Feature/LiveScheduleTest.php` | both | FAILED: gantt has 0 tasks for 13 live rows (finding 10) |
+| `tests/Feature/ProductionWoGenerationTest.php` | plain | 4 passed, 1 ERROR: `test_generate_creates_wo_with_operations_and_correct_qty` fails at cleanup with a foreign-key error (`prd_wo_material` still references the WO that the test deletes) |
+| `ProductionSchedulingBoardSmokeTest.php`, `LearningEngine`, `SchedulingRuleEngine`, `PlanEvents`, schedule commands | not run / no test | see the cards |
+
+### Residue my test run left in the live-named databases (NOT cleaned, for Jo to decide)
+The failing cleanup of `ProductionWoGenerationTest` ran twice against `tm2*` (once in my batch, once when I re-ran the single test). Rows created by `created_by = test` and still present now:
+- `tm2sdi.co_order_delivery`: `id_delivery` 1322 and 1324 (CO id 2, item 4, ship_qty 200, PLANNED).
+- `tm2prd.prd_wo`: `wo_id` 293 (`WO2600265`) and 295 (`WO2600266`), DRAFT, with 1 placeholder line each in `tm2prd.prd_wo_material` (`detail_id` 73 and 75).
+I did not delete them (rule: this task is read only). Please decide: delete these six rows, and fix the test cleanup (it must delete the `prd_wo_material` rows before the WO). Searches in `ddt*` found no residue after my mockup runs.
+
+## D. What I could not verify
+- No screen was opened in a browser (session rule); everything about buttons and layout is read from code and REMARKs.
+- Whether the nightly and shift commands run on the real server (the scheduler may not run on the dev machine): only that no DAILY or SHIFT run is recorded in `ddt*`.
+- Costing / ProDev reads of the 14 unread process flags: a grep over the whole repository found no other reader, but dynamic access (for example `$row->{$col}`) cannot be excluded.
+- `LearningEngine`, the Colour Sequence data, `PlanEvents`, the speed store and the schedule commands have no test; I read them only.
+- The old `ProductionSchedulingBoardSmokeTest` and the v1 pages (`scheduling-board`, `wo-entry`, `wo-list`) were not run or read in full.
+- Material Planning figures (ink need) were not recomputed; only the gate's use of them.
+
+## E. What is left (stopped at a clean point)
+- No card: `PlanChangeService` (drag impact, priority, die group; 518 lines), `PlanLoader`/`PlanFacts` as a service card (covered inside the planner and enricher cards), `ScheduleGuard`, `SheetReset`, `BackwardSchedulingService` / `RateBandResolver` / `MachineCalendarService` as separate cards (described in `29_engine_pdr.md`), `Ppic` data class, `MachineOeeService`, `MachineCapabilityService` (described in the enricher card), `RoutingTemplateService` (see the Sales finding), `Booking Maintenance`.
+- Sub-modules Production, Maintenance, QA of Manufacture (outside this task).
+- Diagrams (the `img` folder), per rule only a text twin exists.
+- Files outside `docs/tg/manufacture/` that should be updated by their owner: `docs/tg/00_big-map.md` (row Manufacture: "not yet", item 4 "one-sided relation"), `docs/tg/01_engine-map.md` (the 14 Production and Planning engines show "TG card: not yet"; finding 3 about `$ppicReady` can be closed), `docs/tg/02_relations.md` (Sales -> Manufacture rows), the menu map `docs/tg/_menu-map.txt` (needs the lines `manufacture/planning = Manufacture > Planning` and `manufacture/ppic = Manufacture > PPIC`), and the Sales / Inventory cards that my cards name in their Relations (they never name the manufacture cards back: `10_card_customer-order.md`, `11_card_cpdel.md`, `14_card_dieline-and-master-card.md`, `20_engine_spec.md`, `30_engine_usage-rate.md`, `30_engine_material-planning.md`, `13_card_pick-list.md`, `15_card_shortage-request.md`, `25_engine_qc-trace.md`, `21_engine_cpdel-promise.md`, `11_card_stock-card-and-balance.md`, `11_card_inquiry-and-part.md`, `10_card_prodev-interface.md`).

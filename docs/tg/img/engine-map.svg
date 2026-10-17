@@ -16,9 +16,9 @@
     <text x="120" y="121">Screen / route</text><text x="120" y="139">42 engines (class-name grep)</text>
     <text x="120" y="197">Called by another engine</text><text x="120" y="215">7 engines (+ dieline, assistant)</text>
     <text x="120" y="273">Manual command</text><text x="120" y="291">2 engines (inv:backfill-batch, dummy:mastercard)</text>
-    <text x="385" y="145" font-weight="bold">61 registered engines</text>
+    <text x="385" y="145" font-weight="bold">65 registered engines</text>
     <text x="385" y="168">EngineRegistry</text>
-    <text x="385" y="192">TG cards: 10 (all Sales)</text>
+    <text x="385" y="192">TG cards: 48 of 65</text>
     <text x="645" y="70">Writes DB</text><text x="645" y="90">or only suggests</text><text x="645" y="110">mode: calc / suggest / auto / flow</text>
     <text x="645" y="200">Officer decides (A.7)</text><text x="645" y="220">override is not overwritten</text>
   </g>

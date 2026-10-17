@@ -1,0 +1,39 @@
+# Concept card: Where a PR comes from (manual, Material Planning, Buy, ProDev, Maintenance, Shortage, Subcontract)
+
+> Written 2026-10-17 (group Procurement). FACT = code with line numbers and mockup DB (`--env=mockup`) seen in this session. Tests run on the default connection of `php artisan test`. The Material Planning calculation itself is in `../../sales/order/30_engine_material-planning.md` and is not repeated. Verified: 2026-10-17.
+
+- **Document type**: concept card (a map of creators, no table of its own). **Module/sub-module**: Procurement > Requisition, with callers in Manufacture, Sales (ProDev) and Inventory.
+- **Canonical name**: PR creators = every code path that inserts into `pr_requisition` / `pr_line`. The column `pr_requisition.i_source` (MANUAL / MRP / SUBCONTRACT) says only part of the origin.
+- **Synonyms**: Create PR, Buy, kekurangan bahan, PR otomatis, subkon PR.
+- **NOT the same as**: Material Planning netting (reads PRs as supply), Pre-booking (Inventory).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| 1. Manual | Menu screen: choose a department, then add master items or free text. `i_source` MANUAL. | FACT, `routes/v2.php:605-657`; card `10_card_purchase-requisition.md` |
+| 2. Material Planning, button Create PR | `MaterialPlanning::createPr`: for the short materials chosen, one **Draft** PR per suggested supplier group; department PPIC (else the first active one); `i_source` MRP; need date = earliest need of the group; qty = ceil(short / `mat_raw.conversion_to_stock`); note "For <orders>"; first CO line with a shortage written to `pr_line.i_co_line_id`. | FACT, `MaterialPlanning.php:195-225`; `routes/v2_planning.php:99-105` |
+| 3. Material Planning, button Buy | `MaterialPlanning::buy` = `createPr` for one material + default allocation + a Draft PO for the suggested supplier (`PoBuilderService::findOrCreateDraft` + `addAllocation`). PQ is skipped. PR and PO still go through their own approval; the v2 PO Confirm refuses while its PR is not APPROVED. Without a suggested supplier only the PR is made. | FACT, `MaterialPlanning.php:227-244`; `routes/v2_planning.php:107-113`; `PurchaseOrder.php:201-206` |
+| 4. ProDev, material shortage | `ProcurementBridge::purchaseMaterial` (button in the ProDev screen): one Draft PR (MRP) per ProDev part, found by the tag text `[PRODEV part=<id>]` in `i_notes`; a repeated click on the same material and unit adds the quantity; price = `mat_raw.last_unitprice`; refuses when the item has no COA account (category default or `mat_raw.cogs_account_id`). | FACT, `ProcurementBridge.php:51-115`; caller `resources/views/pages/production/prodev.blade.php:394` |
+| 5. ProDev, subcontract step | `ProcurementBridge::subcontract`: a Draft PR (SUBCONTRACT, one FREE_TEXT line, account code 513000) and, when the CO is known, a Draft Subcontract Delivery Note (`do_delivery`, type SUBCON, Sales database) pointing back at the PR. | FACT, `ProcurementBridge.php:138-280`; caller `resources/views/pages/production/prodev.blade.php:410` |
+| 6. Maintenance spare parts | `PartSupplyService::createPr`: a Draft PR (MANUAL) for the parts whose stock is below the need, once per part (`mnt_order_part.pr_id`); department PPIC. | FACT, `PartSupplyService.php:105-145`; test `MaintenanceBreakdownTest.php:149-154` |
+| 7. Shortage request Confirm | `ShortageFollowUp::additionalPr`: a Draft PR (MANUAL) for the confirmed shortfall; note "Use this OR the reopened PO line". Facts in the Shortage Request card. | FACT, `ShortageFollowUp.php:25-50`; card `../../inventory/batch-quality/15_card_shortage-request.md` |
+| 8. Subcontract at breakdown or reroute | `SubcontractPoService::createPo`: PR inserted as **APPROVED** and PO as **SENT**, free-text SERVICE line, no approval flow (the caller checks the role). | FACT, `SubcontractPoService.php:92-170`; callers `wo-entry.blade.php:1083`, `scheduling-board.blade.php:876` |
+| Price of the line | Path 1 and 2 use `PaperPriceEngine` first and `last_unitprice` second (through `addMasterItem`); path 4 and 6 use `last_unitprice` / the part cost directly. | FACT, `resources/views/pages/pur/pr/entry.blade.php:205`; `ProcurementBridge.php:89`; `PartSupplyService.php:137` |
+| Tests | `MrpBuyTest` (1 test: Buy makes a Draft PR and PO and the PO waits for the PR) ran on the default connection and **skipped** ("no short material or supplier in this data"); `MaintenanceBreakdownTest` exists (not run). | FACT, `php artisan test --filter=MrpBuyTest`: 1 skipped |
+
+## Relations
+- **source**: Material Planning plan (`plan()['materials']`), ProDev BOM and BOP, Maintenance order parts, confirmed shortage requests, breakdown / hot-job reroute decisions, material master (`suggest_supplier_id`, `last_unitprice`, accounts).
+- **used_by**: the PR card (`10_card_purchase-requisition.md`), the PO card (Draft PO from Buy, `../order/11_card_purchase-order.md`), the approval flow (`11_card_procurement-approval.md`).
+- **flows**: creator -> Draft PR -> Confirm -> approval -> allocations -> PO. Only path 8 skips the Draft and the approval.
+- **frozen_zone**: path 4 and 5 live in the ProDev screen (frozen zone); do not change them without Jo.
+
+## Findings (recorded, not fixed)
+1. **Buy cannot make a PO in this data**: `mat_raw.suggest_supplier_id` is NULL on 0 of 11,401 materials (query), and the fallback (the allocation supplier) comes from the same column, so Buy ends as "PR only" (`routes/v2_planning.php:112`, message "no suggested supplier"). The old design note (`docs/design-notes/procurement/01_procurement-pr-po-approval-from-mrp.md`, FROM DOCUMENT) says Buy makes PR + PO for "supplier usulan": true only when that column is filled. FACT.
+2. **Two price rules for a PR line** (engine first vs plain last price, see the price row). A line added by ProDev never gets the supplier paper price. FACT (code).
+3. **Buy makes the allocation on a Draft PR** (`ensureDefaultAllocation`) before approval, while the rule elsewhere is "allocation at final approval". After approval `createDefaultAllocationsForPr` skips lines that already have one, so it is consistent, but a Draft PR with an allocation and a PO line can be deleted (PR card finding 9). FACT (code).
+4. **Duplicate Draft PRs are possible** from paths 2 and 3: nothing checks whether an open PR already covers the same shortage (Material Planning counts open PRs as supply only after they exist). Not checked on data. FROM CODE.
+5. **`PartSupplyService::createPr` and `ProcurementBridge::purchaseMaterial` repeat the same COA lookup** (category default, else `cogs_account_id`) and `PurchaseRequisition::addMaterial` in the PR screen does a third version with no `cogs_account_id` fallback (`pr_line.i_coa_account_id` is NOT NULL, so a null account would fail at insert). FROM CODE (three places, not run).
+6. **The registry has no engine key** for PR creation (`ProcurementBridge`, `PrAllocationService`, `PoBuilderService` are services without a registry entry). FACT (grep `EngineRegistry.php`).
+
+## Already exists? Searched where, result
+Searched `i_source`, `PrRequisition::create`, `PrRequisition::query()->create`, `ProcurementBridge`, `MaterialPlanning::buy`, `PartSupplyService`, `ShortageFollowUp`, `SubcontractPoService` over `app`, `resources`, `routes`; `concept:find "purchase requisition"`. Result: ALREADY EXISTS (eight creators above). ATTENTION-ENGINE-05 in `docs/ENGINE-ATTENTION.md` (status stays there): the Purchase column of the BOM form creates no PR; Buy exists only on the Material Planning screen.

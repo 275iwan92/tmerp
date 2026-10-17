@@ -1,0 +1,41 @@
+# Concept card: Process, process x machine capability, routing template and BOP rule
+
+> Written 2026-10-17 (Manufacture group). "FACT" = seen first-hand in this session: mockup DB (`--env=mockup`; counts = `count(*)` today), code with line numbers, and a repository-wide grep for column readers. "FROM DOCUMENT" = not checked. **Master data of processes and of the process x machine capability is REAL**: only read here.
+
+- **Document type**: concept card. **Module/sub-module**: Manufacture > PPIC > PPIC Settings: Master Process (`PROD_MST_PROCESS`, `v2:prod-process`), Master Routing Template (`PROD_ROUTING_TPL`, `v2:prod-routing`), BOP Rule Setting (`PROD_MST_BOP_RULE`, `v2:prod-bop-rule`); the capability pairs are edited inside the Master Machine and Master Process forms (v1 components).
+- **Canonical name**: Process = `tm2mst.prod_process` (29 rows); capability = `tm2mst.prod_process_machine` (68 active pairs over 24 processes and 45 machines); routing template = `prod_routing_template` + `prod_routing_step` (0 rows); precedence rules = `prod_process_precedence` (12 rows); BOP rule = `prod_bop_rule` (26 rows, owner ProDev).
+- **Synonyms**: proses, process_name (`CETAK`, `PLONG`, `KUPAS`), capability, pair, "mesin mampu", stage (PREPRESS, PRESS, POSTPRESS, FINISHING, PACKING, QC, LOGISTIC), SUBCON, MANUAL.
+- **NOT the same as**: the BOP of a part (`prod_part_process`, ProDev), the operation of a WO (`../planning/11_card_wo-operation-bop.md`), the HR work center.
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Processes | `prod_process`: 29 rows all active, PK `id_process`. Stage: POSTPRESS 10, FINISHING 8, PREPRESS 3, QC 3, PRESS 2 (`CETAK`, `QC CETAK`), PACKING 2, LOGISTIC 1. `is_manual = 1` for 5 (QC PACK, QC, QC HITUNG, HITUNG, JEMUR). `inhouse = 0` for 2 (HOT PRINT, FOIL STAMPING). `requires_die = 1`: PLONG, KETREK; `requires_plate = 1`: CETAK, PLATE MAKING. | FACT, query |
+| Kind of an operation | `inhouse = 0` gives SUBCON (placed `subcon_lead_days` days later, default 3 when empty); `is_manual = 1`, or no machine and stage QC / PACKING / LOGISTIC, gives MANUAL (30 minutes); the rest is MACHINE. "A BOP process without a machine is SUBCON" is the business rule (CLAUDE.md section 2). | FACT, `PlanLoader.php:157` |
+| Capability | `prod_process_machine`: 68 active rows; keys `process_id`, `machine_id`, `preference_rank`; own values `setup_minutes`, `speed_per_hour`, `waste_pct`, `waste_fixed_qty`, `hourly_rate`, `manpower`, size and grammage envelope (`min/max_sheet_*`, `gsm_min/max`), `is_certified`. 66 rows have no own speed; 55 no own setup. | FACT, query |
+| No value at all | 31 active pairs have no speed in any layer (pair, process default, machine target) and 55 have no setup minutes in the pair or the process default. `prod_process.default_setup_minutes` is empty on all 29 processes. | FACT, query |
+| Processes with no machine | Every active non-manual process has at least one machine (0 exceptions). The two non-in-house processes each have 1 machine. | FACT, query |
+| Routing template | `prod_routing_template` and `prod_routing_step`: 0 rows; `RoutingTemplateService` is called only by the Setup screen and a test, not by ProDev or the WO. See `../../sales/90_findings_engine-group-c.md` finding 2. | FACT, grep; Sales finding |
+| Precedence | `prod_process_precedence` (12 rows): `rule_type`, `severity`, `reason`; read only by `RoutingTemplateService` when a template is validated. The WO and the planner do not read it. | FACT, grep |
+| BOP rule | `prod_bop_rule`: 26 rows (`part_type` empty on all); read by `SpecEngine` (ProDev) to build the BOP. Owner: ProDev (`../../sales/prodev/20_engine_spec.md`). | FACT, `../../sales/prodev/10_card_prodev-interface.md` item on `prod_bop_rule`, grep |
+| Process fields the planner reads | `process_stage`, `inhouse`, `is_manual`, `requires_die`, `requires_plate`, `subcon_lead_days`, `default_setup_minutes`, `default_speed_per_hour`, `default_waste_pct`, `default_waste_fixed_qty`, `default_manpower` (three-layer rule), `routing_seq`. | FACT, grep over `app/` |
+| Process fields NOBODY reads | `washup_minutes`, `default_tolerance_pct`, `cost_basis`, `standard_rate`, `requires_tooling`, `qc_required`, `qc_blocking`, `is_bottleneck`, `allow_parallel`, `default_supplier_id`, `min_lot_qty`, `max_lot_qty`, `skill_code`, `gantt_color`. Only the model and the v1 form `resources/views/pages/production/master-process.blade.php` touch them (grep over `app`, `resources`, `routes`, `packages`: no other reader; Costing and ProDev included). | FACT, grep |
+| Rate per product | `prod_part_process_machine_rate` (1 row) and `prod_part_process_employee_rate` (0 rows): the initial `rate_band_value` of an operation when ProDev gave no BOP. Menu item "Target Rate: Process x Machine / Employee" (`PROD_PROCESS_RATE`) has no target and status NOT_BUILT; the v1 route `/production/process-rate` still exists. | FACT, query; `sys_app_menu`; `routes/web.php:321` |
+
+## Relations
+- **source**: HRM departments and work centers, Maintenance (machine status), ProDev (BOP rules).
+- **used_by**: `../planning/20_engine_wo-generation.md`, `../planning/21_engine_wo-planning-enricher.md`, `../planning/24_engine_schedule-solver.md` (kind and lead days), `../planning/25_engine_setup-time.md` (stage decides which changes count), `../planning/22_engine_gate-service.md` (die and plate flags), ProDev Spec Engine, Costing (process rates, not checked).
+- **flows**: process + machine rows -> candidate rows for each operation -> placements; the BOP rule builds the BOP in ProDev upstream.
+- **frozen_zone**: ProDev owns `prod_bop_rule`; the process master is REAL and untouched.
+- **also_named_by**: `13_card_crew-master.md`, `14_card_gates-and-readiness.md`, `15_card_changeover-and-wait-rules.md`, `20_engine_speed-target.md`.
+
+## Findings (recorded, not fixed)
+1. **14 process flags are stored but read nowhere** (list above), including `is_bottleneck` (the PPIC Settings screen admits this: "the bottleneck flag is not read by the planner yet") and `allow_parallel`, `qc_blocking`, `min_lot_qty`, `max_lot_qty`. The old plan note says a bottleneck is found by load and that the flag is "a manual override" (`docs/design-notes/ppic/08_ppic-tech-rules.md` item 6); the load percent exists (`Ppic::exceptions`), the override does not. FACT.
+2. **`is_certified` of the capability row is not read** (`../planning/21_engine_wo-planning-enricher.md` finding 1). FACT.
+3. **HOT PRINT and FOIL STAMPING are SUBCON although a capable machine exists** (1 each): ATTENTION-ENGINE-08, status kept there. FACT (query).
+4. **Routing template is an empty, unconnected feature** (0 rows, no caller from ProDev or WO). The menu shows it as ready. FACT.
+5. **The v2 grid `ProcessGrid` shows 8 columns only**; all other fields of the process are edited in the v1 form. FACT (`ProcessGrid.php:42-54`).
+6. **Process names are the join key in several places** (WO operation `process_name`, wait rules `after_process_name`, rule library `applies_to_process`, Production Output queue pairs): a renamed process breaks them silently; `process_id` is stored on operations (1 of 386 empty). FACT (code).
+
+## Already exists? Searched where, result
+`concept:find "machine"`: nothing for processes. Searched code: a single process master; the stage list is used as a string in several places (`PlanLoader`, `SetupTimeEngine`, `WoPlanningEnricher`) without a constant list. User's guide for masters: `docs/guides/production/02_planning_scheduling.md`.

@@ -1,0 +1,42 @@
+# Concept card: Procurement approval (PR, PO, Cash PO, Purchase Return)
+
+> Written 2026-10-17 (group Procurement). FACT = mockup DB (`--env=mockup`, flow tables in `tm2mst` = schema `ddtmst`) and code with line numbers, seen in this session. The Flow engine itself belongs to the Flow module (no card yet); this card only records how Procurement documents use it. Verified: 2026-10-17.
+
+- **Document type**: concept card. **Module/sub-module**: Procurement > Requisition > PR Approval Center (`PROC_PR_APPR`, `v2:approval-pr`), Order > PO Approval Center (`PROC_PO_APPR`, `v2:approval-po`), Return > Purchase Return Approval Center (`PROC_RET_APPR`, `v2:approval-prt`); the approver can also decide inside the document form.
+- **Canonical name**: Procurement approval = rows of `flow_config` + `flow_config_step` (the rule) and `flow_log` (the history) for module codes **PR**, **PO**, **POC** (PO Kontan / Cash PO) and **PRT** (Purchase Return), run by `FlowEngineService`.
+- **Synonyms**: approval level, persetujuan, Approval Levels screen (`SET_APPROVAL`, `ApprovalSetting`), acting officer / PLT (`flow_position_acting`).
+- **NOT the same as**: the CO approval (Sales, flow `CO`, card `../../sales/order/10_card_customer-order.md`), the stock adjustment approval (Inventory).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Rule tables | `flow_config` (module, `total_step`, `final_status`, `reject_status`, `activate`), `flow_config_step` (`step_no`, `step_type` APPROVAL / AUTO, `status_from`, `status_to`, `status_to_reject`, `position_id`, `min_amount`, `max_amount`, `activate`), `flow_log` (one row per submit / approve / reject / hold with `amount_snapshot`, `actor_position_id`, `actual_user_id`, `is_acting`, `notes`). | FACT, `show columns` |
+| PR rule | Config 1: one active APPROVAL step, position 64 Operational Manager, any amount; `final_status` APPROVED, `reject_status` REJECTED. Step 53 is an active AUTO step FULLY_ORDERED -> CLOSED (never run, Finding 2). Step 102 (Direksi from a high amount, reject -> REVISION_NEEDED) is **inactive** with label "Tidak dipakai (2026-09-30: PR cukup Operational Manager)". | FACT, query on `ddtmst.flow_config` x `flow_config_step` x `org_position` |
+| PO rule | Config 2: three active steps in order: 1 Product Costing (position 72), 2 Operational Manager (64), 3 Presiden Direktur (60, only when the amount is at least 1,000,001). Step 119 (a second Operational Manager for more than 1,000,000) is inactive. So up to 1,000,000: 2 levels; above: 3 levels. | FACT, same query; `FlowDocument.php:27` (code comment "PO > 1 jt = 3 level") |
+| Cash PO rule | Config 10, module POC: one step, Direktur F&A (position 61), `final_status` APPROVED. The module is chosen by `PoOrder::flowModule()` (CASH procure type = POC, else PO). | FACT, query; `PoOrder.php:90-99` |
+| Return rule | Config 8, module PRT: one step, Operational Manager, `final_status` CONFIRMED (not APPROVED). | FACT, query |
+| Amount basis | PR = `pr_requisition.c_est_total`; PO = `po_order.c_grand_total` (PPN included); PRT = sum of `prt_line.c_line_value`. The amount is frozen in the first `flow_log` row (`amount_snapshot`) and later steps use the snapshot. | FACT, `resources/views/pages/pur/pr/entry.blade.php:347`; `resources/views/pages/pur/po/entry.blade.php:151-170`; `resources/views/pages/pur/prt/entry.blade.php:220-222` |
+| Step choice | Submit: first step (lowest `step_no`) whose `status_from` equals the document status and whose range fits the amount. Approve: next step with a higher `step_no`, `status_from` = this step's `status_to`, and a fitting range; when none is left the document gets `flow_config.final_status`. Reject: status = `reject_status`. Hold: only a log row, status unchanged. | FACT, `FlowEngineService.php:23-45,174-251,255-285,291` |
+| Who sees it | A document is pending for a user when the latest `flow_log` row of that document is SUBMITTED or HOLD at the user's own position or at a position the user acts for (`flow_position_acting`, date range covering today). | FACT, `FlowEngineService.php:138-168` |
+| Notes required | Reject needs a reason (PR / PO: not empty; PRT: at least 10 characters). Hold needs a note. | FACT, `resources/views/pages/pur/pr/entry.blade.php:387-430`; `resources/views/pages/pur/prt/entry.blade.php:269-310` |
+| After the last approval | PR: `createDefaultAllocationsForPr` (allocation per line). PO: status APPROVED, then a manual "Send to Supplier" button sets SENT and `sent_at`; only SENT or PARTIALLY_RECEIVED POs appear in the receipt worklist. | FACT, `resources/views/pages/pur/pr/entry.blade.php:376-380`; `resources/views/pages/pur/po/entry.blade.php:179-187`; `PvBuilderService.php:22,47` |
+| Approval Center | One partial for all modules; the decision is executed through the rule of each document: PR -> `PurchaseRequisition::decide`, PO and POC -> `PurchaseOrder::decide`, PRT -> the v1 component `pages::pur.prt.entry`. | FACT, `ApprovalCenter.php:31-37,195-217,233` |
+| Data | `flow_log`: PR 11 SUBMITTED + 4 APPROVED rows; PO 14 SUBMITTED + 12 APPROVED; POC and PRT none. PO2600001 has 3 approvals, PO2600003 to PO2600005 have 2. | FACT, group-by queries |
+| Bypass | The subcontract PO made at a machine breakdown or a hot-job reroute inserts the PR as APPROVED and the PO as SENT directly, with a note and no `flow_log` row; the caller checks only "Ops Manager or above". | FACT, `SubcontractPoService.php:105-147`; header comment of that class |
+
+## Relations
+- **source**: `flow_config*` rows (screen Approval Levels), positions (`org_position`), acting officers, the document header (status, amount).
+- **used_by**: PR (`10_card_purchase-requisition.md`; its creators in `12_card_pr-sources-and-buy.md`), PO and Cash PO (card `../order/11_card_purchase-order.md`), Purchase Return (card `../return/10_card_purchase-return.md`), the Approval Centers, the opening-screen widget of waiting PRs.
+- **flows**: DRAFT -> Confirm (number born, first `flow_log` row SUBMITTED) -> level 1 -> ... -> final status; reject = REJECTED (dead end).
+- **frozen_zone**: none of Sales; the Flow engine is shared by all modules, ask Jo before changing it.
+
+## Findings (recorded, not fixed)
+1. **Rule A.11 lists two PO levels; the data has a third.** `docs/globaluserrules.md` A.11 (and CLAUDE.md section 3b indirectly) says PO = Product Costing -> Operational Manager, while `flow_config_step` also has an active Presiden Direktur step from 1,000,001, and the rulebook's own stage list (D.15) names "level 3 (Presiden Direktur)". The code and data agree with each other; the A.11 sentence is outdated or incomplete. FACT.
+2. **Step 53 of the PR rule never runs.** It needs `FlowEngineService::submit('PR', ..., 'FULLY_ORDERED', ...)`, which nobody calls (see PR card finding 1). Inactive steps 102 and 119 remain as clutter. FACT.
+3. **Approved without trace**: PR2600009 (APPROVED, three lines, the demo document of the backlog) has no `flow_log` row. FACT (cross query `ddtmst.flow_log` x `ddtpur.pr_requisition`).
+4. **Two ways to a PO without the normal levels**: the subcontract PO (above) and, for a PO born from Buy on a not yet approved PR, the v2 Confirm refuses ("A PR on this PO is not Approved yet"), but the v1 component `submit` has no such check and the v1 routes `/purchasing/po` are still registered. FACT (code); the v1 route was not tried in a browser.
+5. **The Return final status is CONFIRMED, not APPROVED**, and the return form has `markComplete` (CONFIRMED -> COMPLETED) which the other two do not have. Readers must know three vocabularies. FACT.
+6. **Approver thresholds are data**: a change of the 1,000,001 limit or of a position happens in `flow_config_step`; there is no constant named for it, so `docs:check` cannot catch drift against the rulebook. FACT.
+
+## Already exists? Searched where, result
+Searched `concept:find "approval"`-style in code: `FlowEngineService`, `FlowDocument`, `ApprovalCenter`, `ApprovalSetting`, menu `PROC_*_APPR` and `SET_APPROVAL`, tables `flow_*`. Result: ALREADY EXISTS and is generic; Procurement adds no engine of its own. Design note `docs/design-notes/procurement/01_procurement-pr-po-approval-from-mrp.md` (FROM DOCUMENT) proposes a PR value limit and a "Director instruction" flag; neither exists (no constant and no column found by grep of `pr_requisition` / `po_order` columns). Checked: its sentence "PR oleh OPM; PO oleh Product Costing lalu OPM" matches only the part of the PO rule up to 1,000,000.

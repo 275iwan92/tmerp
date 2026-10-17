@@ -1,0 +1,56 @@
+# Concept card: Purchase Order (PO)
+
+> Written 2026-10-17 (group Procurement). FACT = mockup DB (`--env=mockup`, `tm2pur` = `ddtpur`) and code with line numbers seen in this session; tests `PaperPriceEngineTest`, `PaperPurchaseEnginesTest` ran (see the engine cards). Money figures of this card are after the johiwan-only marker (A.8-A.9). Verified: 2026-10-17.
+
+- **Document type**: concept card. **Module/sub-module**: Procurement > Order > Purchase Order (`PROC_PO`, target `v2:purchase-order`) and PO Approval Center (`PROC_PO_APPR`).
+- **Canonical name**: Purchase Order = `tm2pur.po_order` (header) + `po_line` (lines) + `po_import_doc` (import document checklist, never used).
+- **Synonyms**: PO, pesanan pembelian, `doc_no` `PO2600001`; Cash PO = PO Kontan (`i_procure_type` CASH); Subcon PO = `i_po_type` SUBCONTRACT.
+- **NOT the same as**: Customer Order (`co_order`, Sales), Purchase Quotation (the supplier's offer, `10_card_purchase-quotation.md`), the legacy tables `po_order_legacy*`, `po_invoice_legacy*`, `po_payment_legacy*`, `po_receive_legacy*` (archive of the old system; not new documents).
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Header | `po_order`: 8 rows (RECEIVED 4, SENT 2, SUBMITTED 2). PK `po_id`; `doc_no` UNIQUE, `PO` + 2-digit year + 5 digits, **born at Submit**; `i_supplier_id` NOT NULL; `i_po_type` ENUM LOCAL / IMPORT / SUBCONTRACT; `i_procure_type` ENUM REPEAT / ONE_TIME / CAPEX / CASH; `i_payment_term`, `i_delivery_date`, `i_ship_to`; totals `c_dpp`, `c_ppn`, `c_pph`, `c_grand_total`, `c_net_payable`; `status` varchar(20); `sent_at`. | FACT, `show columns`, group-by query; `PoOrder.php:53-66`; `resources/views/pages/pur/po/entry.blade.php:159-165` |
+| Lines | `po_line`: 10 rows (5 RECEIVED, 5 status NULL). UNIQUE (`po_id`, `line_no`) and UNIQUE `alloc_id` (uq_po_alloc: one allocation feeds one line); `i_line_class` ENUM RAW / INDIRECT / SERVICE; `is_receivable`; qty, price, discount (`i_disc_pct` or `i_disc_amt`), `c_line_net` = qty x price - discount, rounded to 4 decimals. FK `po_id` ON DELETE CASCADE. | FACT, `show index`, FK query; `PoLine.php:45-54` |
+| Where lines come from | (1) PR allocations of **APPROVED** PRs whose supplier matches or is empty (`PoBuilderService::addAllocation`); (2) PQ lines (`PurchaseQuotation::createPo`); (3) Buy from Material Planning; (4) Cash PO: master item or free text typed directly; (5) breakdown / reroute subcontract (inserted SENT). | FACT, `PoBuilderService.php:49-112`; `PurchaseOrder.php:96-123,169-181`; cards `../requisition/12_card_pr-sources-and-buy.md`, `10_card_purchase-quotation.md` |
+| New PO | `+ New Record` = a Draft PO per supplier, **reusing** the latest Draft PO of that supplier if one exists; a Cash PO is always a new Draft with supplier "TOKO KONTAN" and a petty-cash fund. | FACT, `PoBuilderService.php:28-47`; `PurchaseOrder.php:65-94` |
+| What the line takes | From the PR line: description, item, UoM, department, account, CO line; `i_line_class` from the level-1 category stock class (FREE_TEXT: RAW if stock else INDIRECT); `c_uom_stock`, `c_conv_to_stock` and `c_tol_pct` copied from the material master; price = `PaperPriceEngine::priceFor(material, PO supplier, PO date, qty)` else the PR estimate else 0. | FACT, `PoBuilderService.php:60-98`; engine card `30_engine_paper-price.md` |
+| Editable in Draft | Header fields `i_doc_date`, `i_po_type`, `i_procure_type`, `i_payment_term`, `i_delivery_date`, `i_ship_to`, `i_notes`; per line only `i_price` and `i_disc_pct` (the quantity comes from the allocation, so a PO line cannot be edited in qty except on a Cash PO). | FACT, `resources/views/pages/pur/po/entry.blade.php:106-142`; `PurchaseOrder.php:28-38,131-167` |
+| Tax | `PoOrder::recalcTax`: DPP = sum of `c_line_net`; PPN = round(DPP x `TaxRate::ppn(i_doc_date)` / 100, 4) (rate by the PO date from table `fin_tax_rate`); PPh 23 = round(sum of SERVICE-line net x constant `PPH23_JASA` / 100, 4); grand total = DPP + PPN; net payable = grand total - PPh. A **Cash PO has no PPN and no PPh** (the price is the shop receipt). | FACT, `PoOrder.php:68-88`; `sys_constant PPH23_JASA` = 2; `fin_tax_rate` 10% from 01-Apr-1985 and 11% from 01-Apr-2022 |
+| Status words | Written: DRAFT, SUBMITTED (Confirm), APPROVED or REJECTED (flow result), SENT (button "Send to Supplier", sets `sent_at`; only from APPROVED), PARTIALLY_RECEIVED and RECEIVED (set by `PvPostingService::recalcPo`; falls back to SENT when every receipt is cancelled). Listed on the screen but never written: CLOSED, CANCELLED. Line status words written by `recalcPo`: RECEIVED, CLOSED_BY_TOLERANCE, PARTIALLY_RECEIVED, OPEN and `CLOSED_SHORT` (Shortage Request refusal). | FACT, `PurchaseOrder.php:40-41`; `resources/views/pages/pur/po/entry.blade.php:151-187`; `PvPostingService.php:404-452`; grep of writers |
+| Approval | Module PO (Product Costing -> Operational Manager -> Presiden Direktur above 1,000,000) or POC (Direktur F&A). v2 Confirm refuses while a PR behind the PO is not APPROVED, and a Cash PO above constant `PO_CASH_MAX` (2,000,000) or without mode / petty-cash fund or without account on non-stock lines. | FACT, `PurchaseOrder.php:187-211`; card `../requisition/11_card_procurement-approval.md`; `sys_constant PO_CASH_MAX` |
+| Delete | Only Draft; the allocations of its lines become unconverted again. | FACT, `resources/views/pages/pur/po/entry.blade.php:252-265` |
+| Receipt worklist | Only POs with status SENT or PARTIALLY_RECEIVED, `stat_cancel` = 0, lines with `is_receivable` = 1 and received qty below ordered qty feed the Goods Receipt (Receive). | FACT, `PvBuilderService.php:20-56` |
+| Data | `c_line_status` of the 5 RECEIVED lines is RECEIVED; PO2600002 received 54 against 50 ordered (tolerance 5%, +8%). PO2600008 (SUBCONTRACT, SENT, two SERVICE lines in PCS) is the dummy Subcon PO of the UAT. | FACT, queries on `po_order`, `po_line` |
+
+## Relations
+- **source**: `pr_line_alloc` (card `../requisition/10_card_purchase-requisition.md`), PQ lines, supplier master (`12_card_supplier-and-category.md`), material master, `PaperPriceEngine`, `TaxRate`, petty cash fund (`fin_petty_cash`, Finance).
+- **used_by**: Goods Receipt (SPB) via `pv_line.po_line_id` (FK RESTRICT; card `../receive/10_card_purchase-receive.md`), Subcon stock and the Shortage Request (Inventory card, see "See also"), Outstanding PO report, Material Planning (open PO = incoming supply), Petty Cash (Cash PO advance and settle), Finance GR/IR aging.
+- **flows**: DRAFT -> Confirm (number, level 1..3 or POC) -> APPROVED -> Send -> SENT -> receipts -> PARTIALLY_RECEIVED / RECEIVED.
+- **frozen_zone**: the PO / Goods Receipt / GR-IR flow is a frozen document flow (owner decision, CLAUDE.md section 1); ask Jo before changing a status or a number.
+
+## Findings (recorded, not fixed)
+1. **No Cancel and no Close for a PO.** `stat_cancel` and `cancel_reason` are read by the receipt worklist (`PvBuilderService.php:23`) and by `SpecialReceiptService`, but nothing writes them; CLOSED and CANCELLED are never written to `po_order.status`. A SENT PO that must be withdrawn has no way out except receiving or the shortage refusal. FACT (grep of writers).
+2. **Three of eight POs have no totals**: PO2600002, PO2600003 and PO2600004 have NULL `c_dpp`, `c_ppn`, `c_grand_total` while their lines have values and the PO is RECEIVED (old dummy rows). Any report or approval amount that reads the header total sees 0 for them. FACT.
+3. **Deleting a Draft PO does not undo the ordered quantity**: `delete` sets `c_is_converted` = 0 but leaves `pr_line.c_qty_ordered` and `c_line_status`; adding the allocation to another PO adds the quantity again, so the PR line shows 2x ordered and the Outstanding PR report hides it while no PO exists. A CLOSED PQ is not reopened either. FROM CODE (`PoBuilderService.php:102-108` vs `resources/views/pages/pur/po/entry.blade.php:252-265`); not run.
+4. **Unused columns**: `po_order.i_pq_id`, `is_auto_generated`, `parent_po_id`, `revision_no` (print shows "Rev." when above 0), `i_currency_id` (all POs are IDR with `i_fx_rate` 1), `i_quotation_valid_until`, and the whole table `po_import_doc` (0 rows; the screen says the import checklist is INACTIVE). A PO of type IMPORT can therefore run through the flow with no import document and no currency. FACT (grep).
+5. **The PPN is not recalculated when the PO date is edited**: `updateHeader` does not call `recalcTax`; only price edits do. Only matters across the 01-Apr-2022 rate change. FROM CODE.
+6. **v1 path without the PR check**: the v1 component `pages::pur.po.entry` (route `/purchasing/po/{po}/edit`, `routes/web.php:241`) can Submit a PO whose PR is not APPROVED; only the v2 wrapper checks. The menu points to v2. FROM CODE; not tried in a browser.
+7. **Subcontract PO skips approval** (see the approval card finding 4) and has no `alloc_id`, `item_id` or department on its lines. FACT (`SubcontractPoService.php:129-165`).
+8. **The Buy-made PO can exist before its PR is approved**, by design (Jo 2026-10-16, FROM DOCUMENT in the code comment); the guard is the Confirm check only. FACT.
+9. **A.11 of the rulebook names two PO levels; the data has three above 1,000,000.** See the approval card. FACT.
+
+## See also (other authors, not repeated)
+[Shortage Request](../../inventory/batch-quality/15_card_shortage-request.md) (PO line CLOSED_SHORT, reopening a PO line), [Subcontract stock](../../inventory/batch-quality/16_card_subcontract-stock.md), [GR/IR aging](../../inventory/stock/19_card_gr-ir-aging.md).
+
+## Already exists? Searched where, result
+`concept:find "purchase order"`: menu `PROC_PO`; files `PurchaseOrder.php` (data), `PurchaseOrderGrid.php`, `PurchaseOrderPrint.php`, `OpenPurchaseOrders` widget, `PurchaseOrderMigrationService.php` (legacy migration); help topics `purchase-order`, `approval-po`. Tables `po_*`. Result: ALREADY EXISTS in v1 (`pages::pur.po.entry`, `index`, `print`) and v2 (`purchase-order`, calling the v1 component for the rules). No User's Guide for Procurement exists.
+
+<!-- johiwan-only -->
+
+## Confidential figures (A.8-A.9; ddt* data and test asserts, nothing guessed)
+**Tax worked example** (formula of `recalcTax`, data of the mockup DB):
+1. PO2600001 (date 20-Aug-2026, two RAW lines): DPP = 9,999,990 + 10,000,000 = 19,999,990; PPN rate on that date 11 -> PPN = 2,199,998.90; PPh 0 (no SERVICE line); grand total 22,199,988.90 = net payable. Stored values equal these.
+2. PO2600008 (Subcon, 01-Oct-2026, two SERVICE lines 750,000 + 600,000): DPP 1,350,000; PPN 148,500; PPh 23 at 2 = 27,000; grand total 1,498,500; net payable 1,471,500. Stored values equal these.
+3. Level count by amount: PO2600001 (grand total above 1,000,000) has three approvals in `flow_log`; PO2600005 (277,500) has two.
+**Price source**: a PO line price comes from the supplier price tables when the material is paper (see `13_card_paper-price-tables.md`); otherwise from the PR estimate. In the mockup data the tables hold one row (supplier 15, IVORY), no PO line used it (`po_line.i_price` values are dummy numbers: 25,000 / 22,500 / 999,999 and similar).

@@ -1,0 +1,67 @@
+# ENGINE card: Operator Timer (Production Output)
+
+> Written 2026-10-17 (Manufacture group). FACT = code with line numbers, tests I ran and the mockup DB (`--env=mockup`) seen this session. Source read in full: `app/Services/Scheduling/Operator/OperatorTimerService.php`, `OutputActionLog.php`, `app/Support/V2/Data/ProductionOutput.php`, `PpicController.php` (output actions), `Ppic::shopFloor`. The screen itself (Manufacture > Production > Production Output, `v2:production-operator`) belongs to the Production sub-module that has no TG folder yet; the engine is kept here because PPIC owns the queue it works on.
+
+- **Canonical name**: Operator Timer. **Class**: `App\Services\Scheduling\Operator\OperatorTimerService`. **Registry**: key `ppic-operator-timer`, mode `flow`. **Module/sub-module**: Manufacture > Production > Production Output (tablet at the machine); mirrored in the PPIC Workspace table "On the shop floor now".
+- **Synonyms**: timer, Play / Pause / Stop, SETUP timer, PRODUCTION timer, Simpan Hasil (SAVE RESULT), Good / Bad, LIST OF JOBS.
+- **Frozen status**: not frozen.
+- **Concept cards**: `../planning/11_card_wo-operation-bop.md` (operation and output tables), `../planning/13_card_plan-draft-and-live.md` (Live Schedule reads the result).
+
+## Trigger (officer or operator, no background schedule)
+FACT:
+| Trigger | File:line |
+|---|---|
+| Play / Pause / Stop button of a timer | `app/Http/Controllers/V2/PpicController.php:1079-1091` (route `v2.ppic.output.timer`, `routes/v2_ppic.php:34`) |
+| SAVE RESULT (Good and Bad, optional reasons) | `PpicController.php:1093-1105` (route `v2.ppic.output.result`) |
+| Read of timers for the job list and the PPIC mirror | `ProductionOutput::desk` (`app/Support/V2/Data/ProductionOutput.php:28-80`), `Ppic::shopFloor` (`Ppic.php:216-247`), `Ppic::live` |
+
+## Flow (text twin)
+1. **Which jobs an operator sees** (`ProductionOutput::desk`): operations with `plan_status = CONFIRMED` and a machine; the machine + process pairs come from the login: employee -> `prd_crew_assignment` rows, or the work center chosen in the BOP (`crew_work_center_id`) matched with the employee's work-center skills; an administrator without a pair chooses "Enter as". The queue is ordered not-done first, then planned start; the active job is the one named in `?op=`, else a running one, else the first not done.
+2. **Two timers per job**: `setup` (kind SETUP) and `prod` (kind RUN). State per timer: `idle`, `run`, `pause`, `stop` (a stop is read from the action log; a legacy DONE operation counts as stopped) (`timersFor`, `:60-89`). Job status: setup, prod, pause, done, idle (`statusKey`).
+3. **Act** (`act`, `:125-170`) in one transaction: refuse when the timer is already stopped, when another job has a running SETUP/RUN segment on the same machine, pause when not running, stop before any start. Anything open on the machine is closed (minutes = rounded seconds). `play` opens a segment and moves the operation PENDING -> ASSIGNED -> RUNNING, setting `actual_start` once; `pause` opens a PAUSE segment with reason `OTHER`; `stop` closes: for SETUP it stores `actual_setup_min`, for RUN it sets `actual_finish` and the operation to `DONE` (`finish`, `:251-265`). Every action writes one row to `prd_output_action_log` (action, before/after state, who, IP, host name, user agent).
+4. **Save result** (`saveResult`, `:180-220`): Good and Bad are ADDED to what is saved (accumulative). Good = one row in `prd_wo_operation_output`; Bad = reject lines in `prd_wo_operation_output_defect` per scrap reason (the default reason "Lainnya" when none is given); when reasons are given they must add up to Bad. At least one of Good or Bad above 0.
+5. **Progress and mirror**: progress = good output / output quantity of the operation (`Ppic::operations`), shown in the Gantt and Live Schedule; the PPIC table shows elapsed time, planned, good, expected quantity (`target per hour x run minutes so far`, capped at the planned output, `Ppic::expectedQty`) and the next three jobs of the machine.
+
+## Input / Output
+- **Input**: `prd_wo_operation` (CONFIRMED queue), `prd_crew_assignment`, `emp_employee_work_center_skill`, `prd_scrap_type`.
+- **Output (writes DB)**: `prd_operation_time_log` (segments SETUP, RUN, PAUSE), `prd_wo_operation` (`task_status`, `actual_start`, `actual_finish`, `actual_setup_min`), `prd_wo_operation_output`, `prd_wo_operation_output_defect`, `prd_output_action_log`.
+- **Who may overwrite**: nobody edits a saved row; a mistake is corrected by adding more output (no negative entry is allowed).
+
+## Formula (one place)
+Segment minutes = `round(seconds / 60)`; setup minutes of an operation = rounded sum of its SETUP seconds; progress percent = `min(100, round(good / qty_out x 100))`; yield (registry text) = good / (good + bad); expected quantity so far = `min(qty_out, target per hour x run minutes / 60)`. Units are those of the operation (sheets up to die-cut, pieces after).
+
+### Worked example (tests I ran under `--env=mockup`, 2026-10-17: `tests/Feature/ProductionOutputTest.php`, 7 tests: 6 passed, 1 skipped for a missing second job, 37 assertions)
+The test file proves: one timer runs at a time on a machine, Stop locks a timer, saving a result is accumulative, the action log has a row per action, and the crew-to-queue derivation. Data today: `prd_operation_time_log` 5 segments (SETUP 3, RUN 2; 1 SETUP and 2 RUN still open since 2026-10-13 09:23), `prd_wo_operation_output` 2 rows with 4,400 good in total, `prd_output_action_log` 0 rows, `prd_wo_operation_output_defect` 0 rows.
+
+## Edge cases
+- A paused job (open PAUSE segment) lets the next job start on the machine; a running SETUP or RUN of another job does not.
+- Play on an operation whose task status cannot move to RUNNING leaves the status as it is but still writes the segment.
+- A stopped RUN timer finishes the operation; Good can still be saved afterwards.
+
+## Used by
+Production Output screen, PPIC Workspace mirror, Live Schedule, Monitoring tab, speed targets (`20_engine_speed-target.md`), learning (`../planning/27_engine_learning.md`).
+
+## Open items
+None in `docs/ENGINE-ATTENTION.md`. REMARK of `app/Support/V2/Data/ProductionOutput.php` says the assignment of a crew to an operation "has no screen in PPIC Planning" (the BOP actor cell is the only place).
+
+## Tests
+`tests/Feature/ProductionOutputTest.php` (7), `tests/Feature/WoActorTest.php` (2 passed: actor cell and the Production Output queue).
+
+## Relations
+- **source**: `../planning/26_engine_plan-confirm.md` (only CONFIRMED operations appear), `../planning/19_card_assign-crew.md`, `13_card_crew-master.md`.
+- **used_by**: `../planning/13_card_plan-draft-and-live.md`, `20_engine_speed-target.md`, `../planning/27_engine_learning.md`, `../../sales/prodev/30_engine_usage-rate.md` (good and defect output), the Inventory shortage detector (`../../inventory/batch-quality/29_engine_shortage-auto-detector.md`).
+- **flows**: APPLY -> CONFIRMED queue -> Play -> segments -> Stop -> DONE -> good/bad -> progress -> (outside this module) QC, stock, delivery.
+- **frozen_zone**: none.
+- **also_named_by**: `17_card_learning-changeover.md`.
+
+## Findings (recorded, not fixed)
+1. **The server does not check that the operation is on the live schedule or that the person belongs to the crew.** `outputTimer` and `outputResult` need only module PROD (no `schedulerOnly`, no crew test); `act` and `saveResult` accept any `operation_id`, including a Draft or a not-yet-applied operation, an operation of a cancelled WO, or an operation that is already DONE (output can be added after Stop). The screen lists only CONFIRMED jobs, but nothing enforces it on the server. FACT (code).
+2. **`change_kind` is never written**, so the timer gives the learning engine no samples (`../planning/27_engine_learning.md`). FACT.
+3. **Every pause gets the reason `OTHER`**: `act` has no reason parameter, so the list of `PAUSE_REASONS` (material, break, machine, quality, crew, other) shown in the PPIC mirror never varies. FACT (`OperatorTimerService.php:161`, grep).
+4. **No effect on the WO header**: Stop of production sets the operation DONE but the WO stays SCHEDULED, even when the last operation is done (`../planning/10_card_work-order.md` finding 1). FACT.
+5. **No check against quantities**: Good has no upper limit relative to the operation quantity and no link to the stock of the next process or to the finished goods (no stock-in is written; `grep` of the service shows no stock call). The registry mentions only "good and bad quantities". FACT (code).
+6. **A running job with a stale timer**: 2 RUN and 1 SETUP segment open since 2026-10-13; `open(machine)` returns the latest open segment per machine and blocks starting another job there. FACT (query, code).
+7. **Pairs of operators are found through two tables, one of which (`prd_crew_assignment`) has no writer**; in the dummy data only an administrator can reach a queue ("Enter as"). FACT (`../planning/19_card_assign-crew.md`).
+
+## Already exists? Searched where, result
+`concept:find "work order"`: no card on production output. Searched: timers exist only here; the old v1 page `wo-entry.blade.php` records output with a different path (`PrdWoOperationOutput` rows without timers).

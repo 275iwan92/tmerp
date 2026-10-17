@@ -76,6 +76,7 @@ class ProductionWoGenerationTest extends TestCase
         } finally {
             DB::connection('tm2sdi')->table('iqp_costing')->where('id_costing', $costing->id_costing)->update(['published_flag' => $costing->published_flag]);
             if ($wo) {
+                DB::connection('tm2prd')->table('prd_wo_material')->where('wo_id', $wo->wo_id)->delete(); // generate() writes the BOM rows too
                 $wo->operations()->delete();
                 $wo->delete();
             }

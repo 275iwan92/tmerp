@@ -7,13 +7,13 @@
 |---|---|---|
 | Sales (SALES) | Inquiry & Quotation (23), Order (9), Delivery (4), CRM (6) | **exists**: [sales/](./sales/) |
 | Management Reports (MGMT) | Summary (1), Reports (6) | not yet |
-| Procurement (PROC) | Requisition (3), Order (4), Receive (4), Return (2) | not yet |
+| Procurement (PROC) | Requisition (3), Order (4), Receive (4), Return (2) | **exists**: [procurement/](./procurement/) |
 | Inventory (INV) | Stock (56), Warehouse (19) | **exists**: [inventory/](./inventory/) (stock, warehouse, batch-quality) |
-| Manufacture (PROD) | Planning (11), PPIC (13), Production (1), Maintenance (19), QA (2) | not yet (Design Notes exist for ppic, maintenance; Guides for production) |
+| Manufacture (PROD) | Planning (11), PPIC (13), Production (1), Maintenance (19), QA (2) | partly: [manufacture/](./manufacture/) (Planning, PPIC); Production, Maintenance, QA not yet |
 | Human Resources (HRM) | Organization (5), Employee (4), Time Attendance (6), Payroll (8), Recruitment (11) | not yet |
 | Finance & Accounting (FINACC) | Control Center (2), Transaction Flows (8), Accounting (5), Controls & Tax (2), Financial Reports (7) | not yet |
 | Master Data (MDATA) | 21 items (Customer, Sales Person, Product, Raw Material, Supplier, UoM, Warehouse, Shift, Currency, etc.) | partial: Customer and Sales PIC cards |
-| Setup (SETUP) | Security, Support & Ticket, Help and Support, Language, Dummy Data, Constants, Dashboard, Menu, Identification, Others | not yet |
+| Setup (SETUP) | Security, Support & Ticket, Help and Support, Language, Dummy Data, Constants, Dashboard, Menu, Identification, Others | partly: [setup/dummy-data/](./setup/dummy-data/) |
 
 Note: the Sales sub-modules in TG use the folders `inquiry-product`, `product-costing`, `prodev`, `quotation`, `order`, `delivery`, `crm`, `master-data`. The menu Sales > Inquiry & Quotation puts Pro-Dev and Pro-Cost as groups inside it; the TG folders separate them so that the engine cards sit near their users. Remapping exactly to the menu tree is postponed to Phase 4 (checker).
 

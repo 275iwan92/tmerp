@@ -1,0 +1,65 @@
+# ENGINE card: PvPostingService and PvBuilderService (make, post, cancel and recalculate a goods receipt)
+
+> Written 2026-10-17 (group Procurement). Source: `app/Services/Pur/PvPostingService.php` (452 lines) and `app/Services/Pur/PvBuilderService.php` (153 lines) read in full, `JournalPostingService::post` and `FinPeriodGuard::assertOpen` read where they matter. No test of these two classes was run (the existing tests are listed at the end). Document facts: `10_card_purchase-receive.md`. Verified: 2026-10-17.
+
+- **Canonical name**: PV Posting Service (post / cancel / recalculate PO) with its builder (PV Builder Service). **Classes**: `App\Services\Pur\PvPostingService`, `App\Services\Pur\PvBuilderService` (static methods). **Registry**: none; neither class is in `EngineRegistry` (finding 7), although the engine map lists the neighbouring `urgent-receipt` as a Procurement engine. **Module/sub-module**: Procurement > Receive > Purchase Receive.
+- **Frozen status**: the Goods Receipt / PO / GR-IR posting flow is frozen: do not change it without Jo (CLAUDE.md section 1; the same sentence is in the URGENT engine card).
+- **Synonyms**: post SPB, Confirm (Post), cancel SPB, recalcPo, PV-08.
+- **NOT the same as**: `StockPostingService` (Inventory, writes the stock card; this engine calls it), `ShortageRequestService` (card `21_engine_shortage-request-service.md`, which calls three methods of this class).
+
+## Trigger (no background / schedule)
+Searched `routes/console.php` (none), jobs and observers (none) and all callers by grep of `PvPostingService::` and `PvBuilderService::`. FACT.
+| Method | Trigger | File:line |
+|---|---|---|
+| `createFromLines`, `addLines`, `supplierWorklist`, `openLinesForSupplier` | Receive screen: new receipt, add PO lines, supplier and line pickers | `app/Support/V2/Data/PurchaseReceive.php` (`create`, `addLines`, `supplierOptions`, `openLineOptions`); route `routes/v2.php:851` |
+| `blockers` | Draft form shows what blocks Confirm; also checked inside `post` | `resources/views/v2/screens/purchase-receive.blade.php:182`; `resources/views/pages/pur/pv/entry.blade.php:46` |
+| `post` | Confirm (Post) of a PO-type receipt | `PurchaseReceive.php:167` (route `v2.pv.save` action `confirm`, `routes/v2.php:952`); v1 `resources/views/pages/pur/pv/entry.blade.php:205` |
+| `cancel` | Cancel on a POSTED receipt (all types, reason 10+ characters) | `PurchaseReceive.php:175` |
+| `recalcPo` | inside `post` / `cancel`; also `ShortageRequestService.php:155,215` and `SpecialReceiptService.php:160,201` | as listed |
+| `postShortageJournal`, `correctStockForShortage` | Shortage Request Confirm | `ShortageRequestService.php:221` |
+
+## Input / Output
+- **Input**: a `PvReceipt` with its `PvLine`s, the acting user (login of the session), for cancel a reason.
+- **Output (writes)**: `tm2pur`: `pv_receipt` (status, number, `posted_at/by`, `rm_stock_doc_id`, or the cancel columns and `rm_stock_rev_doc_id`), `po_line` (`c_qty_received`, `c_qty_outstanding`, `c_line_status`), `po_order.status`. `tm2inv`: one Stock In RM document (reference type PV) through `StockDocumentService` and `StockPostingService`, or a Stock Out with reference PV_CANCEL on cancel; the batch through `ReceiptBatchService`. `tm2acc`: a PUR journal voucher (source PV) and reversals. Returns `['ok', 'message', 'journal_warning', 'stock_warning']`.
+
+## Flow (text twin)
+**Post** (`post`):
+1. Refuse unless the status is DRAFT or QC_PENDING.
+2. `blockers`: every line needs quantity QC done; a normal line needs quality QC decided (PENDING blocks); an URGENT line goes through `UrgentReceiptService::postBlockers` instead; a line over tolerance needs an override.
+3. `UrgentReceiptService::prepareForPost`; then the number is taken from the type series if not yet set (kept only in memory until the save below).
+4. `postToInventory` first (own `tm2inv` transaction): the stock lines (`is_stock`, an item, accepted quantity above 0) become one Stock In RM document for the warehouse code of the receipt; the bin = the typed `i_location_code` if it exists and is usable in that warehouse, else the item's `def_location_id`, else the first usable active bin; no bin at all = exception and nothing changes. A receipt of services only gives no stock document.
+5. One `tm2pur` transaction: status POSTED, `posted_at/by`, `rm_stock_doc_id`, then `recalcPo` for every PO touched.
+6. `postPurchaseJournal` (outside the transaction): Dr stock account / Cr GR/IR clearing per account pair, accounts from the item, else from the level-1 category; lines without an account are skipped and counted in a warning.
+7. `ReceiptBatchService::forPostedReceipt` creates the batch (URGENT = Conditional, normal = Released); a failure is a warning.
+**Cancel**: only POSTED; refuse when handed over, when a non-cancelled Purchase Return exists, or when a shortage correction exists; reverse the stock by a Stock Out (reference PV_CANCEL) with the same lines (refused when the balance would go negative); then `tm2pur` status CANCELLED and `recalcPo`; then every PV and PV_SHORT voucher of the receipt is reversed (a failure is a warning).
+**Builder**: the worklist of suppliers, the open lines of one supplier, `createFromLines` (same supplier and same currency checked; Draft with number NULL; each line starts at the open quantity), `addLines` (Draft only).
+
+## Formula (one place)
+`recalcPo(po)`, per line: `received` = sum of `pv_line.i_qty_purchase` of POSTED receipts of that PO line; `outstanding` = max(`i_qty` - `received`, 0); `tol` = `c_tol_pct` of the line, else constant `RECEIVE_TOLERANCE_PCT` (5); `variance %` = `outstanding` / `i_qty` x 100. Line status: `CLOSED_SHORT` stays; `received` >= `i_qty` -> RECEIVED; `variance %` <= `tol` and `received` > 0 -> CLOSED_BY_TOLERANCE; `received` > 0 -> PARTIALLY_RECEIVED; else OPEN. Header: every receivable line in RECEIVED / CLOSED_BY_TOLERANCE / CLOSED_SHORT -> RECEIVED; else any received -> PARTIALLY_RECEIVED; else a header that was RECEIVED or PARTIALLY_RECEIVED goes back to SENT. Journal value of a line = round(accepted quantity x `c_unit_price`, 2). Rounding of quantities: none (4 decimals as stored).
+Receipt-time variance (`PvLine::recalcVariance`): (`i_qty_purchase` - open quantity before this receipt) / open quantity x 100; exceeded when above the line tolerance. Example from the mockup data: SPB2600003 received 54 against 50 open: (54 - 50) / 50 = 8% against 5% -> exceeded and overridden; PO2600002 then has `received` 54, `outstanding` 0 -> RECEIVED.
+
+## Edge cases
+- Stock is posted before the receipt changes status, and the three databases cannot share a transaction: if the `tm2pur` transaction fails after the stock posted, there is stock without a POSTED receipt (stated in the class comment; no repair routine found).
+- The purchase journal is called without a catch in `post`: `JournalPostingService::post` throws `DomainException` when there is no open GL period for the receipt date (`FinPeriodGuard::assertOpen`) and a 404 when journal code PUR is missing, so the user sees an error although the receipt is already POSTED and the stock is in (finding 3).
+- A receipt line with `is_stock` = 0 or a missing item makes no stock and no journal line.
+- `recalcPo` counts delivered, not accepted, quantity (receipt card finding 1).
+- `$po->lines->where('is_receivable', true)` empty (all lines non-receivable) makes `every()` true, so the PO would become RECEIVED; no such PO in the data (0 lines with `is_receivable` = 0).
+- Cancel is refused once handed over, but nothing sets `is_handed_over`, so that guard never fires.
+
+## Used by
+Purchase Receive screen (v1 and v2), Shortage Request (three methods), Special Receipts (`recalcPo`), Outstanding PO report (reads the results).
+
+## Open items
+No `ATTENTION-ENGINE` item concerns these classes. Findings below.
+
+## Findings (recorded, not fixed)
+1. **Not atomic across databases** (see Edge cases); the order stock -> status -> journal is deliberate and documented in the file comment. FACT.
+2. **Dates differ between the posting and its corrections.** The Stock In and the receipt journal use the receipt date (`PvPostingService.php:289,352`), while the cancel reversals (`:182,203`), the shortage journal (`:375`) and the shortage Stock Out (`:391`) use today's date, so across a month end a reversal lands in another period than the entry it reverses. FROM CODE (not run).
+3. **A closed or missing GL period breaks Post after the fact**: exception after `POSTED`; the journal is missing and nothing retries. FROM CODE (not run).
+4. **A failed stock post is cleaned** (the number is reset in memory and the receipt is untouched), so the only unsafe window is a failure after the stock posted (finding 1). FACT (code reading).
+5. **The type-PO posting path accepts a Subcon PO line** (no `i_po_type` filter in the builder), which posts no stock because Subcon lines are services. FROM CODE and data (receipt 14).
+6. **The line picker is not sorted.** `openLinesForSupplier` calls `sortBy(['c_po_doc_no' => 0, 'line_no' => 0])` (`PvBuilderService.php:53`); that is not the pair syntax of `sortBy` and `po_line` has no `c_po_doc_no` column. A script run with the same syntax on sample objects left the order unchanged, so the picker shows database order. FACT (script).
+7. **Neither class has a registry entry and no test names them.** Indirect coverage only: `QcUrgentReceiptTest`, `ShortageRequestTest`, `ShortageAutoDetectTest` and `StockPostingOrderTest` exist under `tests/Feature` (not run here). FACT (grep).
+
+## Tests
+No test calls `PvPostingService::post` or `::cancel` by its own name in `tests/` (grep `PvPostingService`: only comments and the URGENT / shortage tests above). Not run in this session.

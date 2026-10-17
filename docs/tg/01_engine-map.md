@@ -1,6 +1,6 @@
 # ENGINE map (Phase 3)
 
-> Generated 2026-10-16 from `app/Support/Engines/EngineRegistry.php` (61 registered engines), `routes/console.php` and a grep for callers. Verification status: **SCHEDULED** = proven in `routes/console.php` and its command uses the engine class (FACT, seen this session). **Screen/route** = only a class-name grep in `resources/views`, `app/Support/V2`, `routes`; not yet mapped to a button/row, so it must not be read as 'certain trigger'. Full cards exist only for 10 Sales engines; the rest wait for their module (Phase 5). The status of open items stays in `docs/ENGINE-ATTENTION.md`.
+> Generated 2026-10-16 from `app/Support/Engines/EngineRegistry.php` (65 registered engines), `routes/console.php` and a grep for callers. Verification status: **SCHEDULED** = proven in `routes/console.php` and its command uses the engine class (FACT, seen this session). **Screen/route** = only a class-name grep in `resources/views`, `app/Support/V2`, `routes`; not yet mapped to a button/row, so it must not be read as 'certain trigger'. Full cards exist only for 10 Sales engines; the rest wait for their module (Phase 5). The status of open items stays in `docs/ENGINE-ATTENTION.md`.
 
 ## Engines without a menu (background)
 Only 10 engines run on a schedule (server time, `php artisan schedule:run`):
@@ -70,57 +70,57 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 | Key | Engine | Mode | Trigger | TG card |
 |---|---|---|---|---|
 | `warehouse-stock` | Warehouse Stock (bins, capacity, dead stock) | calc | Screen/route: 8 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `stock-posting` | Stock Document Posting (stock card order) | flow | Screen/route: 5 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `stock-transfer` | Stock Transfer Posting | flow | Screen/route: 6 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `batch` | Batch Service (batch master and quality status) | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `batch-backfill` | Batch Backfill (batches from old lot data) | auto | Manual command `inv:backfill-batch` (not scheduled) | not yet |
-| `putaway-planner` | Putaway Planner (suggests a bin) | suggest | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `warehouse-task` | Warehouse Task Service (putaway tasks) | flow | Screen/route: 6 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
+| `stock-posting` | Stock Document Posting (stock card order) | flow | Screen/route: 5 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/stock/20_engine_stock-posting.md) |
+| `stock-transfer` | Stock Transfer Posting | flow | Screen/route: 6 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/warehouse/23_engine_stock-transfer-service.md) |
+| `batch` | Batch Service (batch master and quality status) | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/batch-quality/20_engine_batch-service.md) |
+| `batch-backfill` | Batch Backfill (batches from old lot data) | auto | Manual command `inv:backfill-batch` (not scheduled) | [card](./inventory/batch-quality/21_engine_batch-backfill.md) |
+| `putaway-planner` | Putaway Planner (suggests a bin) | suggest | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/warehouse/21_engine_putaway-planner.md) |
+| `warehouse-task` | Warehouse Task Service (putaway tasks) | flow | Screen/route: 6 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/warehouse/26_engine_warehouse-task-service.md) |
 | `pick-allocator` | Pick Allocator (which pallet to take) | suggest | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `pick-list` | Pick List Service | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `qc-sampling` | QC Sampling Service (sampling plan) | suggest | Screen/route: 5 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `qc-decision` | QC Decision Service | flow | Screen/route: 8 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `qc-trace` | QC Trace Service (forward trace of a rejected batch) | flow | Screen/route: 4 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `stock-reversal` | Stock Reversal Service (cancel a posted stock document) | flow | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `count-task` | Count Task Service (cycle count) | flow | SCHEDULED: `inv:count-due`, daily 05:00; also a screen | not yet |
+| `pick-list` | Pick List Service | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/warehouse/22_engine_pick-list.md) |
+| `qc-sampling` | QC Sampling Service (sampling plan) | suggest | Screen/route: 5 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/batch-quality/22_engine_qc-sampling.md) |
+| `qc-decision` | QC Decision Service | flow | Screen/route: 8 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/batch-quality/23_engine_qc-decision.md) |
+| `qc-trace` | QC Trace Service (forward trace of a rejected batch) | flow | Screen/route: 4 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/batch-quality/25_engine_qc-trace.md) |
+| `stock-reversal` | Stock Reversal Service (cancel a posted stock document) | flow | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/stock/22_engine_stock-reversal.md) |
+| `count-task` | Count Task Service (cycle count) | flow | SCHEDULED: `inv:count-due`, daily 05:00; also a screen | [card](./inventory/warehouse/24_engine_count-task-service.md) |
 | `subcon-stock` | Subcontract Stock Service (material at the vendor) | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
 | `customer-material` | Customer Material Service (consignment) | flow | Called: SpecialReceiptService | not yet |
 | `virtual-location` | Virtual Location Service (Loss, In Transit, vendor bins) | auto | Called by another engine: StockTransferService, SubconStockService, BinGenerator | not yet |
-| `pallet-labels` | Pallet Labels (arrival label, relabel after use) | suggest | Screen/route: 7 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `stock-ledger` | Stock Period Ledger | calc | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
+| `pallet-labels` | Pallet Labels (arrival label, relabel after use) | suggest | Screen/route: 7 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/warehouse/25_engine_pallet-service.md) |
+| `stock-ledger` | Stock Period Ledger | calc | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/stock/24_engine_stock-ledger.md) |
 
 ### Procurement
 
 | Key | Engine | Mode | Trigger | TG card |
 |---|---|---|---|---|
-| `urgent-receipt` | Urgent Receipt Service | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
+| `urgent-receipt` | Urgent Receipt Service | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./inventory/batch-quality/26_engine_urgent-receipt.md) |
 | `shortage-detector` | Shortage Detector (short delivery found late) | suggest | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `shortage-request` | Shortage Request Service (send us the shortfall) | flow | Screen/route: 5 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `shortage-auto-detector` | Shortage Auto Detector (from production output) | suggest | SCHEDULED: `inv:detect-shortage`, daily 05:15 (if table `inv_shortage_request` exists) | not yet |
-| `pq-matcher` | Purchase Quotation Matcher | suggest | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `single-face-price` | Single Face Price Engine | suggest | Called through `PaperPriceEngine::priceFor` for materials named SF / S FACE / SINGLE FACE (PR line in `pages/pur/pr/entry.blade.php`, PO line in `PoBuilderService::addAllocation`); constants from screen Supplier Single Face Price (`v2:md-supplier-single-face-price`), added 2026-10-17 | not yet |
-| `duplex-price` | Duplex Price Engine | suggest | Called through `PaperPriceEngine::priceFor` for materials named DUPLEX (PR line in `pages/pur/pr/entry.blade.php`, PO line in `PoBuilderService::addAllocation`); constants from screen Supplier Duplex Price (`v2:md-supplier-duplex-price`), added 2026-10-17 | not yet |
-| `corrugated-sheet-price` | Corrugated Sheet Price Engine | suggest | Called through `PaperPriceEngine::priceFor` with the order quantity for materials named SH / SHEET (PO line in `PoBuilderService::addAllocation`; a PR line has no quantity yet); constants from screens Supplier Corrugated Rule and Supplier Corrugated Index, added 2026-10-17 | not yet |
-| `paper-price` | Paper Price Engine | suggest | Called when a PR line is added from the material master (`pages/pur/pr/entry.blade.php`) and when a PR allocation becomes a PO line (`PoBuilderService::addAllocation`); constants from screen Supplier Paper Price (`v2:md-supplier-paper-price`), added 2026-10-17 | not yet |
+| `shortage-request` | Shortage Request Service (send us the shortfall) | flow | Screen/route: 5 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./procurement/receive/21_engine_shortage-request-service.md) |
+| `shortage-auto-detector` | Shortage Auto Detector (from production output) | suggest | SCHEDULED: `inv:detect-shortage`, daily 05:15 (if table `inv_shortage_request` exists) | [card](./inventory/batch-quality/29_engine_shortage-auto-detector.md) |
+| `pq-matcher` | Purchase Quotation Matcher | suggest | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./procurement/order/20_engine_pq-matcher.md) |
+| `single-face-price` | Single Face Price Engine | suggest | Called through `PaperPriceEngine::priceFor` for materials named SF / S FACE / SINGLE FACE (PR line in `pages/pur/pr/entry.blade.php`, PO line in `PoBuilderService::addAllocation`); constants from screen Supplier Single Face Price (`v2:md-supplier-single-face-price`), added 2026-10-17 | [card](./procurement/order/31_engine_single-face-price.md) |
+| `duplex-price` | Duplex Price Engine | suggest | Called through `PaperPriceEngine::priceFor` for materials named DUPLEX (PR line in `pages/pur/pr/entry.blade.php`, PO line in `PoBuilderService::addAllocation`); constants from screen Supplier Duplex Price (`v2:md-supplier-duplex-price`), added 2026-10-17 | [card](./procurement/order/32_engine_duplex-price.md) |
+| `corrugated-sheet-price` | Corrugated Sheet Price Engine | suggest | Called through `PaperPriceEngine::priceFor` with the order quantity for materials named SH / SHEET (PO line in `PoBuilderService::addAllocation`; a PR line has no quantity yet); constants from screens Supplier Corrugated Rule and Supplier Corrugated Index, added 2026-10-17 | [card](./procurement/order/33_engine_corrugated-sheet-price.md) |
+| `paper-price` | Paper Price Engine | suggest | Called when a PR line is added from the material master (`pages/pur/pr/entry.blade.php`) and when a PR allocation becomes a PO line (`PoBuilderService::addAllocation`); constants from screen Supplier Paper Price (`v2:md-supplier-paper-price`), added 2026-10-17 | [card](./procurement/order/30_engine_paper-price.md) |
 
 ### Production
 
 | Key | Engine | Mode | Trigger | TG card |
 |---|---|---|---|---|
-| `wo-generation` | Work Order Generation | auto | Screen/route: 6 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `pdr` | PDR Engine (Scheduling) | suggest | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `scheduling-rules` | Scheduling Rule Engine | calc | Called by another engine: PdrEngine | not yet |
-| `sequence-learning` | Job Order Learning (Sequence) | suggest | SCHEDULED: `sequence:train`, daily 03:45 (if table `prd_sequence_model` exists); also a screen | not yet |
-| `interruption` | Hot Job Option Generator | suggest | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `speed-target` | Speed Target Engine | suggest | SCHEDULED: `production:suggest-speed-targets`, daily 03:00 | not yet |
-| `ppic-auto-plan` | PPIC Auto-Planner | suggest | SCHEDULED: `ppic:auto-plan --trigger=DAILY` 02:00 and `--trigger=SHIFT` (shift start), if `$ppicReady`; also a screen | not yet |
-| `ppic-schedule-solver` | Schedule Solver (finite capacity) | calc | Called by another engine: AutoPlanRunner, PlanChangeService | not yet |
-| `ppic-setup-time` | Setup Time Engine | calc | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `ppic-gates` | Readiness Gates | auto | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `ppic-wo-enrich` | Work Order Enrichment | suggest | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `ppic-plan-control` | Plan Confirm and Change | flow | Called: PpicController, AutoPlanRunner, GateService | not yet |
-| `ppic-operator-timer` | Operator Timer | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `ppic-learning` | Learning Engine (changeover) | auto | SCHEDULED: `ppic:learn`, daily 03:30 (if `$ppicReady`); also a screen | not yet |
+| `wo-generation` | Work Order Generation | auto | Screen/route: 6 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/20_engine_wo-generation.md) |
+| `pdr` | PDR Engine (Scheduling) | suggest | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/29_engine_pdr.md) |
+| `scheduling-rules` | Scheduling Rule Engine | calc | Called by another engine: PdrEngine | [card](./manufacture/planning/30_engine_scheduling-rules.md) |
+| `sequence-learning` | Job Order Learning (Sequence) | suggest | SCHEDULED: `sequence:train`, daily 03:45 (if table `prd_sequence_model` exists); also a screen | [card](./manufacture/planning/28_engine_sequence-suggester.md) |
+| `interruption` | Hot Job Option Generator | suggest | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/31_engine_interruption.md) |
+| `speed-target` | Speed Target Engine | suggest | SCHEDULED: `production:suggest-speed-targets`, daily 03:00 | [card](./manufacture/ppic/20_engine_speed-target.md) |
+| `ppic-auto-plan` | PPIC Auto-Planner | suggest | SCHEDULED: `ppic:auto-plan --trigger=DAILY` 02:00 and `--trigger=SHIFT` (shift start), if `$ppicReady`; also a screen | [card](./manufacture/planning/23_engine_auto-plan-runner.md) |
+| `ppic-schedule-solver` | Schedule Solver (finite capacity) | calc | Called by another engine: AutoPlanRunner, PlanChangeService | [card](./manufacture/planning/24_engine_schedule-solver.md) |
+| `ppic-setup-time` | Setup Time Engine | calc | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/25_engine_setup-time.md) |
+| `ppic-gates` | Readiness Gates | auto | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/22_engine_gate-service.md) |
+| `ppic-wo-enrich` | Work Order Enrichment | suggest | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/21_engine_wo-planning-enricher.md) |
+| `ppic-plan-control` | Plan Confirm and Change | flow | Called: PpicController, AutoPlanRunner, GateService | [card](./manufacture/planning/26_engine_plan-confirm.md) |
+| `ppic-operator-timer` | Operator Timer | flow | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/ppic/21_engine_operator-timer.md) |
+| `ppic-learning` | Learning Engine (changeover) | auto | SCHEDULED: `ppic:learn`, daily 03:30 (if `$ppicReady`); also a screen | [card](./manufacture/planning/27_engine_learning.md) |
 
 ### Maintenance
 
@@ -131,7 +131,7 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 | `maintenance-request` | Maintenance Request Engine | suggest | Screen/route: 3 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
 | `maintenance-parts` | Maintenance Spare Part Supply | auto | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
 | `maintenance-kpi` | Maintenance KPI | calc | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
-| `maintenance-block` | Maintenance Machine Hold (Scheduling) | calc | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
+| `maintenance-block` | Maintenance Machine Hold (Scheduling) | calc | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/32_engine_maintenance-block.md) |
 
 ### Finance
 
@@ -155,13 +155,13 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 
 | Key | Engine | Mode | Trigger | TG card |
 |---|---|---|---|---|
-| `master-card-dummy` | Master Card Dummy Engine (PDF to leveled dummy data) | auto | Manual command `dummy:mastercard --env=mockup` and the Developer screen `v2/dummy/mastercard` (buttons Make Master Product, Make dummy data, Reset); ddt* databases only (FROM CODE: `assertDummy`) | not yet |
+| `master-card-dummy` | Master Card Dummy Engine (PDF to leveled dummy data) | auto | Manual command `dummy:mastercard --env=mockup` and the Developer screen `v2/dummy/mastercard` (buttons Make Master Product, Make dummy data, Reset); ddt* databases only (FROM CODE: `assertDummy`) | [card](./setup/dummy-data/20_engine_master-card-dummy.md) |
 
 ## Findings (recorded, not fixed)
 1. RESOLVED 2026-10-16: Jo decided to include `MasterCardDummyEngine`; registered as key `master-card-dummy`, `engines.json` regenerated, `EngineCatalogTest` 6/6 pass.
-2. Registry: 61 keys but 60 classes; key `dieline` has no class (three code copies). `assistant` has no caller in `app/`.
+2. Registry: 65 keys but 64 classes; key `dieline` has no class (three code copies). `assistant` has no caller in `app/`.
 3. `ppic:auto-plan`, `ppic:learn` only run if `$ppicReady` is true; that condition was not read this session.
-4. Engines without a TG card: 51 of 61. Registry vs code findings for the 10 Sales engines: `sales/90_findings_engine-group-c.md`.
+4. Engines without a TG card: 17 of 65. Registry vs code findings for the 10 Sales engines: `sales/90_findings_engine-group-c.md`.
 
 ## Diagram
 ![Engine map](./img/engine-map.svg), text twin = the schedule table above.

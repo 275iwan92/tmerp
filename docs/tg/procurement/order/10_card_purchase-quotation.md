@@ -1,0 +1,41 @@
+# Concept card: Purchase Quotation (PQ)
+
+> Written 2026-10-17 (group Procurement). FACT = mockup DB (`--env=mockup`, `tm2pur` = `ddtpur`) and code with line numbers seen in this session; test `PqFileReaderCsvTest` was run (3 passed, 16 asserts) on the default connection. Verified: 2026-10-17.
+
+- **Document type**: concept card. **Module/sub-module**: Procurement > Order > Purchase Quotation (`PROC_PQ`, target `v2:purchase-quotation`).
+- **Canonical name**: Purchase Quotation = a **supplier's offer to us**, held in `tm2pur.pq_quotation` (header) + `pq_line` (lines). Officers do not type it: they upload the file (PDF, Excel, CSV, photo) and the system reads and matches it.
+- **Synonyms**: PQ, penawaran supplier, penawaran harga masuk, supplier quote, `doc_no` `PQ26nnnnn` (born at Confirm).
+- **NOT the same as**: Quotation of Sales (`quo_quotation`, our offer to a customer; card `../../sales/quotation/10_card_quotation.md`), Inquiry. Different module, different table.
+
+## Facts
+| Item | Content | Evidence |
+|---|---|---|
+| Tables | `pq_quotation`: `doc_no` UNIQUE, `i_supplier_id`, `i_supplier_text` (name as written in the file), `i_pr_id` (the PR the offer answers, optional), `i_quotation_valid_until`, `i_currency_id`, `i_fx_rate`, `i_payment_term`, `i_lead_time_day`, `source_path`, `source_name`, `extract_status`, `extract_note`, `c_total_idr`, `status`, `cancel_reason`. `pq_line`: `pr_line_id`, `item_id`, `i_description`, `i_source_text`, `c_match_pct`, `i_qty`, `i_uom`, `i_price_fx`, `c_price_idr`, `c_subtotal_idr`, `i_lead_time_day`; UNIQUE (`pq_id`, `line_no`); FK `pq_id` ON DELETE CASCADE. Both tables are **empty (0 rows)** in the mockup data. | FACT, `show columns`, `show index`, FK query, counts |
+| Status | DRAFT (upload) -> CONFIRMED (number born) -> CLOSED (every line became a PO line) or CANCELLED (reason of 10+ characters, refused when any line already became a PO). Draft can be deleted (file deleted too). | FACT, `PurchaseQuotation.php:35,198-235,333-335`; route `routes/v2.php:661-720` |
+| Upload | One file = one Draft PQ, up to 10 files per request, 20 MB each; types PDF, XLSX, XLS, CSV, JPG, JPEG, PNG, WEBP. File stored on disk `public` under `pur/pq/<yyyymm>/`. A file that cannot be read still becomes a Draft (`extract_status` MANUAL or FAILED) so it is not lost. | FACT, `PurchaseQuotation.php:60-120`; `PqFileReader.php:15`; `routes/v2.php:664-682` |
+| Reading | With the config key `services.anthropic.key` every type is read by Claude (JSON schema output, the file content is sent to the Anthropic API); without it only Excel / CSV is read, by guessing columns from the header words (price, qty, unit, item). In the mockup environment the key is **not set** (`aiEnabled()` = false), so PDF and photos give MANUAL drafts. | FACT, `PqFileReader.php:22-34,37-98,100-176`; read-only script printing `aiEnabled()` (value only, no key) |
+| Matching | Supplier name -> `sup_supplier`; line text -> PR line (first choice) or `mat_raw` item; score and thresholds in the engine card `20_engine_pq-matcher.md`. A row with score below 80, or a missing supplier / valid-until date / qty / price, makes the file `CHECK` instead of `READ`. The officer's own choice sets the score to 100. | FACT, `PurchaseQuotation.php:78-118,155-158` |
+| Confirm needs | Supplier chosen, at least one line, each line qty > 0 and price > 0, each line pointing at a PR line or a material. | FACT, `PurchaseQuotation.php:176-196` |
+| Money | `c_price_idr` = `i_price_fx` x `i_fx_rate` of the header; `c_subtotal_idr` = qty x that; the header total is the sum. Default valid-until = document date + 14 days. | FACT, `PqLine.php:38-42`; `PqQuotation.php:49-52`; `PurchaseQuotation.php:86,132` |
+| Compare | `compare(prId)`: PR lines x Confirmed PQs that point at the PR; the cheapest price among cells with the **same unit** as the PR line is marked; "done" when the line is FULLY_ORDERED or has no open allocation. | FACT, `PurchaseQuotation.php:244-278` |
+| Make PO | `createPo`: for the picked lines, one Draft PO per supplier (an existing Draft PO of that supplier is reused). A line with a PR line goes through the PR allocation (`PoBuilderService::addAllocation`; the unit must equal the PR unit) and gets the PQ price; a line without a PR line becomes a PO line directly (class RAW, stock item). `po_line.pq_line_id` records the origin. The PQ turns CLOSED when none of its lines is left without a PO line. | FACT, `PurchaseQuotation.php:280-338`; route `routes/v2.php:707-720` |
+| Which PRs | The PR list for a PQ shows PRs with status APPROVED or PARTIALLY_ORDERED, not cancelled, latest 100. | FACT, `PurchaseQuotation.php:42-46` |
+
+## Relations
+- **source**: file of the supplier, `sup_supplier`, PR lines (`../requisition/10_card_purchase-requisition.md`), `mat_raw`, currency master (`fin_currency`).
+- **used_by**: the Compare screen, PO creation (`11_card_purchase-order.md`), the PQ print.
+- **flows**: upload -> Draft (read + matched) -> officer checks yellow rows -> Confirm (number) -> Compare per PR -> Make PO -> CLOSED.
+- **frozen_zone**: none. The PO flow after it is described in the PO card.
+
+## Findings (recorded, not fixed)
+1. **The PO does not keep the PQ link at header level**: `po_order.i_pq_id` exists but is never written (the link lives in `po_line.pq_line_id`). FACT (grep `i_pq_id`: model only).
+2. **A PQ line with a PR line ignores the PQ quantity.** The PO line takes the allocation quantity of the PR line; only `pq_line_id` and the IDR price are copied. A quote for 80 rim against a PR line of 100 rim gives a PO line of 100 rim. FROM CODE (`PurchaseQuotation.php:309-313`); not run because the tables are empty.
+3. **A foreign-currency PQ becomes an IDR PO line without a rate on the PO**: `c_price_idr` is converted, but `po_order.i_currency_id` and the rate are never written (all POs are created with rate 1 and no currency), so the PV-04 same-currency check in `PvBuilderService` compares NULL with NULL. FACT (grep `i_currency_id`: written only by the PQ).
+4. **Deleting a Draft PO does not reopen its CLOSED PQ** and does not remove `pq_line_id` records elsewhere; a PQ closed by mistake cannot be compared again. FROM CODE (PO delete only releases the allocation).
+5. **No test for the PQ flow**: only `PqFileReaderCsvTest` (reading CSV and the number parser) exists; no test for `upload`, `confirm`, `createPo`, `compare` or `PqMatcher`. FACT (grep `tests/`).
+6. **File content leaves the system when the AI key is set** (decision of Jo, FROM DOCUMENT `docs/backlog04_procurement.md`: "key & izin data penawaran dikirim ke Anthropic"). The code gives no per-file warning to the officer. FROM CODE.
+7. **Formats .eml / .msg are not accepted** (`PqFileReader::ACCEPT`), as the backlog says. FACT.
+8. **`PqFileReader` messages are Indonesian** ("Pembaca AI gagal") while the screen is English. FACT (`PqFileReader.php`).
+
+## Already exists? Searched where, result
+`concept:find "purchase quotation"`: TG cards only name it as "not the same as" (Sales quotation card); menu `PROC_PQ`; files `PurchaseQuotation.php`, `PurchaseQuotationGrid.php`, `PurchaseQuotationPrint.php`, `purchase-quotation.blade.php`; help topic `purchase-quotation`. Tables `pq_*`. Result: ALREADY EXISTS (v2 only; the v1 folder `resources/views/pages/pur/pq` named in `Screens.php` is not there). Backlog statement "PR -> PQ (boleh dilewati) -> PO" is true in code: `createPo` is the only place that needs a PQ, and the Draft PO can be made without it.
