@@ -19,6 +19,7 @@ use App\Models\Sys\SysConstant;
 use App\Services\Migration\EmployeeLoginProvisionService;
 use App\Services\Payroll\PayrollAccess;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 final class EmployeeProfileService
@@ -76,6 +77,15 @@ final class EmployeeProfileService
         }
 
         return [$e, $credentials];
+    }
+
+    // Hapus foto profil: file di disk public dan kolom photo_path (unggah baru tetap menggantikan).
+    public function removePhoto(EmpEmployee $e, SecUser $user): void
+    {
+        if ($e->photo_path) {
+            Storage::disk('public')->delete($e->photo_path);
+        }
+        $e->update(['photo_path' => null, 'updated_by' => $user->login]);
     }
 
     public function setActive(EmpEmployee $e, bool $active, SecUser $user): void

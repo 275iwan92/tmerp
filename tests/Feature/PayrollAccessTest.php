@@ -6,9 +6,9 @@ use App\Http\Middleware\ForcePasswordChange;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrPayslip;
 use App\Models\Sys\SecUser;
+use App\Services\Hrm\EmployeeProfileService;
 use App\Services\Payroll\PayrollAccess;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 // Pembatasan payroll (user 2026-10-07): Direksi/GM semua, HR Officer hanya Non-staff, Op Manager hanya slip bawahan, selain itu tolak
@@ -131,16 +131,14 @@ class PayrollAccessTest extends TestCase
     {
         $staffId = (int) EmpEmployee::query()->where('staff_type', 'STAFF')->value('employee_id');
 
+        $this->withoutMiddleware(ForcePasswordChange::class);
         $dir = $this->user('dir', ['DIREKSI']);
-        $this->actingAs($dir);
-        Livewire::test('pages::master.employee')->call('openEdit', $staffId)
-            ->assertSet('staff_type', 'STAFF')->assertSet('payment_frequency', EmpEmployee::find($staffId)->payment_frequency)
-            ->assertSee('Tipe Pegawai')->assertSee('Metode Payroll');
+        $this->assertTrue(EmployeeProfileService::canEditStaffType($dir));
+        $this->actingAs($dir)->get(route('v2.screen', 'hrm-employee-form').'?id='.$staffId)
+            ->assertOk()->assertSee('Employee type')->assertSee('Payroll method')->assertSee('name="staff_type"', false)->assertSee('name="payment_frequency"', false);
 
         $hr = $this->user('hr', ['HR_OFFICER']);
-        $this->actingAs($hr);
-        $component = Livewire::test('pages::master.employee')->call('openEdit', $staffId);
-        $this->assertFalse($component->instance()->canEditStaffType());
-        $this->assertFalse($component->instance()->canEditPayrollMethod(), 'HR Officer cannot change the payroll method of a staff member');
+        $this->assertFalse(EmployeeProfileService::canEditStaffType($hr));
+        $this->assertFalse(EmployeeProfileService::canEditPayrollMethod($hr, EmpEmployee::find($staffId)), 'HR Officer cannot change the payroll method of a staff member');
     }
 }

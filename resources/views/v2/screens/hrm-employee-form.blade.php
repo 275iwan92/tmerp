@@ -3,8 +3,8 @@
  Tujuan       : Form Master Employee v2 (konsep A2 disetujui Jo): banner pegawai (foto, nama, chip status, cincin kelengkapan), empat KPI (masa kerja, sisa cuti, absen, disiplin), tab Profile / Job / Contract / Family / Education / Bank / Discipline dan History bawaan.
  Sumber hulu  : App\Support\V2\Data\EmployeeProfile (KPI, kelengkapan, opsi); tabel tm2mst.emp_employee dan tab anak emp_contract, emp_family, emp_education, emp_disciplinary, emp_bank_account.
  Input        : Query id (pegawai) atau new=1; session v2_flash dan errors.
- Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate) -> EmployeeProfileService. POST v2.hrm.employee.contract / family / deceased / education / discipline -> EmployeeRecordService (tiap dialog menyimpan sendiri; tanpa edit / hapus baris).
- Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record), kembali dari dialog lewat ?tab=. Tab Documents, BPJS, Account menyusul.
+ Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate / Remove Photo) -> EmployeeProfileService. POST v2.hrm.employee.contract / family / deceased / education / discipline -> EmployeeRecordService (tiap dialog menyimpan sendiri; tanpa edit / hapus baris).
+ Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record), kembali dari dialog lewat ?tab=; flash v2_login_card = kartu login pegawai baru (sekali tampil). Tab Documents, BPJS, Account menyusul.
  Status       : Aktif (mockup.test dulu, keputusan Jo 2026-10-16). Gaji kontrak tersembunyi mengikuti aturan v1 (admin, posisi salary_hidden_from_hr, tipe KONTRAK / BORONGAN).
 --}}
 @php
@@ -43,6 +43,11 @@
     :hidden="$new ? [] : ['id' => $e->employee_id]"
     :tabs="['profile' => $tab('Profile', 'profile'), 'job' => $tab('Job', 'job'), 'contract' => 'Contract', 'family' => $tab('Family', 'family'), 'education' => 'Education', 'bank' => 'Bank', 'discipline' => 'Discipline']"
     :created-by="$e->created_by" :created-at="$e->created_at?->toDateTimeString()" :updated-by="$e->updated_by" :updated-at="$e->updated_at?->toDateTimeString()">
+    @if ($e->photo_path)
+        <x-slot:special>
+            <x-dl::button size="sm" preset="delete" label="Remove Photo" data-f-act="remove_photo" data-dl-confirm="{{ t('Remove the profile photo of this employee?') }}" />
+        </x-slot:special>
+    @endif
     <x-slot:strip>
         <x-dl::avatar size="lg" :name="raw($new ? 'New Employee' : $e->full_name)" :photo="$e->photo_path ? asset('storage/'.$e->photo_path) : null" :sub="$new ? t('Fill the Profile and Job tabs, then Save.') : raw($e->employee_code.' · '.($e->position?->department?->department_name ?? '—'))" />
         @unless ($new)
@@ -295,3 +300,12 @@
         </x-dl::action-form>
     </x-dl::modal>
 @endunless
+
+{{-- Kartu login pegawai baru: kredensial dititipkan flash session, tampil sekali. --}}
+@if ($card = session('v2_login_card'))
+    <x-dl::modal id="emp-login-card" title="Login Card" icon="fa-id-card" :open="true">
+        <x-dl::login-card :name="raw($card['name'])" :code="$card['code']" :login="raw($card['login'])" :password="raw($card['password'])">
+            <x-dl::button type="button" variant="secondary" label="Close" data-dl-close-modal />
+        </x-dl::login-card>
+    </x-dl::modal>
+@endif

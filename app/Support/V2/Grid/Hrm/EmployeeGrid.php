@@ -7,7 +7,7 @@
  * Input        : Query string saringan grid.
  * Output       : x-dl::grid lewat DbGrid; alamat buka = v2:hrm-employee-form?id={id}, New = ?new=1.
  * Dipakai oleh : Menu HRM > Master Employee (slug hrm-employee).
- * Status       : Aktif. Layar v1 pages::master.employee tetap hidup untuk tab anak (Contract, Family, Education, Discipline) sampai tahap berikutnya.
+ * Status       : Aktif. Layar v1 pages::master.employee sudah dipensiunkan (2026-10-16); rute lama /hrm/employee mengalihkan ke grid ini.
  */
 
 namespace App\Support\V2\Grid\Hrm;
@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Employee (v1: pages::master.employee).
+// Master Employee: grid + form v2 (hrm-employee-form).
 class EmployeeGrid extends HrmGrid
 {
     private array $attendance = [];
@@ -40,14 +40,9 @@ class EmployeeGrid extends HrmGrid
         return self::MASTER;
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'hrm.employee';
-    }
-
-    protected function v1Component(): ?string
-    {
-        return 'pages::master.employee';
+        return true;
     }
 
     public function openUrl(): ?string

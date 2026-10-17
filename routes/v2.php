@@ -254,15 +254,21 @@ Route::prefix('v2')->name('v2.')->group(function () {
         abort_unless(Auth::user()->canAccessModule('HRM'), 403);
         $e = $r->filled('id') ? EmpEmployee::findOrFail((int) $r->input('id')) : null;
         $action = (string) $r->input('action', 'save');
+        $cred = null;
         if ($e && in_array($action, ['activate', 'deactivate'], true)) {
             $svc->setActive($e, $action === 'activate', Auth::user());
             $msg = $action === 'activate' ? ':name activated.' : ':name deactivated.';
+        } elseif ($e && $action === 'remove_photo') {
+            $svc->removePhoto($e, Auth::user());
+            $msg = 'Photo of :name removed.';
         } else {
             [$e, $cred] = $svc->save($e, $r->except(['id', 'action']), Auth::user(), $r->file('photo'));
-            $msg = $cred ? ':name saved. Login '.$cred['login'].' created, temporary password '.$cred['password'].' (shown once).' : ':name saved.';
+            $msg = ':name saved.';
         }
 
-        return redirect(route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id)->with('v2_flash', tf($msg, ['name' => $e->full_name]));
+        // Kartu login: kredensial pegawai baru dititipkan lewat flash session, tampil sekali (tidak disimpan di tempat lain).
+        return redirect(route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id)->with('v2_flash', tf($msg, ['name' => $e->full_name]))
+            ->with('v2_login_card', $cred ? $cred + ['code' => $e->employee_code] : null);
     })->name('hrm.employee.save');
 
     // Master Employee Form v2: catatan anak (kontrak, keluarga, pendidikan, kedisiplinan). Tiap dialog menyimpan sendiri; aturan = EmployeeRecordService.
@@ -281,9 +287,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return $open($employee, 'contract', t('Contract added. The previous contract has ended.'));
         })->name('contract');
         Route::post('/family', function (Request $r, int $employee, EmployeeRecordService $svc) use ($open, $emp) {
-            $cred = $svc->addFamily($emp($employee), $r->all(), Auth::user());
+            $e = $emp($employee);
+            $cred = $svc->addFamily($e, $r->all(), Auth::user());
 
-            return $open($employee, 'family', $cred ? tf('Family member added. Login :login created, temporary password :pw (shown once).', ['login' => $cred['login'], 'pw' => $cred['password']]) : t('Family member added.'));
+            return $open($employee, 'family', t('Family member added.'))->with('v2_login_card', $cred ? $cred + ['code' => $e->employee_code] : null);
         })->name('family');
         Route::post('/deceased', function (Request $r, int $employee, EmployeeRecordService $svc) use ($open, $emp) {
             $svc->markDeceased(EmpFamily::where('employee_id', $emp($employee)->employee_id)->findOrFail((int) $r->input('family_id')), Auth::user());

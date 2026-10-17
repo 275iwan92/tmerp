@@ -3851,3 +3851,20 @@ input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--dl-ink) 7
 .dl-display--plain,.dl-display--plain .dl-display{border-bottom:0}
 .dl-display--lead .dl-display{font-size:calc(20px * var(--dl-font-scale));font-weight:700;color:var(--dl-ink-strong)}
 .dl-media-video{display:block;width:100%;max-width:960px;border:1px solid var(--dl-border);border-radius:var(--dl-radius)}
+/* ================= LOGIN CARD (kartu login karyawan baru, cetak) ================= */
+.dl-logincard{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);overflow:hidden;max-width:380px}
+.dl-logincard__head{background:var(--dl-navy);color:var(--dl-white);padding:12px 16px;font-weight:600;font-size:calc(14px * var(--dl-font-scale))}
+.dl-logincard__body{padding:18px;display:flex;flex-direction:column;gap:12px}
+.dl-logincard__org{text-align:center;color:var(--dl-ink);font-size:calc(12px * var(--dl-font-scale))}
+.dl-logincard small{display:block;color:var(--dl-ink);font-size:calc(10px * var(--dl-font-scale));text-transform:uppercase;font-weight:600}
+.dl-logincard b{color:var(--dl-ink-strong);font-size:calc(14px * var(--dl-font-scale))}
+.dl-logincard__mono{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:calc(20px * var(--dl-font-scale));font-weight:700;letter-spacing:.04em;color:var(--dl-ink-strong)}
+.dl-logincard__note{border-top:1px solid var(--dl-border-soft);padding-top:8px;color:var(--dl-ink);font-size:calc(11px * var(--dl-font-scale))}
+.dl-logincard__bar{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media print{
+  body:has(.dl-logincard) *{visibility:hidden}
+  body:has(.dl-logincard) .dl-logincard,body:has(.dl-logincard) .dl-logincard *{visibility:visible}
+  body:has(.dl-logincard) .dl-logincard{position:fixed;left:0;top:0;border-radius:0;max-width:none;width:100%}
+  html:has(.dl-logincard),body:has(.dl-logincard){height:100vh;overflow:hidden;margin:0}
+  .dl-logincard__bar,.dl-logincard__note{display:none}
+}

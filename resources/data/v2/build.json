@@ -1,8 +1,8 @@
 {
-    "generated": "2026-10-16 17:47",
+    "generated": "2026-10-17 10:09",
     "database": "ddtsys",
     "totals": {
-        "objects": 170,
+        "objects": 171,
         "modules": 9,
         "modules_done": 6,
         "screens": 289,
@@ -24,9 +24,9 @@
         "models": 376,
         "migrations": 628,
         "tests": 192,
-        "dictionary": 13831,
+        "dictionary": 13844,
         "languages": 4,
-        "commits": "1386",
+        "commits": "1389",
         "since": "2026-08-06"
     },
     "modules": [
@@ -154,23 +154,17 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 123,
+            "commits": 124,
             "days": 7,
             "last": "2026-10-16",
             "screens": 152,
             "objects": 15,
             "engines": 46,
-            "tests": 72
+            "tests": 73
         }
     ],
-    "untracked": 1172,
+    "untracked": 1174,
     "days": [
-        {
-            "date": "2026-10-03",
-            "iwan": 0,
-            "jo": 0,
-            "other": 34
-        },
         {
             "date": "2026-10-04",
             "iwan": 0,
@@ -246,8 +240,14 @@
         {
             "date": "2026-10-16",
             "iwan": 0,
-            "jo": 15,
-            "other": 23
+            "jo": 16,
+            "other": 25
+        },
+        {
+            "date": "2026-10-17",
+            "iwan": 0,
+            "jo": 0,
+            "other": 0
         }
     ],
     "weeks": [
@@ -314,8 +314,8 @@
         {
             "week": "2026-W42",
             "iwan": 10,
-            "jo": 47,
-            "other": 52
+            "jo": 48,
+            "other": 54
         }
     ],
     "items": [
@@ -5370,6 +5370,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:LoginCard",
+            "name": "LoginCard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
             "key": "object:LookupGrid",
             "name": "LookupGrid",
             "module": "DevLib",
@@ -5772,7 +5783,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-16",
             "changed_by": null
         },
         {

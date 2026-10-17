@@ -7,6 +7,7 @@ use App\Models\Sys\SecUser;
 use App\Services\Hrm\EmployeeProfileService;
 use App\Support\V2\Data\EmployeeProfile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -55,6 +56,43 @@ class EmployeeProfileScreenTest extends TestCase
             $this->assertSame('Zz Test Profil B', $e2->fresh()->full_name);
             $this->expectException(ValidationException::class);
             $svc->save($e2, ['nik_ktp' => '12'] + $base + ['position_id' => $pos], $admin);
+        } finally {
+            DB::connection('tm2sys')->rollBack();
+            DB::connection('tm2mst')->rollBack();
+        }
+    }
+
+    public function test_remove_photo_deletes_file_and_column_and_login_card_shows_once(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+        DB::connection('tm2mst')->beginTransaction();
+        DB::connection('tm2sys')->beginTransaction();
+        try {
+            [$e] = app(EmployeeProfileService::class)->save(null, ['full_name' => 'Zz Test Foto', 'staff_type' => 'NON_STAFF', 'payment_frequency' => 'MONTHLY',
+                'position_id' => DB::connection('tm2mst')->table('org_position')->where('activate', true)->value('position_id')], $admin);
+            Storage::disk('public')->put('hrm/zz/profile/p.jpg', 'x');
+            $e->update(['photo_path' => 'hrm/zz/profile/p.jpg']);
+
+            $url = route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id;
+            $has = fn (string $html, string $needle): bool => str_contains($html, $needle);
+            $get = fn (array $session = []) => $this->actingAs($admin)->withSession($session)->get($url)->assertOk()->getContent();
+
+            $this->assertTrue($has($get(), 'data-f-act="remove_photo"'), 'tombol Remove Photo tampil bila ada foto');
+            $this->actingAs($admin)->post(route('v2.hrm.employee.save'), ['id' => $e->employee_id, 'action' => 'remove_photo'])->assertRedirect($url);
+            $this->assertNull($e->fresh()->photo_path);
+            Storage::disk('public')->assertMissing('hrm/zz/profile/p.jpg');
+            $this->assertFalse($has($get(), 'data-f-act="remove_photo"'), 'tombol hilang setelah foto dihapus');
+
+            // Pegawai baru lewat rute simpan: login terbentuk, kartu login dititipkan flash dan tampil tepat sekali.
+            $posted = $this->actingAs($admin)->post(route('v2.hrm.employee.save'), ['full_name' => 'Zz Test Kartu', 'staff_type' => 'NON_STAFF', 'payment_frequency' => 'MONTHLY',
+                'position_id' => DB::connection('tm2mst')->table('org_position')->where('activate', true)->value('position_id')]);
+            $card = session('v2_login_card');
+            $this->assertNotEmpty($card['password'] ?? null, 'kredensial dititipkan di flash');
+            $location = $posted->headers->get('Location');
+            $shown = $this->actingAs($admin)->get($location)->assertOk()->getContent();
+            $this->assertTrue($has($shown, $card['password']) && $has($shown, $card['login']) && $has($shown, 'Initial password'), 'kartu login tampil');
+            $this->assertFalse($has($this->actingAs($admin)->get($location)->getContent(), $card['password']), 'kartu login tidak tampil lagi');
         } finally {
             DB::connection('tm2sys')->rollBack();
             DB::connection('tm2mst')->rollBack();
