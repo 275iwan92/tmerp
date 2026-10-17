@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-17 11:53",
+    "generated": "2026-10-17 13:32",
     "database": "ddtsys",
     "totals": {
         "objects": 171,
         "modules": 9,
         "modules_done": 6,
-        "screens": 291,
-        "v2": 284,
+        "screens": 292,
+        "v2": 285,
         "v1": 5,
         "not_built": 2,
-        "waiting_qc": 288,
+        "waiting_qc": 289,
         "locked": 1,
         "forms": 114,
-        "grids": 107,
+        "grids": 108,
         "reports": 70,
-        "grid_classes": 182,
-        "lookups": 54,
+        "grid_classes": 183,
+        "lookups": 55,
         "report_grids": 47,
-        "engines": 62,
+        "engines": 63,
         "engine_groups": 14,
-        "tables": 426,
+        "tables": 427,
         "databases": 10,
-        "models": 378,
-        "migrations": 630,
-        "tests": 195,
-        "dictionary": 13894,
+        "models": 379,
+        "migrations": 632,
+        "tests": 196,
+        "dictionary": 13901,
         "languages": 4,
-        "commits": "1393",
+        "commits": "1395",
         "since": "2026-08-06"
     },
     "modules": [
@@ -116,14 +116,14 @@
         },
         {
             "label": "Master Data",
-            "total": 23,
-            "v2": 23,
+            "total": 24,
+            "v2": 24,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 23,
+            "waiting_qc": 24,
             "locked": 0,
             "form": 7,
-            "grid": 16,
+            "grid": 17,
             "report": 0
         },
         {
@@ -154,13 +154,13 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 127,
+            "commits": 129,
             "days": 8,
             "last": "2026-10-17",
-            "screens": 153,
+            "screens": 155,
             "objects": 16,
             "engines": 47,
-            "tests": 78
+            "tests": 79
         }
     ],
     "untracked": 1175,
@@ -246,7 +246,7 @@
         {
             "date": "2026-10-17",
             "iwan": 0,
-            "jo": 3,
+            "jo": 5,
             "other": 1
         }
     ],
@@ -314,7 +314,7 @@
         {
             "week": "2026-W42",
             "iwan": 10,
-            "jo": 51,
+            "jo": 53,
             "other": 55
         }
     ],
@@ -1779,8 +1779,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "FORM",
@@ -3038,6 +3038,17 @@
         },
         {
             "type": "GRID",
+            "key": "menu:MD_SF_PRICE",
+            "name": "Supplier Single Face Price",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
             "key": "menu:MD_UOM",
             "name": "Master Unit (UoM)",
             "module": "Master Data",
@@ -3493,10 +3504,10 @@
             "name": "Tax Rate",
             "module": "Master Data",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -4058,6 +4069,17 @@
             "built_by": "jo",
             "changed_at": "2026-10-17",
             "changed_by": "jo"
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:single-face-price",
+            "name": "Single Face Price Engine",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "ENGINE",
@@ -6591,6 +6613,14 @@
                     "key": "paper-price",
                     "name": "Paper Price Engine",
                     "purpose": "Suggests the purchase price of paper per supplier: price per ream (standard size or cut from a roll), reams from a roll, price per purchase unit.",
+                    "mode": "suggest",
+                    "used": 3,
+                    "tests": 0
+                },
+                {
+                    "key": "single-face-price",
+                    "name": "Single Face Price Engine",
+                    "purpose": "Suggests the purchase price of a Single Face sheet per supplier: index per square metre x length x width, divided by the PPN divisor.",
                     "mode": "suggest",
                     "used": 3,
                     "tests": 0

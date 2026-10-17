@@ -98,6 +98,7 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 | `shortage-request` | Shortage Request Service (send us the shortfall) | flow | Screen/route: 5 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
 | `shortage-auto-detector` | Shortage Auto Detector (from production output) | suggest | SCHEDULED: `inv:detect-shortage`, daily 05:15 (if table `inv_shortage_request` exists) | not yet |
 | `pq-matcher` | Purchase Quotation Matcher | suggest | Screen/route: 2 files refer to this class (FROM class-name grep; button/row not yet mapped) | not yet |
+| `single-face-price` | Single Face Price Engine | suggest | Called through `PaperPriceEngine::priceFor` for materials named SF / S FACE / SINGLE FACE (PR line in `pages/pur/pr/entry.blade.php`, PO line in `PoBuilderService::addAllocation`); constants from screen Supplier Single Face Price (`v2:md-supplier-single-face-price`), added 2026-10-17 | not yet |
 | `paper-price` | Paper Price Engine | suggest | Called when a PR line is added from the material master (`pages/pur/pr/entry.blade.php`) and when a PR allocation becomes a PO line (`PoBuilderService::addAllocation`); constants from screen Supplier Paper Price (`v2:md-supplier-paper-price`), added 2026-10-17 | not yet |
 
 ### Production
@@ -171,3 +172,5 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: the `paper-price` entry text now names the Tax Rate screen (`fin_tax_rate`) for PPN; nothing in this card changed.
+
+> Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `single-face-price` (Procurement) was added after the lines cited here; nothing in this card changed.

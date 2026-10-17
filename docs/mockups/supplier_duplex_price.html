@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Supplier Duplex Price - Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #eef2f8; color: #0f172a; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  th { background: #dfe7f5; color: #0f172a; font-weight: 600; text-align: left; padding: 6px 8px; font-size: 11px; border-bottom: 1px solid #c7d2e6; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e5eaf2; font-size: 12px; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge-on { background: #d1fae5; color: #065f46; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 600; }
+  .sample { background: #fef3c7; color: #78350f; border-radius: 4px; padding: 0 4px; font-weight: 600; }
+  .empty { background: #fee2e2; color: #7f1d1d; border-radius: 4px; padding: 0 4px; font-weight: 600; }
+</style>
+</head>
+<body class="text-xs">
+
+<div class="px-5 py-2 text-[11px] text-slate-700">Master Data &gt; Master &gt; <b class="text-accent">Supplier Duplex Price</b></div>
+
+<main class="px-5 pb-6 space-y-3 max-w-[1400px]">
+
+  <div class="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-[12px]">
+    Harga duplex per supplier menurut tanggal berlaku, seperti Kurs. Rumus Reference sheet untuk Indokertas, Weight untuk CM dan MSE. Gramasi dalam rentang gsm dari-sampai; APKey dalam persen (500 = dikali 5,00). Price basis: apakah harga sudah termasuk PPN.
+  </div>
+
+  <section class="card p-3">
+    <div class="flex items-center gap-2 mb-2">
+      <div class="border border-slate-300 rounded-full px-3 py-1 w-64 text-slate-500"><i class="fa-solid fa-magnifying-glass mr-1"></i> Cari...</div>
+      <span class="text-slate-600">8 baris</span>
+      <div class="ml-auto flex gap-2">
+        <span class="border border-slate-300 rounded px-3 py-1 font-semibold">+ Baris</span>
+        <span class="border border-slate-300 rounded px-3 py-1 text-slate-400">Undo</span>
+        <span class="bg-blue-200 text-white rounded px-3 py-1 font-semibold">Save</span>
+      </div>
+    </div>
+    <table class="w-full">
+      <tr>
+        <th>#</th><th>Supplier*</th><th>Grade</th><th class="num">Gsm dari*</th><th class="num">Gsm sampai*</th><th>Rumus*</th><th class="num">Index*</th><th class="num">APKey %*</th><th>Price basis*</th><th>Berlaku sejak*</th><th>Aktif</th>
+      </tr>
+      <tr><td>1</td><td>INDOKERTAS PERKASA</td><td>IKDP</td><td class="num">250</td><td class="num">310</td><td>Reference sheet</td><td class="num"><span class="sample">1.000</span></td><td class="num">500</td><td>Excl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>2</td><td>INDOKERTAS PERKASA</td><td>IKDP</td><td class="num">350</td><td class="num">350</td><td>Reference sheet</td><td class="num"><span class="sample">1.000</span></td><td class="num">505</td><td>Excl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>3</td><td>INDOKERTAS PERKASA</td><td>IDA</td><td class="num">250</td><td class="num">310</td><td>Reference sheet</td><td class="num"><span class="sample">1.000</span></td><td class="num">510</td><td>Excl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>4</td><td>INDOKERTAS PERKASA</td><td>IDA</td><td class="num">350</td><td class="num">350</td><td>Reference sheet</td><td class="num"><span class="sample">1.000</span></td><td class="num">515</td><td>Excl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>5</td><td>INDOKERTAS PERKASA</td><td>IDA</td><td class="num">400</td><td class="num">450</td><td>Reference sheet</td><td class="num"><span class="sample">1.000</span></td><td class="num">520</td><td>Excl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>6</td><td>CV CAHAYA MAJU</td><td></td><td class="num">250</td><td class="num">500</td><td>Weight</td><td class="num"><span class="sample">1.000</span></td><td class="num"><span class="empty">belum ada</span></td><td>Excl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>7</td><td>PT MEGA SURYA ERATAMA</td><td></td><td class="num">250</td><td class="num">500</td><td>Weight</td><td class="num"><span class="sample">1.000</span></td><td class="num"><span class="empty">belum ada</span></td><td>Excl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>8</td><td>PT MEGA SURYA ERATAMA</td><td></td><td class="num">250</td><td class="num">500</td><td>Weight</td><td class="num"><span class="sample">1.100</span></td><td class="num"><span class="empty">belum ada</span></td><td>Excl PPN</td><td>01-Nov-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+    </table>
+    <div class="mt-2 text-[11px] text-slate-700">
+      <span class="sample">kuning</span> = angka contoh, index belum diberikan Jo. <span class="empty">merah</span> = APKey CM dan MSE belum diberikan; engine tidak mengisi harga sampai kolom ini terisi. Supplier untuk IKDP dan IDA belum diketahui: ditaruh di Indokertas hanya sebagai contoh tampilan. Baris 8 menunjukkan riwayat: tanggal baru = index baru, baris lama tetap.
+    </div>
+  </section>
+
+  <section class="card p-3">
+    <div class="font-semibold text-slate-800 mb-2">Contoh hasil per rim di PR dan PO (layar PR dan PO tidak berubah tampilannya, hanya kolom harga terisi otomatis dan boleh ditimpa petugas)</div>
+    <table class="w-full">
+      <tr><th>Bahan</th><th>Supplier</th><th>Baris harga yang dipakai</th><th>Hitungan per rim</th><th class="num">Harga per rim</th></tr>
+      <tr><td>DUPLEX 250 GR 79 X 109 PKR</td><td>INDOKERTAS PERKASA</td><td>IKDP 250-310, APKey 500, index 1.000 (contoh)</td><td>250 x 79 x 109 / 79 / 109 x 1.000 x 5,00</td><td class="num font-semibold">1.250.000</td></tr>
+      <tr><td>DUPLEX 350 GR 79 X 109 PKR</td><td>INDOKERTAS PERKASA</td><td>IKDP 350, APKey 505, index 1.000 (contoh)</td><td>350 x 79 x 109 / 79 / 109 x 1.000 x 5,05</td><td class="num font-semibold">1.767.500</td></tr>
+      <tr><td>DUPLEX 250 GR 79 X 109 MSE</td><td>PT MEGA SURYA ERATAMA</td><td>Weight, index 1.000 (contoh), APKey belum ada</td><td>250 / 2 x 79 x 109 / 10000 x 1.000 x APKey</td><td class="num"><span class="empty">kosong, petugas isi</span></td></tr>
+    </table>
+    <div class="mt-2 text-[11px] text-slate-700">Satuan RIM = harga rim; satuan LBR = harga rim dibagi 500. Price basis Incl PPN: hasil dibagi (1 + tarif PPN pada tanggal dokumen / 100), mengikuti layar Tax Rate. Grade dikenali dari kolom brand atau nama bahan; bila tidak ada yang cocok atau cocok lebih dari satu, harga tidak diisi.</div>
+  </section>
+
+</main>
+</body>
+</html>

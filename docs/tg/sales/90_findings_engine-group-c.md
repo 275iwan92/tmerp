@@ -3,7 +3,7 @@
 > DRAFT 2026-10-16, awaiting Jo's approval. Only RECORDED, nothing fixed. Details per engine are in each card (section "Findings"). Label FACT = seen directly this session (code, `ddt*` query, test run).
 
 ## A. Verification of the engine list against the registry
-FACT: `EngineRegistry` holds 62 keys (61 when written; `paper-price` added 2026-10-17). Relevant for Sales: `dieline`, `imposition`, `spec`, `usage-rate`, `routing`, `costing`, `costing-advisor`, `reverse-costing`, `material-planning`, `booking-maintenance`, `cpdel`, `cpdel-promise`, `flow`, `wo-generation`. All methods registered for the group C engines exist in the class (matched one by one); the gaps are in public methods that are NOT registered (Spec: `processOfBom`; Material Planning: 15 methods; Dieline: export `eval/scope/STROKE`).
+FACT: `EngineRegistry` holds 63 keys (61 when written; `paper-price` and `single-face-price` added 2026-10-17). Relevant for Sales: `dieline`, `imposition`, `spec`, `usage-rate`, `routing`, `costing`, `costing-advisor`, `reverse-costing`, `material-planning`, `booking-maintenance`, `cpdel`, `cpdel-promise`, `flow`, `wo-generation`. All methods registered for the group C engines exist in the class (matched one by one); the gaps are in public methods that are NOT registered (Spec: `processOfBom`; Material Planning: 15 methods; Dieline: export `eval/scope/STROKE`).
 
 | # | Finding | Evidence |
 |---|---|---|
@@ -43,3 +43,5 @@ FACT (partly read): `ProCostContextService` (maps the ProDev layout to costing b
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: the `paper-price` entry text now names the Tax Rate screen (`fin_tax_rate`) for PPN; nothing in this card changed.
+
+> Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `single-face-price` (Procurement) was added after the lines cited here; nothing in this card changed.

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Supplier Single Face Price - Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #eef2f8; color: #0f172a; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  th { background: #dfe7f5; color: #0f172a; font-weight: 600; text-align: left; padding: 6px 8px; font-size: 11px; border-bottom: 1px solid #c7d2e6; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e5eaf2; font-size: 12px; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge-on { background: #d1fae5; color: #065f46; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 600; }
+  .sample { background: #fef3c7; color: #78350f; border-radius: 4px; padding: 0 4px; font-weight: 600; }
+  .empty { background: #fee2e2; color: #7f1d1d; border-radius: 4px; padding: 0 4px; font-weight: 600; }
+</style>
+</head>
+<body class="text-xs">
+
+<div class="px-5 py-2 text-[11px] text-slate-700">Master Data &gt; Master &gt; <b class="text-accent">Supplier Single Face Price</b></div>
+
+<main class="px-5 pb-6 space-y-3 max-w-[1400px]">
+
+  <div class="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-[12px]">
+    Harga Single Face per supplier menurut tanggal berlaku, seperti Kurs. Index = harga per meter persegi. Harga per lembar = index x panjang (m) x lebar (m) dibagi (1 + tarif PPN pada tanggal dokumen / 100) bila Price basis Incl PPN.
+  </div>
+
+  <section class="card p-3">
+    <div class="flex items-center gap-2 mb-2">
+      <div class="border border-slate-300 rounded-full px-3 py-1 w-64 text-slate-500"><i class="fa-solid fa-magnifying-glass mr-1"></i> Cari...</div>
+      <span class="text-slate-600">4 baris</span>
+      <div class="ml-auto flex gap-2">
+        <span class="border border-slate-300 rounded px-3 py-1 font-semibold">+ Baris</span>
+        <span class="border border-slate-300 rounded px-3 py-1 text-slate-400">Undo</span>
+        <span class="bg-blue-200 text-white rounded px-3 py-1 font-semibold">Save</span>
+      </div>
+    </div>
+    <table class="w-full">
+      <tr>
+        <th>#</th><th>Supplier*</th><th>Substance*</th><th>Flute*</th><th class="num">Index / m2*</th><th>Price basis*</th><th>Berlaku sejak*</th><th>Aktif</th>
+      </tr>
+      <tr><td>1</td><td><span class="empty">belum ditentukan</span></td><td>SF M125 / K125</td><td>E/F</td><td class="num"><span class="sample">2.600</span></td><td>Incl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>2</td><td><span class="empty">belum ditentukan</span></td><td>SF M125 / M125</td><td>E/F</td><td class="num"><span class="sample">2.500</span></td><td>Incl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>3</td><td><span class="empty">belum ditentukan</span></td><td>S FACE 125 M / 125 K</td><td>B/F</td><td class="num"><span class="sample">2.950</span></td><td>Incl PPN</td><td>17-Okt-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+      <tr><td>4</td><td><span class="empty">belum ditentukan</span></td><td>SF M125 / K125</td><td>E/F</td><td class="num"><span class="sample">2.700</span></td><td>Incl PPN</td><td>01-Nov-2026</td><td><span class="badge-on">Aktif</span></td></tr>
+    </table>
+    <div class="mt-2 text-[11px] text-slate-700">
+      <span class="sample">kuning</span> = angka contoh yang diambil dari tarif SF di ProCost (2.600, 2.500, 2.950), bukan harga supplier; harga supplier sebenarnya diisi petugas. <span class="empty">merah</span> = supplier Single Face belum diberikan Jo. Baris 4 menunjukkan riwayat: tanggal baru = index baru, baris lama tetap.
+    </div>
+  </section>
+
+  <section class="card p-3">
+    <div class="font-semibold text-slate-800 mb-2">Contoh hasil per lembar di PR dan PO (layar PR dan PO tidak berubah tampilannya, harga terisi otomatis dan boleh ditimpa petugas)</div>
+    <table class="w-full">
+      <tr><th>Bahan</th><th>Baris harga yang dipakai</th><th>Hitungan per lembar</th><th class="num">Harga per lembar</th></tr>
+      <tr><td>MKR SF M125/K125 70,5 x 78,5 CM</td><td>SF M125 / K125 E/F, index 2.600 (contoh), 17-Okt-2026, Incl PPN</td><td>2.600 x 0,705 x 0,785 / 1,11</td><td class="num font-semibold">1.296,31</td></tr>
+      <tr><td>S FACE M/K 46,5 X 72</td><td>SF M125 / K125 E/F, index 2.600 (contoh)</td><td>2.600 x 0,465 x 0,72 / 1,11</td><td class="num font-semibold">784,22</td></tr>
+      <tr><td>SF EF M125/K125 865 X 560 MM</td><td>SF M125 / K125 E/F, index 2.600 (contoh)</td><td>2.600 x 0,865 x 0,560 / 1,11</td><td class="num font-semibold">1.134,63</td></tr>
+    </table>
+    <div class="mt-2 text-[11px] text-slate-700">Substance dan flute dikenali dari nama bahan (M125/K125, E/F atau EF); ukuran dibaca dari nama dengan satuan CM atau MM. Bila substance tidak cocok atau ukuran tidak terbaca, harga tidak diisi. Pembagi 1,11 = 1 + tarif PPN dari layar Tax Rate pada tanggal dokumen, bukan angka tetap.</div>
+  </section>
+
+</main>
+</body>
+</html>

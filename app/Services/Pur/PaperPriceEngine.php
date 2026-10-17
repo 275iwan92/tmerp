@@ -61,6 +61,10 @@ final class PaperPriceEngine
     // Harga di luar PPN per satuan beli bahan: RIM / LBR (ukuran standar) atau KG (harga roll). Null = tidak ada harga untuk bahan ini.
     public function priceFor(MatRaw $m, ?int $supplierId, ?CarbonInterface $on = null): ?float
     {
+        $sf = app(SingleFacePriceEngine::class);
+        if ($sf->matches($m)) {
+            return $sf->priceFor($m, $supplierId, $on);
+        }
         $p = $supplierId ? $this->row($m, $supplierId, $on) : null;
         $uom = strtoupper((string) $m->uom_purchase);
         if (! $p) {

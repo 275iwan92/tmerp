@@ -45,6 +45,7 @@ use App\Services\Pur\PqMatcher;
 use App\Services\Pur\ShortageAutoDetector;
 use App\Services\Pur\ShortageDetector;
 use App\Services\Pur\ShortageRequestService;
+use App\Services\Pur\SingleFacePriceEngine;
 use App\Services\Pur\UrgentReceiptService;
 use App\Services\Sales\CoOrderBuilder;
 use App\Services\Sales\CpdelPromiseService;
@@ -1663,6 +1664,28 @@ final class EngineRegistry
                 'reads' => ['tm2mst.sup_paper_price', 'tm2mst.mat_grammage', 'tm2mst.fin_tax_rate (PPN)'],
                 'writes' => ['Nothing.'],
                 'used' => ['Purchase Requisition (estimated price)', 'Purchase Order (line price)', 'Supplier Paper Price (input screen)'],
+            ],
+            [
+                'key' => 'single-face-price', 'name' => 'Single Face Price Engine', 'group' => 'Procurement', 'mode' => 'suggest',
+                'purpose' => 'Suggests the purchase price of a Single Face sheet per supplier: index per square metre x length x width, divided by the PPN divisor.',
+                'class' => SingleFacePriceEngine::class,
+                'methods' => ['priceFor', 'row', 'matches', 'substanceKey', 'fluteKey', 'sizeM'],
+                'inputs' => [
+                    ['material', 'Raw material whose name says SF, S FACE or SINGLE FACE, with substance, flute and size.'],
+                    ['supplierId', 'Supplier of the PR suggestion or of the PO.'],
+                    ['on', 'Document date; the price row in force on that date is used.'],
+                ],
+                'outputs' => [
+                    ['Price', 'Price per sheet (RIM = 500 sheets) excluding PPN; empty when the substance, flute, size or price row is missing.'],
+                ],
+                'steps' => [
+                    'Reads substance (for example M125/K125), flute (E/F, B/F) and size (cm or mm) from the material name.',
+                    'Finds the active Supplier Single Face Price row of the supplier with the same substance and flute whose effective date is on or before the document date.',
+                    'Price per sheet = index x length (m) x width (m) / divisor; divisor = 1 + PPN / 100 (Tax Rate screen, rate on the document date) when the price includes PPN, otherwise 1.',
+                ],
+                'reads' => ['tm2mst.sup_single_face_price', 'tm2mst.fin_tax_rate (PPN)'],
+                'writes' => ['Nothing.'],
+                'used' => ['Purchase Requisition (estimated price)', 'Purchase Order (line price)', 'Supplier Single Face Price (input screen)'],
             ],
             [
                 'key' => 'pq-matcher', 'name' => 'Purchase Quotation Matcher', 'group' => 'Procurement', 'mode' => 'suggest',

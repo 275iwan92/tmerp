@@ -16,9 +16,11 @@ use App\Models\Master\FinTaxRate;
 use App\Models\Master\MatGrammage;
 use App\Models\Master\MatRaw;
 use App\Models\Master\SupPaperPrice;
+use App\Models\Master\SupSingleFacePrice;
 use App\Models\Master\SupSupplier;
 use App\Models\Sys\SecUser;
 use App\Services\Pur\PaperPriceEngine;
+use App\Services\Pur\SingleFacePriceEngine;
 use App\Support\Finance\TaxRate;
 use App\Support\V2\Grid\Master\SupplierPaperPriceLookup;
 use App\Support\V2\Grid\Master\TaxRateLookup;
@@ -44,7 +46,8 @@ class PaperPriceEngineTest extends TestCase
     protected function tearDown(): void
     {
         SupPaperPrice::query()->where('paper_kind', self::KIND)->delete();
-        $this->assertSame(0, SupPaperPrice::query()->where('paper_kind', self::KIND)->count());
+        SupSingleFacePrice::query()->where('created_by', self::KIND)->delete();
+        $this->assertSame(0, SupPaperPrice::query()->where('paper_kind', self::KIND)->count() + SupSingleFacePrice::query()->where('created_by', self::KIND)->count());
         parent::tearDown();
     }
 
@@ -146,6 +149,30 @@ class PaperPriceEngineTest extends TestCase
 
         $excl = $this->price(['price_basis' => 'EXCL', 'effective_date' => '2026-10-30', 'sheet_price_per_kg' => 12500]);
         $this->assertEqualsWithDelta(12500 * 0.79 * 1.09 * 125, $e->rimPrice($excl, 0.79, 1.09, 250, false), 0.01, 'Excl PPN is not divided.');
+    }
+
+    public function test_single_face_price_is_index_times_area_divided_by_the_ppn_divisor(): void
+    {
+        $e = new PaperPriceEngine;
+        $sf = new SingleFacePriceEngine;
+        $row = fn (array $x = []) => SupSingleFacePrice::create($x + ['supplier_id' => $this->supplier, 'substance_name' => 'SF M 125 / K 125', 'flute_type' => 'E/F', 'index_per_m2' => 2600,
+            'price_basis' => 'INCL', 'effective_date' => '2026-10-01', 'activate' => true, 'created_by' => self::KIND]);
+        $row();
+        $row(['effective_date' => '2026-11-01', 'index_per_m2' => 2700]);
+        $mat = fn (string $name, string $uom = 'LBR') => new MatRaw(['material_name' => $name, 'uom_purchase' => $uom]);
+        $on = Carbon::parse('2026-10-17');
+
+        $this->assertEqualsWithDelta(2600 * 0.865 * 0.56 / $this->divisor(), $e->priceFor($mat('SF EF M125/K125 865 X 560 MM'), $this->supplier, $on), 0.001, 'MM size, the older row.');
+        $this->assertEqualsWithDelta(2600 * 0.72 * 0.52 / $this->divisor(), $e->priceFor($mat('DN SINGLE FACE E/F M125/K125 UK 72 x 52 CM'), $this->supplier, $on), 0.001, 'CM size.');
+        $this->assertEqualsWithDelta(2700 * 0.72 * 0.52 / $this->divisor(), $e->priceFor($mat('SF EF M125/K125 72 x 52 CM'), $this->supplier, Carbon::parse('2026-11-05')), 0.001, 'The newer row from its date.');
+        $this->assertEqualsWithDelta(500 * 2600 * 0.72 * 0.52 / $this->divisor(), $e->priceFor($mat('SF EF M125/K125 72 x 52 CM', 'RIM'), $this->supplier, $on), 0.01);
+        $this->assertNull($e->priceFor($mat('SF EF M125/K127 72 x 52 CM'), $this->supplier, $on), 'Another substance has no row.');
+        $this->assertNull($e->priceFor($mat('SF BF M125/K125 72 x 52 CM'), $this->supplier, $on), 'Another flute has no row.');
+        $this->assertNull($e->priceFor($mat('SF M/K 72 x 52 CM'), $this->supplier, $on), 'No substance or flute in the name.');
+        $this->assertNull($e->priceFor($mat('SF EF M125/K125'), $this->supplier, $on), 'No size in the name.');
+        $this->assertNull($e->priceFor($mat('SF EF M125/K125 72 x 52 CM', 'KG'), $this->supplier, $on), 'Per kg is not a sheet price.');
+        $this->assertSame('M125K125', $sf->substanceKey('S FACE 125 M / 125 K'));
+        $this->assertSame('EF', $sf->fluteKey('E/F'));
     }
 
     public function test_the_input_screen_saves_upper_case_kind_keeps_history_and_refuses_a_row_without_price(): void
