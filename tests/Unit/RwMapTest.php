@@ -49,4 +49,15 @@ MD;
     {
         $this->assertNull(RwMap::parse("# Sub-module\n\n## Facts\n"));
     }
+
+    public function test_tables_only_read_by_one_process_are_folded_into_other_reads(): void
+    {
+        $rows = RwMap::parse(self::MD);
+        $svg = RwMap::svg($rows, 'x.md');
+
+        $this->assertStringContainsString('other reads', $svg);
+        $this->assertStringNotContainsString('>prod_type<', $svg, 'prod_type is read by one process only, so it is folded');
+        $this->assertStringContainsString('>iqp_tier<', $svg, 'written tables keep their own column');
+        $this->assertNotFalse(simplexml_load_string($svg));
+    }
 }

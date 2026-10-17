@@ -53,18 +53,33 @@ final class RwMap
 
     public static function svg(array $rows, string $source): string
     {
+        // A table that is only read, and by one single process, is folded into the "other reads" column (a count per process) to keep the matrix readable.
+        $writers = $readers = [];
+        foreach ($rows as $i => $r) {
+            foreach (array_keys($r['writes']) as $x) {
+                $writers[$x] = ($writers[$x] ?? 0) + 1;
+            }
+            foreach ($r['reads'] as $x) {
+                $readers[$x][$i] = true;
+            }
+        }
+        $folded = array_filter(array_keys($readers), fn ($x) => empty($writers[$x]) && count($readers[$x]) === 1);
         $cols = [];
         foreach ($rows as $r) {
-            foreach ([...$r['reads'], ...array_keys($r['writes'])] as $t) {
-                $cols[$t] = true;
+            foreach ([...$r['reads'], ...array_keys($r['writes'])] as $x) {
+                if (! in_array($x, $folded, true)) {
+                    $cols[$x] = true;
+                }
             }
         }
         $cols = array_keys($cols);
+        $hasOther = $folded !== [];
+        $otherCol = count($cols);
         $left = 280;
         $cw = 26;
         $rh = 26;
         $head = 20 + 6 * max(8, ...array_map('strlen', $cols ?: ['x']));
-        $w = $left + $cw * count($cols) + 90;
+        $w = $left + $cw * (count($cols) + ($hasOther ? 1 : 0)) + 90;
         $h = $head + $rh * count($rows) + 50;
         $e = fn (string $s) => htmlspecialchars($s, ENT_XML1);
         $o = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 $w $h\" font-family=\"sans-serif\" font-size=\"11\">\n";
@@ -74,12 +89,21 @@ final class RwMap
             $x = $left + $i * $cw + 17;
             $o .= "    <text transform=\"translate($x,".($head - 6).') rotate(-60)" font-family="monospace">'.$e($t)."</text>\n";
         }
+        if ($hasOther) {
+            $o .= '    <text transform="translate('.($left + $otherCol * $cw + 17).','.($head - 6).') rotate(-60)" font-family="monospace">other reads</text>'."\n";
+        }
         $o .= "  </g>\n  <g stroke=\"#000\" stroke-width=\"0.5\">\n";
         foreach ($rows as $ri => $r) {
             $y = $head + $ri * $rh;
             $label = mb_strlen($r['process']) > 44 ? mb_substr($r['process'], 0, 43).'...' : $r['process'];
             $o .= '    <text x="8" y="'.($y + 17).'" stroke="none" fill="#000">'.$e($label)."</text>\n";
-            $o .= "    <rect x=\"0\" y=\"$y\" width=\"".($left + $cw * count($cols))."\" height=\"$rh\" fill=\"none\"/>\n";
+            $o .= "    <rect x=\"0\" y=\"$y\" width=\"".($left + $cw * (count($cols) + ($hasOther ? 1 : 0)))."\" height=\"$rh\" fill=\"none\"/>\n";
+            $n = count(array_filter($r['reads'], fn ($x) => in_array($x, $folded, true)));
+            if ($n > 0) {
+                $x = $left + $otherCol * $cw;
+                $o .= "    <rect x=\"$x\" y=\"".($y + 2)."\" width=\"$cw\" height=\"".($rh - 4)."\" fill=\"#bfdbfe\"/>\n";
+                $o .= '    <text x="'.($x + $cw / 2).'" y="'.($y + 17).'" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">'.$n."</text>\n";
+            }
             foreach ($cols as $ci => $t) {
                 $read = in_array($t, $r['reads'], true);
                 $kind = $r['writes'][$t] ?? null;
@@ -97,7 +121,8 @@ final class RwMap
         $ly = $head + $rh * count($rows) + 24;
         $o .= '  <g fill="#000"><rect x="8" y="'.($ly - 10).'" width="14" height="12" fill="#bfdbfe"/><text x="26" y="'.$ly.'">R reads</text>'
             .'<rect x="90" y="'.($ly - 10).'" width="14" height="12" fill="#fde68a"/><text x="108" y="'.$ly.'">C create, U update, D delete, W write</text>'
-            .'<rect x="330" y="'.($ly - 10).'" width="14" height="12" fill="#fdba74"/><text x="348" y="'.$ly."\">R+x reads and writes</text></g>\n</svg>\n";
+            .'<rect x="330" y="'.($ly - 10).'" width="14" height="12" fill="#fdba74"/><text x="348" y="'.$ly.'">R+x reads and writes</text>'
+            .'<text x="8" y="'.($ly + 16).'">Number in "other reads" = read-only tables used by that process alone (named in the table below the picture)</text></g>'."\n</svg>\n";
 
         return $o;
     }
