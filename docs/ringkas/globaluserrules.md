@@ -50,12 +50,12 @@
 9. Tanya dulu sebelum memasukkan DATA.
 10. Data yang sudah baku tidak ditanyakan lagi; cek `docs/LOG_JOB_DONE.md` dulu.
 11. Setiap mesin wajib punya minimal satu proses.
-12. Dummy: selalu ada untuk layar baru; yang salah/usang DIHAPUS dan diganti; simpan ulang baseline `ddt` setelah migration.
+12. Dummy: yang salah/usang DIHAPUS dan diganti; simpan ulang baseline `ddt` setelah migration.
 13. Payroll terenkripsi at-rest.
 14. Master hanya diubah user; sistem hanya mengubah transaksi (default boleh diperbarui, bisa di-override).
 15. Dummy per STAGE (`ddt:stage`): set dump `.sql` per langkah alur, dibangun lewat aturan aplikasi yang sama dengan tombol.
 16. **[L]** Material Category = PEMBENTUK KODE ITEM: rantai 5 tingkat, kode = prefix1+..+prefix5 (mis. `PCC02002`); layar = dropdown terkait; jangan tanyakan lagi.
-17. **[L]** Dummy per LEVEL (stage B.15): 2 set, paling banyak 3; dua set wajib benar-benar real dan lengkap (Master Card asli + artwork + dieline dari `docs/attachments`); Test/DEMO/Contoh bukan set sah; kelebihan dirapikan per B.12 (cek rujukan tes dulu).
+17. **[L]** Dummy per LEVEL (stage B.15): 2 set, paling banyak 3; dua set wajib benar-benar real dan lengkap (Master Card asli + artwork + dieline dari `docs/attachments`); Test/DEMO/Contoh bukan set sah; kelebihan dirapikan per B.12 (cek rujukan tes dulu); data transaksi cukup 2 set per level; dummy wajib bisa di-reset ke baseline.
 
 ## C. Tampilan (UI/UX)
 

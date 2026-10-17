@@ -322,8 +322,8 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 9. **Tanya dulu sebelum memasukkan DATA.** Data lama tidak 100% benar; analisa dulu dan ajukan usulan.
 10. **Data yang sudah baku jangan dipertanyakan lagi.** Cek `docs/LOG_JOB_DONE.md` dulu sebelum menandai sesuatu janggal.
 11. **Setiap mesin wajib punya minimal satu proses**, tanpa pengecualian.
-12. **Dummy:** selalu sediakan data dummy untuk layar baru dan jangan dihapus. Tapi dummy lama yang sudah digantikan
-    atau membingungkan harus DIHAPUS dan diganti yang baru. Setelah memperbaiki dummy, simpan ulang baseline `ddt`.
+12. **Dummy:** dummy lama yang sudah digantikan atau membingungkan harus DIHAPUS dan diganti yang baru. Setelah
+    memperbaiki dummy, simpan ulang baseline `ddt`.
     **Aturan main tetap (2026-10-01):** dummy yang SALAH (saldo tidak konsisten, minus, relasi rusak, isi tidak
     masuk akal) selalu DIHAPUS dan diganti dummy baru yang benar — tidak perlu tanya dulu, cukup dilaporkan.
     **Baseline dan migration (2026-10-02):** setiap migration yang dijalankan di `ddt*` wajib diikuti simpan ulang
@@ -349,8 +349,7 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
       penerimaan, dokumen & kartu stok, booking) tidak ada; yang ada hanya dokumen langkah pertama tiap alur. Master,
       data legacy, HR / payroll / rekrutmen, maintenance, aset dan voucher di luar penjualan / pembelian tetap.
     - Restore mengganti seluruh isi database dummy bisnis dengan set itu (master ikut kembali ke isi set); `ddtsys`
-      (akun, hak akses, menu) tidak ikut. Kolom yang ditambah migration setelah set disimpan tetap ada. Set `mixed` =
-      dummy campur semua status (untuk dashboard & laporan), disimpan terpisah.
+      (akun, hak akses, menu) tidak ikut. Kolom yang ditambah migration setelah set disimpan tetap ada.
     - **Urutan stage (user 2026-10-02):** 1 Inquiry New belum Confirm · 2 di Pro-Dev belum Confirm · 3 di Pro-Cost belum
       Confirm · 4 Quotation Draft · 5 Customer Order Draft · 6 Customer Order menunggu approval (level 1, F&A SPV) ·
       7 CPDEL Draft (CO Confirmed, baris Planned belum di-Post) · 8 Posted to Production, Work Order belum dimulai ·
@@ -362,12 +361,7 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
       Stage berikutnya ditambah per alur di `StageBuilder::STAGES`.
     - Build sungguhan berjalan tanpa transaksi (aturan yang menulis lintas database harus melihat data tersimpan);
       `--dry-run` memakai transaksi yang dibatalkan dan berhenti di stage pertama yang menulis lintas database.
-    - **Yang dibuat skrip di zona beku (hanya di dalam set stage):** Pro-Dev Confirm memakai susunan grid sederhana
-      (blank tidak diputar, plano yang muat di meja cetak) lewat method yang sama dengan tombol Confirm, jadi BOM / tinta /
-      proses tetap hasil SpecEngine; Pro-Cost memakai mode manual + CostingEngine (sama dengan dummy rantai order).
-      Angkanya contoh, bukan hasil kerja petugas.
-    - Draft yang tidak bisa menempuh alur (tanpa customer, part tanpa ukuran bentangan, tanpa pilihan qty) tidak ikut set
-      stage; tetap ada di set `mixed`. Build memakan ±10 menit dan dijalankan lewat perintah, bukan tombol.
+    - Build memakan ±10 menit dan dijalankan lewat perintah, bukan tombol.
 16. **[LOCKED 2026-10-03, sudah disampaikan user 7 kali — JANGAN ditanyakan lagi] Material Category = PEMBENTUK KODE
     ITEM.** Kata user: *"Material category ini pembentuk KODE ITEM. IMPORTANT !!!!"*. Acuan yang wajib dipahami:
     `docs/ddl/doc_rmprefix1.sql` (5 tabel `doc_rmprefix1..5`), sekarang satu tabel `mat_category` (level 1–5).
@@ -387,7 +381,8 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
     - Rinci (struktur tabel, kejanggalan data, pola kode yang ada sekarang): `md_for_systems/matcategory_delta.md` §5.
 17. **Batas data dummy per LEVEL (2026-10-17).** Kata user: *"limit data dummy 2 set data every levels, maximum 3 set
     data. Make sure 2 set data really real and complete. Make sure this rules for data dummy"*; contoh level: *"Inquiry
-    NEW belum confirm 2 set data"* dan *"inquiry sudah ready, sudah confirm, 2 set data"*.
+    NEW belum confirm 2 set data"* dan *"inquiry sudah ready, sudah confirm, 2 set data"*. Lanjutan user: *"dalam data transaksi cukup 2 set data per level.
+    Aturan yang bertentangan di hapus saja. Data dummy memang harus bisa di reset apabila sudah dicoba-coba oleh saya atau user lain"*.
     - **Level** = stage di B.15 (Inquiry NEW belum Confirm · Inquiry sudah Confirm Sales · ProDev Confirm belum ProCost ·
       ProCost Confirm · Quotation Draft / Published · CO Draft / Confirmed · CPDEL · WO · DO · Invoice, dan seterusnya).
     - **Tiap level: 2 set, paling banyak 3.** Dua set itu wajib **benar-benar real dan lengkap**: Master Card asli +
@@ -395,6 +390,9 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
       dan customer yang masuk akal; dibangun lewat aturan aplikasi (B.15), bukan mengetik baris ke tabel.
     - **Bukan set yang sah:** data bernama Test / DEMO / Contoh, tanpa ukuran, artwork, atau dieline. Itu tidak dihitung
       sebagai set dan, bila sudah digantikan, dihapus per baris (B.12) setelah dicek tidak dirujuk tes atau migration.
+    - **Data transaksi cukup 2 set per level** (3 hanya bila perlu).
+    - **Dummy harus bisa di-reset** (Reset baseline B.12, Restore stage B.15) setelah dicoba-coba user mana pun; baseline dan
+      set stage hanya berisi 2 (paling banyak 3) set per level.
     - Level yang berisi lebih dari 3 set dirapikan ke batas itu (B.12). Berlaku untuk dummy `ddt*`; data real `tm2*`
       tidak disentuh. Penerapan ke data yang sudah ada dilakukan per level, diawali preview ke user.
 
@@ -933,3 +931,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-16 | A.28: **Master Card satu wujud** = perpaduan Master Product dan layout Inquiry Product + ProDev + ProCost (user). Penyatuan kode belum dikerjakan (zona beku). |
 | 2026-10-16 | D.24: **Technical Guide (docs/tg) = ingatan agen**; protokol baca, bukti ketiadaan lewat concept:find, hook kartu (user: "Agen yang memperingatkan Jo bila sebuah usulan duplikat atau bertabrakan, bukan Jo"). |
 | 2026-10-17 | B.17: **batas data dummy per level: 2 set, paling banyak 3, dua set wajib benar-benar real dan lengkap** (user: "limit data dummy 2 set data every levels, maximum 3 set data. Make sure 2 set data really real and complete"). Level = stage B.15; Test/DEMO/Contoh bukan set sah. |
+| 2026-10-17 | B.12 dan B.15: **bagian yang bertentangan dengan B.17 dihapus** ("dummy jangan dihapus" dan "selalu sediakan dummy untuk layar baru" di B.12; set `mixed`, skrip contoh Pro-Dev/Pro-Cost, dan draft tak lengkap di B.15); B.17 ditambah: data transaksi cukup 2 set per level, dummy wajib bisa di-reset (user: "Aturan yang bertentangan di hapus saja. Data dummy memang harus bisa di reset"). |
