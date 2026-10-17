@@ -86,7 +86,7 @@ Unit: LBR = print sheet, PCS, M, KG. All from the code; formulas are not prices 
 ATTENTION-ENGINE-01 (SpecEngine patch, DONE 14 Oct), ATTENTION-ENGINE-02 (two definitions of Available; `stockFor` uses `v_rm_available`), ATTENTION-ENGINE-04 (unit of Required vs stock without conversion; conversion limited in `toStockUom`). Status stays in `docs/ENGINE-ATTENTION.md`, not copied. The line numbers cited by items 02 and 04 (`:768`, `:727`) have shifted (now `stockFor` lines 771-791, `toStockUom` line 737).
 
 ## Findings (recorded, not fixed)
-1. The registry (`EngineRegistry.php:156`) does not list the public method `processOfBom` (line 1007), although `forWorkOrder` uses it.
+1. The registry (`EngineRegistry.php:168`) does not list the public method `processOfBom` (line 1007), although `forWorkOrder` uses it.
 2. Registry step 4 says "Returns the result with a source per row: ENGINE, OVERRIDE, MANUAL". FACT: the result rows of `generate` have no `source` key; the source only exists per part in `saved()` (`'source' => OVERRIDE|MANUAL`).
 3. Registry `writes` only lists `tm2mst.prod_part_*`; the code also writes `tm2sdi.iqp_part_process`, `_material`, `_ink`. Registry `reads` does not include many tables (see Input).
 4. Registry `used` says "Master Product sync"; there is no call (only a comment in `ProductMasterSync.php`).
@@ -110,3 +110,5 @@ ATTENTION-ENGINE-01 (SpecEngine patch, DONE 14 Oct), ATTENTION-ENGINE-02 (two de
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `single-face-price` (Procurement) was added after the lines cited here; nothing in this card changed.
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: keys `duplex-price` and `corrugated-sheet-price` (Procurement) were added after the lines cited here; nothing in this card changed.
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the `methods` line of the `spec` registry entry is now `EngineRegistry.php:168`; `engines.json` lost the 3 removed engines only; nothing else in this card changed.

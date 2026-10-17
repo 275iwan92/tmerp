@@ -1,5 +1,7 @@
 # Technical Plan: Work Order, Gantt Drag and Drop, Re-schedule and BMO
 
+> Catatan 2026-10-18: PdrEngine, CompositePriorityScorer, SchedulingRuleEngine, papan Scheduling Board v1 dan layar Rule Library telah dihapus (audit modul ganda); penjadwal yang berlaku = ScheduleSolver + AutoPlanRunner. Butir di bawah yang menyebutnya adalah rencana lama.
+
 Layar Work Order dengan BOP dan BOM, tautannya ke Gantt, cara kerja drag and drop, bagaimana layar menunjukkan apa yang harus di-re-schedule, dan bagaimana masalah mesin membuka Breakdown Maintenance Order.
 
 ## Isi catatan

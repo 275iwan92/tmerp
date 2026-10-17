@@ -115,8 +115,7 @@ report:
   x-report.svg-donut: {props: {segments: [], centerValue: '', centerLabel: ''}}
   x-report.svg-trend: {props: {series: [], labels: [], height: 240}}
 
-board: # baca ganttboardstandard.md / kanbanboardstandard.md sebelum pakai
-  x-gantt.board: {props: "rows, secondaryRows, resourceHeaderLabel, timelineStart=8, timelineEnd=20, pxPerHour=70, moveMethod/resizeMethod/reassignMethod, resourceOptions, labelOptions"}
+board: # baca kanbanboardstandard.md sebelum pakai
   x-kanban.board: {props: "columns (req), activeCardId, *Method (nama method Livewire)"}
   x-calendar.board: {props: "view, currentDate, ... + *Method"}
 

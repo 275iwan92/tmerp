@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Model autentikasi utama (tm2sys.sec_user): login, grup, modul yang boleh diakses, gerbang hak per peran.
+ * Sumber hulu  : tm2sys.sec_user, sec_user_group, sec_group_permission.
+ * Input        : Kolom login/pswd, relasi grup dan modul.
+ * Output       : Objek user, hasGroup(), isHrOfficer(), accessibleModules() dan gerbang peran lain.
+ * Dipakai oleh : Seluruh aplikasi (auth, middleware modul, layar).
+ * Status       : Aktif. isProdManagerOrAbove() dihapus 2026-10-18 (hanya dipakai layar Rule Library yang sudah dihapus).
+ */
+
 namespace App\Models\Sys;
 
 use App\Models\Master\EmpEmployee;
@@ -250,12 +260,6 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
     public function isHrOfficer(): bool
     {
         return $this->hasGroup('HR_OFFICER');
-    }
-
-    // "Manager Produksi atau lebih tinggi" -- Tier1 §9.7 (Rule Library ACTIVATE).
-    public function isProdManagerOrAbove(): bool
-    {
-        return $this->is_admin || $this->hasGroup('PROD_MGR', 'OPS_MGR', 'DIREKSI') || $this->maxMgmtLevel() >= 3;
     }
 
     // "Manager Operasional atau lebih tinggi (GM/Direksi)" -- Tier1 §9.3/§9.4

@@ -51,7 +51,7 @@ No worked example: there are no `COMPLETED` WOs in the mockup DB (WO statuses pr
 No ATTENTION-ENGINE item specific to this engine (read in full).
 
 ## Findings (recorded, not fixed)
-1. The registry (`EngineRegistry.php:197`) says `apply` "false = only show them". FACT from code: `refresh()` writes the suggestion columns to `prod_bop_rule` (line 89) for every rule with a suggestion, even when `apply = false` (command `--dry`). Only the overwrite of rate/waste does not happen.
+1. The registry (`EngineRegistry.php:209`) says `apply` "false = only show them". FACT from code: `refresh()` writes the suggestion columns to `prod_bop_rule` (line 89) for every rule with a suggestion, even when `apply = false` (command `--dry`). Only the overwrite of rate/waste does not happen.
 2. The registry says "Below the minimum sample nothing is proposed". FACT: the suggestion is still written; the minimum only holds back auto-apply.
 3. The registry says "Values typed by an officer are never overwritten". FACT: column `rate_source` is read (line 40) but not used in any decision; the only guard is `auto_apply = 0`. A rule with `auto_apply` that an officer once typed can be overwritten.
 4. `processWaste` does not filter `wo_status = COMPLETED` (lines 158-164), while `materialUsage` and `woCount` do. Waste is computed from all WOs since the start date, including unfinished ones.
@@ -68,3 +68,5 @@ None.
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `single-face-price` (Procurement) was added after the lines cited here; nothing in this card changed.
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: keys `duplex-price` and `corrugated-sheet-price` (Procurement) were added after the lines cited here; nothing in this card changed.
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the `apply` input line of the `usage-rate` registry entry is now `EngineRegistry.php:209`; `engines.json` lost the 3 removed engines only; nothing else in this card changed.

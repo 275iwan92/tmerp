@@ -1,5 +1,7 @@
 # Technical Plan: PPIC Menu and Access
 
+> Catatan 2026-10-18: PdrEngine, CompositePriorityScorer, SchedulingRuleEngine, papan Scheduling Board v1 dan layar Rule Library telah dihapus (audit modul ganda); penjadwal yang berlaku = ScheduleSolver + AutoPlanRunner. Butir di bawah yang menyebutnya adalah rencana lama.
+
 Letak layar di menu Production dan flag akses yang memisahkan officer penjadwalan dari officer pengendalian inventori.
 
 ## Isi catatan

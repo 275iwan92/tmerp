@@ -64,7 +64,7 @@ Unit mm. No rounding except `nf`/`flat` (2 decimals). The formulas are written i
 No ATTENTION-ENGINE item specific to this engine (read in full).
 
 ## Findings (recorded, not fixed)
-1. The registry (`EngineRegistry.php:79-105`) only lists the JS file; it does not mention the PHP port `TmDieline` (used by bulk Master Card import) or the copy in `packages/mockup-parts`. A change in one copy must be repeated manually in the other two (the comment `TmDieline.php:11` orders "ubah salah satu = ubah keduanya"; `TmDielineTest` guards only 3 cases). The result of this session's test is 27/27 identical at present.
+1. The registry (`EngineRegistry.php:90-117`) only lists the JS file; it does not mention the PHP port `TmDieline` (used by bulk Master Card import) or the copy in `packages/mockup-parts`. A change in one copy must be repeated manually in the other two (the comment `TmDieline.php:11` orders "ubah salah satu = ubah keduanya"; `TmDielineTest` guards only 3 cases). The result of this session's test is 27/27 identical at present.
 2. The registry says `flat` returns "width and height"; the code also returns `area`. The exports `eval`, `scope`, `STROKE` (line 175) are not recorded in the registry (`STROKE` is used by tm-box3d and dieline-x).
 3. Expression evaluation failures are hidden (value 0, empty `catch`); there is no log.
 4. The line colours and `#9aa` in the renderer are literal hex in JS/PHP, not tokens (UI rule: black/bright). These are semantic dieline line colours (cut/fold/bleed); the design decision is Jo's.
@@ -82,3 +82,5 @@ No ATTENTION-ENGINE item specific to this engine (read in full).
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `single-face-price` (Procurement) was added after the lines cited here; nothing in this card changed.
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: keys `duplex-price` and `corrugated-sheet-price` (Procurement) were added after the lines cited here; nothing in this card changed.
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the registry entry of key `dieline` is now `EngineRegistry.php:90-117` (REMARK block added, imports and 3 Scheduling engine entries removed elsewhere in the file); `engines.json` lost the 3 removed engines only; nothing else in this card changed.

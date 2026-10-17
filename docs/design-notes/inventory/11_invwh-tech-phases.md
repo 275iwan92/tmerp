@@ -10,7 +10,7 @@ Urutan kerja dalam enam fase. Tiap langkah adalah satu commit, dengan topik Help
 4. Fase 4 Subkon, titipan customer, dan opname: kirim bahan, stok di vendor, stok milik customer, In Transit, kunci bin.
 5. Fase 5 Nilai: landed cost, GR/IR, rekonsiliasi harian, jurnal koreksi, dan penyisihan persediaan usang.
 6. Fase 6 Penyempurnaan: hot job, booking basi, die dan plat, papan tugas, dan laporan lanjutan.
-7. Sudah dibangun: fase 1 sampai 4 (batch, QC dan URGENT, Receiving dan Putaway, Pick List, pre-booking, subkon, material titipan, In Transit, opname, pembalikan) serta booking basi dan register alat dari fase 6.
+7. Sudah dibangun: fase 1 sampai 4 (batch, QC dan URGENT, Receiving dan Putaway, Pick List, pre-booking, subkon, material titipan, In Transit, opname, pembalikan) serta booking basi dan register alat (dihapus 2026-10-18) dari fase 6.
 
 ## Istilah dan rincian
 

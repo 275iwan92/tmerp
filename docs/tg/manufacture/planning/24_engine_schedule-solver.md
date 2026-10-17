@@ -74,7 +74,7 @@ The tests `test_second_job_waits_for_a_busy_machine_and_pays_changeover_setup` (
 - **also_named_by**: `11_card_wo-operation-bop.md`, `14_card_gates-and-readiness.md`, `15_card_changeover-and-wait-rules.md`, `20_engine_speed-target.md`, `22_engine_gate-service.md`.
 
 ## Findings (recorded, not fixed)
-1. **The solver never uses crew, operator skill or maintenance windows.** `CrewAvailabilityChecker` is used only by the old PDR engine (`29_engine_pdr.md`); the PPIC Settings screen says Master Crew is "not used as capacity by this planner yet". FACT.
+1. **The solver never uses crew, operator skill or maintenance windows.** (The old PDR crew check, `CrewAvailabilityChecker`, was removed 2026-10-18.) FACT.
 2. **Manual and subcontract steps ignore real quantities**: a manual step is always 30 minutes whatever the quantity (`MANUAL_MINUTES`, `:24`); a subcontract step is `lead days` x 24 hours, on the clock, not on working days. FACT (code and scratch run).
 3. **A missing rate silently becomes 60 minutes** (a warning is stored, not an exception). In the data 464 of 1357 eligible candidate rows have no rate (see `21_engine_wo-planning-enricher.md`). FACT.
 4. **`left` (time to due date) uses the calendar of the FIRST candidate machine found**, not of the machines that will really run the job (`anyMachine`). With different shift settings per machine (34 machines 1 shift x 8 h, 11 machines 2 shifts x 7.8 h) the same due date gives different `cr`. FACT (code and `prod_machine` query).
@@ -82,4 +82,4 @@ The tests `test_second_job_waits_for_a_busy_machine_and_pays_changeover_setup` (
 6. **Capacity of the plan is not tested against `prod_process.is_bottleneck`, `allow_parallel`, `min_lot_qty` or `max_lot_qty`**; those flags are stored in the process master and read by no planner (see `../ppic/11_card_process-and-routing.md`). FACT.
 
 ## Already exists? Searched where, result
-`concept:find "schedule"`, `"machine"`: no solver card existed. Searched code: ranking and placement exist only here and in the old `CompositePriorityScorer` + `PdrEngine` pair (`29_engine_pdr.md`, used by the old board only). The old plan note `docs/design-notes/ppic/12_ppic-tech-engine-flow.md` step 6 promises overload options and smoothing by knife, ink set and board; the code smooths by setup distance within a window and does not produce options for overload (the Workspace adds an "Overload" line from stored loads).
+`concept:find "schedule"`, `"machine"`: no solver card existed. Searched code: ranking and placement exist only here (the old `CompositePriorityScorer` + `PdrEngine` pair of the v1 board was removed 2026-10-18). The old plan note `docs/design-notes/ppic/12_ppic-tech-engine-flow.md` step 6 promises overload options and smoothing by knife, ink set and board; the code smooths by setup distance within a window and does not produce options for overload (the Workspace adds an "Overload" line from stored loads).

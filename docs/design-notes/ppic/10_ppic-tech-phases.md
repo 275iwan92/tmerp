@@ -1,5 +1,7 @@
 # Technical Plan: Phases and Acceptance
 
+> Catatan 2026-10-18: PdrEngine, CompositePriorityScorer, SchedulingRuleEngine, papan Scheduling Board v1 dan layar Rule Library telah dihapus (audit modul ganda); penjadwal yang berlaku = ScheduleSolver + AutoPlanRunner. Butir di bawah yang menyebutnya adalah rencana lama.
+
 Urutan pembangunan, apa yang dihasilkan tiap fase dan cara penerimaannya. Tidak ada yang mulai sebelum fase sebelumnya ditinjau user.
 
 ## Isi catatan

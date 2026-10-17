@@ -142,7 +142,6 @@ final class MenuRoutes
             'PROD_MST_PROCESS' => route('production.master-process'),
             'PROD_ROUTING_TPL' => route('production.routing-template'),
             'PROD_MST_BOP_RULE' => route('production.bop-rule'),
-            'PROD_MST_CREW' => route('production.master-crew'),
             // Dua item ini activate=0 di sys_app_menu (belum pernah tayang);
             // dipetakan ke ProDev baru supaya tidak jadi link mati kalau nanti
             // diaktifkan -- Master Card lama ada di production.old-prodev.print.
@@ -211,15 +210,14 @@ final class MenuRoutes
             'INV_RM_ITEM5' => route('v2.screen', 'approval-stock'),
             'INV_FG_ITEM5' => route('v2.screen', 'approval-stock'),
             'INV_SFG_ITEM5' => route('v2.screen', 'approval-stock'),
-            'PROD_MPS' => route('production.scheduling-board'),
             'PROD_WO_LIST' => route('production.wo.list'),
+            'PROD_MPS' => route('v2.screen', 'production-scheduling'),
             // Production Output (F15) belum punya layar sendiri -- catat output
             // per task dari WO Detail (masuk lewat Worklist WO), lihat
             // wo-entry.blade.php "Catat Output". Menu ini cuma pintu masuk.
             'PROD_OUTPUT' => route('production.wo.list'),
             'PROD_SCRAP_TYPE' => route('production.scrap-type'),
             'PROD_PROCESS_RATE' => route('production.process-rate'),
-            'PROD_RULE_LIB' => route('production.rule-library'),
             'PROD_MTS_FORECAST' => route('v2.screen', 'demand-forecast'),
             'PROD_SHIFT_ROSTER' => route('v2.screen', 'hrm-roster'),
             'HRM_ORG_STRUCTURE' => route('hrm.position'),

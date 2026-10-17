@@ -50,7 +50,6 @@ Di tm2 item ini dibuka lewat peta kode `MenuRoutes::map()` (layar v1). Perlu mig
 | MD_SHIFT | Master Shift | v2:md-shift |
 | MD_MACHINE, PRE_MD_MACHINE | Master Machine | v2:prod-machine |
 | PROD_MST_PROCESS, PRE_MD_PROCESS | Master Process | v2:prod-process |
-| PROD_MST_CREW | Master Crew | v2:prod-crew |
 | PROD_ROUTING_TPL | Master Routing Template | v2:prod-routing |
 | PROD_SCRAP_TYPE | Scrap Types | v2:prod-scrap |
 | MD_MATCAT, PRE_MD_MATCAT, INV_REF_MATCAT | Material Category | v2:md-matcat |

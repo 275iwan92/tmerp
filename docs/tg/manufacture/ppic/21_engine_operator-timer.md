@@ -65,3 +65,5 @@ None in `docs/ENGINE-ATTENTION.md`. REMARK of `app/Support/V2/Data/ProductionOut
 
 ## Already exists? Searched where, result
 `concept:find "work order"`: no card on production output. Searched: timers exist only here; the old v1 page `wo-entry.blade.php` records output with a different path (`PrdWoOperationOutput` rows without timers).
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): `wo-entry.blade.php` is cited without a line number; the statement that the v1 page records output through `PrdWoOperationOutput` by another path is still true (create call now line 1143).

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Uji Maintenance menahan mesin pada penjadwalan mundur (MachineCalendarService, MaintenanceBlockProvider).
+ * Sumber hulu  : Order Maintenance uji (TEST-*).
+ * Input        : Tidak ada.
+ * Output       : Lulus atau gagal; baris uji dihapus di tearDown.
+ * Dipakai oleh : php artisan test --env=mockup.
+ * Status       : Aktif. Uji geser manual (PdrEngine) dihapus 2026-10-18.
+ */
+
 namespace Tests\Feature;
 
 use App\Models\Master\ProdMachine;
@@ -7,17 +17,15 @@ use App\Models\Master\SysHoliday;
 use App\Models\Mnt\MntAsset;
 use App\Models\Mnt\MntLog;
 use App\Models\Mnt\MntOrder;
-use App\Models\Prd\PrdWoOperation;
 use App\Services\Maintenance\OrderService;
 use App\Services\Scheduling\MachineCalendarService;
 use App\Services\Scheduling\MaintenanceBlockProvider;
-use App\Services\Scheduling\PdrEngine;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-// Maintenance menahan mesin di Scheduling: penjadwalan mundur melompati jendela order Maintenance, geser manual yang bertabrakan ditolak.
+// Maintenance menahan mesin di Scheduling: penjadwalan mundur melompati jendela order Maintenance.
 // Jalankan terhadap database dummy (DB_MNT=ddtmnt dan ddt* lain). Baris buatan test (TEST-*) dihapus di tearDown.
 class MaintenanceSchedulingBlockTest extends TestCase
 {
@@ -83,19 +91,6 @@ class MaintenanceSchedulingBlockTest extends TestCase
         $this->blockingOrder($machine, $day, 10, 12);
         $after = (new MachineCalendarService(new MaintenanceBlockProvider))->subtractWorkingTime($finish->copy(), CarbonInterval::hours(4), $machine->machine_id);
         $this->assertSame('08:00', $after->format('H:i'), '2 h after the window (12-14) plus 2 h before it (08-10)');
-    }
-
-    public function test_a_manual_move_into_the_maintenance_window_is_refused(): void
-    {
-        [$machine, $day] = $this->fixture();
-        $order = $this->blockingOrder($machine, $day, 10, 12);
-        $op = new PrdWoOperation(['resource_type' => 'MACHINE', 'machine_id' => $machine->machine_id]);
-        $engine = app(PdrEngine::class);
-
-        $errors = $engine->validateManualReschedule($op, $day->copy()->setHour(11), $day->copy()->setHour(13));
-        $this->assertNotEmpty($errors);
-        $this->assertStringContainsString((string) $order->doc_no, implode(' ', $errors));
-        $this->assertSame([], $engine->validateManualReschedule($op, $day->copy()->setHour(12), $day->copy()->setHour(14)), 'touching the end of the window is allowed');
     }
 
     public function test_done_or_stopless_orders_do_not_block_the_machine(): void

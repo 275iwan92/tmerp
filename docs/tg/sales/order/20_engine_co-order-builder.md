@@ -63,7 +63,7 @@ Customer Order screens v2 and v1, Quotation (WIN), dummy seeders, Planning (read
 
 ## Open items
 - No `ATTENTION-ENGINE` number in `docs/ENGINE-ATTENTION.md` mentions CO/CPDEL (searched: cpdel, customer order, co_order, delivery; zero results).
-- The registry (`EngineRegistry.php:375-403`) registers only `submit` and `confirm`; `findOrCreateFromQuotation`, `createInstant`, `addProductLine`, `cancel` are not registered, and the `writes` list does not include `iqp_inquiry`, `prod_product`, `flow_log`. FACT.
+- The registry (`EngineRegistry.php:386-414`) registers only `submit` and `confirm`; `findOrCreateFromQuotation`, `createInstant`, `addProductLine`, `cancel` are not registered, and the `writes` list does not include `iqp_inquiry`, `prod_product`, `flow_log`. FACT.
 - Conflict A.10 (PHYSICAL proof) versus code (ACC Digital): CO card, finding 10.
 - Trigger A.11/A.15 is guarded only in `submit`/`decide` (v2): CO card, finding 3.
 
@@ -79,3 +79,5 @@ No test for `CoOrderBuilder` (grep `tests/`: zero). Tests touching related parts
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `single-face-price` (Procurement) was added after the lines cited here; nothing in this card changed.
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: keys `duplex-price` and `corrugated-sheet-price` (Procurement) were added after the lines cited here; nothing in this card changed.
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the registry entry that uses `CoOrderBuilder` (key `cpdel`) is now `EngineRegistry.php:386-414`; `engines.json` lost the 3 removed engines only; nothing else in this card changed.

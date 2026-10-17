@@ -1,5 +1,7 @@
 # Technical Plan: Scheduling Screen Design
 
+> Catatan 2026-10-18: PdrEngine, CompositePriorityScorer, SchedulingRuleEngine, papan Scheduling Board v1 dan layar Rule Library telah dihapus (audit modul ganda); penjadwal yang berlaku = ScheduleSolver + AutoPlanRunner. Butir di bawah yang menyebutnya adalah rencana lama.
+
 Cara satu layar penjadwalan disusun dari objek DevLib agar empat tampilan memakai data, filter dan aturan yang sama.
 
 ## Isi catatan

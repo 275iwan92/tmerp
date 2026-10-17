@@ -1,8 +1,8 @@
-# Gudang: Master lokasi (Buildings, Storage Areas, Bins) dan Tool Register
+# Gudang: Master lokasi (Buildings, Storage Areas, Bins)
 
-*Panduan pengguna untuk Officer Gudang yang menyiapkan atau mengubah denah. Ditulis 16 Oktober 2026 dari membaca kode dan data mockup.test. Layar tidak dibuka di browser dan tes tidak dijalankan; hal yang belum terbukti ada di bagian 8.*
+*Panduan pengguna untuk Officer Gudang yang menyiapkan atau mengubah denah. Ditulis 16 Oktober 2026 dari membaca kode dan data mockup.test. Layar tidak dibuka di browser dan tes tidak dijalankan; hal yang belum terbukti ada di bagian 7.*
 
-Aturan teknis: `docs/tg/inventory/warehouse/10_card_location-hierarchy.md` dan `19_card_tool-register.md`.
+Aturan teknis: `docs/tg/inventory/warehouse/10_card_location-hierarchy.md`.
 
 ## 1. Tiga tingkat lokasi
 
@@ -67,13 +67,7 @@ Di layar **Bins** Anda mengubah: **Storage Area**, **Short Name**, **Capacity (k
 - Menonaktifkan (**Active** dihapus) bin yang masih berisi stok menyembunyikannya dari peta dan usulan, tetapi stok tetap tercatat di bin itu.
 - Perubahan di sini mengubah usulan Putaway, alokasi Pick List, dan label; periksa Warehouse Map setelahnya.
 
-## 6. Tool Register
-
-**Warehouse > Tools > Tool Register**: daftar pisau pond (**Die**), plat (**Plate**), dan klise (**Block**) milik pabrik. Kolom: **Tool No.** (huruf besar, unik, maksimal 30 huruf; terkunci setelah disimpan), **Type**, **Description**, **Status** (Available, In use, At vendor, In repair, Retired), **Location (Bin)** (bin aktif mana pun, mis. di area **Tooling** `TLG` gedung A10 lantai 2), **Impressions** (jumlah cetakan yang Anda ketik sendiri), **Notes**, **Active**.
-
-Daftar ini berdiri sendiri: belum terhubung ke Job Order, costing, atau Maintenance, dan perubahan status tidak meninggalkan riwayat. Data contoh kosong.
-
-## 7. Pengaturan angka (Settings > Constants)
+## 6. Pengaturan angka (Settings > Constants)
 
 | Konstanta | Nilai contoh | Pengaruh |
 |---|---|---|
@@ -85,7 +79,7 @@ Daftar ini berdiri sendiri: belum terhubung ke Job Order, costing, atau Maintena
 | `WH_PAPER_BULK_CM3_PER_G` | 1,3 | Perkiraan tebal kertas bila master tidak punya |
 | `INV_PICK_CONDITIONAL_ALLOWED` | 1 | 1 = batch Conditional boleh dialokasikan untuk pekerjaan non-kelas A |
 
-## 8. Belum terverifikasi
+## 7. Belum terverifikasi
 
 - Tabel-tabel ini tidak dibuka di browser; nama kolom dan pesan dari kode. Cara menyimpan perubahan (tombol dan perilaku sel) mengikuti komponen tabel umum yang tidak dibaca di sini.
 - Menyimpan baris gedung `VIRT` dari **Buildings** kemungkinan ditolak validasi (jenis *Virtual* tidak ada di pilihan). Dibaca dari kode, belum dicoba.

@@ -114,27 +114,5 @@
       {"label": "Bin", "en": "The bin in the Consignment area.", "id": "Bin di area Consignment."},
       {"label": "Last Movement", "en": "The date of the last stock card row of this material in the bin.", "id": "Tanggal baris kartu stok terakhir bahan ini di bin."}
     ]
-  },
-  {
-    "key": "inv-tools",
-    "type": "INPUT",
-    "module": "INV",
-    "title": "Tool Register",
-    "purpose": {
-      "en": "The list of dies, plates and blocks with their status and the bin where each is kept.",
-      "id": "Daftar die, plat, dan klise beserta status dan bin tempat disimpan."
-    },
-    "keywords": "tool, alat, die, pisau, plat, plate, klise, block, register alat, tool register, impresi",
-    "steps": [
-      {"en": "Add a row: type the Tool No., choose the Type, Status and Location (Bin), then click Save.", "id": "Tambah baris: ketik Tool No., pilih Type, Status, dan Location (Bin), lalu klik Save."},
-      {"en": "Change the Status when the tool moves on: In use, At vendor, In repair or Retired. Untick Active to hide a tool.", "id": "Ubah Status saat alat berpindah: In use, At vendor, In repair, atau Retired. Hilangkan centang Active untuk menyembunyikan alat."}
-    ],
-    "fields": [
-      {"label": "Tool No.", "en": "The tool number, in capitals. It is unique and cannot be changed after saving.", "id": "Nomor alat, huruf besar. Unik dan tidak bisa diubah setelah disimpan."},
-      {"label": "Type", "en": "Die, Plate or Block.", "id": "Die, Plate, atau Block."},
-      {"label": "Status", "en": "Available, In use, At vendor, In repair or Retired.", "id": "Available, In use, At vendor, In repair, atau Retired."},
-      {"label": "Location (Bin)", "en": "Picked from the bins of the warehouses.", "id": "Dipilih dari bin gudang."},
-      {"label": "Impressions", "en": "Number of impressions made so far, typed by the officer.", "id": "Jumlah impresi sampai sekarang, diisi petugas."}
-    ]
   }
 ]

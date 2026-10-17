@@ -35,7 +35,7 @@
 3. **HOT PRINT and FOIL STAMPING are SUBCON although a capable machine exists** (1 each): ATTENTION-ENGINE-08, status kept there. FACT (query).
 4. **Routing template is an empty, unconnected feature** (0 rows, no caller from ProDev or WO). The menu shows it as ready. FACT.
 5. **The v2 grid `ProcessGrid` shows 8 columns only**; all other fields of the process are edited in the v1 form. FACT (`ProcessGrid.php:42-54`).
-6. **Process names are the join key in several places** (WO operation `process_name`, wait rules `after_process_name`, rule library `applies_to_process`, Production Output queue pairs): a renamed process breaks them silently; `process_id` is stored on operations (1 of 386 empty). FACT (code).
+6. **Process names are the join key in several places** (WO operation `process_name`, wait rules `after_process_name`, Production Output queue pairs): a renamed process breaks them silently; `process_id` is stored on operations (1 of 386 empty). FACT (code).
 
 ## Already exists? Searched where, result
 `concept:find "machine"`: nothing for processes. Searched code: a single process master; the stage list is used as a string in several places (`PlanLoader`, `SetupTimeEngine`, `WoPlanningEnricher`) without a constant list. User's guide for masters: `docs/guides/production/02_planning_scheduling.md`.

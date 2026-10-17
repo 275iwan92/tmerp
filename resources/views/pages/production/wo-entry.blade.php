@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Form Work Order (v1): BOP, bahan, output, QC gate, breakdown dan subkontrak.
+ * Sumber hulu  : prd_wo, prd_wo_operation, prd_breakdown_event, SubcontractPoService.
+ * Input        : Id WO dari rute production.wo.entry.
+ * Output       : Perubahan WO, event breakdown, PO subkontrak.
+ * Dipakai oleh : Daftar WO dan rute production.wo.*.
+ * Status       : Aktif. Tombol jadwal kini membuka PPIC Workspace (papan v1 dihapus 2026-10-18).
+ */
+
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\MatRaw;
 use App\Models\Master\OrgDivision;
@@ -709,12 +719,6 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     }
 
     #[Computed]
-    public function firstScheduledDate(): ?string
-    {
-        return $this->workOrder->operations->first(fn ($o) => $o->target_start !== null)?->target_start->toDateString();
-    }
-
-    #[Computed]
     public function altMachines()
     {
         if (! $this->breakdownOperationId) {
@@ -907,11 +911,9 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         return EmpEmployee::where('activate', true)->orderBy('full_name')->limit(200)->get();
     }
 
-    public function openInSchedulingBoard()
+    public function openInPpicWorkspace()
     {
-        $date = $this->firstScheduledDate ?? $this->workOrder->due_date?->toDateString() ?? now()->toDateString();
-
-        return $this->redirect(route('production.scheduling-board', ['date' => $date]));
+        return $this->redirect(route('v2.screen', 'production-scheduling'));
     }
 
     // ---- QC Gate (Tier2 §2/§3.1) ----
@@ -1521,7 +1523,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
                                 <td class="px-2 py-1.5 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                     <div class="inline-flex items-center gap-1 flex-wrap justify-end">
-                                        <button type="button" wire:click="openInSchedulingBoard" title="Ubah jadwal di Gantt Chart" class="w-6 h-6 rounded-md hover:bg-[#eef1f5] cursor-pointer">📅</button>
+                                        <button type="button" wire:click="openInPpicWorkspace" title="Ubah jadwal di PPIC Workspace" class="w-6 h-6 rounded-md hover:bg-[#eef1f5] cursor-pointer">📅</button>
                                         <a href="{{ route('production.process-rate') }}" target="_blank" title="Kelola target rate proses×mesin/pegawai" class="w-6 h-6 inline-flex items-center justify-center rounded-md hover:bg-[#eef1f5] cursor-pointer">⚙</a>
                                         @if (in_array($op->task_status, ['RUNNING', 'DONE'], true))
                                             <button type="button" wire:click="openOutputEntry({{ $op->operation_id }})" title="Catat Output" class="w-6 h-6 rounded-md hover:bg-[#eef3fb] cursor-pointer">📊</button>

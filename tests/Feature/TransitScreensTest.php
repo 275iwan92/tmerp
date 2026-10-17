@@ -1,8 +1,17 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Uji layar Transit, hitung stok, subkon, titipan customer (200, form Receive dan Start Count lewat route).
+ * Sumber hulu  : Gedung dan area uji ZZV-*, bahan bebas dari master.
+ * Input        : Tidak ada.
+ * Output       : Lulus atau gagal; baris uji dibersihkan di tearDown.
+ * Dipakai oleh : php artisan test --env=mockup.
+ * Status       : Aktif. Uji Tool Register dihapus 2026-10-18 bersama layarnya.
+ */
+
 namespace Tests\Feature;
 
-use App\Models\Inventory\InvTool;
 use App\Models\Inventory\WhTask;
 use App\Models\Master\MatRaw;
 use App\Models\Master\WhLoc;
@@ -14,8 +23,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Tests\Feature\Concerns\BuildsTestWarehouse;
 use Tests\TestCase;
 
-// Layar v2.01 Transit / hitung stok / subkon / titipan customer / alat: semua terbuka (200), form Receive dan Start Count bekerja lewat route, dan Tool Register
-// tersimpan. Menulis ke database sungguhan (gedung ZZV-A, alat ZZ-DIE-1) dan MEMBERSIHKAN sendiri di tearDown().
+// Layar v2.01 Transit / hitung stok / subkon / titipan customer: semua terbuka (200), form Receive dan Start Count bekerja lewat route. Menulis ke database sungguhan (gedung ZZV-A) dan MEMBERSIHKAN sendiri di tearDown().
 class TransitScreensTest extends TestCase
 {
     use BuildsTestWarehouse;
@@ -34,7 +42,6 @@ class TransitScreensTest extends TestCase
     {
         parent::setUp();
         $this->cleanFixture();
-        InvTool::query()->where('created_by', self::BY)->delete();
         $this->withoutMiddleware(VerifyCsrfToken::class);
         $this->actingAs(SecUser::query()->where('is_admin', 1)->firstOrFail());
         $a = $this->makeWarehouse('ZZV-A');
@@ -49,15 +56,13 @@ class TransitScreensTest extends TestCase
     protected function tearDown(): void
     {
         $this->cleanFixture();
-        InvTool::query()->where('created_by', self::BY)->delete();
-        $this->assertSame(0, InvTool::query()->where('created_by', self::BY)->count());
         $this->assertFixtureClean();
         parent::tearDown();
     }
 
     public function test_every_new_screen_opens_and_is_in_the_menu(): void
     {
-        foreach (['wh-in-transit', 'wh-count-tasks', 'subcon-send', 'stock-at-vendor', 'customer-material', 'inv-tools'] as $slug) {
+        foreach (['wh-in-transit', 'wh-count-tasks', 'subcon-send', 'stock-at-vendor', 'customer-material'] as $slug) {
             $this->assertNotNull(Grids::find($slug), "{$slug} is a registered grid");
             $this->get(route('v2.screen', $slug))->assertOk();
         }
@@ -96,18 +101,5 @@ class TransitScreensTest extends TestCase
         $this->assertSame('DONE', $task->refresh()->status);
         $this->assertFalse((bool) $this->src->refresh()->count_lock);
         $this->assertFalse((new CountTaskService)->dueZones()->contains('id_zone', $this->zone->id_zone));
-    }
-
-    public function test_the_tool_register_saves_a_tool_with_status_and_location(): void
-    {
-        $rows = Grids::find('inv-tools')->save([['id' => null, 'tool_no' => ' zz-die-1 ', 'tool_type' => 'DIE', 'description' => 'Test die', 'status' => 'AVAILABLE',
-            'location_id' => (string) $this->src->location_id, 'impressions' => 12, 'activate' => true]]);
-
-        $tool = InvTool::query()->where('tool_no', 'ZZ-DIE-1')->firstOrFail();
-        $this->assertSame($this->src->location_id, $tool->location_id);
-        $this->assertSame(12, $tool->impressions);
-        $this->assertNotEmpty($rows);
-        $tool->forceFill(['created_by' => self::BY])->save();
-        $this->assertStringContainsString('ZZ-DIE-1', json_encode(Grids::find('inv-tools')->rows()));
     }
 }

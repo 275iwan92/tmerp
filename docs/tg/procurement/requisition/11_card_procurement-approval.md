@@ -22,7 +22,7 @@
 | After the last approval | PR: `createDefaultAllocationsForPr` (allocation per line). PO: status APPROVED, then a manual "Send to Supplier" button sets SENT and `sent_at`; only SENT or PARTIALLY_RECEIVED POs appear in the receipt worklist. | FACT, `resources/views/pages/pur/pr/entry.blade.php:376-380`; `resources/views/pages/pur/po/entry.blade.php:179-187`; `PvBuilderService.php:22,47` |
 | Approval Center | One partial for all modules; the decision is executed through the rule of each document: PR -> `PurchaseRequisition::decide`, PO and POC -> `PurchaseOrder::decide`, PRT -> the v1 component `pages::pur.prt.entry`. | FACT, `ApprovalCenter.php:31-37,195-217,233` |
 | Data | `flow_log`: PR 11 SUBMITTED + 4 APPROVED rows; PO 14 SUBMITTED + 12 APPROVED; POC and PRT none. PO2600001 has 3 approvals, PO2600003 to PO2600005 have 2. | FACT, group-by queries |
-| Bypass | The subcontract PO made at a machine breakdown or a hot-job reroute inserts the PR as APPROVED and the PO as SENT directly, with a note and no `flow_log` row; the caller checks only "Ops Manager or above". | FACT, `SubcontractPoService.php:105-147`; header comment of that class |
+| Bypass | The subcontract PO made at a machine breakdown inserts the PR as APPROVED and the PO as SENT directly, with a note and no `flow_log` row; the caller checks only "Ops Manager or above". | FACT, `SubcontractPoService.php:105-147`; header comment of that class |
 
 ## Relations
 - **source**: `flow_config*` rows (screen Approval Levels), positions (`org_position`), acting officers, the document header (status, amount).

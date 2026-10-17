@@ -5,7 +5,7 @@
 - **Document type**: concept card. **Module/sub-module**: Manufacture > Planning > PPIC Workspace (`PROD_MPS`, `v2:production-scheduling`), Live Schedule (`PROD_LIVE`, `v2:production-live`), Colour Sequence (`PROD_COLOR_SEQ`, `v2:ppic-color-sequence`), Work Order form (Simulation, QUE).
 - **Canonical name**: Schedule = the placement columns of `tm2prd.prd_wo_operation` in three layers: **Draft** (the proposal: `draft_machine_id`, `draft_start`, `draft_finish` with `plan_status = DRAFT`), **Live** (the schedule in force: `machine_id`, `target_start`, `target_finish` with `plan_status = CONFIRMED`) and **Simulation** (what the Work Order form shows: the whole schedule in force plus Drafts, other WOs greyed). The runs and decisions are in `prd_plan_run` and `prd_plan_decision`.
 - **Synonyms**: plan, Draft plan, APPLY TO LIVE SCHEDULE, Confirmed, MPS (old name), Gantt, Kanban, Calendar, Grid, Monitoring, simulation layer.
-- **NOT the same as**: the old backward schedule `target_start` written at WO creation (`29_engine_pdr.md`), the CPDEL customer slot (`../../sales/order/21_engine_cpdel-promise.md`), the shift roster (`../ppic/12_card_shift-and-calendar.md`).
+- **NOT the same as**: the old backward schedule `target_start` written at WO creation, the CPDEL customer slot (`../../sales/order/21_engine_cpdel-promise.md`), the shift roster (`../ppic/12_card_shift-and-calendar.md`).
 
 ## Facts
 | Item | Content | Evidence |
@@ -30,7 +30,7 @@
 - **used_by**: operator queue (`ProductionOutput::desk` shows only CONFIRMED operations), CPDEL promise (`PlanEvents::replan` after Post), material control tab, Complaint and delivery promise (planned finish is NOT read by Sales: `../../sales/order/21_engine_cpdel-promise.md` uses its own `ready_at`).
 - **flows**: event or schedule -> Draft run -> officer reviews exceptions -> PROCESS (one WO) -> APPLY -> Live -> operator -> actual. Undo only before work starts.
 - **frozen_zone**: none in PPIC. Upstream CPDEL is frozen.
-- **also_named_by**: `10_card_work-order.md`, `11_card_wo-operation-bop.md`, `14_card_gates-and-readiness.md`, `15_card_material-availability.md`, `18_card_order-suggestion-ml.md`, `25_engine_setup-time.md`, `31_engine_interruption.md`.
+- **also_named_by**: `10_card_work-order.md`, `11_card_wo-operation-bop.md`, `14_card_gates-and-readiness.md`, `15_card_material-availability.md`, `18_card_order-suggestion-ml.md`, `25_engine_setup-time.md`.
 
 ## Findings (recorded, not fixed)
 1. **Live Gantt is empty while Live Schedule lists 13 operations.** `Ppic::gantt` removes operations whose finish is before the origin (yesterday 00:00); an operation that is late by more than a day disappears from the picture although it is still in the table as "Late". The automated test `tests/Feature/LiveScheduleTest.php` fails today on this (`assertCount(13, gantt tasks)`, 0 found; run with `--env=mockup`). FACT (test run and code).

@@ -20,5 +20,5 @@ Menunjukkan bagaimana laporan, plan atau kerusakan berulang menjadi order perawa
 - **Writes to Inventory**: Dokumen pengeluaran stok untuk spare part, merujuk ke order perawatan.
 - **Writes to Procurement**: Permintaan pembelian untuk part yang kurang, ditandai berasal dari Maintenance.
 - **Reads from Production**: Output produksi untuk meter, dan kejadian breakdown pada order perawatan.
-- **Reads from Scheduling**: Maintenance order preventive yang Confirmed memblokir mesin di Scheduling Board.
+- **Reads from Scheduling**: Maintenance order preventive yang Confirmed memblokir mesin di jadwal produksi (penjadwalan mundur saat WO dibuat; Scheduling Board v1 dihapus 2026-10-18).
 - **Master data readers**: Daily Check membaca mnt_watch_point. Maintenance order membaca mnt_asset_part dan mnt_code. Laporan membaca semuanya. Stok dibaca dari Inventory.

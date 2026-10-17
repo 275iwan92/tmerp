@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Daftar engine untuk katalog (php artisan engine:catalog) dan peta docs/tg/01_engine-map.md.
+ * Sumber hulu  : Kelas service engine di app/Services.
+ * Input        : Satu entri per engine: key, nama, tujuan, kelas, metode, input, output, langkah, dibaca, ditulis, dipakai, tes.
+ * Output       : Array entri engine.
+ * Dipakai oleh : engine:catalog, layar DevLib dan docs:check.
+ * Status       : Aktif. Entri pdr, scheduling-rules, interruption dihapus 2026-10-18 bersama kodenya.
+ */
+
 namespace App\Support\Engines;
 
 use App\Services\Acc\TaxEngine;
@@ -51,18 +61,15 @@ use App\Services\Pur\SingleFacePriceEngine;
 use App\Services\Pur\UrgentReceiptService;
 use App\Services\Sales\CoOrderBuilder;
 use App\Services\Sales\CpdelPromiseService;
-use App\Services\Scheduling\InterruptionOptionGenerator;
 use App\Services\Scheduling\Learning\LearningEngine;
 use App\Services\Scheduling\MaintenanceBlockProvider;
 use App\Services\Scheduling\Operator\OperatorTimerService;
-use App\Services\Scheduling\PdrEngine;
 use App\Services\Scheduling\Plan\AutoPlanRunner;
 use App\Services\Scheduling\Plan\GateService;
 use App\Services\Scheduling\Plan\PlanConfirmService;
 use App\Services\Scheduling\Plan\ScheduleSolver;
 use App\Services\Scheduling\Plan\SetupTimeEngine;
 use App\Services\Scheduling\Plan\WoPlanningEnricher;
-use App\Services\Scheduling\SchedulingRuleEngine;
 use App\Services\Scheduling\Sequence\SequenceSuggester;
 use App\Services\Scheduling\WoGenerationService;
 use Assistant\Engine as AssistantEngine;
@@ -1364,68 +1371,6 @@ final class EngineRegistry
                 'docs' => ['docs/md_for_systems/production_scheduling_wo_generation_delta.md'],
             ],
             [
-                'key' => 'pdr', 'name' => 'PDR Engine (Scheduling)', 'group' => 'Production', 'mode' => 'suggest',
-                'purpose' => 'Decides which job a machine should run next and plans a Work Order backwards from its due date.',
-                'class' => PdrEngine::class,
-                'methods' => ['buildResourceQueue', 'pickNext', 'backwardSchedule', 'backwardScheduleAndPersist', 'validateManualReschedule'],
-                'notes' => [
-                    'buildResourceQueue' => 'The waiting jobs of one machine, in order.',
-                    'pickNext' => 'The job that should start now; null when its crew is not available.',
-                    'backwardSchedule' => 'Target start and finish per operation; not saved.',
-                    'validateManualReschedule' => 'Checks a drag / resize on the board; empty list = allowed.',
-                ],
-                'inputs' => [
-                    ['machineId, processName', 'The resource.'],
-                    ['proposedCrewIds', 'The crew PPIC wants to assign.'],
-                    ['now', 'The moment to judge from (default: now).'],
-                    ['wo', 'The Work Order to plan backwards.'],
-                    ['task, newStart, newFinish', 'A manual move on the Scheduling Board.'],
-                ],
-                'outputs' => [
-                    ['Queue', 'Jobs or groups of jobs, highest priority first.'],
-                    ['Next job', 'One operation, or nothing.'],
-                    ['Targets', 'Target start and finish per operation.'],
-                    ['Reasons', 'Why a manual move is refused.'],
-                ],
-                'steps' => [
-                    'Batching: jobs that can run together (same dieline ...) become one unit.',
-                    'Priority score in layers: hot job, critical ratio, earliest due date, resource fit, first in first out.',
-                    'Sequencing: smooths the order among jobs of equal priority only.',
-                    'Crew check: the top job is skipped when its crew is not on shift.',
-                    'Backward scheduling: from the due date back through the operations, using the rate band of each process and the machine calendar.',
-                ],
-                'reads' => ['tm2prd.prd_wo, prd_wo_operation', 'tm2prd.prd_scheduling_rule', 'tm2mst.prod_machine', 'tm2mst.emp_shift_roster', 'tm2mst.sys_holiday'],
-                'writes' => ['tm2prd.prd_wo_operation (target dates, only with ...AndPersist)'],
-                'settings' => ['Scheduling rules (prd_scheduling_rule)'],
-                'used' => ['Scheduling Board', 'Work Order Worklist'],
-                'tests' => ['tests/Feature/ProductionSchedulingBoardSmokeTest.php'],
-                'docs' => ['docs/md_for_systems/production_scheduling_tier1.md §5A', 'production_scheduling_tier2.md §4'],
-            ],
-            [
-                'key' => 'scheduling-rules', 'name' => 'Scheduling Rule Engine', 'group' => 'Production', 'mode' => 'calc',
-                'purpose' => 'Applies the batching and sequencing rules kept as data, not as code.',
-                'class' => SchedulingRuleEngine::class,
-                'methods' => ['applyBatching', 'applySequencing'],
-                'inputs' => [
-                    ['candidates', 'The operations waiting for a machine.'],
-                    ['sortedByPriority', 'The same list after the priority score.'],
-                    ['machineId, processName', 'The resource the rules belong to.'],
-                ],
-                'outputs' => [
-                    ['Groups', 'Lists of operations; a group of one = no batching fits.'],
-                    ['Order', 'The list reordered inside equal priorities.'],
-                ],
-                'steps' => [
-                    'Reads the active rules of the resource.',
-                    'Batching joins operations of different Work Orders that share the rule key.',
-                    'Sequencing rules are applied oldest rule first as the main key, later rules as tie breakers.',
-                    'The priority order (hot job, critical ratio, due date) is never changed.',
-                ],
-                'reads' => ['tm2prd.prd_scheduling_rule'],
-                'writes' => ['Nothing.'],
-                'used' => ['PDR Engine'],
-            ],
-            [
                 'key' => 'sequence-learning', 'name' => 'Job Order Learning (Sequence)', 'group' => 'Production', 'mode' => 'suggest',
                 'purpose' => 'Learns the order in which the officer applies jobs to the Live Schedule and suggests that order for new jobs on a machine.',
                 'class' => SequenceSuggester::class,
@@ -1448,30 +1393,6 @@ final class EngineRegistry
                 'reads' => ['tm2prd.prd_plan_trace', 'tm2prd.prd_sequence_model', 'tm2prd.prd_wo_operation'],
                 'writes' => ['tm2prd.prd_plan_trace', 'tm2prd.prd_sequence_model', 'tm2prd.prd_plan_decision (SEQ_USE, SEQ_REJECT)'],
                 'used' => ['Work Order form > Simulation and QUE'],
-            ],
-            [
-                'key' => 'interruption', 'name' => 'Hot Job Option Generator', 'group' => 'Production', 'mode' => 'suggest',
-                'purpose' => 'When an urgent job must be inserted, proposes up to three ways to do it with their measured impact.',
-                'class' => InterruptionOptionGenerator::class,
-                'methods' => ['generateOptions', 'recordDecision'],
-                'inputs' => [
-                    ['hotTask', 'The urgent operation.'],
-                    ['machineId, processName', 'Where it must run.'],
-                ],
-                'outputs' => [
-                    ['Options', 'One to three options; each shows which job moves, by how many hours, and whether it stays safe.'],
-                    ['Decision', 'The option PPIC chose is recorded.'],
-                ],
-                'steps' => [
-                    'Takes the waiting queue of the machine from the PDR Engine.',
-                    'For the first two waiting jobs: "insert and move this job", with the delay in hours (the duration of the urgent job) and whether the moved job still meets its due date (safe / at risk).',
-                    'Always adds a last option: send the urgent job to a subcontractor, so no job moves (needs a subcontract Purchase Order).',
-                    'Shows the options; PPIC decides. There is no automatic answer.',
-                ],
-                'reads' => ['tm2prd.prd_wo_operation'],
-                'writes' => ['tm2prd.prd_decision_feedback_log (recordDecision)'],
-                'used' => ['Scheduling Board'],
-                'docs' => ['docs/md_for_systems/production_scheduling_tier1.md §5A.2'],
             ],
             [
                 'key' => 'speed-target', 'name' => 'Speed Target Engine', 'group' => 'Production', 'mode' => 'suggest',
@@ -1635,11 +1556,11 @@ final class EngineRegistry
                 'steps' => [
                     'Counts orders that are Confirmed, not Done, Closed or Cancelled, need the machine stopped, and sit on an asset linked to the machine.',
                     'The window runs from the actual (or planned) start to the planned end, or start plus the estimate, or 60 minutes when neither is known.',
-                    'Backward scheduling skips the window; a manual move into it is refused; the Scheduling Board draws it as MTN.',
+                    'Backward scheduling (Work Order generation) skips the window.',
                 ],
                 'reads' => ['tm2mnt.mnt_order', 'tm2mnt.mnt_asset'],
                 'writes' => ['Nothing: read only.'],
-                'used' => ['Backward scheduling', 'Scheduling Board', 'Manual reschedule validation'],
+                'used' => ['Backward scheduling'],
                 'tests' => ['tests/Feature/MaintenanceSchedulingBlockTest.php'],
             ],
             [

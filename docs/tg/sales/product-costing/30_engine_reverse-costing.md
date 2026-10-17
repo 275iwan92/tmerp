@@ -48,7 +48,7 @@ See `docs/ENGINE-ATTENTION.md`: no item specific to Reverse (read in full).
 3. `prod_layout_group.up_count` is filled from `i_cut_per_plano` (line 125). Elsewhere `i_cut_per_plano` = print sheets per plano and `i_isi_per_lb` = UP per print sheet (`ProCostContextService.php:110-113` and `CostingEngine.php:80-81`); Material Planning uses `up_count` of the CONFIRMED layout as UP per plano (`MaterialPlanningEngine.php:554`). If `i_isi_per_lb > 1`, the Reverse `up_count` is smaller than the real UP. The real impact only occurs after the layout is Confirmed by a human (until then a DRAFT layout is not used by Material Planning). ASSUMPTION, not tested.
 4. `iqp_part` `flat_w/flat_h/flat_area` are filled from the product dimensions (P x L), whereas in the Inquiry path those columns hold the flat spread from TMDieline. ASSUMPTION of a wrong meaning; not checked against the users of that column.
 5. A Reverse part does not carry `dieline_spec`/`type_code`/artwork (not in `IqpPart::create`), so a Master Card born from this flow has no dieline until completed in ProDev (A.17).
-6. The registry (`EngineRegistry.php:322`) writes "Pro-Dev layout, Created as Draft; only a person can Confirm it": correct for the layout, but see Finding 2 for the flag.
+6. The registry (`EngineRegistry.php:337`) writes "Pro-Dev layout, Created as Draft; only a person can Confirm it": correct for the layout, but see Finding 2 for the flag.
 
 ## Tests
 `tests/Feature/CostingInstantModeTest.php::test_instant_screen_reproduces_legacy_raja_bakery_and_reverse`: after Reverse, `mode` = INTEGRATED, the Inquiry type is `NEW`, and the main tier HPP equals the value before Reverse. No dedicated tests for: failure midway, the `stat_confirm_*` flags, the `up_count` value, or the `flat_*` mapping.
@@ -67,3 +67,5 @@ See `docs/ENGINE-ATTENTION.md`: no item specific to Reverse (read in full).
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `single-face-price` (Procurement) was added after the lines cited here; nothing in this card changed.
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: keys `duplex-price` and `corrugated-sheet-price` (Procurement) were added after the lines cited here; nothing in this card changed.
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the "Pro-Dev layout ... Created as Draft" line of the `reverse-costing` registry entry is now `EngineRegistry.php:337`; `engines.json` lost the 3 removed engines only; nothing else in this card changed.

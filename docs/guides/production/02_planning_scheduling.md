@@ -62,11 +62,7 @@ Bila kedua pekerjaan membawa daftar tinta aslinya dan tinta berikutnya lebih gel
 
 Selain setup, ada **jeda tunggu setelah proses** (pengeringan, curing), diambil dari master Wait Rules menurut awalan nama proses. Nilai awal: CETAK 2 jam, VARNISH 45 menit.
 
-**Aturan urutan (scheduling rules).** Ada dua "mesin aturan" di kode, dan keduanya jangan dicampur:
-
-1. **Yang dipakai layar Planning sekarang** adalah Solver di atas. Urutan murni ditentukan peringkat tiga lapis dan penghalusan setup/die. Selain itu ada saran urutan hasil belajar dari susunan petugas (Job Order Learning): strip "Suggested order" di Simulation baru muncul bila model sudah AKTIF, butuh minimal 30 pasangan keputusan petugas dan harus lebih akurat daripada urutan engine. Tombol Use memasukkannya sebagai perubahan tertunda, Dismiss menolaknya, dan Preview tidak menyimpan apa-apa.
-2. **PDR Engine dan Scheduling Rule Engine** (`PdrEngine`, `SchedulingRuleEngine`, aturan di `prd_scheduling_rule`) adalah mesin lama untuk papan jadwal v1. Dari penelusuran kode, hanya halaman `production/scheduling-board` yang memakainya. Solver v2 tidak membacanya.
-
+**Aturan urutan (scheduling rules).** Satu-satunya mesin aturan adalah Solver di atas. Urutan murni ditentukan peringkat tiga lapis dan penghalusan setup/die. Selain itu ada saran urutan hasil belajar dari susunan petugas (Job Order Learning): strip "Suggested order" di Simulation baru muncul bila model sudah AKTIF, butuh minimal 30 pasangan keputusan petugas dan harus lebih akurat daripada urutan engine. Tombol Use memasukkannya sebagai perubahan tertunda, Dismiss menolaknya, dan Preview tidak menyimpan apa-apa.
 ## 5. Pemeriksa tujuan: proses BOP yang tidak dikerjakan
 
 Sasarannya: tidak boleh ada proses BOP yang tidak punya jadwal. Pengamannya (`ScheduleGuard`) menyebut sebuah proses "tak terjadwal" bila operasinya aktif (belum selesai atau jalan) dan tidak punya waktu mulai. Alasan yang ditampilkan, berurutan: gerbang terblokir, tidak ada mesin yang mampu, menunggu bahan atau tooling, atau tidak ada slot mesin dalam horizon.
@@ -89,13 +85,12 @@ Pengaman ini bekerja di tiga titik: PROCESS diblokir, APPLY ditolak, dan popup d
 
 **Selisih dokumen dan kode**
 
-- EngineRegistry mencantumkan PDR Engine dan Scheduling Rule Engine di kelompok Production seolah bagian jalur penjadwalan. Menurut kode, jalur PPIC v2 (Auto-Planner, Solver, Plan Control) tidak memakainya; keduanya hanya dipakai papan v1. Aturan di `prd_scheduling_rule` karena itu tidak memengaruhi hasil Planning v2.
 - Teks `docs/SCREEN-INDEX.md` menyebut tombol Confirm WO di header dihapus dan APPLY menjadi satu-satunya jalan; kode cocok. Namun controller `confirm` (satu rencana penuh) masih ada dan dipakai PPIC Workspace yang disembunyikan.
 - Registry menyebut solver "mengenali pengecualian tooling terblokir"; di kode solver, tooling terblokir mengalir lewat gerbang (BLOCK) dan muncul sebagai pengecualian terblokir bersama gerbang lain, bukan jenis pengecualian tersendiri.
 
 **Butir ENGINE-ATTENTION yang relevan**
 
-- **07 (terbuka):** operasi tanpa mesin tidak memakai kapasitas; crew tidak dicek solver (`CrewAvailabilityChecker` hanya dipakai mesin lama); pembagian proses ke beberapa mesin belum ada.
+- **07 (terbuka):** operasi tanpa mesin tidak memakai kapasitas; crew tidak dicek solver; pembagian proses ke beberapa mesin belum ada.
 - **06 (terbuka):** gerbang artwork selalu READY, bahan dengan Required 0 tidak menahan, tooling tak terdaftar dianggap READY dengan catatan. WO bisa tampak siap padahal belum.
 - **03 dan 05 (terbuka):** Release tidak membuat booking sehingga dua WO bisa melepas stok yang sama; kolom Purchase belum memicu PR.
 - **02 dan 04 (terbuka):** definisi "Available" berbeda antara PPIC dan layar lain; satuan Required dan stok dibandingkan tanpa konversi.
@@ -104,8 +99,7 @@ Pengaman ini bekerja di tiga titik: PROCESS diblokir, APPLY ditolak, dan popup d
 
 **Yang tidak bisa saya pastikan**
 
-- Apakah libur mesin yang sudah direncanakan di masa depan (`prod_machine_downtime`, jadwal maintenance) dihormati solver. Yang terbukti di kode: solver hanya menghindari mesin berstatus BREAKDOWN atau MAINTENANCE saat perencanaan dijalankan. Penggunaan blok maintenance hanya saya temukan di mesin lama. **Belum terverifikasi** untuk jendela masa depan.
-- Apakah halaman papan v1 (`production/scheduling-board`) masih muncul di menu pengguna; rutenya masih terdaftar, tetapi isi `sys_app_menu` tidak saya baca.
+- Apakah libur mesin yang sudah direncanakan di masa depan (`prod_machine_downtime`, jadwal maintenance) dihormati solver. Yang terbukti di kode: solver hanya menghindari mesin berstatus BREAKDOWN atau MAINTENANCE saat perencanaan dijalankan. Blok maintenance hanya saya temukan di penjadwalan mundur saat WO dibuat (`MachineCalendarService`). **Belum terverifikasi** untuk jendela masa depan.
 - Perilaku penempatan di celah: setup operasi yang disisipkan dihitung terhadap pekerjaan sebelumnya, tetapi setup pekerjaan sesudahnya tidak dihitung ulang. Ini terbaca dari kode, **belum diuji** dengan kasus nyata.
 - Arti SPILL, angka nyata data produksi, dan seberapa akurat nilai asumsi (faktor cuci terang-gelap, menit awal) untuk pabrik ini tidak bisa saya nilai dari kode.
 

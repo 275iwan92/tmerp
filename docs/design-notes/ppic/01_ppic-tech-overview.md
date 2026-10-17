@@ -1,5 +1,7 @@
 # Technical Plan: PPIC Scheduling Module
 
+> Catatan 2026-10-18: PdrEngine, CompositePriorityScorer, SchedulingRuleEngine, papan Scheduling Board v1 dan layar Rule Library telah dihapus (audit modul ganda); penjadwal yang berlaku = ScheduleSolver + AutoPlanRunner. Butir di bawah yang menyebutnya adalah rencana lama.
+
 Rencana teknis PPIC: Work Order berasal dari data Product Development, dan engine menyiapkan kesiapan bahan, perkiraan dan draf jadwal secara otomatis. Officer mengonfirmasi rencana dan dapat memberi prioritas pada job.
 
 ## Isi catatan

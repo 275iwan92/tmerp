@@ -1,15 +1,21 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Daftarkan service penjadwalan yang masih dipakai (RateBandResolver, MachineCalendarService, BackwardSchedulingService, WoGenerationService).
+ * Sumber hulu  : config/production_scheduling.php
+ * Input        : Service tersebut dibuat per permintaan lewat container.
+ * Output       : Instance singleton service penjadwalan.
+ * Dipakai oleh : Pembuatan Work Order (Planning), tes MaintenanceSchedulingBlockTest.
+ * Status       : Aktif. Kelompok PDR (PdrEngine dan kawan-kawan) dihapus 2026-10-18; penjadwal berlaku = Schedule Solver.
+ */
+
 namespace App\Providers;
 
+use App\Services\ProDev\SpecEngine;
 use App\Services\Scheduling\BackwardSchedulingService;
-use App\Services\Scheduling\CompositePriorityScorer;
-use App\Services\Scheduling\CrewAvailabilityChecker;
-use App\Services\Scheduling\InterruptionOptionGenerator;
 use App\Services\Scheduling\MachineCalendarService;
-use App\Services\Scheduling\PdrEngine;
 use App\Services\Scheduling\RateBandResolver;
-use App\Services\Scheduling\SchedulingRuleEngine;
 use App\Services\Scheduling\WoGenerationService;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,7 +36,6 @@ class SchedulingServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(MachineCalendarService::class);
-        $this->app->singleton(CrewAvailabilityChecker::class);
 
         $this->app->singleton(BackwardSchedulingService::class, function ($app) {
             return new BackwardSchedulingService(
@@ -39,27 +44,8 @@ class SchedulingServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->singleton(CompositePriorityScorer::class, function ($app) {
-            return new CompositePriorityScorer($app->make(CrewAvailabilityChecker::class));
-        });
-
-        $this->app->singleton(SchedulingRuleEngine::class);
-
-        $this->app->singleton(PdrEngine::class, function ($app) {
-            return new PdrEngine(
-                $app->make(BackwardSchedulingService::class),
-                $app->make(CompositePriorityScorer::class),
-                $app->make(SchedulingRuleEngine::class),
-                $app->make(CrewAvailabilityChecker::class),
-            );
-        });
-
-        $this->app->singleton(InterruptionOptionGenerator::class, function ($app) {
-            return new InterruptionOptionGenerator($app->make(PdrEngine::class));
-        });
-
         $this->app->singleton(WoGenerationService::class, function ($app) {
-            return new WoGenerationService($app->make(BackwardSchedulingService::class), $app->make(\App\Services\ProDev\SpecEngine::class));
+            return new WoGenerationService($app->make(BackwardSchedulingService::class), $app->make(SpecEngine::class));
         });
     }
 }

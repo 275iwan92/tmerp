@@ -27,7 +27,7 @@
 
 ## Relations
 - **source**: master maintained by the warehouse officer (rule A.22: "denah sementara dibuat agen ... tetap bisa diubah user atau officer", FROM DOCUMENT `docs/globaluserrules.md`); sample layout from `UatWarehouseSeeder` (named in `docs/warehouselayout_tier1.md` 14.7, FROM DOCUMENT).
-- **used_by**: every stock reader (`WarehouseStock`, registry key `warehouse-stock`, class `app/Services/Inventory/WarehouseStock.php`, no separate card yet), putaway (`21_engine_putaway-planner.md`), pick (`22_engine_pick-list.md`), transfer (`23_engine_stock-transfer-service.md`), count (`24_engine_count-task-service.md`), labels (`18_card_labels-and-scan.md`), Tool Register (`19_card_tool-register.md`), purchase receipt (location code typed per line or the item's default location, `app/Services/Pur/PvPostingService.php:226-265`).
+- **used_by**: every stock reader (`WarehouseStock`, registry key `warehouse-stock`, class `app/Services/Inventory/WarehouseStock.php`, no separate card yet), putaway (`21_engine_putaway-planner.md`), pick (`22_engine_pick-list.md`), transfer (`23_engine_stock-transfer-service.md`), count (`24_engine_count-task-service.md`), labels (`18_card_labels-and-scan.md`), purchase receipt (location code typed per line or the item's default location, `app/Services/Pur/PvPostingService.php:226-265`).
 - **flows**: Building -> Storage Area -> Bin (generated or typed) -> stock cards/pallets reference `location_id`. Cross-DB: `wh_*` live in `tm2mst`, stock in `tm2inv`, matched in PHP (no FK across databases).
 - **frozen_zone**: not a frozen flow. The warehouse masters are not "Master REAL" (machines/employees), they carry `data_origin`.
 

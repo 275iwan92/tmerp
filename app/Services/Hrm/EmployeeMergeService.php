@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Gabungkan beberapa baris emp_employee yang ternyata satu orang ke satu baris survivor, semua rujukan employee_id ikut dipindah.
+ * Sumber hulu  : tm2mst.emp_employee dan daftar REFERENCES (tabel, kolom).
+ * Input        : Id survivor dan id yang digabung.
+ * Output       : Rujukan dipindah, duplikat unik dihapus, dalam satu transaksi.
+ * Dipakai oleh : Layar koreksi data pegawai dan perintah penggabungan.
+ * Status       : Aktif. Rujukan prod_crew dihapus 2026-10-18 (tabel dihapus).
+ */
+
 namespace App\Services\Hrm;
 
 use App\Support\DbName;
@@ -42,7 +52,6 @@ class EmployeeMergeService
         ['tm2mst.emp_shift_roster', 'employee_id'],
         ['tm2mst.emp_shift_swap_request', 'requester_employee_id'],
         ['tm2mst.emp_shift_swap_request', 'target_employee_id'],
-        ['tm2mst.prod_crew', 'employee_id'],
         ['tm2mst.prod_part_process_employee_rate', 'employee_id'],
         ['tm2mst.sales_person', 'employee_id'],
         ['tm2prd.prd_crew_assignment', 'employee_id'],

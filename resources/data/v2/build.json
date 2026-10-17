@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-17 22:47",
+    "generated": "2026-10-18 01:06",
     "database": "ddtsys",
     "totals": {
         "objects": 175,
         "modules": 9,
-        "modules_done": 6,
-        "screens": 295,
-        "v2": 288,
-        "v1": 5,
+        "modules_done": 7,
+        "screens": 291,
+        "v2": 285,
+        "v1": 4,
         "not_built": 2,
-        "waiting_qc": 292,
+        "waiting_qc": 288,
         "locked": 1,
-        "forms": 114,
-        "grids": 111,
+        "forms": 113,
+        "grids": 108,
         "reports": 70,
-        "grid_classes": 186,
-        "lookups": 58,
+        "grid_classes": 183,
+        "lookups": 57,
         "report_grids": 47,
-        "engines": 65,
+        "engines": 62,
         "engine_groups": 14,
-        "tables": 432,
+        "tables": 428,
         "databases": 10,
-        "models": 384,
-        "migrations": 634,
-        "tests": 198,
-        "dictionary": 14493,
+        "models": 380,
+        "migrations": 639,
+        "tests": 201,
+        "dictionary": 15501,
         "languages": 4,
-        "commits": "1400",
+        "commits": "1411",
         "since": "2026-08-06"
     },
     "modules": [
@@ -68,37 +68,37 @@
         },
         {
             "label": "Inventory",
-            "total": 74,
-            "v2": 74,
+            "total": 73,
+            "v2": 73,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 74,
+            "waiting_qc": 73,
             "locked": 0,
             "form": 33,
-            "grid": 13,
+            "grid": 12,
             "report": 28
         },
         {
             "label": "Manufacture",
-            "total": 43,
-            "v2": 43,
+            "total": 41,
+            "v2": 41,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 43,
+            "waiting_qc": 41,
             "locked": 0,
             "form": 23,
-            "grid": 15,
+            "grid": 13,
             "report": 5
         },
         {
             "label": "Human Resources",
-            "total": 33,
+            "total": 32,
             "v2": 32,
-            "v1": 1,
+            "v1": 0,
             "not_built": 0,
-            "waiting_qc": 33,
+            "waiting_qc": 32,
             "locked": 0,
-            "form": 12,
+            "form": 11,
             "grid": 15,
             "report": 6
         },
@@ -154,23 +154,17 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 132,
-            "days": 8,
-            "last": "2026-10-17",
-            "screens": 159,
-            "objects": 18,
-            "engines": 50,
-            "tests": 80
+            "commits": 137,
+            "days": 9,
+            "last": "2026-10-18",
+            "screens": 162,
+            "objects": 20,
+            "engines": 48,
+            "tests": 82
         }
     ],
-    "untracked": 1177,
+    "untracked": 1183,
     "days": [
-        {
-            "date": "2026-10-04",
-            "iwan": 0,
-            "jo": 0,
-            "other": 15
-        },
         {
             "date": "2026-10-05",
             "iwan": 43,
@@ -246,8 +240,14 @@
         {
             "date": "2026-10-17",
             "iwan": 0,
-            "jo": 8,
-            "other": 3
+            "jo": 11,
+            "other": 4
+        },
+        {
+            "date": "2026-10-18",
+            "iwan": 0,
+            "jo": 2,
+            "other": 5
         }
     ],
     "weeks": [
@@ -314,8 +314,8 @@
         {
             "week": "2026-W42",
             "iwan": 10,
-            "jo": 56,
-            "other": 57
+            "jo": 61,
+            "other": 63
         }
     ],
     "items": [
@@ -778,8 +778,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "GRID",
@@ -1280,17 +1280,6 @@
             "type": "REPORT",
             "key": "menu:INV_WH_RPT_CUSTMAT",
             "name": "Customer Material",
-            "module": "Inventory",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-09",
-            "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
-        },
-        {
-            "type": "GRID",
-            "key": "menu:INV_TOOLS_REG",
-            "name": "Tool Register",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
@@ -2231,17 +2220,6 @@
             "built_at": "2026-09-30",
             "built_by": null,
             "changed_at": "2026-10-13",
-            "changed_by": null
-        },
-        {
-            "type": "FORM",
-            "key": "menu:HRM_SELFSERVICE",
-            "name": "Employee Self-Service",
-            "module": "Human Resources",
-            "qc": "V1",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
             "changed_by": null
         },
         {
@@ -3455,17 +3433,6 @@
             "changed_by": null
         },
         {
-            "type": "GRID",
-            "key": "menu:PROD_RULE_LIB",
-            "name": "Rule Library",
-            "module": "Manufacture",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-10-01",
-            "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
-        },
-        {
             "type": "FORM",
             "key": "menu:HRM_RCR_PROVISION",
             "name": "Provisioning to ERP",
@@ -3541,17 +3508,6 @@
             "built_by": "jo",
             "changed_at": "2026-10-17",
             "changed_by": "jo"
-        },
-        {
-            "type": "GRID",
-            "key": "menu:PROD_MST_CREW",
-            "name": "Master Crew",
-            "module": "Manufacture",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-09-30",
-            "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
         },
         {
             "type": "GRID",
@@ -3973,28 +3929,6 @@
         },
         {
             "type": "ENGINE",
-            "key": "engine:pdr",
-            "name": "PDR Engine (Scheduling)",
-            "module": "Production",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-08-28",
-            "built_by": null,
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
-        },
-        {
-            "type": "ENGINE",
-            "key": "engine:scheduling-rules",
-            "name": "Scheduling Rule Engine",
-            "module": "Production",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-08-28",
-            "built_by": null,
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
-        },
-        {
-            "type": "ENGINE",
             "key": "engine:sequence-learning",
             "name": "Job Order Learning (Sequence)",
             "module": "Production",
@@ -4002,17 +3936,6 @@
             "built_at": "2026-10-14",
             "built_by": null,
             "changed_at": "2026-10-14",
-            "changed_by": null
-        },
-        {
-            "type": "ENGINE",
-            "key": "engine:interruption",
-            "name": "Hot Job Option Generator",
-            "module": "Production",
-            "qc": "READY_FOR_QC",
-            "built_at": "2026-08-28",
-            "built_by": null,
-            "changed_at": "2026-08-28",
             "changed_by": null
         },
         {
@@ -4276,7 +4199,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-14",
             "built_by": "jo",
-            "changed_at": "2026-10-14",
+            "changed_at": "2026-10-18",
             "changed_by": "jo"
         },
         {
@@ -5990,10 +5913,10 @@
             "name": "SwitchCase",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -6001,10 +5924,10 @@
             "name": "Switcher",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-17",
+            "built_by": "jo",
+            "changed_at": "2026-10-17",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -6762,33 +6685,9 @@
                     "tests": 1
                 },
                 {
-                    "key": "pdr",
-                    "name": "PDR Engine (Scheduling)",
-                    "purpose": "Decides which job a machine should run next and plans a Work Order backwards from its due date.",
-                    "mode": "suggest",
-                    "used": 2,
-                    "tests": 1
-                },
-                {
-                    "key": "scheduling-rules",
-                    "name": "Scheduling Rule Engine",
-                    "purpose": "Applies the batching and sequencing rules kept as data, not as code.",
-                    "mode": "calc",
-                    "used": 1,
-                    "tests": 0
-                },
-                {
                     "key": "sequence-learning",
                     "name": "Job Order Learning (Sequence)",
                     "purpose": "Learns the order in which the officer applies jobs to the Live Schedule and suggests that order for new jobs on a machine.",
-                    "mode": "suggest",
-                    "used": 1,
-                    "tests": 0
-                },
-                {
-                    "key": "interruption",
-                    "name": "Hot Job Option Generator",
-                    "purpose": "When an urgent job must be inserted, proposes up to three ways to do it with their measured impact.",
                     "mode": "suggest",
                     "used": 1,
                     "tests": 0
@@ -6915,7 +6814,7 @@
                     "name": "Maintenance Machine Hold (Scheduling)",
                     "purpose": "Tells Scheduling when a machine belongs to Maintenance, so production is never planned into those hours.",
                     "mode": "calc",
-                    "used": 3,
+                    "used": 1,
                     "tests": 1
                 }
             ]

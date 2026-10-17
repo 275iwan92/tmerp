@@ -34,4 +34,4 @@
 5. **The same slug `prod-machine` is mounted twice in the menu** (`MD_MACHINE` under PPIC Settings and `MAINT_MACHINE` under Maintenance Master Data). FACT (menu query).
 
 ## Already exists? Searched where, result
-`concept:find "machine"`: only the engine map and the inventory tool register mention machines; no TG card for the machine master existed. Searched: one machine table (`prod_machine`); legacy `cac_idx_machine` (Costing) is a different, old costing table.
+`concept:find "machine"`: only the engine map mentions machines; no TG card for the machine master existed. Searched: one machine table (`prod_machine`); legacy `cac_idx_machine` (Costing) is a different, old costing table.

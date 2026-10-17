@@ -6,7 +6,7 @@
 - **Canonical name**: Order suggestion = the learned preference for the order of jobs on a machine, stored as `tm2prd.prd_sequence_model` (versions of weights), trained from `tm2prd.prd_plan_trace` (officer arrangements).
 - **Synonyms**: Job Order Learning, sequence learning, "Learning n / 30", Suggested order, USE, DISMISS, officer arrangement as input.
 - **Rule** (Jo 2026-10-14, as written in the screens and in the registry text of `sequence-learning`): the officer arranges not-yet-applied WOs freely in Simulation; the arrangement is input for the ML; the ML only suggests; a problem job must not hold its machine (`PlanLoader.php:131`).
-- **NOT the same as**: the engine's own ordering (`24_engine_schedule-solver.md`) or the old Rule Library sequencing (`30_engine_scheduling-rules.md`).
+- **NOT the same as**: the engine's own ordering (`24_engine_schedule-solver.md`) (the old Rule Library sequencing was removed 2026-10-18).
 
 ## Facts
 | Item | Content | Evidence |
@@ -30,4 +30,4 @@
 3. **Features come from `Ppic::operations()`**: when a column changes there (for example a new gate value) the stored TRIAL/FINAL `features` of old rows keep the old meaning; the model version has a signature of feature names only. FACT (code).
 
 ## Already exists? Searched where, result
-`concept:find "learning"`: none. Searched: no other table stores officer order; `prd_decision_feedback_log` (0 rows) belongs to the old hot-job dialog (`31_engine_interruption.md`).
+`concept:find "learning"`: none. Searched: no other table stores officer order; the old hot-job feedback table `prd_decision_feedback_log` (0 rows) was dropped 2026-10-18 with the v1 board.

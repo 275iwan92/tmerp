@@ -1,11 +1,19 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Uji Worklist WO, WO Detail (QC gate, Breakdown dan Subkontrak) dan Production Output.
+ * Sumber hulu  : Fixture dummy WO2600231 di tm2*.
+ * Input        : Tidak ada.
+ * Output       : Lulus atau gagal; state dummy dipulihkan di tearDown.
+ * Dipakai oleh : php artisan test (database tm2*, fixture WO2600225-262).
+ * Status       : Aktif. Uji Rule Library dan papan v1 dihapus 2026-10-18.
+ */
+
 namespace Tests\Feature;
 
-use App\Models\Master\ProdProduct;
 use App\Models\Master\SupSupplier;
 use App\Models\Prd\PrdBreakdownEvent;
-use App\Models\Prd\PrdSchedulingRule;
 use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
@@ -16,11 +24,8 @@ use App\Models\Sys\SecUser;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-// Worklist WO / WO Detail (QC Gate + Breakdown&Subcontract) / Rule Library /
-// MTS Forecast Entry -- production_scheduling_tier4.md §1, 4 layar dibangun
-// 2026-08-28 (sesi lanjutan Scheduling Board + PDR engine + Interruption
-// Dialog). Semua mutasi memulihkan state dummy di akhir test (dipakai ulang
-// test lain & demo manual di browser -- pola sama ProductionSchedulingBoardSmokeTest).
+// Worklist WO / WO Detail (QC Gate + Breakdown&Subcontract) / Production Output. Semua mutasi memulihkan
+// state dummy di akhir test (dipakai ulang test lain dan demo manual di browser).
 class ProductionWorklistWoTest extends TestCase
 {
     private ?array $wo231Snapshot = null;
@@ -211,36 +216,8 @@ class ProductionWorklistWoTest extends TestCase
         $op->update(['task_status' => 'RUNNING']);
     }
 
-    public function test_rule_library_activation_requires_prod_manager(): void
-    {
-        $this->actingAs($this->rina());
-
-        $component = Livewire::test('pages::production.rule-library')
-            ->call('openNew')
-            ->set('rule_type', 'BATCHING')
-            ->set('rule_name', 'TEST Gabung Dieline Sama')
-            ->set('condition_field', 'dieline_ref')
-            ->call('save');
-
-        $rule = PrdSchedulingRule::where('rule_name', 'TEST Gabung Dieline Sama')->firstOrFail();
-        $this->assertSame('DRAFT', $rule->rule_status);
-
-        $component->call('activate', $rule->rule_id);
-        $rule->refresh();
-        $this->assertSame('DRAFT', $rule->rule_status);
-
-        $this->actingAs($this->admin());
-        Livewire::test('pages::production.rule-library')->call('activate', $rule->rule_id);
-        $rule->refresh();
-        $this->assertSame('ACTIVE', $rule->rule_status);
-
-        $rule->delete();
-    }
-
-    // F15 Production Output Recording -- tanpa spec Tier2/3/4 (didesain dari
-    // nol 2026-08-28), tautan ke Scheduling Board diverifikasi lewat progress
-    // blok (operationVm() pakai outputProgressPercent() begitu ada catatan).
-    public function test_output_entry_accumulates_and_reflects_on_board(): void
+    // F15 Production Output Recording: total good / reject / waste menumpuk per operasi.
+    public function test_output_entry_accumulates(): void
     {
         $this->actingAs($this->admin());
 
@@ -248,9 +225,6 @@ class ProductionWorklistWoTest extends TestCase
         $this->assertSame('800.0000', $op->qty);
         $printDefect = PrdScrapType::where('type_code', 'PRINT_DEFECT')->firstOrFail();
         $makeready = PrdScrapType::where('type_code', 'MAKEREADY')->firstOrFail();
-
-        $beforeBoard = Livewire::test('pages::production.scheduling-board')->set('date', '2026-08-28');
-        $beforeBoard->assertDontSee('400/800');
 
         Livewire::test('pages::production.wo-entry', ['wo' => $op->wo_id])
             ->call('openOutputEntry', $op->operation_id)
@@ -273,10 +247,6 @@ class ProductionWorklistWoTest extends TestCase
         $this->assertSame(3.0, $op->totalQtyWaste());
         $this->assertSame(75, $op->outputProgressPercent());
         $this->assertCount(2, $op->outputs);
-
-        Livewire::test('pages::production.scheduling-board')
-            ->set('date', '2026-08-28')
-            ->assertSee('600/800');
 
         PrdWoOperationOutput::where('operation_id', $op->operation_id)->delete();
     }

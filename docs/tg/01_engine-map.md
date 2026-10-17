@@ -1,6 +1,6 @@
 # ENGINE map (Phase 3)
 
-> Generated 2026-10-16 from `app/Support/Engines/EngineRegistry.php` (65 registered engines), `routes/console.php` and a grep for callers. Verification status: **SCHEDULED** = proven in `routes/console.php` and its command uses the engine class (FACT, seen this session). **Screen/route** = only a class-name grep in `resources/views`, `app/Support/V2`, `routes`; not yet mapped to a button/row, so it must not be read as 'certain trigger'. Full cards exist only for 10 Sales engines; the rest wait for their module (Phase 5). The status of open items stays in `docs/ENGINE-ATTENTION.md`.
+> Generated 2026-10-16 from `app/Support/Engines/EngineRegistry.php` (62 registered engines), `routes/console.php` and a grep for callers. Verification status: **SCHEDULED** = proven in `routes/console.php` and its command uses the engine class (FACT, seen this session). **Screen/route** = only a class-name grep in `resources/views`, `app/Support/V2`, `routes`; not yet mapped to a button/row, so it must not be read as 'certain trigger'. Full cards exist only for 10 Sales engines; the rest wait for their module (Phase 5). The status of open items stays in `docs/ENGINE-ATTENTION.md`.
 
 ## Engines without a menu (background)
 Only 10 engines run on a schedule (server time, `php artisan schedule:run`):
@@ -108,10 +108,7 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 | Key | Engine | Mode | Trigger | TG card |
 |---|---|---|---|---|
 | `wo-generation` | Work Order Generation | auto | Screen/route: 6 files refer to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/20_engine_wo-generation.md) |
-| `pdr` | PDR Engine (Scheduling) | suggest | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/29_engine_pdr.md) |
-| `scheduling-rules` | Scheduling Rule Engine | calc | Called by another engine: PdrEngine | [card](./manufacture/planning/30_engine_scheduling-rules.md) |
 | `sequence-learning` | Job Order Learning (Sequence) | suggest | SCHEDULED: `sequence:train`, daily 03:45 (if table `prd_sequence_model` exists); also a screen | [card](./manufacture/planning/28_engine_sequence-suggester.md) |
-| `interruption` | Hot Job Option Generator | suggest | Screen/route: 1 file refers to this class (FROM class-name grep; button/row not yet mapped) | [card](./manufacture/planning/31_engine_interruption.md) |
 | `speed-target` | Speed Target Engine | suggest | SCHEDULED: `production:suggest-speed-targets`, daily 03:00 | [card](./manufacture/ppic/20_engine_speed-target.md) |
 | `ppic-auto-plan` | PPIC Auto-Planner | suggest | SCHEDULED: `ppic:auto-plan --trigger=DAILY` 02:00 and `--trigger=SHIFT` (shift start), if `$ppicReady`; also a screen | [card](./manufacture/planning/23_engine_auto-plan-runner.md) |
 | `ppic-schedule-solver` | Schedule Solver (finite capacity) | calc | Called by another engine: AutoPlanRunner, PlanChangeService | [card](./manufacture/planning/24_engine_schedule-solver.md) |
@@ -159,9 +156,9 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 
 ## Findings (recorded, not fixed)
 1. RESOLVED 2026-10-16: Jo decided to include `MasterCardDummyEngine`; registered as key `master-card-dummy`, `engines.json` regenerated, `EngineCatalogTest` 6/6 pass.
-2. Registry: 65 keys but 64 classes; key `dieline` has no class (three code copies). `assistant` has no caller in `app/`.
+2. Registry: 62 keys but 61 classes; key `dieline` has no class (three code copies). `assistant` has no caller in `app/`.
 3. `ppic:auto-plan`, `ppic:learn` only run if `$ppicReady` is true; that condition was not read this session.
-4. Engines without a TG card: 17 of 65. Registry vs code findings for the 10 Sales engines: `sales/90_findings_engine-group-c.md`.
+4. Engines without a TG card: 17 of 62. Registry vs code findings for the 10 Sales engines: `sales/90_findings_engine-group-c.md`.
 
 ## Diagram
 ![Engine map](./img/engine-map.svg), text twin = the schedule table above.

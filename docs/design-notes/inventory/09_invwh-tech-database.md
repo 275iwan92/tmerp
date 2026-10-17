@@ -8,7 +8,7 @@ Tabel dan kolom yang baru atau berubah. Aturan: kunci bigint auto number, nama E
 2. Kartu stok, baris dokumen, dan pallet mendapat kolom batch serta tipe dan id pemilik. Teks lot lama tetap sampai semua pembaca berpindah.
 3. Rantai nilai per item menyimpan qty total, nilai, dan Average berurutan tanggal lintas semua bin.
 4. Area mendapat kolom virtual dan aturan, ditambah empat jenis baru: WIP, Subkon, In Transit, Loss. Pallet ditautkan ke batch.
-5. Fase berikutnya menambah tabel rencana sampling dan keputusan, kolom urgent pada baris penerimaan, permintaan kekurangan, kirim subkon, tugas, pick list, dan register alat. Semuanya sudah ada.
+5. Fase berikutnya menambah tabel rencana sampling dan keputusan, kolom urgent pada baris penerimaan, permintaan kekurangan, kirim subkon, tugas, pick list, dan register alat (dihapus 2026-10-18, audit modul ganda). Semuanya sudah ada.
 6. Booking mendapat kunci rantai, tahap B0 sampai B4, dan tanggal hold. Data lama dimigrasi oleh perintah yang bisa diperiksa dulu.
 
 ## Istilah dan rincian

@@ -20,7 +20,7 @@
 
 ## Relations
 - **source**: HRM (Master Shift, roster), Master Data (Holiday Calendar), machine master (`10_card_machine.md`).
-- **used_by**: `../planning/24_engine_schedule-solver.md` (work minutes), `../planning/23_engine_auto-plan-runner.md` (calendar load), `../planning/29_engine_pdr.md` (old calendar), `../planning/19_card_assign-crew.md`.
+- **used_by**: `../planning/24_engine_schedule-solver.md` (work minutes), `../planning/23_engine_auto-plan-runner.md` (calendar load), `../planning/19_card_assign-crew.md`.
 - **flows**: machine shift values + holidays -> work minutes -> slot times. Roster -> crew names (display) and HR attendance, not capacity.
 - **frozen_zone**: none; HRM owns the roster.
 

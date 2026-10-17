@@ -311,18 +311,15 @@ Route::middleware(['auth', 'locale'])->group(function () {
         });
 
         Route::middleware('module:PROD')->group(function () {
-            Route::livewire('/production/scheduling-board', 'pages::production.scheduling-board')->name('production.scheduling-board');
             Route::livewire('/production/wo', 'pages::production.wo-list')->name('production.wo.list');
             Route::livewire('/production/wo/new', 'pages::production.wo-entry')->name('production.wo.new');
             Route::livewire('/production/wo/{wo}/print', 'pages::production.wo-print')->name('production.wo.print')->where('wo', '[0-9]+');
             Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
-            Route::livewire('/production/rule-library', 'pages::production.rule-library')->name('production.rule-library');
             Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
             Route::livewire('/production/routing-template', 'pages::production.routing-template')->name('production.routing-template');
             Route::livewire('/production/bop-rule', 'pages::production.bop-rule')->name('production.bop-rule');
-            Route::livewire('/production/master-crew', 'pages::production.master-crew')->name('production.master-crew');
             // ProDev BARU (2026-09-14) -- Imposition Plano Optimizer, port dari
             // docs/mockups/mockup_prodev_imposition.html. Ini yang dipasang di
             // menu (SALES_IMPO). Layar ProDev LAMA (workbench 3-kolom +

@@ -39,8 +39,8 @@
         "id": "Proses berstatus QC_HOLD hanya bisa diluluskan atau ditolak oleh QA (penolakan wajib beralasan, minimal 5 karakter). Proses yang ditolak bisa dikembalikan untuk rework."
       },
       {
-        "en": "If a running machine breaks down, use the Lapor Breakdown icon, then move the job to another machine or send it to a subcontractor (the subcontract PO needs an operations manager or above).",
-        "id": "Bila mesin yang sedang jalan rusak, pakai ikon Lapor Breakdown, lalu pindahkan pekerjaan ke mesin lain atau kirim ke subkontrak (PO subkontrak butuh Manager Operasional ke atas)."
+        "en": "If a running machine breaks down, use the Lapor Breakdown icon. Then move the job to another machine or send it to a subcontractor (the subcontract PO needs an operations manager or above).",
+        "id": "Bila mesin yang sedang jalan rusak, pakai ikon Lapor Breakdown. Lalu pindahkan pekerjaan ke mesin lain atau kirim ke subkontrak (PO subkontrak butuh Manager Operasional ke atas)."
       },
       {
         "en": "Always record the output, even if the goods were shipped through the quick-job shortcut. Missing output is listed in the report Shipped Without Production Output.",
@@ -63,7 +63,7 @@
       {"label": "Warna Cetak", "en": "First and second side colours from the Master Card. The sign-off boxes show who has approved the master card.", "id": "Warna sisi pertama dan kedua dari Master Card. Kotak tanda tangan menunjukkan siapa yang sudah menyetujui master card."},
       {"label": "Proses & Mesin", "en": "Process name and machine for each step. Choose Mesin or Manual (manual has no machine). Editable only while the WO is Draft or Simulated.", "id": "Nama proses dan mesin tiap langkah. Pilih Mesin atau Manual (manual tanpa mesin). Hanya bisa diubah selama WO Draft atau Simulated."},
       {"label": "Operator", "en": "Employee who runs the step. Pick from the employee list.", "id": "Pegawai yang mengerjakan langkah ini. Pilih dari daftar pegawai."},
-      {"label": "Est. Mulai", "en": "Estimated start date and time of the step. Normally set from the Scheduling Board.", "id": "Estimasi tanggal dan jam mulai langkah. Biasanya diatur dari Scheduling Board."},
+      {"label": "Est. Mulai", "en": "Estimated start date and time of the step. Normally set by the PPIC Workspace plan.", "id": "Estimasi tanggal dan jam mulai langkah. Biasanya diatur dari rencana PPIC Workspace."},
       {"label": "Est. Selesai", "en": "Estimated finish date and time of the step.", "id": "Estimasi tanggal dan jam selesai langkah."},
       {"label": "Target Kecepatan", "en": "Target speed of the step. The default comes from the process and machine rate; use the refresh icon to take the default again, or type your own.", "id": "Target kecepatan langkah. Nilai awal dari rate proses dan mesin; pakai ikon refresh untuk mengambil default lagi, atau ketik sendiri."},
       {"label": "Spoilage", "en": "Planned spoilage quantity and unit for the step.", "id": "Jumlah dan satuan spoilage yang direncanakan untuk langkah ini."},
@@ -247,49 +247,6 @@
       {"label": "Forecast Qty", "en": "Expected quantity, a whole number greater than zero. Only the part not yet covered by real orders is planned.", "id": "Perkiraan jumlah, bilangan bulat lebih dari nol. Hanya bagian yang belum tertutup order sungguhan yang direncanakan."},
       {"label": "Notes", "en": "Free note about the forecast, optional.", "id": "Catatan bebas tentang forecast, boleh kosong."},
       {"label": "Active", "en": "Tick for forecasts that should still be planned. Untick to ignore the row.", "id": "Centang untuk forecast yang masih direncanakan. Hilangkan centang untuk mengabaikan baris."}
-    ]
-  },
-  {
-    "key": "prod-rule-library",
-    "type": "INPUT",
-    "module": "PROD",
-    "title": "Rule Library",
-    "purpose": {
-      "en": "Keeps the scheduling rules: Batching (group tasks of the same kind) and Sequencing (smooth the local order of tasks). Open it to add a rule or to activate or deactivate one.",
-      "id": "Menyimpan aturan penjadwalan: Batching (menggabung tugas sejenis) dan Sequencing (merapikan urutan tugas). Buka untuk menambah aturan atau mengaktifkan dan menonaktifkan aturan."
-    },
-    "keywords": "rule library, aturan penjadwalan, batching, sequencing, constraint, rule, scheduling rule, aktifkan rule",
-    "steps": [
-      {
-        "en": "Open Rule Library. Use the boxes (Active, Draft) or filters Type, Machine and Status.",
-        "id": "Buka Rule Library. Pakai kotak (Active, Draft) atau filter Type, Machine dan Status."
-      },
-      {
-        "en": "Click + New Record and choose the Tipe (Batching or Sequencing), then enter the Nama Rule.",
-        "id": "Klik + New Record dan pilih Tipe (Batching atau Sequencing), lalu isi Nama Rule."
-      },
-      {
-        "en": "Optionally limit the rule to one Mesin or one Proses, then fill Field Kondisi and Operator.",
-        "id": "Bila perlu batasi aturan untuk satu Mesin atau satu Proses, lalu isi Field Kondisi dan Operator."
-      },
-      {
-        "en": "Click Simpan sebagai Draft. A new rule is always saved as Draft and does not affect scheduling yet.",
-        "id": "Klik Simpan sebagai Draft. Aturan baru selalu tersimpan sebagai Draft dan belum memengaruhi penjadwalan."
-      },
-      {
-        "en": "To use a rule click Aktifkan on its row; to stop it click Nonaktifkan. Only a production manager or above may do this.",
-        "id": "Untuk memakai aturan klik Aktifkan di barisnya; untuk menghentikan klik Nonaktifkan. Hanya Manager Produksi ke atas yang boleh."
-      }
-    ],
-    "fields": [
-      {"label": "Tipe", "en": "Batching (merge tasks that are alike) or Sequencing (sort tasks).", "id": "Batching (menggabung tugas yang mirip) atau Sequencing (mengurutkan tugas)."},
-      {"label": "Nama Rule", "en": "Short name of the rule, for example Gabung dieline sama. Required, up to 100 characters.", "id": "Nama singkat aturan, misalnya Gabung dieline sama. Wajib, maksimal 100 karakter."},
-      {"label": "Mesin (opsional)", "en": "Limits the rule to one machine. Only active machines of the offset division are offered. Empty means all machines.", "id": "Membatasi aturan untuk satu mesin. Hanya mesin aktif divisi offset yang muncul. Kosong berarti semua mesin."},
-      {"label": "Proses (opsional)", "en": "Limits the rule to one process, picked from Master Proses. Empty means all processes.", "id": "Membatasi aturan untuk satu proses, dipilih dari Master Proses. Kosong berarti semua proses."},
-      {"label": "Field Kondisi", "en": "Name of the task field the rule looks at, for example dieline_ref. Required, up to 50 characters.", "id": "Nama field tugas yang dilihat aturan, misalnya dieline_ref. Wajib, maksimal 50 karakter."},
-      {"label": "Operator", "en": "Sama Dengan (for batching), Urut Naik or Urut Turun (for sequencing).", "id": "Sama Dengan (untuk batching), Urut Naik atau Urut Turun (untuk sequencing)."},
-      {"label": "Effective From", "en": "Grid column: date the rule became effective, filled when the rule is activated.", "id": "Kolom grid: tanggal aturan mulai berlaku, terisi saat aturan diaktifkan."},
-      {"label": "Status", "en": "Grid column: DRAFT, ACTIVE or INACTIVE.", "id": "Kolom grid: DRAFT, ACTIVE atau INACTIVE."}
     ]
   },
   {
@@ -535,8 +492,8 @@
         "id": "Di Urutan Langkah Produksi pilih Proses, bila perlu Usulan Mesin, Cabang dan Opsional, lalu klik tambah. Langkah bernomor kelipatan 10 agar mudah disisipkan nanti."
       },
       {
-        "en": "Edit a step to change Nomor Urut, Faktor Qty or Catatan, then click Simpan. A check tells you if the order breaks a precedence rule or a process has no machine.",
-        "id": "Ubah sebuah langkah untuk mengganti Nomor Urut, Faktor Qty atau Catatan, lalu klik Simpan. Ada pemeriksaan bila urutan melanggar aturan precedence atau proses belum punya mesin."
+        "en": "Edit a step to change Nomor Urut, Faktor Qty or Catatan, then click Save. A check tells you if the order breaks a precedence rule or a process has no machine.",
+        "id": "Ubah sebuah langkah untuk mengganti Nomor Urut, Faktor Qty atau Catatan, lalu klik Save. Ada pemeriksaan bila urutan melanggar aturan precedence atau proses belum punya mesin."
       },
       {
         "en": "Use the active toggle on the grid to switch a template off.",
@@ -557,42 +514,6 @@
       {"label": "Nomor Urut", "en": "Order number of the step; multiples of 10, use 15 or 25 to insert.", "id": "Nomor urut langkah; kelipatan 10, pakai 15 atau 25 untuk menyisipkan."},
       {"label": "Faktor Qty", "en": "Quantity factor of the step; 0.5 means the sheet is split in half.", "id": "Faktor jumlah langkah; 0.5 berarti plano dibelah dua."},
       {"label": "Catatan", "en": "Note on the step.", "id": "Catatan untuk langkah ini."}
-    ]
-  },
-  {
-    "key": "prod-crew",
-    "type": "INPUT",
-    "module": "PROD",
-    "title": "Master Crew",
-    "purpose": {
-      "en": "The list of production crew members and the process each normally works on. Work orders and the schedule use it to assign people. Open it to add a crew member or set the default process.",
-      "id": "Daftar kru produksi dan proses yang biasa dikerjakan masing-masing. Dipakai work order dan jadwal untuk menugaskan orang. Buka untuk menambah kru atau mengatur proses default."
-    },
-    "keywords": "master crew, kru, crew produksi, operator, anggota kru, proses default",
-    "steps": [
-      {
-        "en": "Open Master Crew. Filter by Default Process or search by crew name.",
-        "id": "Buka Master Crew. Filter menurut Default Process atau cari nama kru."
-      },
-      {
-        "en": "Click + New Record or double-click a crew member.",
-        "id": "Klik + New Record atau klik dua kali seorang kru."
-      },
-      {
-        "en": "Enter the Nama Crew and pick the Proses Default from Master Proses.",
-        "id": "Isi Nama Crew dan pilih Proses Default dari Master Proses."
-      },
-      {
-        "en": "Click Simpan. Use the active toggle on the grid to switch a crew member off.",
-        "id": "Klik Simpan. Pakai tombol aktif di grid untuk menonaktifkan seorang kru."
-      }
-    ],
-    "fields": [
-      {"label": "Nama Crew", "en": "Name of the crew member. Required, up to 150 characters.", "id": "Nama anggota kru. Wajib, maksimal 150 karakter."},
-      {"label": "Proses Default", "en": "Process the crew member normally works on, picked from Master Proses. Crew without a process show in the box Proses Belum Ter-link.", "id": "Proses yang biasa dikerjakan kru, dipilih dari Master Proses. Kru tanpa proses muncul di kotak Proses Belum Ter-link."},
-      {"label": "Kode Karyawan Lama (jejak migrasi)", "en": "Old employee code kept from the data migration. Read only.", "id": "Kode karyawan lama dari migrasi data. Hanya baca."},
-      {"label": "Catatan", "en": "Free note, for example the old process label when it could not be matched.", "id": "Catatan bebas, misalnya label proses lama yang tidak bisa dicocokkan."},
-      {"label": "Aktif", "en": "Tick for crew members who still work.", "id": "Centang untuk kru yang masih bekerja."}
     ]
   },
   {
@@ -619,8 +540,8 @@
         "id": "Isi urutan (Urut), proses, label dan grup gabung, lalu bagian bahan: pola, cara pilih bahan, nama baris BOM, dasar pemakaian dan takaran."
       },
       {
-        "en": "Click Simpan. Use the arrows on a row to move it up or down, and the toggle to switch it off. New rules apply to new jobs only.",
-        "id": "Klik Simpan. Pakai tanda panah di baris untuk menaikkan atau menurunkan urutan, dan tombol aktif untuk menonaktifkan. Aturan baru hanya berlaku untuk job baru."
+        "en": "Click Save. Use the arrows on a row to move it up or down, and the toggle to switch it off. New rules apply to new jobs only.",
+        "id": "Klik Save. Pakai tanda panah di baris untuk menaikkan atau menurunkan urutan, dan tombol aktif untuk menonaktifkan. Aturan baru hanya berlaku untuk job baru."
       },
       {
         "en": "Click Usulan dari Data Nyata to calculate suggested usage rates and waste from work orders finished in the last 3 months, then apply a suggestion on its row.",
@@ -669,8 +590,8 @@
         "id": "Klik + New Record dan pilih Kategori: Reject atau Waste."
       },
       {
-        "en": "Enter the Kode and the Nama Tipe, then click Simpan.",
-        "id": "Isi Kode dan Nama Tipe, lalu klik Simpan."
+        "en": "Enter the Kode and the Nama Tipe, then click Save.",
+        "id": "Isi Kode dan Nama Tipe, lalu klik Save."
       },
       {
         "en": "Use the active toggle on a row to hide a type that is no longer used.",

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Bangun dan reset set dummy bertahap (ddt:stage) dari Inquiry sampai dokumen hilir.
+ * Sumber hulu  : Master card dummy dan seeder tahap.
+ * Input        : Nama set dan tahap.
+ * Output       : Baris dummy di ddt* dan daftar tabel yang direset.
+ * Dipakai oleh : Perintah ddt:stage dan layar Dummy and Legacy Data.
+ * Status       : Aktif. Tabel prd_decision_feedback_log dikeluarkan dari daftar reset 2026-10-18 (tabel dihapus).
+ */
+
 namespace App\Support\Dummy;
 
 use App\Models\Acc\FinInvoice;
@@ -90,7 +100,7 @@ final class StageBuilder
             'prt_return', 'pv_line', 'pv_receipt'],
         'tm2inv' => ['fg_stock_d', 'fg_stock', 'fg_stockcard', 'inv_label_print', 'inv_layer_consumption', 'inv_stock_layer', 'inv_transfer_line',
             'inv_transfer', 'rm_booking_alloc', 'rm_booking_d', 'rm_booking', 'rm_stock_d', 'rm_stock', 'rm_stockcard', 'sfg_stock_d', 'sfg_stock', 'sfg_stockcard'],
-        'tm2prd' => ['prd_breakdown_event', 'prd_crew_assignment', 'prd_decision_feedback_log', 'prd_wo_operation_output_defect', 'prd_wo_operation_output',
+        'tm2prd' => ['prd_breakdown_event', 'prd_crew_assignment', 'prd_wo_operation_output_defect', 'prd_wo_operation_output',
             'prd_wo_operation', 'prd_wo_material_substitution', 'prd_wo_material', 'prd_wo', 'prd_mrp_requirement', 'prd_mrp_run', 'qc_complaint_review'],
         // Keuangan: hanya dokumen piutang / hutang. Master (fin_journal = jenis jurnal, fin_petty_cash = dana kas kecil),
         // register pajak, rekening koran dan voucher di luar penjualan / pembelian TIDAK di sini (lihat wipeFinance).

@@ -18,10 +18,9 @@
         'Tooling and setup' => [['Tooling Master', 'prod-tooling', 'ADA', 'Status gates the job; first and repeat mounting minutes'], ['Setup and Changeover', 'prod-changeover', 'ADA', 'Wash and change minutes per machine; the learning engine corrects Assumed values']],
         'Calendar' => [['Master Shift', 'md-shift', 'ADA', ''], ['Holiday Calendar', 'holiday-calendar', 'ADA', ''], ['Office Hours', 'office-hours', 'ADA', ''], ['Shift Schedule', 'hrm-roster', 'ADA', ''],
             ['Preventive maintenance windows in the plan', null, 'BELUM', 'Only the present machine status is read, not the PM calendar']],
-        'Rules and priority' => [['Wait Rules', 'prod-wait-rule', 'ADA', 'Drying and curing minutes after a process'], ['Rule Library', 'prod-rule-library', 'RAPIKAN', 'Read by the old scheduling board only, not by this planner'],
-            ['Die grouping', 'production-scheduling', 'ADA', 'On the PPIC Workspace: take a Work Order out of its die group, with a reason']],
+        'Rules and priority' => [['Wait Rules', 'prod-wait-rule', 'ADA', 'Drying and curing minutes after a process'], ['Die grouping', 'production-scheduling', 'ADA', 'On the PPIC Workspace: take a Work Order out of its die group, with a reason']],
         'Engine parameters' => [['Planning Parameters', 'setup-constants', 'ADA', 'PPIC_* constants: lock shifts, score weights, windows, grouping tolerance, wash factor, learning limits']],
-        'People' => [['Master Crew', 'prod-crew', 'RAPIKAN', 'Not used as capacity by this planner yet'], ['Operator skills per process', null, 'BELUM', 'No screen and no data model yet']],
+        'People' => [['Operator skills per process', null, 'BELUM', 'No screen and no data model yet']],
         'Materials' => [['Material Planning', 'material-planning', 'ADA', ''], ['Material Booking', 'material-booking', 'ADA', ''], ['Material Usage Standard', 'usage-standard', 'ADA', ''], ['Purchase Lead Time', 'purchase-lead-time', 'ADA', ''],
             ['Automatic booking confirmation', null, 'BELUM', 'Booking is not confirmed automatically when stock covers it']],
     ];

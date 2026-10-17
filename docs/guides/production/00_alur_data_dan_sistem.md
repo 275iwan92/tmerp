@@ -92,8 +92,6 @@ Mengapa semuanya "usul": data master hanya diubah pengguna; engine hanya menyent
 | Usul target kecepatan | Speed Target Engine (`speed-target`) |
 | Pengambilan bahan | Pick List Service (`pick-list`), Stock Document Posting (`stock-posting`), Batch Service (`batch`) |
 
-Tiga engine ini terdaftar di kelompok Production tetapi **tidak menjadi bagian jalur v2**: PDR Engine (`pdr`), Scheduling Rule Engine (`scheduling-rules`), dan Hot Job Option Generator (`interruption`). Menurut kode, ketiganya hanya melayani papan jadwal v1; layar v2 memakai Solver dan Plan Control. Jangan terkecoh bila membaca registry.
-
 ## 5. Hasil produksi, limbah, dan efeknya
 
 **Apa yang tercatat.** Tiap Simpan Hasil menulis satu baris hasil (`prd_wo_operation_output`, qty Good) dan, bila ada Bad, satu baris limbah per alasan reject (`prd_wo_operation_output_defect`, merujuk jenis limbah di `prd_scrap_type`). Setiap tekan tombol juga masuk log aksi (`prd_output_action_log`) lengkap dengan waktu, orang, dan angka sebelum/sesudah. Angka **ditambahkan**, tidak menimpa, jadi riwayat utuh dan koreksi tidak menghapus jejak.
@@ -154,7 +152,6 @@ Ini daftar jujur celah menurut kode. Tidak ada yang saya ubah.
 
 **Selisih dokumen dan kode yang menonjol.**
 
-- Registry mencantumkan PDR, Scheduling Rule Engine, dan Hot Job Option Generator di kelompok Production seolah jalur penjadwalan; di kode v2 ketiganya tidak dipakai.
 - Registry Operator Timer menulis "yield = good / (good + bad)"; rumus itu tidak ada di kode timer.
 - Aturan A.3 menulis laporan Shipped Without Production Output "sudah dibangun"; yang saya temukan baru menu dan migrasinya.
 

@@ -85,7 +85,7 @@ Lock end time: `lockUntil = timeAt(workMinute(now, m) + N x (hours per shift x 6
 3. **Unlocked CONFIRMED operations return to DRAFT in the next planner run** (`23_engine_auto-plan-runner.md`), while their `task_status` stays `ASSIGNED`. WO2600273 shows 3 CONFIRMED and 5 DRAFT operations all with `task_status = ASSIGNED`. FACT.
 4. **The registry lists `confirm` and `discard` only**; `undo` is public and used by a button, not registered. FACT.
 5. **`wo_status` stops at SCHEDULED** (see `10_card_work-order.md` finding 1). FACT.
-6. **Three public methods of the change side have no caller** (`simulate`, `overrides`, `groups`): the "urgent order" comparison that would replace the old three-option dialog (`31_engine_interruption.md`) is built but not shown on any screen. FACT (grep).
+6. **Three public methods of the change side have no caller** (`simulate`, `overrides`, `groups`): the "urgent order" comparison that replaced the old three-option hot-job dialog (removed 2026-10-18) is built but not shown on any screen. FACT (grep).
 7. **Whole-plan Confirm marks every touched WO `SCHEDULED` even if only some of its operations were in the Draft slot window.** FACT (code `:94-99`).
 
 ## Already exists? Searched where, result

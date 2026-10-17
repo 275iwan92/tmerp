@@ -1,7 +1,7 @@
 # Concept card: Stock Document (Stock In, Stock Out, Return, Adjustment/Opname, Reversal)
 
 > Written 2026-10-16 (group Inventory/Stock). FACT = mockup DB (`ddtinv`, `ddtsys`, `ddtmst`, read through the `tm2*` connection by schema prefix) and code with line numbers, seen this session. No test was run (this task allowed no DB writes); test names are only cited as existing.
-> Verified: 2026-10-16
+> Verified: 2026-10-18
 
 - **Document type**: concept card. **Module/sub-module**: Inventory > Stock > Raw Material / Finished Goods / Semi Finished Goods (menu groups `INV_TRX_RM`, `INV_TRX_FG`, `INV_TRX_SFG`; FACT `sys_app_menu`: each has Stock In, Stock Out, Return from Production, Stock Adjustment & Physical Count, Adjustment Approval, and a Report group).
 - **Canonical name**: Stock Document = one header row + line rows in the table pair of its class: RM `rm_stock` + `rm_stock_d`, FG `fg_stock` + `fg_stock_d`, SFG `sfg_stock` + `sfg_stock_d` (database `tm2inv`; `ddtinv` in the mockup). One screen family and one engine serve all three classes.
@@ -43,3 +43,5 @@
 Searched: menu `INV_TRX_*`, tables `*_stock`, `*_stock_d`, models in `app/Models/Inventory`, services `StockDocumentService`, `StockPostingService`, `StockReversalService`, grids `app/Support/V2/Grid/Inv`, v1 pages `resources/views/pages/inventory`, design notes `docs/design-notes/inventory/` (FROM DOCUMENT, intent only: ledger as book of movements, correction by counter-document, rules 03 and 08). The concept ALREADY EXISTS in full; no new table is needed.
 
 - Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the `routes/web.php` lines cited here (255-265) are before the removed routes and unchanged.

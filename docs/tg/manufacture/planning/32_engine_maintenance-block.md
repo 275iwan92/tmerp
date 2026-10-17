@@ -2,7 +2,7 @@
 
 > Written 2026-10-17 (Manufacture group). FACT = code with line numbers and mockup DB (`--env=mockup`) seen this session. Source read in full: `app/Services/Scheduling/MaintenanceBlockProvider.php`; callers; test I ran: `tests/Feature/MaintenanceSchedulingBlockTest.php`.
 
-- **Canonical name**: Maintenance Machine Hold (Scheduling). **Class**: `App\Services\Scheduling\MaintenanceBlockProvider`. **Registry**: key `maintenance-block`, group Maintenance in the engine map (it serves scheduling), mode `calc`. **Module/sub-module**: serves Manufacture > Planning (old board and creation-time backward scheduling).
+- **Canonical name**: Maintenance Machine Hold (Scheduling). **Class**: `App\Services\Scheduling\MaintenanceBlockProvider`. **Registry**: key `maintenance-block`, group Maintenance in the engine map (it serves scheduling), mode `calc`. **Module/sub-module**: serves Manufacture > Planning (creation-time backward scheduling).
 - **Synonyms**: machine hold, maintenance window, PM block, "jendela Maintenance".
 - **Frozen status**: not frozen.
 - **Concept cards**: `13_card_plan-draft-and-live.md`.
@@ -11,9 +11,7 @@
 FACT, searched `app/`, `resources/views`, `tests/`:
 | Caller | File:line |
 |---|---|
-| `MachineCalendarService` (backward scheduling at WO creation and old board) | `app/Services/Scheduling/MachineCalendarService.php:37` (constructor), blocks read in the loop `:93` |
-| `PdrEngine::validateManualReschedule` (refuse a drag onto a hold) | `app/Services/Scheduling/PdrEngine.php:156` |
-| v1 board, grey bands | `resources/views/pages/production/scheduling-board.blade.php:384` |
+| `MachineCalendarService` (backward scheduling at WO creation; the only caller since the v1 board and `PdrEngine` were removed 2026-10-18) | `app/Services/Scheduling/MachineCalendarService.php:37` (constructor), blocks read in the loop `:93` |
 | NOT called by `AutoPlanRunner`, `PlanLoader` or `ScheduleSolver` | grep `MaintenanceBlockProvider` in `app/Services/Scheduling/Plan`: no result |
 
 ## Flow (text twin)
@@ -39,7 +37,7 @@ FACT, searched `app/`, `resources/views`, `tests/`:
 - The machine status `MAINTENANCE` and `BREAKDOWN` is a separate path: the v2 planner skips machines in those statuses (`PlanLoader.php:50`) but does not read order windows.
 
 ## Used by
-`MachineCalendarService`, `PdrEngine`, the v1 board.
+`MachineCalendarService` only.
 
 ## Open items
 None in `docs/ENGINE-ATTENTION.md`.
@@ -49,7 +47,7 @@ None in `docs/ENGINE-ATTENTION.md`.
 
 ## Relations
 - **source**: Maintenance module (`mnt_order`, `mnt_asset`); no TG card for Maintenance exists yet.
-- **used_by**: `29_engine_pdr.md`, `20_engine_wo-generation.md` (backward scheduling at creation).
+- **used_by**: `20_engine_wo-generation.md` (backward scheduling at creation).
 - **flows**: confirmed PM / breakdown order that needs a stop -> block -> working time reduced -> dates move.
 - **frozen_zone**: none.
 

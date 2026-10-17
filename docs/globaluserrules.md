@@ -558,7 +558,7 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
       `docs/mockups/grid_tx_kolom_pertama_persegi.jpg`, `docs/mockups/grid_tx_expand_item.jpg`.
     - Sudah dipasang: contoh DevLib, Quotation, Customer Order, CPDEL, DO, Surat Jalan, POD, PR, PQ, PO, Penerimaan, Kas Kecil,
       Work Order, dokumen stok RM / FG / SFG, Material Booking, Inquiry (All / New / Revise / Recalc), Pro-Dev (New / Revise /
-      Manual), Pro-Cost (New / Revise / Recalc), HR / Payroll (kode pegawai + nama), Recruitment, Rule Library, Setting Approval,
+      Manual), Pro-Cost (New / Revise / Recalc), HR / Payroll (kode pegawai + nama), Recruitment, Setting Approval,
       Maintenance (WO: Expand suku cadang; Plan: Expand tugas). Grid tanpa item hanya memakai persegi, tanpa Expand.
       Daftar master (Master Product, Master Card Collection, ACC Digital) dan Material Planning tidak diubah.
 29. **Kerapatan grid cukup per grid — user 2026-10-02.** Kerapatan baris (Compact / Normal / Comfortable) dan baris per sel

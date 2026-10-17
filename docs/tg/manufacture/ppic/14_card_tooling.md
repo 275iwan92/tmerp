@@ -5,7 +5,7 @@
 - **Document type**: concept card. **Module/sub-module**: Manufacture > PPIC > PPIC Settings > Tooling Master (`PROD_MST_TOOLING`, `v2:prod-tooling`).
 - **Canonical name**: Tooling asset = `tm2mst.prod_tooling_asset` (4 rows): a plate set or a die with its status and its mounting minutes.
 - **Synonyms**: pisau pond, mall, die, plate set, plat, matras emboss, foil die, `tooling_code`, `dieline_ref`.
-- **NOT the same as**: the dieline drawing and Master Card (`../../sales/inquiry-product/14_card_dieline-and-master-card.md`), the tool register of the warehouse (`../../inventory/warehouse/19_card_tool-register.md`), tooling cost in Inquiry / ProCost.
+- **NOT the same as**: the dieline drawing and Master Card (`../../sales/inquiry-product/14_card_dieline-and-master-card.md`), tooling cost in Inquiry / ProCost.
 
 ## Facts
 | Item | Content | Evidence |
@@ -18,7 +18,7 @@
 | Screen | `ToolingLookup` (v2 lookup with form): code, type, product, dieline reference, size note, location, status, planned and used impressions, first and repeat setup minutes. Guide text says Ready or In use lets scheduling plan the job. | FACT, `ToolingLookup.php:36-79` |
 
 ## Relations
-- **source**: product master, Master Card / dieline code, warehouse tool register (separate).
+- **source**: product master, Master Card / dieline code.
 - **used_by**: `../planning/22_engine_gate-service.md`, `../planning/25_engine_setup-time.md`, `../planning/14_card_gates-and-readiness.md`.
 - **flows**: tooling status -> tooling gate -> plan; die code -> mount minutes -> setup.
 - **frozen_zone**: none.
@@ -29,7 +29,6 @@
 3. **EMBOSS_DIE and FOIL_DIE are never checked**: the gate asks only for CUTTING_DIE and PLATE_SET; EMBOSS and HOT PRINT processes have `requires_die = 0`. FACT.
 4. **Impressions are not counted**: `impressions_used` is not increased by production output, so die wear is not tracked. FACT (grep).
 5. **The model header comment says the repeat minutes feed the Setup Time Engine**; the code never reads them. FACT.
-6. **Tooling status is not linked to the physical tool register** of the warehouse (`../../inventory/warehouse/19_card_tool-register.md`): two registers. FACT (no join in code).
 
 ## Already exists? Searched where, result
-`concept:find "machine"`, `"gate"`: the warehouse tool register card exists in Inventory; no card for this master. Searched: one tooling master for planning (`prod_tooling_asset`).
+`concept:find "machine"`, `"gate"`: no card for this master (the separate warehouse Tool Register was removed 2026-10-18, so `prod_tooling_asset` is the only tool register). Searched: one tooling master for planning (`prod_tooling_asset`).

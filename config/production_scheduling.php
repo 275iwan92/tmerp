@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Angka ambang penjadwalan (rate band, jam shift bawaan, ambang dead stock) supaya tidak di-hardcode di service.
+ * Sumber hulu  : docs/production_scheduling_tier3.md bagian 11.
+ * Input        : Variabel lingkungan PRD_*.
+ * Output       : Array konfigurasi production_scheduling.
+ * Dipakai oleh : RateBandResolver, MachineCalendarService.
+ * Status       : Aktif. Kunci papan v1 (drag_snap_minutes, min_task_duration_minutes, feedback_calibration_cycle) dihapus 2026-10-18.
+ */
+
 // Sumber: docs/production_scheduling_tier3.md §11 (Threshold & Konstanta).
 // Isi di sini, JANGAN hardcode angka ini di dalam service class manapun.
 
@@ -17,15 +27,6 @@ return [
     // (emp_shift_roster) — lihat catatan MachineCalendarService::subtractWorkingTime().
     'default_shift_start' => env('PRD_SHIFT_START', '08:00'),
     'default_shift_end' => env('PRD_SHIFT_END', '20:00'),
-
-    // Snap waktu saat drag/resize di Scheduling Board (menit)
-    'drag_snap_minutes' => env('PRD_DRAG_SNAP_MINUTES', 15),
-
-    // Durasi minimum task hasil resize (menit) — Tier4 mockup pakai 30 menit
-    'min_task_duration_minutes' => env('PRD_MIN_TASK_DURATION_MINUTES', 30),
-
-    // §9.6 Tier1 — kadensi kalibrasi bobot Decision Feedback Loop
-    'feedback_calibration_cycle' => env('PRD_FEEDBACK_CALIBRATION_CYCLE', 'weekly'),
 
     // §5A.10 Tier1 — ambang Dead Stock (hari tanpa OUT)
     'dead_stock_days' => env('PRD_DEAD_STOCK_DAYS', 180),

@@ -3,7 +3,7 @@
 > DRAFT 2026-10-16, awaiting Jo's approval. Only RECORDED, nothing fixed. Details per engine are in each card (section "Findings"). Label FACT = seen directly this session (code, `ddt*` query, test run).
 
 ## A. Verification of the engine list against the registry
-FACT: `EngineRegistry` holds 65 keys (61 when written; `paper-price`, `single-face-price`, `duplex-price`, `corrugated-sheet-price` added 2026-10-17). Relevant for Sales: `dieline`, `imposition`, `spec`, `usage-rate`, `routing`, `costing`, `costing-advisor`, `reverse-costing`, `material-planning`, `booking-maintenance`, `cpdel`, `cpdel-promise`, `flow`, `wo-generation`. All methods registered for the group C engines exist in the class (matched one by one); the gaps are in public methods that are NOT registered (Spec: `processOfBom`; Material Planning: 15 methods; Dieline: export `eval/scope/STROKE`).
+FACT: `EngineRegistry` holds 62 keys (61 when written; `paper-price`, `single-face-price`, `duplex-price`, `corrugated-sheet-price` added 2026-10-17; `pdr`, `scheduling-rules`, `interruption` removed 2026-10-18). Relevant for Sales: `dieline`, `imposition`, `spec`, `usage-rate`, `routing`, `costing`, `costing-advisor`, `reverse-costing`, `material-planning`, `booking-maintenance`, `cpdel`, `cpdel-promise`, `flow`, `wo-generation`. All methods registered for the group C engines exist in the class (matched one by one); the gaps are in public methods that are NOT registered (Spec: `processOfBom`; Material Planning: 15 methods; Dieline: export `eval/scope/STROKE`).
 
 | # | Finding | Evidence |
 |---|---|---|

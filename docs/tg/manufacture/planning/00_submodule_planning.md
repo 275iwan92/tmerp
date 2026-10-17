@@ -38,9 +38,6 @@
 | ENGINE | `26_engine_plan-confirm.md` | Confirm, APPLY, Undo, Discard, lock |
 | ENGINE | `27_engine_learning.md` | learning of changeover minutes |
 | ENGINE | `28_engine_sequence-suggester.md` | job order learning (pairwise model) |
-| ENGINE | `29_engine_pdr.md` | old board engine (priority score, backward schedule, rate band, calendar, crew check) |
-| ENGINE | `30_engine_scheduling-rules.md` | rule library batching and sequencing (old board) |
-| ENGINE | `31_engine_interruption.md` | hot job options (old board) |
 | ENGINE | `32_engine_maintenance-block.md` | Maintenance windows for scheduling |
 | ENGINE | not written here | Material Planning Engine: see `../../sales/order/30_engine_material-planning.md` (link only); Booking Maintenance: no card yet |
 
@@ -51,4 +48,4 @@ Not made (a text twin is in the "Flow" sections of the engine cards).
 `docs/guides/production/00_alur_data_dan_sistem.md`, `01_work_order_bom_gates.md`, `02_planning_scheduling.md`, `03_learning_timer_crew.md` (Indonesian, written 2026-10-16 from the code). The TG does not repeat them.
 
 ## Cross-card findings (summary; details and evidence in the cards)
-The WO header never moves past SCHEDULED in the v2 path; the changeover learning loop is open at both ends (nobody writes `change_kind`, nobody reads the learned values); the planner uses its own calendar (machine shifts from 07:00) and ignores the shift master, the roster, the crew and the Maintenance windows; three older engines (PDR, rule library, hot job options) serve only the old v1 board; the whole-plan Confirm skips the material check that single-WO APPLY enforces; the Live Gantt hides operations that are more than a day late. The full list with the tests run and the residue I left in `tm2*` is in `../90_findings_planning-ppic.md`.
+The WO header never moves past SCHEDULED in the v2 path; the changeover learning loop is open at both ends (nobody writes `change_kind`, nobody reads the learned values); the planner uses its own calendar (machine shifts from 07:00) and ignores the shift master, the roster, the crew and the Maintenance windows; the three engines of the old v1 board (PDR, rule library, hot job options) were removed 2026-10-18; the whole-plan Confirm skips the material check that single-WO APPLY enforces; the Live Gantt hides operations that are more than a day late. The full list with the tests run and the residue I left in `tm2*` is in `../90_findings_planning-ppic.md`.

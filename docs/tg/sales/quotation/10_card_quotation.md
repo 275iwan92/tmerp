@@ -21,7 +21,7 @@
 | WIN | The CO is born from all quotation lines (snapshot of price, qty, tolerance from the costing tier), the inquiry `sub_state` becomes CONVERTED and `co_id` is filled, then `ProductMasterSync::fromInquiry` creates the Master Product. | FACT, `CoOrderBuilder.php:42-112 (ProductMasterSync pada baris 105-109)` |
 | Routes | `v2.quotation.create/save/add-inquiry/delete/cancel/lost/win/activity`; all in the group `middleware('module:SALES')`. | FACT, `routes/v2.php:376-459` |
 | Follow-up | Follow-up activities are stored in `crm_activity` (`QuoActivity` inherits `CrmActivity`); 15 rows in the whole dummy (not only quotation). | FACT, `QuoActivity.php:5-7`; query |
-| Price visibility (A.8-A.9) | The server-side price filter (`SecUser::canViewSalesPrice`: group SALES_STAFF, SALES_SPV, MGR_SALES, MARKETING, COSTING_STAFF, OPS_MGR, DIREKSI, or admin, or management level >= 4) is used by Customer Order, Delivery Order, CRM, and the CO Report grid. NOT found in use in Quotation or Inquiry. | FACT, `SecUser.php:285-290`; `grep canViewSalesPrice` (CoReportGrid, CustomerOrderPrint, DeliveryOrderPrint, Crm, Board, print-doc) |
+| Price visibility (A.8-A.9) | The server-side price filter (`SecUser::canViewSalesPrice`: group SALES_STAFF, SALES_SPV, MGR_SALES, MARKETING, COSTING_STAFF, OPS_MGR, DIREKSI, or admin, or management level >= 4) is used by Customer Order, Delivery Order, CRM, and the CO Report grid. NOT found in use in Quotation or Inquiry. | FACT, `SecUser.php:289-294`; `grep canViewSalesPrice` (CoReportGrid, CustomerOrderPrint, DeliveryOrderPrint, Crm, Board, print-doc) |
 | Quotation grid content | Column `total` (grand total) is sent to every user who may open the screen; the child rows (Expand) are deliberately "tanpa harga" (without price). | FACT, `Data/Quotation.php:75-78` |
 
 ## Relations
@@ -51,3 +51,5 @@ Searched: tables `quo_*` and `%quotation%` in all `ddt*`; `grep` `Quotation` in 
 
 
 > Re-checked 2026-10-17: `QuoQuotation::totals()` now reads the PPN rate with `TaxRate::ppn(issued_date)` (table `fin_tax_rate`, screen Master Data > Tax Rate); the rate for current documents is unchanged (11).
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): line numbers of `SecUser.php` re-read (REMARK block added, `isProdManagerOrAbove` removed): `canViewSalesPrice` is now 289-294; content unchanged.

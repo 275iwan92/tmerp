@@ -12,10 +12,10 @@ Searched in `routes/console.php` (none), `app/Jobs` (none), Observers (none), al
 | Trigger | Method | File:line | Note |
 |---|---|---|---|
 | v1 Imposition screen per Inquiry opened / size changed | `run`, `cells` | `resources/views/pages/inquiry/imposition.blade.php:67` (recompute), `:118` (suggestion for all active planos) | route `inquiry.imposition` (`routes/web.php:150`); incoming link from v1 form `form.blade.php:2621`. Menu v2 `SALES_IMPO` points to `v2:prodev`, not this screen. |
-| Substitute material preview in Form WO | `run` | `resources/views/pages/production/wo-entry.blade.php:439` | display only, does not save |
+| Substitute material preview in Form WO | `run` | `resources/views/pages/production/wo-entry.blade.php:449` | display only, does not save |
 | Costing Advisor, when no ProDev layout exists yet | `run` | `app/Services/Costing/CostingAdvisor.php:276` | read-only, marked ESTIMATE (see the Costing Advisor card) |
 | Compute "effective cut" of a multi-part group | `applyFlap` | `app/Models/Master/ProdLayoutGroup.php:88` (from `ProCostContextService.php:139`, `costing.blade.php:268`) | flat size only, not `run` |
-| OLD ProDev (archived) | all tools (`run`, `sweepFlap` line 622, `sweepInterlock` 673, `bestSheet` 726, `dieRuleMeterLari` 771, `combinePair` 854, `cells`, `applyFlap`) | `resources/views/pages/production/old_prodev.blade.php` | route `production.old-prodev` (`routes/web.php:339`) is alive, but the comment in `MenuRoutes.php` and the content of mockup `sys_app_menu` do not link it |
+| OLD ProDev (archived) | all tools (`run`, `sweepFlap` line 622, `sweepInterlock` 673, `bestSheet` 726, `dieRuleMeterLari` 771, `combinePair` 854, `cells`, `applyFlap`) | `resources/views/pages/production/old_prodev.blade.php` | route `production.old-prodev` (`routes/web.php:338`) is alive, but the comment in `MenuRoutes.php` and the content of mockup `sys_app_menu` do not link it |
 
 **Does not call this engine** (FACT, grep): the active ProDev screen `pages::production.prodev` (menu `v2:prodev`, `v2:prodev-new`, `v2:prodev-revise`): nesting is drawn and computed in JS on the client, the Save button only stores the result (`saveLayout`). `CostingEngine` does not call it either.
 
@@ -74,7 +74,7 @@ Unit: mm, except `up` (pieces per sheet) and percent. No rounding unless stated.
 `docs/ENGINE-ATTENTION.md` has no item for this engine (read in full; status stays there, not copied).
 
 ## Findings (recorded, not fixed)
-1. The registry lists the user "Pro-Dev workbench (Imposition tab)" (`EngineRegistry.php:148`). FACT: the active ProDev screen does not call the engine; only the old ProDev does, which is not linked from the menu. The registry text is misleading.
+1. The registry lists the user "Pro-Dev workbench (Imposition tab)" (`EngineRegistry.php:160`). FACT: the active ProDev screen does not call the engine; only the old ProDev does, which is not linked from the menu. The registry text is misleading.
 2. The registry lists the user "Costing Engine (flat area per part)". FACT: `CostingEngine` does not call this engine. The comment `ImpositionEngine.php:164` refers to `IqpCostingPart::allocateProportionalCost()` which does not exist (grep); what exists is `ProdLayoutGroup::effectiveCutFor` (uses `applyFlap`).
 3. The values gap 3 / gripper 12 / margin 8 are written literally in `imposition.blade.php:45-50` and `CostingAdvisor.php:276` (and `old_prodev` via constants), although constants `PRODEV_GAP_MM`, `PRODEV_GRIPPER_MM`, `PRODEV_MARGIN_MM` exist (same values now). If the constants are changed, three callers do not follow.
 4. Tests do not cover `run` (the TEGAK/PUTAR/CAMPUR basis), `sweepFlap`, `sweepInterlock`, `cells`, `applyFlap` directly (only three tools: `dieRuleMeterLari`, `bestSheet`, `combinePair`).
@@ -102,3 +102,5 @@ Unit: mm, except `up` (pieces per sheet) and percent. No rounding unless stated.
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: keys `duplex-price` and `corrugated-sheet-price` (Procurement) were added after the lines cited here; nothing in this card changed.
 
 - Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): corrected `EngineRegistry.php` (user text now line 160), `wo-entry.blade.php` (the `ImpositionEngine::run` call is now line 449; REMARK block added) and the route `production.old-prodev` (now `routes/web.php:338`); `routes/web.php:150` is unchanged. `MenuRoutes.php` is cited without a line number and its old-prodev comment still exists. Content of this card is not affected.

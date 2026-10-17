@@ -6,7 +6,7 @@ description: Skema database Production (Work Order, operasi/routing, penjadwalan
 # Database: tm2prd (koneksi Eloquent: `prd`)
 
 **Sumber DDL**: `docs/ddl/tm2prd.sql`
-**Jumlah tabel**: 7 (+ 2 VIEW)
+**Jumlah tabel**: 6 (+ 1 VIEW) (prd_scheduling_rule dan prd_decision_feedback_log dihapus 2026-10-18)
 
 ## Daftar Tabel
 
@@ -45,13 +45,6 @@ Log kejadian mesin breakdown pada suatu operasi, dgn opsi reroute (mesin alterna
 - FK internal: `operation_id -> prd_wo_operation`
 - Kemungkinan FK logis lintas-DB: `machine_id`/`alt_machine_id` -> tm2mst.prod_machine, `subcontract_vendor_id` -> tm2mst.sup_supplier, `subcontract_po_id` -> tm2pur.po_order
 
-### `prd_decision_feedback_log`
-Log keputusan manusia atas opsi yang ditawarkan sistem (interupsi/simulasi) -- data historis utk analitik pola keputusan.
-- PK: `log_id`
-- Kolom: `event_type` (enum INTERRUPTION/SIMULATION_ADJUST), `wo_id`, `context_customer_id` (LOGICAL -> tm2mst.cust_customer), `context_machine_id`, `options_presented` (json, snapshot opsi ditawarkan sistem), `option_chosen`, `chosen_by`, `chosen_at`
-- FK internal: `wo_id -> prd_wo`
-- Kemungkinan FK logis lintas-DB: `context_customer_id` -> tm2mst.cust_customer
-
 ### `prd_mts_forecast`
 Forecast Make-To-Stock per produk per periode, dengan tracking akurasi forecast vs actual.
 - PK: `forecast_id`
@@ -59,17 +52,7 @@ Forecast Make-To-Stock per produk per periode, dengan tracking akurasi forecast 
 - FK internal: -
 - Kemungkinan FK logis lintas-DB: `product_id` -> tm2mst.prod_product
 
-### `prd_scheduling_rule`
-Aturan batching/sequencing utk penjadwalan produksi (mis. "gabung dieline sama").
-- PK: `rule_id`
-- Kolom: `rule_type` (enum BATCHING/SEQUENCING), `rule_name`, `applies_to_machine_id` (LOGICAL -> tm2mst.prod_machine, NULL = semua mesin sejenis), `applies_to_process`, `condition_field`, `condition_operator` (enum EQUALS/SORT_ASC/SORT_DESC), `rule_status` (enum DRAFT/ACTIVE/INACTIVE), `effective_from/to`, `created_by/at`, `approved_by` (wajib utk ACTIVE), `approved_at`
-- FK internal: -
-- Kemungkinan FK logis lintas-DB: `applies_to_machine_id` -> tm2mst.prod_machine
-
 ## VIEW (read-only, sudah live di MySQL)
-
-### `v_prd_customer_interruption_profile`
-Agregasi `prd_decision_feedback_log` (event_type=INTERRUPTION, context_customer_id not null) -> hitung total interupsi & jumlah per opsi yang dipilih, per customer. Kolom: `context_customer_id`, `total_interruption`, `option_chosen`, `count_per_option`.
 
 ### `v_prd_exception_dashboard`
 Dashboard task `prd_wo_operation` yang belum selesai (task_status NOT IN DONE/QC_PASSED) dgn flag risiko: `is_unscheduled_risk` (PENDING tapi target_start sudah lewat), `is_at_risk` (critical_ratio < 1). Kolom: `operation_id`, `wo_id`, `process_name`, `machine_id`, `target_start`, `target_finish`, `critical_ratio`, `task_status`, `is_unscheduled_risk`, `is_at_risk`.

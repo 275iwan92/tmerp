@@ -55,7 +55,7 @@ Pemilik engine: **ProDev** (BOP/BOM, `SpecEngine`) · **ProCost** (Material Plan
 
 ## ATTENTION-ENGINE-07 — Solver: serial, tanpa kapasitas untuk operasi tanpa mesin; belum ada pembagian proses
 - **FAKTA (kapasitas):** `ScheduleSolver::placeOutsideMachines` (`ScheduleSolver.php:382-395`) tidak memanggil `occupy()`: operasi tanpa mesin (SUBCON, QC, HITUNG, PACK) tidak menempati kapasitas, jadi bar bertumpuk dalam satu baris proses di grup SUBCON pada Gantt (QC · subcon, dst).
-- **FAKTA (crew):** `CrewAvailabilityChecker` hanya dipakai `PdrEngine` + `CompositePriorityScorer` (engine lama, `SchedulingServiceProvider.php:42-53`), BUKAN `ScheduleSolver` / `AutoPlanRunner`; bentrok orang tidak dicek di jadwal sekarang.
+- **FAKTA (crew):** `ScheduleSolver` / `AutoPlanRunner` tidak memakai crew; bentrok orang tidak dicek di jadwal sekarang. (`CrewAvailabilityChecker`, pemeriksa crew milik `PdrEngine` lama, dihapus 2026-10-18.)
 - **FAKTA (pembagian proses ke beberapa mesin = "Tahap 2"):** belum ada struktur (tidak ada parent_operation_id / qty bagian); `WoGenerationService::rebuildOperations` (`WoGenerationService.php:225-239`) MENGHAPUS baris operasi yang tidak cocok langkah BOP (kecuali CONFIRMED / sudah jalan / punya output) — baris bagian tambahan akan hilang saat PROCESS bila tidak ditangani; solver menjadwalkan baris ber-`seq_no` sama secara serial.
 - **Pemilik:** solver PPIC · **Dampak:** Gantt grup SUBCON menumpuk; pembagian proses belum bisa.
 

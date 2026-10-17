@@ -61,9 +61,11 @@ Three layers for each parameter of a machine (`MachineCapabilityService::resolve
 ## Findings (recorded, not fixed)
 1. **`prod_process_machine.is_certified` is not checked.** The old plan note (`docs/design-notes/ppic/15_ppic-tech-wo-knowledge.md`, item 4) says a machine is eligible only with certification; no planning code reads the column (grep `is_certified` outside Models and Grid: no result). FACT.
 2. **Die and plate "match" is not part of eligibility**, also claimed by that note: eligibility checks size, grammage, status and colours only (`MachineCapabilityService.php:132-183`, `WoPlanningEnricher.php:109`). Tooling is handled by the gate (`22_engine_gate-service.md`). FACT.
-3. **Mode in the registry is `suggest`** (`EngineRegistry.php:1954`) but the class writes three tables directly with no officer step. FACT.
+3. **Mode in the registry is `suggest`** (`EngineRegistry.php:1875`) but the class writes three tables directly with no officer step. FACT.
 4. **The old note says `prd_wo` keeps a frozen copy of grain, yield and model**; `prd_wo` has no such columns (`show columns`; it has `ups_per_sheet`, sheet size, `board_gsm`, `colour_count`, `dieline_ref`, `layout_json`). The grain direction and yield may sit inside `layout_json`: NOT checked. FACT for the columns.
 5. **Plate code is invented** by the loader: `'PL-'.product_id` (`PlanLoader.php:164`); it is not read from `prod_tooling_asset`. See `25_engine_setup-time.md`.
 
 ## Already exists? Searched where, result
 `concept:find "machine"` / `"gate"`: no earlier TG card for eligibility. Searched code: the one place that inserts `prd_wo_operation_machine` rows is this class (`WoPlanningEnricher.php:126`); other writers only edit or delete (`PpicController.php:593` target edit, `:852` and `SheetReset.php:106` delete). The three-layer rule is also named in `MachineCapabilityService` comments as the single place; ProCost use of it was NOT checked.
+
+- Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the registry entry `ppic-wo-enrich` (`EngineRegistry.php`) moved to line 1875 (three engine entries removed, REMARK block added); mode `suggest` and the finding are unchanged.

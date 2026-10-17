@@ -67,7 +67,7 @@ Of 65 WO rows, 63 carry `source_delivery_id`. For all 63: `qty` equals `ship_qty
 - **used_by**: `21_engine_wo-planning-enricher.md`, `22_engine_gate-service.md`, `23_engine_auto-plan-runner.md`, cards `10_card_work-order.md`, `11_card_wo-operation-bop.md`, `12_card_wo-material-bom.md`.
 - **flows**: CO Confirmed -> CPDEL row -> Post to Production -> WO DRAFT -> PROCESS -> APPLY (`26_engine_plan-confirm.md`).
 - **frozen_zone**: upstream flow (CO, CPDEL, ProDev) frozen; the WO side is PPIC.
-- **also_named_by**: `11_card_process-and-routing.md`, `29_engine_pdr.md`, `32_engine_maintenance-block.md`.
+- **also_named_by**: `11_card_process-and-routing.md`, `32_engine_maintenance-block.md`.
 
 ## Findings (recorded, not fixed)
 1. **The registry lists only `generateFromDelivery`**, but the methods that PROCESS and RESET call every day (`rebuildOperations`, `regenerateBom`, `engineBomCount`) are public and NOT registered (`EngineRegistry.php:1347`). FACT.

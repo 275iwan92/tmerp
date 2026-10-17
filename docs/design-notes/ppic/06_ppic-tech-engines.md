@@ -1,5 +1,7 @@
 # Technical Plan: Engines and Services
 
+> Catatan 2026-10-18: PdrEngine, CompositePriorityScorer, SchedulingRuleEngine, papan Scheduling Board v1 dan layar Rule Library telah dihapus (audit modul ganda); penjadwal yang berlaku = ScheduleSolver + AutoPlanRunner. Butir di bawah yang menyebutnya adalah rencana lama.
+
 Engine dan service mana yang diperluas dan mana yang baru. Semuanya didaftarkan di katalog engine, dan logika tidak ada di layar.
 
 ## Isi catatan
