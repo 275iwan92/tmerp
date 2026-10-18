@@ -69,6 +69,13 @@
 | Master Data > Supplier Corrugated Index | `v2:md-supplier-corrugated-index` | Input index lembar gelombang per supplier dan substance (SW / DW umum), index per m2 lembar trim, dasar PPN, tanggal berlaku (2026-10-17) | `SupplierCorrugatedIndexLookup` (`sup_corrugated_index`, `SupCorrugatedIndex`) | `CorrugatedSheetPriceEngine`: harga per lembar = (lebar trim x panjang / 10000 x index / up) x (1 - diskon) / (1 + tarif PPN) | tampil |
 | Master Data > Tax Rate | `v2:md-tax-rate` | Input tarif pajak (PPN) menurut tanggal berlaku seperti kurs: PPN 10% sejak 01-Apr-1985, 11% sejak 01-Apr-2022; dokumen memakai tarif pada tanggalnya sendiri; konstanta `PPN` tinggal cadangan bila tabel kosong (2026-10-17) | `TaxRateLookup` (`fin_tax_rate`, `FinTaxRate`) | `TaxRate::ppn(tanggal)` dipakai `PaperPriceEngine`, `PoOrder::recalcTax`, `DeliveryOrderPrint`, Customer Order, Quotation, invoice (tanpa tanggal = hari ini) | tampil |
 
+## Finance
+
+| Jalur menu | Slug / rute | Tujuan | File utama | Engine / service yang dipakai | Menu |
+|---|---|---|---|---|---|
+| Finance > Accounting > Master of Accounts | `v2:acc-coa` | Grid akun GL berhierarki (tipe, saldo normal, level, parent, bisa dijurnal, cost center bawaan); Open dan + New Record membuka form acc-coa-form; rute lama /finance/coa mengalihkan ke sini | `app/Support/V2/Grid/Acc/CoaGrid.php` | `DbGrid` | tampil |
+| Finance > Accounting > Master of Accounts Form | `v2:acc-coa-form` | Form akun GL menggantikan dialog v1 (`x-dl::form` panel top): kode (unik), nama, parent, tipe, saldo normal, cost center bawaan, skema pajak, penanda rekonsiliasi AR/AP, bisa dijurnal, aktif. Akun header tampil baca-saja. Disimpan ke `tm2acc.fin_account` (account_id = MAX + 1). Tarif pajak tidak disimpan di sini. Form v1 diarsipkan di `tmerp_unused/finance_coa_v1_2026-10-18.blade.php` | `resources/views/v2/screens/acc-coa-form.blade.php`, `routes/v2_finance.php` (`v2.acc.coa.save`) | `App\Services\Acc\ChartOfAccountService` | disembunyikan (dibuka dari grid) |
+
 ## Belum tercatat (isi bertahap saat layar disentuh)
 
 Layar v2 lain di luar daftar di atas (Sales, Inventory, HRM, Finance, Maintenance, dst.). Tambahkan baris saat file layarnya diubah.

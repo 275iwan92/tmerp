@@ -52,3 +52,5 @@ Searched: `published_flag`, `stat_confirm_procost`, `TierPricingResolver`, `ProC
 ## Added 2026-10-16 (Jo agreed): Book
 The ProCost screen has a Book button in the panel BOM and availability: after Publish it runs MaterialPlanningEngine::persistPre for the inquiry and hold (stock of the pre-booking, paper only, ends by itself after INV_BOOKING_HOLD_WORKDAYS workdays); Release hold undoes it. No PR/PO. Test: ProCostBomAvailabilityTest.
 
+
+- Re-checked 2026-10-18 after `app/Support/V2/Screens.php` gained a `Master` group in module FINACC (screen `acc-coa-form`, inserted after line 95); every line cited by this card is before line 96 and unchanged, content still true.

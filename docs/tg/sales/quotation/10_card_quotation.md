@@ -54,3 +54,5 @@ Searched: tables `quo_*` and `%quotation%` in all `ddt*`; `grep` `Quotation` in 
 
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): line numbers of `SecUser.php` re-read (REMARK block added, `isProdManagerOrAbove` removed): `canViewSalesPrice` is now 289-294; content unchanged.
 - Re-checked 2026-10-18 after the SOP register merge (sop_document folded into mnt_document): citations of `app/Models/Sys/SecUser.php` (comment only, lines unchanged) still correct.
+
+- Re-checked 2026-10-18 after `app/Support/V2/Screens.php` gained a `Master` group in module FINACC (screen `acc-coa-form`, inserted after line 95); every line cited by this card is before line 96 and unchanged, content still true.

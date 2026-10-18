@@ -93,6 +93,9 @@ final class Screens
                 ['label' => t('Flow'), 'items' => [self::flowItem('COSTING', 'Costing Flow: ProDev → ProCost → Publish')]],
             ]],
             ['code' => 'FINACC', 'short' => 'FIN', 'label' => 'Finance', 'icon' => 'fa-solid fa-coins', 'groups' => [
+                ['label' => 'Master', 'items' => [
+                    $it('acc-coa-form', ['Master of Accounts Form', 'fa-solid fa-book', 'v2 baru: akun GL di atas tm2acc.fin_account; dibuka dari grid acc-coa', null]),
+                ]],
                 ['label' => t('Cash & Bank'), 'items' => [
                     $it('petty-cash', ['Petty Cash', 'fa-solid fa-wallet', 'v2 baru: tm2acc.fin_petty_cash + fin_petty_cash_tx (PO Kontan)', null]),
                 ]],

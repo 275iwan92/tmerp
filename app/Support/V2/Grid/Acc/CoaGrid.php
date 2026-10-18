@@ -7,7 +7,15 @@ use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Master of Accounts / COA (v1: pages::finance.coa).
+/*
+ * REMARK
+ * Tujuan       : Grid Master of Accounts (COA): daftar akun GL berhierarki; Open dan + New Record membuka form v2 acc-coa-form.
+ * Sumber hulu  : tm2acc.fin_account (+ view pohon untuk level dan kode cost center).
+ * Input        : Pencarian dan filter Type / Level / Postable.
+ * Output       : Baris grid; tombol aktif / nonaktif membalik fin_account.activate.
+ * Dipakai oleh : Menu ACC_COA (v2:acc-coa), layar acc-coa-form (kembali ke daftar).
+ * Status       : Aktif. Form v1 pages::finance.coa sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class CoaGrid extends DbGrid
 {
     public function slug(): string
@@ -35,14 +43,19 @@ class CoaGrid extends DbGrid
         return self::MASTER;
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'finance.coa';
+        return true;
     }
 
-    protected function v1Component(): ?string
+    public function openUrl(): ?string
     {
-        return 'pages::finance.coa';
+        return route('v2.screen', 'acc-coa-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'acc-coa-form').'?new=1';
     }
 
     public function search(): string

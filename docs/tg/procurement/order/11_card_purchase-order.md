@@ -56,3 +56,5 @@
 **Price source**: a PO line price comes from the supplier price tables when the material is paper (see `13_card_paper-price-tables.md`); otherwise from the PR estimate. In the mockup data the tables hold one row (supplier 15, IVORY), no PO line used it (`po_line.i_price` values are dummy numbers: 25,000 / 22,500 / 999,999 and similar).
 
 - Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/finance/coa` route replaced by a one-line redirect to `/v2/s/acc-coa`, rule D.25); the block keeps its line count so every cited line number is unchanged, content still true.

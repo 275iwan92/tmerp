@@ -192,3 +192,5 @@ Relations of the tables this sub-module uses. Solid line = real foreign key (dat
 
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): line numbers corrected for `SecUser.php` (now 243-250), `StageBuilder.php` (now 300) and `Grids.php` (now 70-72); the `routes/web.php` lines cited here (178, 179, 184, 185) are before the removed routes and unchanged.
 - Re-checked 2026-10-18 after the SOP register merge (sop_document folded into mnt_document): citations of `app/Models/Sys/SecUser.php` (comment only, lines unchanged) still correct.
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/finance/coa` route replaced by a one-line redirect to `/v2/s/acc-coa`, rule D.25); the block keeps its line count so every cited line number is unchanged, content still true.

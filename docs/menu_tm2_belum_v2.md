@@ -28,7 +28,7 @@ Di tm2 item ini dibuka lewat peta kode `MenuRoutes::map()` (layar v1). Perlu mig
 
 | Kode | Label | Target ddt |
 |---|---|---|
-| ACC_COA | Master of Accounts | v2:acc-coa |
+| ACC_COA | Master of Accounts | v2:acc-coa (Open dan New membuka v2:acc-coa-form; form v1 diarsipkan 2026-10-18) |
 | SALES_DO | Delivery Order | v2:delivery-order |
 | SALES_DN | Delivery Notes | v2:delivery-notes |
 | SALES_CPDEL | Customer Plan Delivery | v2:cpdel |

@@ -104,3 +104,6 @@ Unit: mm, except `up` (pieces per sheet) and percent. No rounding unless stated.
 - Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/self-service` route replaced by a redirect to `v2.profile`, rule D.25); the block keeps its 4 lines so every cited line number is unchanged, content still true.
 
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): corrected `EngineRegistry.php` (user text now line 160), `wo-entry.blade.php` (the `ImpositionEngine::run` call is now line 449; REMARK block added) and the route `production.old-prodev` (now `routes/web.php:338`); `routes/web.php:150` is unchanged. `MenuRoutes.php` is cited without a line number and its old-prodev comment still exists. Content of this card is not affected.
+
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/finance/coa` route replaced by a one-line redirect to `/v2/s/acc-coa`, rule D.25); the block keeps its line count so every cited line number is unchanged, content still true.
+- Re-checked 2026-10-18 after `app/Support/Menu/MenuRoutes.php` lost the `ACC_COA` entry (Master of Accounts is v2 only, rule D.25); content of this card is not affected.

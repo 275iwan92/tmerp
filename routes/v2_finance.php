@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Acc\FinAccount;
+use App\Services\Acc\ChartOfAccountService;
 use App\Support\V2\Data\CustomerInvoice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Customer Invoice v2 (App\Support\V2\Data\CustomerInvoice -> App\Services\Acc\CustomerInvoiceService).
@@ -72,4 +75,21 @@ Route::prefix('v2/customer-invoice')->name('v2.customer-invoice.')->middleware('
 
         return $err ? $open($id)->withErrors(['payment' => $err]) : $open($id)->with('v2_flash', t('Payment received and allocated to the invoice.'));
     })->whereNumber('id')->name('payment');
+});
+
+// Master of Accounts v2 (layar acc-coa-form): save / activate / deactivate akun GL. Aturan = App\Services\Acc\ChartOfAccountService (dipindah dari v1 pages::finance.coa).
+Route::prefix('v2/acc/coa')->name('v2.acc.coa.')->middleware('module:FINACC')->group(function () {
+    Route::post('/save', function (Request $r, ChartOfAccountService $svc) {
+        $a = $r->filled('id') ? FinAccount::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        if ($a && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($a, $action === 'activate', Auth::user());
+            $msg = $action === 'activate' ? ':name activated.' : ':name deactivated.';
+        } else {
+            $a = $svc->save($a, $r->except(['id', 'action']), Auth::user());
+            $msg = ':name saved.';
+        }
+
+        return redirect(route('v2.screen', 'acc-coa-form').'?id='.$a->account_id)->with('v2_flash', tf($msg, ['name' => $a->account_name]));
+    })->name('save');
 });
