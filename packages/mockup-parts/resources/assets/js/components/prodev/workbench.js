@@ -11,7 +11,8 @@
    Input       : data-config (JSON); aksi officer (geser, Suggestion, Auto Nesting).
    Output      : susunan di canvas, upCount ke SpecEngine::generate; disimpan lewat Save/Confirm (server).
    Dipakai oleh: halaman /v2/s/prodev (x-mp::prodev-workbench).
-   Status      : aktif. 2026-10-18: MASK_MAX 700 -> 1100 dan guard autoNest (blank > 70 cm tadi mengecil, susunan salah baca mm). */
+   Status      : aktif. 2026-10-18: MASK_MAX 700 -> 1100 dan guard autoNest (blank > 70 cm tadi mengecil, susunan salah baca mm);
+                 autoNest memilih plano paling hemat bila plano bawaan tidak muat dan officer belum memilih (S.planoTouched). */
 (function (Devlib) {
   'use strict';
 
@@ -942,6 +943,8 @@
                   return;
               }
 
+              // Plano bawaan yang tidak muat canvas = hasil/plano 0; ganti ke yang paling hemat, kecuali officer sudah memilih sendiri.
+              const planoInfo = !S.planoTouched && planos.includes(S.pl) && !cut(S.pl).n ? pickBestPlano() : '';
               applyPlacements(best.placements, best.label);
 
               const gain = best.plainBest ? Math.round((best.up - best.plainBest) / best.plainBest * 100) : 0;
@@ -949,7 +952,8 @@
                   + (gain > 0 ? ' (' + Devlib.h.t('+:gain% vs standard grid, :n more up').replace(':gain', gain).replace(':n', best.up - best.plainBest) + ')'
                       : ' (' + Devlib.h.t('the standard grid is already the densest for this shape') + ')')
                   + (best.ditolak ? ' · ' + Devlib.h.t(':n patterns rejected because they still collide').replace(':n', best.ditolak) : '')
-                  + (base.shaped ? '' : ' · ' + Devlib.h.t('this type has no dieline yet, calculated as a plain box')), 'ok');
+                  + (base.shaped ? '' : ' · ' + Devlib.h.t('this type has no dieline yet, calculated as a plain box'))
+                  + (planoInfo ? ' · ' + planoInfo : ''), 'ok');
           } catch (e) {
               if (!silent) msg(Devlib.h.t('Auto nesting failed:') + ' ' + (e && e.message ? e.message : e), 'bad');
           } finally {
@@ -2019,7 +2023,7 @@
               if (S.objs.length && (!S.auto || S.manualEdit)) { compactFit(); return; }
               optimizeSheet();
           };
-          $('plano').onchange = e => { S.pl = planos[e.target.value]; update(false); };
+          $('plano').onchange = e => { S.pl = planos[e.target.value]; S.planoTouched = true; update(false); };
           // Hitung ulang plano secara eksplisit (permintaan user 2026-09-18),
           // tidak bergantung pada tombol Suggestion.
           $('calcPlano').onclick = () => {

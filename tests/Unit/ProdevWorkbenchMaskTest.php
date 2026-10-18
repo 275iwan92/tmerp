@@ -30,4 +30,10 @@ class ProdevWorkbenchMaskTest extends TestCase
     {
         $this->assertStringContainsString('base.mmPerPx > 1.01', $this->src());
     }
+
+    public function test_auto_nest_picks_plano_only_when_default_does_not_fit_and_officer_has_not_chosen(): void
+    {
+        $this->assertStringContainsString('!S.planoTouched && planos.includes(S.pl) && !cut(S.pl).n ? pickBestPlano()', $this->src());
+        $this->assertStringContainsString('S.planoTouched = true;', $this->src());
+    }
 }

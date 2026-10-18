@@ -5,7 +5,7 @@
 - **Module**: Sales > Inquiry & Quotation > Pro-Dev.
 - **Purpose**: from the Inquiry, derive the production layout (plano, UP), BOP, BOM, Ink Configuration and Master Card; the officer decides (A.7). The result is the basis for Pro-Cost, then WO.
 - **Frozen zone**: ProDev flow/data. Read: `docs/claude_vital_flows.md`, `docs/ENGINE-ATTENTION.md`.
-- **Auto imposition (2026-10-18, Jo)**: on open, `workbench.js` runs `autoNest` in the browser (no DB write until Save/Confirm); the blank mask is kept at 1 px = 0.1 mm up to `MASK_MAX` 1100 px, and `autoNest` refuses a downscaled mask. Open: default plano (65x100) is not re-picked to fit the canvas, so "Hasil / plano" stays 0 until the officer presses Suggestion.
+- **Auto imposition (2026-10-18, Jo)**: on open, `workbench.js` runs `autoNest` in the browser (no DB write until Save/Confirm); the blank mask is kept at 1 px = 0.1 mm up to `MASK_MAX` 1100 px, and `autoNest` refuses a downscaled mask. If the default plano (65x100) does not fit the canvas and the officer has not touched the plano dropdown, `autoNest` calls `pickBestPlano()` (most economical plano, no DB write until Save/Confirm; stored as `plano_size_id` in `prod_layout_group`/`iqp_layout`).
 
 ## Relations
 - **source**: Inquiry Product (part, finishing, material, qty tier, `stat_confirm_sales`), master `prod_type` (dieline), rules `prod_bop_rule`.
