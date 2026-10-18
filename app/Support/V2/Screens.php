@@ -96,7 +96,8 @@ final class Screens
                 ['label' => 'Master', 'items' => [
                     $it('acc-coa-form', ['Master of Accounts Form', 'fa-solid fa-book', 'v2 baru: akun GL di atas tm2acc.fin_account; dibuka dari grid acc-coa', null]),
                     $it('acc-fixed-asset-form', ['Fixed Asset Form', 'fa-solid fa-building', 'v2 baru: aset tetap di atas tm2acc.fin_asset + jurnal kapitalisasi / pelepasan; dibuka dari grid acc-fixed-asset', null]),
-                    $it('acc-depreciation-run', ['Depreciation Run', 'fa-solid fa-calendar-check', 'v2 baru: pratinjau dan jurnal penyusutan / amortisasi bulanan di atas tm2acc.fin_asset + fin_asset_depr (AssetService)', null]),
+                    $it('acc-amortization-form', ['Amortization Schedule Form', 'fa-solid fa-arrow-trend-down', 'v2 baru: jadwal amortisasi (prabayar, tak berwujud, leasehold) di atas tm2acc.fin_asset + jurnal kapitalisasi; dibuka dari grid acc-amortization', null]),
+                    $it('acc-depreciation-run',['Depreciation Run', 'fa-solid fa-calendar-check', 'v2 baru: pratinjau dan jurnal penyusutan / amortisasi bulanan di atas tm2acc.fin_asset + fin_asset_depr (AssetService)', null]),
                     $it('acc-payables-form',['Vendor Bill Form', 'fa-solid fa-file-invoice-dollar', 'v2 baru: tagihan vendor (SUPPLIER_BILL) di atas tm2acc.fin_invoice + jurnal PUR + fin_payment_alloc; dibuka dari grid acc-payables', null]),
                     $it('acc-cash-bank-form',['Cash and Bank Voucher Form', 'fa-solid fa-money-check-dollar', 'v2 baru: voucher kas & bank (BKM / BKK / BBM / BBK) di atas tm2acc.fin_voucher + fin_voucher_line; dibuka dari grid acc-cash-bank', null]),
                     $it('acc-journal-form',['Journal Entry Form', 'fa-solid fa-file-pen', 'v2 baru: jurnal umum manual (header + baris debit / kredit) di atas tm2acc.fin_voucher + fin_voucher_line; dibuka dari grid acc-journal', null]),

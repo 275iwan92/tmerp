@@ -4,6 +4,7 @@ use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinAsset;
 use App\Models\Acc\FinInvoice;
 use App\Models\Acc\FinVoucher;
+use App\Services\Acc\AmortizationScheduleService;
 use App\Services\Acc\CashBankVoucherService;
 use App\Services\Acc\ChartOfAccountService;
 use App\Services\Acc\FixedAssetService;
@@ -309,4 +310,30 @@ Route::prefix('v2/acc')->name('v2.acc.')->middleware('module:FINACC')->group(fun
 
         return $voucherId ? $back->with('v2_flash', tf('Depreciation journal for :period posted.', ['period' => $period])) : $back->withErrors(['run' => t('No asset needs depreciation in this period.')]);
     })->where(['period' => '\d{4}-\d{2}', 'kind' => 'fixed|amortization'])->name('depr.run');
+});
+
+// Amortization v2 (layar acc-amortization-form): save (= buat jadwal + catat jurnal, satu transaksi) / confirm (hanya untuk jadwal Draft peninggalan v1).
+// Aturan = App\Services\Acc\AmortizationScheduleService (dipindah dari v1 pages::finance.amortization); amortisasi bulanan = layar acc-depreciation-run (kind amortization).
+Route::prefix('v2/acc/amortization')->name('v2.acc.amort.')->middleware('module:FINACC')->group(function () {
+    Route::post('/save', function (Request $r, AmortizationScheduleService $svc) {
+        $a = $r->filled('id') ? FinAsset::findOrFail((int) $r->input('id')) : null;
+        $open = fn (FinAsset $x) => redirect(route('v2.screen', 'acc-amortization-form').'?id='.$x->asset_id);
+
+        try {
+            if ($a) {
+                $svc->capitalize($a, Auth::user());
+
+                return $open($a->fresh())->with('v2_flash', tf('Schedule :code recorded: Dr prepaid / intangible account, Cr bank or payable.', ['code' => $a->asset_code]));
+            }
+            $a = $svc->create($r->only(['asset_name', 'category_id', 'acq_date', 'start_date', 'cost', 'life', 'credit_account_id', 'source_ref']), Auth::user());
+
+            return $open($a)->with('v2_flash', tf('Schedule :code created and recorded: Dr prepaid / intangible account, Cr bank or payable.', ['code' => $a->asset_code]));
+        } catch (HttpException $e) {
+            if ($e->getStatusCode() !== 422) {
+                throw $e;
+            }
+
+            return ($a ? $open($a) : back()->withInput())->withErrors(['schedule' => $e->getMessage()]);
+        }
+    })->name('save');
 });

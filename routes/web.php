@@ -230,7 +230,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::redirect('/finance/payables', '/v2/s/acc-payables');
             Route::redirect('/finance/journals', '/v2/s/acc-journal');
             Route::redirect('/finance/assets', '/v2/s/acc-fixed-asset');
-            Route::livewire('/finance/amortization', 'pages::finance.amortization')->name('finance.amortization');
+            Route::redirect('/finance/amortization', '/v2/s/acc-amortization');
         });
 
         Route::middleware('module:PROC')->group(function () {
