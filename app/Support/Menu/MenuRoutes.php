@@ -102,7 +102,6 @@ final class MenuRoutes
             'PROC_MON_PO' => route('v2.screen', 'pur-rpt-outstanding-po'),
             'PROC_MON_PV' => route('v2.screen', 'pur-rpt-outstanding-pv'),
             'MD_PROD' => route('v2.screen', 'master-product'),
-            'MD_SUPP' => route('master.supplier'),
             'MD_SUPCAT' => route('v2.screen', 'md-supplier-category'),
             'MD_RAW' => route('master.raw-material.list'),
             // Material Category = pembentuk kode item: satu layar di kedua situs (v2, dropdown saling terkait).

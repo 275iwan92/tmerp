@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Supplier (v1: pages::master.supplier) — semua vendor, termasuk BANK/EKSPEDISI.
+/*
+ * REMARK
+ * Tujuan       : Grid Master Supplier: semua vendor (termasuk BANK / EKSPEDISI) dengan kategori, kontak, termin bayar, subkon, blacklist dan jumlah Purchase Order; Open dan + New Record membuka form v2 md-supplier-form.
+ * Sumber hulu  : tm2mst.sup_supplier + fin_payment_term; jumlah PO dari tm2pur.po_order (query terpisah).
+ * Input        : Pencarian, statistik, filter Category / Payment Term.
+ * Output       : Baris grid; tombol aktif / nonaktif membalik sup_supplier.activate.
+ * Dipakai oleh : Menu MD_SUPP (v2:md-supplier), layar md-supplier-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::master.supplier sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class SupplierGrid extends MasterDataGrid
 {
     private array $orders = [];
@@ -24,14 +32,19 @@ class SupplierGrid extends MasterDataGrid
         return 'Master Supplier';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'master.supplier';
+        return true;
     }
 
-    protected function v1Component(): ?string
+    public function openUrl(): ?string
     {
-        return 'pages::master.supplier';
+        return route('v2.screen', 'md-supplier-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'md-supplier-form').'?new=1';
     }
 
     protected function models(): array

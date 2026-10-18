@@ -235,6 +235,9 @@ final class Screens
                 ['label' => 'Customer', 'items' => [
                     $it('md-customer-form', ['Master Customer Form', 'fa-solid fa-building', 'v2 baru: customer (identitas, spek cetak, penjualan dan keuangan, alamat, kontak dan cabang tambahan) di atas tm2mst.cust_customer; dibuka dari grid md-customer', null]),
                 ]],
+                ['label' => 'Supplier', 'items' => [
+                    $it('md-supplier-form', ['Master Supplier Form', 'fa-solid fa-truck-field', 'v2 baru: supplier (identitas, alamat + cabang, PIC + kontak, termin dan pajak) di atas tm2mst.sup_supplier; dibuka dari grid md-supplier', null]),
+                ]],
             ]],
             // Khusus developer: tidak tampil untuk akun biasa.
             ...(auth()->user()?->is_admin ? [['code' => 'DEV', 'short' => 'DEV', 'label' => 'Developer', 'icon' => 'fa-solid fa-code', 'groups' => [

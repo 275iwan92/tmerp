@@ -208,7 +208,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::middleware('module:MDATA')->group(function () {
             Route::redirect('/master/customer', '/v2/s/md-customer');
-            Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');
+            Route::redirect('/master/supplier', '/v2/s/md-supplier');
             Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
             Route::livewire('/master/shift', 'pages::master.shift')->name('master.shift');
 
