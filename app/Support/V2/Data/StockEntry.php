@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 /*
  * REMARK
- * Tujuan       : Bahan lookup dan baris form untuk dokumen stok manual v2 (Stock In dulu, lalu Out / Return / Adjustment): cari item per kelas stok (RM bahan, FG product, SFG part), cari bin, cari batch, dan ubah baris dokumen tersimpan menjadi baris x-dl::lines.
+ * Tujuan       : Bahan lookup dan baris form untuk dokumen stok manual v2 (Stock In dan Stock Out, lalu Return / Adjustment): cari item per kelas stok (RM bahan, FG product, SFG part), cari bin, cari batch, dan ubah baris dokumen tersimpan menjadi baris x-dl::lines.
  * Sumber hulu  : tm2mst.mat_raw / prod_product / prod_part (activate = 1, sama dengan pencarian v1), tm2mst.wh_loc + wh_warehouse (bin aktif dan usable), tm2inv.inv_batch, baris dokumen rm_stock_d / fg_stock_d / sfg_stock_d.
  * Input        : Kelas stok (RM / FG / SFG), kata cari, id.
  * Output       : Baris lookup (Devlib\Lookup search / find) dan array baris form; hanya baca.
- * Dipakai oleh : App\Support\V2\Lookups (stock_item_rm / _fg / _sfg, stock_bin, stock_batch), layar inv-stock-in-form, App\Services\Inventory\StockInEntryService.
+ * Dipakai oleh : App\Support\V2\Lookups (stock_item_rm / _fg / _sfg, stock_bin, stock_batch), layar inv-stock-doc-form, App\Services\Inventory\StockDocEntryService.
  * Status       : Aktif.
  */
 

@@ -143,7 +143,7 @@ final class Screens
                     $it('scan-track', ['Track via QR/Barcode', 'fa-solid fa-magnifying-glass-location', 'v2 baru: lacak bin / item / transfer dari kode hasil pindai', null, true]),
                 ]],
                 ['label' => 'Stock Documents', 'items' => [
-                    $it('inv-stock-in-form', ['Stock In Form', 'fa-solid fa-arrow-right-to-bracket', 'v2 baru: dokumen Stock In manual (RM, FG, SFG) di atas tm2inv.rm_stock / fg_stock / sfg_stock; Confirm = posting ke Kartu Stok lewat StockPostingService; dibuka dari grid inv-*-stock-in', null]),
+                    $it('inv-stock-doc-form', ['Stock Document Form', 'fa-solid fa-arrow-right-to-bracket', 'v2 baru: dokumen stok manual (Stock In RM / FG / SFG, Stock Out RM / SFG) di atas tm2inv.rm_stock / fg_stock / sfg_stock; Confirm = posting ke Kartu Stok lewat StockPostingService; dibuka dari grid inv-*-stock-in dan inv-*-stock-out', null]),
                 ]],
                 ['label' => 'Stock Adjustment', 'items' => [
                     $it('approval-stock', ['Adjustment & Opname Approval Center', 'fa-solid fa-stamp', 'inventory/stock-adjustment-approval.blade.php', null]),

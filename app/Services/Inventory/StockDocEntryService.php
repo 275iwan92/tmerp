@@ -2,12 +2,12 @@
 
 /*
  * REMARK
- * Tujuan       : Penyimpan dokumen Stock In manual dari layar v2 inv-stock-in-form (RM, FG, SFG): validasi header dan baris, batch baru, simpan Draft, Confirm = posting ke Kartu Stok, batalkan Draft. Tidak menulis tabel stok sendiri.
- * Sumber hulu  : Aturan dipindah dari halaman v1 pages::inventory.stock-in (diarsipkan di tmerp_unused/inventory_stock_in_v1_2026-10-19.blade.php): kategori STOCK atau BB, gudang wajib, minimal satu baris, qty > 0, bin wajib, batch baru wajib kedaluwarsa bila item punya umur simpan. Penulisan dokumen lewat StockDocumentService, posting lewat StockPostingService, batch lewat BatchService.
- * Input        : Kelas stok, id dokumen (bila Draft tersimpan), isian header, baris form (item_id, batch_id, new_lot / new_production / new_expiry, location_id, qty, uom_code, unit_price), user.
- * Output       : Dokumen Draft di tm2inv.rm_stock / fg_stock / sfg_stock + baris; batch baru di inv_batch; hasil posting dari StockPostingService; ValidationException bila aturan dilanggar.
- * Dipakai oleh : routes/v2_stockdocs.php (v2.inv.stockin.*), layar inv-stock-in-form, tes StockInEntryServiceTest.
- * Status       : Aktif. Confirm menyimpan isian form lebih dulu lalu memposting (v1 hanya memposting Draft yang sudah tersimpan dan membuang isian yang belum disimpan).
+ * Tujuan       : Penyimpan dokumen stok manual dari layar v2 inv-stock-doc-form: Stock In (RM, FG, SFG) dan Stock Out (RM, SFG); validasi header dan baris, batch (baru untuk Stock In, pilih yang ada untuk keduanya), simpan Draft, Confirm = posting ke Kartu Stok, batalkan Draft. Tidak menulis tabel stok sendiri.
+ * Sumber hulu  : Aturan dipindah dari halaman v1 pages::inventory.stock-in dan stock-out (diarsipkan di tmerp_unused/inventory_stock_in_v1_2026-10-19.blade.php dan inventory_stock_out_v1_2026-10-19.blade.php). Stock In: kategori STOCK atau BB, gudang wajib, minimal satu baris, qty > 0, bin wajib, batch baru wajib kedaluwarsa bila item punya umur simpan. Stock Out: gudang sumber, departemen penerima wajib, proses tujuan teks bebas, tanpa harga (nilai = rata-rata berjalan saat posting), FG tidak boleh keluar (hanya lewat Delivery Order). Penulisan dokumen lewat StockDocumentService, posting lewat StockPostingService, batch lewat BatchService.
+ * Input        : Jenis dokumen (in / out), kelas stok, id dokumen (bila Draft tersimpan), isian header, baris form (item_id, batch_id, new_lot / new_production / new_expiry (hanya in), location_id, qty, uom_code, unit_price (hanya in), lot_no), user.
+ * Output       : Dokumen Draft di tm2inv.rm_stock / fg_stock / sfg_stock + baris; batch baru di inv_batch (hanya in); hasil posting dari StockPostingService; ValidationException bila aturan dilanggar.
+ * Dipakai oleh : routes/v2_stockdocs.php (v2.inv.stockdoc.*), layar inv-stock-doc-form, grid StockDocGrid (kelas dan jenis yang boleh), tes StockDocEntryServiceTest.
+ * Status       : Aktif. Confirm menyimpan isian form lebih dulu lalu memposting (v1 hanya memposting Draft yang sudah tersimpan dan membuang isian yang belum disimpan). Jenis Return dan Adjustment menyusul.
  */
 
 namespace App\Services\Inventory;
@@ -16,6 +16,7 @@ use App\Models\Inventory\FgStock;
 use App\Models\Inventory\InvBatch;
 use App\Models\Inventory\RmStock;
 use App\Models\Inventory\SfgStock;
+use App\Models\Master\OrgDepartment;
 use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
 use App\Models\Sys\SecUser;
@@ -25,22 +26,41 @@ use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-final class StockInEntryService
+final class StockDocEntryService
 {
     public const CLASSES = ['RM' => 'Raw Material', 'FG' => 'Finished Goods', 'SFG' => 'Semi Finished Goods'];
 
-    public const CATEGORIES = ['STOCK' => 'STOCK (normal stock in)', 'BB' => 'BB (opening balance)'];
-
-    private const PREFIX = 'IN';
+    /** jenis => judul, awalan nomor, arah (doc_type), kelas yang boleh, kategori dokumen */
+    public const KINDS = [
+        'in' => ['title' => 'Stock In', 'prefix' => 'IN', 'doc_type' => 1, 'classes' => ['RM', 'FG', 'SFG'], 'cats' => ['STOCK' => 'STOCK (normal stock in)', 'BB' => 'BB (opening balance)']],
+        'out' => ['title' => 'Stock Out', 'prefix' => 'OUT', 'doc_type' => -1, 'classes' => ['RM', 'SFG'], 'cats' => ['STOCK' => 'STOCK']],
+    ];
 
     private const HEADERS = ['RM' => RmStock::class, 'FG' => FgStock::class, 'SFG' => SfgStock::class];
 
     public function __construct(private StockDocumentService $docs, private StockPostingService $posting) {}
 
-    /** Simpan Draft (dokumen baru bernomor saat ini). Return id dokumen. */
-    public function save(string $class, ?int $docId, array $in, array $lines, SecUser $user): int
+    /** Jenis dan kelas yang punya form v2 (FG tidak punya Stock Out). */
+    public static function supports(string $kind, string $class): bool
     {
-        abort_unless(isset(self::CLASSES[$class]), 404);
+        return isset(self::KINDS[$kind]) && in_array($class, self::KINDS[$kind]['classes'], true);
+    }
+
+    /** Dokumen milik jenis ini? (sama dengan daftar StockDocGrid: Stock In juga memuat dokumen otomatis dan pembalik; Return dan adjustment bukan.) */
+    public static function ownsDocument(string $kind, object $h): bool
+    {
+        return match ($kind) {
+            'in' => (int) $h->doc_type === 1 && $h->doc_cat !== 'RETURN',
+            'out' => (int) $h->doc_type === -1 && ! in_array($h->doc_cat, ['AD', 'OP'], true),
+            default => false,
+        };
+    }
+
+    /** Simpan Draft (dokumen baru bernomor saat ini). Return id dokumen. */
+    public function save(string $kind, string $class, ?int $docId, array $in, array $lines, SecUser $user): int
+    {
+        abort_unless(self::supports($kind, $class), 404);
+        $cfg = self::KINDS[$kind];
         if ($docId) {
             $h = $this->header($class, $docId);
             if ($h->stat_confirm || $h->stat_cancel || $h->flow_status !== 'DRAFT') {
@@ -48,17 +68,22 @@ final class StockInEntryService
             }
         }
 
-        $d = validator($in, [
-            'doc_date' => ['required', 'date'],
-            'doc_cat' => ['required', 'in:'.implode(',', array_keys(self::CATEGORIES))],
-            'warehouse_id' => ['required', 'integer', 'exists:tm2mst.wh_warehouse,id_warehouse'],
-            'notes' => ['nullable', 'string'],
-        ], [], ['doc_date' => 'Date', 'doc_cat' => 'Category', 'warehouse_id' => 'Warehouse'])->validate();
+        $rules = ['doc_date' => ['required', 'date'], 'warehouse_id' => ['required', 'integer', 'exists:tm2mst.wh_warehouse,id_warehouse'], 'notes' => ['nullable', 'string']];
+        $names = ['doc_date' => 'Date', 'warehouse_id' => $kind === 'out' ? 'Source warehouse' : 'Warehouse'];
+        if ($kind === 'in') {
+            $rules['doc_cat'] = ['required', 'in:'.implode(',', array_keys($cfg['cats']))];
+            $names['doc_cat'] = 'Category';
+        } else {
+            $rules['issued_to_dept'] = ['required', 'integer', 'exists:tm2mst.org_department,department_id'];
+            $rules['process_code'] = ['nullable', 'string', 'max:100'];
+            $names['issued_to_dept'] = 'Issued to (department)';
+        }
+        $d = validator($in, $rules, [], $names)->validate();
 
-        $rows = $this->cleanLines($class, (int) $d['warehouse_id'], $lines);
+        $rows = $this->cleanLines($kind, $class, (int) $d['warehouse_id'], $lines);
 
-        return DB::connection('tm2inv')->transaction(function () use ($class, $docId, $d, $rows, $user) {
-            $docNo = $docId ? (string) $this->header($class, $docId)->doc_no : $this->docs->nextDocNo($class, self::PREFIX);
+        return DB::connection('tm2inv')->transaction(function () use ($kind, $cfg, $class, $docId, $d, $rows, $user) {
+            $docNo = $docId ? (string) $this->header($class, $docId)->doc_no : $this->docs->nextDocNo($class, $cfg['prefix']);
             $itemCol = StockEntry::LINE_ITEM[$class];
             $out = [];
             foreach ($rows as $r) {
@@ -72,16 +97,18 @@ final class StockInEntryService
                 } elseif ($batchId) {
                     $lot = (string) (InvBatch::query()->whereKey($batchId)->value('supplier_lot') ?? '');
                 }
-                $out[] = [$itemCol => $r['item_id'], 'qty' => $r['qty'], 'uom_code' => $r['uom_code'], 'lot_no' => $lot ?: null, 'batch_id' => $batchId ?: null,
-                    'location_id' => $r['location_id'], 'unit_price' => $r['unit_price']];
+                $line = [$itemCol => $r['item_id'], 'qty' => $r['qty'], 'uom_code' => $r['uom_code'], 'lot_no' => $lot ?: null, 'batch_id' => $batchId ?: null, 'location_id' => $r['location_id']];
+                $out[] = $kind === 'out' ? $line + ['action_type' => 'ISSUE'] : $line + ['unit_price' => $r['unit_price']];
             }
+            $header = ['doc_no' => $docNo, 'doc_date' => $d['doc_date'], 'doc_type' => $cfg['doc_type'], 'ref_doc_type' => 'MANUAL', 'warehouse_id' => $d['warehouse_id'],
+                'notes' => ($d['notes'] ?? '') !== '' ? $d['notes'] : null];
+            $header += $kind === 'in' ? ['doc_cat' => $d['doc_cat']] : ['doc_cat' => 'STOCK', 'issued_to_dept' => $d['issued_to_dept'], 'process_code' => ($d['process_code'] ?? '') !== '' ? $d['process_code'] : null];
 
-            return $this->docs->saveDraft($class, $docId, ['doc_no' => $docNo, 'doc_date' => $d['doc_date'], 'doc_type' => 1, 'doc_cat' => $d['doc_cat'], 'ref_doc_type' => 'MANUAL',
-                'warehouse_id' => $d['warehouse_id'], 'notes' => ($d['notes'] ?? '') !== '' ? $d['notes'] : null], $out, $user->login);
+            return $this->docs->saveDraft($class, $docId, $header, $out, $user->login);
         });
     }
 
-    /** Confirm = posting ke Kartu Stok. @return array{posted: bool, error: ?string, stock_warning?: ?string} */
+    /** Confirm = posting ke Kartu Stok. @return array{posted: bool, error: ?string, stock_warning?: ?string, journal_warning?: ?string} */
     public function post(string $class, int $docId, SecUser $user): array
     {
         return $this->posting->postDocument($class, $docId, $user->login);
@@ -117,6 +144,12 @@ final class StockInEntryService
         return WhWarehouse::where('activate', true)->orderBy('warehouse_code')->get()->mapWithKeys(fn ($w) => [$w->id_warehouse => $w->warehouse_code.' — '.$w->warehouse_name])->all();
     }
 
+    /** @return array<int, string> departemen aktif (Stock Out: diserahkan kepada) */
+    public function departmentOptions(): array
+    {
+        return OrgDepartment::where('activate', true)->orderBy('department_name')->pluck('department_name', 'department_id')->all();
+    }
+
     /** Riwayat tab History: terbaru di atas. */
     public function history(object $h): array
     {
@@ -144,7 +177,7 @@ final class StockInEntryService
      *
      * @return list<array<string, mixed>>
      */
-    private function cleanLines(string $class, int $warehouseId, array $lines): array
+    private function cleanLines(string $kind, string $class, int $warehouseId, array $lines): array
     {
         $num = fn ($v) => (float) (Locale::input($v) ?? 0);
         $out = [];
@@ -182,18 +215,22 @@ final class StockInEntryService
                     continue;
                 }
             }
-            $newLot = trim((string) ($l['new_lot'] ?? ''));
-            $newProd = $this->date($l['new_production'] ?? null);
-            $newExp = $this->date($l['new_expiry'] ?? null);
-            $newBatch = ! $batchId && ($newLot !== '' || $newProd || $newExp);
-            if ($newBatch && ! $newExp && BatchService::needsExpiry($class, $itemId)) {
-                $errors['lines'] = "Line {$n}: this item has a shelf life, fill in the expiry date of the new batch.";
+            $newLot = $newProd = $newExp = null;
+            $newBatch = false;
+            if ($kind === 'in') {
+                $newLot = trim((string) ($l['new_lot'] ?? ''));
+                $newProd = $this->date($l['new_production'] ?? null);
+                $newExp = $this->date($l['new_expiry'] ?? null);
+                $newBatch = ! $batchId && ($newLot !== '' || $newProd || $newExp);
+                if ($newBatch && ! $newExp && BatchService::needsExpiry($class, $itemId)) {
+                    $errors['lines'] = "Line {$n}: this item has a shelf life, fill in the expiry date of the new batch.";
 
-                continue;
+                    continue;
+                }
             }
             $out[] = ['item_id' => $itemId, 'item_code' => $item['code'], 'item_name' => $item['name'], 'qty' => $qty, 'uom_code' => trim((string) ($l['uom_code'] ?? '')) ?: $item['uom'],
-                'unit_price' => max(0.0, $num($l['unit_price'] ?? 0)), 'location_id' => (int) $bin->location_id, 'batch_id' => $batchId, 'lot' => trim((string) ($l['lot_no'] ?? '')), 'new_batch' => $newBatch,
-                'new_lot' => $newLot, 'new_production' => $newProd, 'new_expiry' => $newExp];
+                'unit_price' => $kind === 'in' ? max(0.0, $num($l['unit_price'] ?? 0)) : 0.0, 'location_id' => (int) $bin->location_id, 'batch_id' => $batchId, 'lot' => trim((string) ($l['lot_no'] ?? '')),
+                'new_batch' => $newBatch, 'new_lot' => $newLot, 'new_production' => $newProd, 'new_expiry' => $newExp];
         }
         if (! $out && ! $errors) {
             $errors['lines'] = 'Add at least one line.';

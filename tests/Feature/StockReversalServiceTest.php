@@ -248,11 +248,11 @@ class StockReversalServiceTest extends TestCase
     {
         $in = $this->postDoc(1, 100, now()->subDays(2));
         $this->actingAs(SecUser::where('is_admin', true)->firstOrFail());
-        $form = route('v2.screen', 'inv-stock-in-form').'?class=RM&id='.$in['doc_id'];
+        $form = route('v2.screen', 'inv-stock-doc-form').'?kind=in&class=RM&id='.$in['doc_id'];
 
         $this->get($form)->assertOk()->assertSee('Duplicate')->assertSee('Cancel Document')->assertSee('Kesalahan transaksi no. '.RmStock::find($in['doc_id'])->doc_no);
-        $this->post(route('v2.inv.stockin.reverse', ['RM', $in['doc_id']]), ['reason' => ''])->assertSessionHasErrors('document');
-        $this->post(route('v2.inv.stockin.reverse', ['RM', $in['doc_id']]), ['reason' => 'salah ketik'])->assertRedirect();
+        $this->post(route('v2.inv.stockdoc.reverse', ['in', 'RM', $in['doc_id']]), ['reason' => ''])->assertSessionHasErrors('document');
+        $this->post(route('v2.inv.stockdoc.reverse', ['in', 'RM', $in['doc_id']]), ['reason' => 'salah ketik'])->assertRedirect();
         $this->get($form)->assertOk()->assertSee('reversed by');
         $this->assertTrue(RmStock::find($in['doc_id'])->stat_cancel);
     }

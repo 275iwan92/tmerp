@@ -252,11 +252,11 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // sidebarmenustandard.md §5. {material?} tetap opsional utk deep-link.
 
             // inventory_tier4.md #1.1 -- {category} = RM|FG|SFG, pola sama seperti Laporan.
-            Route::get('/inventory/stock-in/{category}', fn (Illuminate\Http\Request $r, string $category) => redirect($r->query('open') ? '/v2/s/inv-stock-in-form?class='.strtoupper($category).'&id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/inv-stock-in-form?class='.strtoupper($category).'&new=1' : '/v2/s/inv-'.strtolower($category).'-stock-in')))->name('inv.stock-in.index');
+            Route::get('/inventory/stock-in/{category}', fn (Illuminate\Http\Request $r, string $category) => redirect($r->query('open') ? '/v2/s/inv-stock-doc-form?kind=in&class='.strtoupper($category).'&id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/inv-stock-doc-form?kind=in&class='.strtoupper($category).'&new=1' : '/v2/s/inv-'.strtolower($category).'-stock-in')))->name('inv.stock-in.index');
             // Stock Out & Return v1 dikunci RM saja (inventory_rules.yaml out_wajib_wo /
             // fg_out_bukan_milik_modul) -- {category} tetap di URL, ditolak di
             // level route (mount()) kalau bukan RM, bukan cuma disembunyikan di UI.
-            Route::livewire('/inventory/stock-out/{category}', 'pages::inventory.stock-out')->name('inv.stock-out.index');
+            Route::get('/inventory/stock-out/{category}', fn (Illuminate\Http\Request $r, string $category) => redirect($r->query('open') ? '/v2/s/inv-stock-doc-form?kind=out&class='.strtoupper($category).'&id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/inv-stock-doc-form?kind=out&class='.strtoupper($category).'&new=1' : '/v2/s/inv-'.strtolower($category).'-stock-out')))->name('inv.stock-out.index');
             Route::livewire('/inventory/stock-return/{category}', 'pages::inventory.stock-return')->name('inv.stock-return.index');
             // Adjustment & Opname mencakup RM/FG/SFG (inventory_tier4.md #4) -- entri
             // & approval route TERPISAH (inventory_rules.yaml layar_terpisah).

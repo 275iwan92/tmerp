@@ -10,7 +10,7 @@ use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
 use App\Models\Sys\SecUser;
 use App\Services\Inventory\BatchService;
-use App\Services\Inventory\StockInEntryService;
+use App\Services\Inventory\StockDocEntryService;
 use App\Support\V2\Data\StockEntry;
 use App\Support\V2\Grid\Grids;
 use Illuminate\Validation\ValidationException;
@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 // Form Stock In v2 (RM): kolom Batch menggantikan Lot. Pilih batch yang ada untuk item itu, atau buat batch baru dari baris (lot supplier,
 // tanggal produksi, kedaluwarsa; kedaluwarsa wajib bila item punya umur simpan). Dokumen lama tetap menampilkan teks lot-nya.
-// Lewat StockInEntryService (form v2); menulis ke database sungguhan; dokumen uji diberi catatan penanda, batch uji diberi lot 'ZZ-SI-*'; dibersihkan di tearDown().
+// Lewat StockDocEntryService (form v2); menulis ke database sungguhan; dokumen uji diberi catatan penanda, batch uji diberi lot 'ZZ-SI-*'; dibersihkan di tearDown().
 class BatchStockInFormTest extends TestCase
 {
     private const MARK = 'zz-test-batch-stockin';
@@ -67,7 +67,7 @@ class BatchStockInFormTest extends TestCase
     {
         $item ??= $this->material;
 
-        return app(StockInEntryService::class)->save('RM', null, ['doc_date' => now()->toDateString(), 'doc_cat' => 'STOCK', 'warehouse_id' => $this->wh->id_warehouse, 'notes' => self::MARK],
+        return app(StockDocEntryService::class)->save('in', 'RM', null, ['doc_date' => now()->toDateString(), 'doc_cat' => 'STOCK', 'warehouse_id' => $this->wh->id_warehouse, 'notes' => self::MARK],
             [$line + ['item_id' => $item->material_id, 'location_id' => $this->bin->location_id, 'qty' => '12', 'uom_code' => 'KG']], SecUser::query()->where('is_admin', 1)->firstOrFail());
     }
 
@@ -138,13 +138,13 @@ class BatchStockInFormTest extends TestCase
         RmStockD::create(['doc_id' => $doc->doc_id, 'seq_no' => 1, 'material_id' => $this->material->material_id, 'qty' => 3, 'uom_code' => 'KG', 'lot_no' => 'OLD-LOT-77',
             'location_id' => $this->bin->location_id, 'unit_price' => 0, 'create_by' => self::BY, 'update_by' => self::BY]);
 
-        $this->get(route('v2.screen', 'inv-stock-in-form').'?class=RM&id='.$doc->doc_id)->assertOk()->assertSee('OLD-LOT-77');
+        $this->get(route('v2.screen', 'inv-stock-doc-form').'?kind=in&class=RM&id='.$doc->doc_id)->assertOk()->assertSee('OLD-LOT-77');
         $rows = StockEntry::rows('RM', RmStock::with('lines')->find($doc->doc_id));
         $this->assertSame('', (string) $rows[0]['batch_id']);
         $this->assertSame('OLD-LOT-77', $rows[0]['lot_no']);
 
         // Simpan ulang dari form tanpa mengubah lot: teks lot lama tetap.
-        app(StockInEntryService::class)->save('RM', $doc->doc_id, ['doc_date' => now()->toDateString(), 'doc_cat' => 'STOCK', 'warehouse_id' => $this->wh->id_warehouse, 'notes' => self::MARK],
+        app(StockDocEntryService::class)->save('in', 'RM', $doc->doc_id, ['doc_date' => now()->toDateString(), 'doc_cat' => 'STOCK', 'warehouse_id' => $this->wh->id_warehouse, 'notes' => self::MARK],
             [['item_id' => $this->material->material_id, 'location_id' => $this->bin->location_id, 'qty' => '3', 'uom_code' => 'KG', 'lot_no' => 'OLD-LOT-77']], SecUser::query()->where('is_admin', 1)->firstOrFail());
         $this->assertSame('OLD-LOT-77', $this->docLine()->lot_no);
     }
