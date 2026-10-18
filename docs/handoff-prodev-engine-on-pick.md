@@ -17,6 +17,12 @@ Membangun ENGINE di Product Development: saat user pertama kali memilih Inquiry 
 - Satu baris status engine di panel atas (apa yang sudah disiapkan, apa yang gagal dan alasannya).
 - Sisa keputusan menunggu Jo: lihat `handoff-prodev-session.md` §6 butir 1, 2, 4, 5, 6.
 
+## Temuan kecil: sudah dibuktikan 2026-10-18
+- **Panel dieline "belum punya definisi" + "kotak polos": SELESAI.** Penyebab = dummy Master Card (`MasterCardService`) menulis `iqp_part.dieline_spec` hanya `type_code + dims`, tanpa `elements` (Inquiry asli menyimpan elements dari `prod_type.dieline_spec`). Perbaikan: `MasterCardService::dielineSpec`; 19 part dummy di `ddtsdi` dan 13 di `ddtmst` diisi ulang dari tipenya. Tes `MasterCardDielineSpecTest`. Data `tm2*` tidak disentuh.
+- **Baris BOM "SHEET / SF None": bukan cacat**, baris informasi "Tidak memakai sheet / SF".
+- **"PLASTIK LAMINASI (belum ada di Master Bahan)":** celah master bahan, menunggu Jo (master hanya diubah user).
+- **`sendToProDev` tidak menyalin `part_type`, `join_type_id`, `dieline_spec` ke `prod_part`:** terbukti (`InquiryWriter.php` 109-127). Layar tetap jalan karena membaca `iqp_part` dulu; menyalin = perubahan alur ProDev, menunggu izin Jo.
+
 ## Sudah beres di sesi ini
 - `NEEDS_GLUE` kini dari Joint Type (`join_type_id` GLUE_*), rakitan ditahan: `SpecEngine::needsGlue`, tes `SpecEngineJointGlueTest`.
 - Aturan data dummy B.17 (per level 2 set, maks 3, real dan lengkap, bisa di-reset) dan mesin dummy: level draft, `dummy:mastercard --set=produk:level`, booking ikut dibersihkan.

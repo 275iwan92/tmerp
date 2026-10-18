@@ -26,7 +26,7 @@
 | Statuses written by code | Writers of `sub_state`: DRAFT (DB default), SUBMITTED (Confirm), CANCELLED, LOST (`InquiryWriter.php`, `pages/quotation/entry.blade.php:426`), CONVERTED (`CoOrderBuilder.php:101`), PRICE_CALCULATED (`ReverseCostingService.php:93` and costing Publish `pages/inquiry/costing.blade.php:582`). | FACT, grep `app/`, `resources/`, `routes/`, `packages/` |
 
 ## Relations
-- **source**: Sales screen (`inquiry-new`), INSTANT Reverse costing (`ReverseCostingService`, see the ProCost interface card), Master Card Collection (old card becomes source Inquiry `MASTER CARD`, `MasterCardService.php:328`), Duplicate, Revise/Recalc from Master Product.
+- **source**: Sales screen (`inquiry-new`), INSTANT Reverse costing (`ReverseCostingService`, see the ProCost interface card), Master Card Collection (old card becomes source Inquiry `MASTER CARD`, `MasterCardService.php:329`), Duplicate, Revise/Recalc from Master Product.
 - **used_by**: ProDev (card `../prodev/10_card_prodev-interface.md`), ProCost (card `../product-costing/11_card_procost-interface.md`), Quotation (card `../quotation/10_card_quotation.md`), Master Product (`ProductMasterSync::fromInquiry` on WIN), Nota Inquiry / Print.
 - **flows**: Inquiry (stat_confirm_sales) -> ProDev (stat_confirm_prodev, computed from layout) -> ProCost (stat_confirm_procost, computed from published costing) -> Quotation -> WIN = CO + `sub_state=CONVERTED`. Flags are governed by A.20. RECALC skips ProDev (`InquiryStage::PRODEV_TYPES = ['NEW','REVISE']`, line 20).
 - **frozen_zone**: Inquiry Product, ProDev, ProCost (CLAUDE.md item 1). This card only records.

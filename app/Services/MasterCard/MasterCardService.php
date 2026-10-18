@@ -7,7 +7,7 @@
  * Input        : Data kartu, berkas gambar.
  * Output       : iqp_inquiry, prod_master_card, berkas.
  * Dipakai oleh : MasterCardDummyEngine, perintah dummy:master-card.
- * Status       : Aktif.
+ * Status       : Aktif. 2026-10-18: dieline_spec part komponen memuat elements dari tipe (sebelumnya hanya type_code + dims).
  */
 
 namespace App\Services\MasterCard;
@@ -16,6 +16,7 @@ use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdMasterCard;
 use App\Models\Master\ProdMasterCardFile;
 use App\Models\Master\ProdProduct;
+use App\Models\Master\ProdType;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\Sales\ProductMasterSync;
 use App\Support\Finance\TaxRate;
@@ -362,7 +363,7 @@ final class MasterCardService
                 'part_name' => $label !== '' ? 'Part '.$label : $name, 'part_type' => $this->partType($c), 'part_kind' => 'COMPONENT',
                 'join_type_id' => $multi ? null : $c->join_type_id, 'qty_in_parent' => 1, 'qty_per_sku' => 1, 'pack_qty' => $multi ? null : $c->pack_qty,
                 'cfg_color' => count($c->colors_json['first'] ?? []).'/'.count($c->colors_json['second'] ?? []), 'cfg_ink' => implode(', ', $c->colors_json['first'] ?? []) ?: null,
-                'dieline_spec' => json_encode(['type_code' => $c->type_code, 'dims' => $c->dims_json]), 'flat_w' => $c->flat_w, 'flat_h' => $c->flat_h,
+                'dieline_spec' => $this->dielineSpec($c->type_code, $c->dims_json), 'flat_w' => $c->flat_w, 'flat_h' => $c->flat_h,
                 'flat_area' => $c->flat_w && $c->flat_h ? round($c->flat_w * $c->flat_h, 2) : null,
             ]));
             foreach (array_values($c->materials_json ?? []) as $i => $m) {
@@ -415,6 +416,15 @@ final class MasterCardService
     }
 
     // ---------------------------------------------------------------- mapping teks kartu -> master
+
+    // Bentuk sama dengan Inquiry asli (InquiryWriter, PartDieline::save): resep dieline tipe (elements) + type_code + dims.
+    // Tanpa elements ProDev menyusun blank sebagai kotak polos dan panel Part & Dieline kosong.
+    private function dielineSpec(?string $typeCode, mixed $dims): string
+    {
+        $spec = $typeCode ? (ProdType::find($typeCode)?->dieline_spec ?? []) : [];
+
+        return json_encode(array_merge($spec, ['type_code' => $typeCode, 'dims' => $dims]));
+    }
 
     private function partType(ProdMasterCard $c): string
     {
