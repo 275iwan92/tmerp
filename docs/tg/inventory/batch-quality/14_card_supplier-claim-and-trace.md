@@ -37,3 +37,4 @@
 
 ## Already exists? Searched where
 Searched `inv_supplier_claim`, `inv_qc_hold`, `QcTraceService`, EngineRegistry key `qc-trace`, `dn_debit_note`. Result: ALREADY EXISTS for claim + trace; a debit note exists only for shortage refusals (`ShortageFollowUp::debitNote`), not for claims.
+- Re-checked 2026-10-18 after `tests/Feature/BatchLookupTest.php` changed: only its menu test now walks up to the root of the Batch item and expects `INV` (menu is Inventory > Stock > Batch & Quality > Batch); the claim and tearDown findings above are unchanged; 12 tests passed on `--env=mockup`.

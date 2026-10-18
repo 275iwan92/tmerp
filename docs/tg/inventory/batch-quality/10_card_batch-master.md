@@ -42,3 +42,4 @@
 
 ## Already exists? Searched where
 Searched `inv_batch`, `InvBatch`, `BatchService`, menu `INV_BQ_BATCH`, `docs/design-notes/inventory/` (FROM DOCUMENT: `15_inv-open-decisions.md` item 9 says FSC/food grade attributes belong on the batch from day one), `docs/md_for_systems/inventorywarehouse_v201_scope.md` (FROM DOCUMENT, not re-checked line by line). Result: the concept ALREADY EXISTS; no new table is needed.
+- Re-checked 2026-10-18 after `tests/Feature/BatchLookupTest.php` changed: only its menu test (it now walks up to the root of the Batch item and expects `INV`, because the menu is Inventory > Stock > Batch & Quality > Batch); no source file of this card changed; 12 tests passed on `--env=mockup`.

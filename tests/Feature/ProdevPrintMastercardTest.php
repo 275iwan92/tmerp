@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Models\Sys\SecUser;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -20,6 +21,8 @@ class ProdevPrintMastercardTest extends TestCase
 
     private ?string $origLang = null;
 
+    private const ORIGIN_MARK = 'IQMCPRINT-';
+
     // Teks yang dicek berbahasa Indonesia; akun johiwan bisa ber-lang 'en' --
     // paksa 'id' selama test (pola sama dgn InquiryHubStatBoxTest).
     protected function setUp(): void
@@ -32,6 +35,7 @@ class ProdevPrintMastercardTest extends TestCase
     protected function tearDown(): void
     {
         SecUser::where('login', 'johiwan')->update(['lang_code' => $this->origLang]);
+        $this->purgeOrigins();
 
         if ($this->partId) {
             ProdPart::whereKey($this->partId)->delete();
@@ -41,6 +45,30 @@ class ProdevPrintMastercardTest extends TestCase
         }
 
         parent::tearDown();
+    }
+
+    // Material di cetakan datang dari iqp_part_material milik Inquiry asal (Mode #1): tiap tes membangun Inquiry itu sendiri
+    // di atas part demo yang ada, lalu menghapusnya di tearDown (Inquiry demo lama dihapus aturan B.17).
+    private function seedOrigin(int $partId, string $material, float $gsm): void
+    {
+        $sdi = DB::connection('tm2sdi');
+        $stamp = ['created_by' => 'test', 'created_at' => now(), 'updated_at' => now()];
+        $inquiryId = $sdi->table('iqp_inquiry')->insertGetId([
+            'inquiry_no' => self::ORIGIN_MARK.$partId, 'inquiry_date' => now()->toDateString(), 'is_prospect' => 1, 'prospect_name' => 'Prospek Test Print',
+            'product_draft_name' => 'Test Print', 'inquiry_type' => 'NEW', 'sub_state' => 'SUBMITTED', 'stat_confirm_sales' => 1,
+        ] + $stamp);
+        $iqpPart = $sdi->table('iqp_part')->insertGetId(['inquiry_id' => $inquiryId, 'prod_part_id' => $partId, 'part_seq' => 1, 'part_code' => 'MCP', 'part_name' => 'Test Print'] + $stamp);
+        $sdi->table('iqp_part_material')->insert(['part_id' => $iqpPart, 'layer_seq' => 1, 'rawmat_name' => $material, 'gram_weight' => $gsm, 'is_primary' => 1] + $stamp);
+    }
+
+    private function purgeOrigins(): void
+    {
+        $sdi = DB::connection('tm2sdi');
+        $inquiryIds = $sdi->table('iqp_inquiry')->where('inquiry_no', 'like', self::ORIGIN_MARK.'%')->pluck('id_inquiry');
+        $partIds = $sdi->table('iqp_part')->whereIn('inquiry_id', $inquiryIds)->pluck('id_part');
+        $sdi->table('iqp_part_material')->whereIn('part_id', $partIds)->delete();
+        $sdi->table('iqp_part')->whereIn('id_part', $partIds)->delete();
+        $sdi->table('iqp_inquiry')->whereIn('id_inquiry', $inquiryIds)->delete();
     }
 
     public function test_mastercard_print_renders_with_no_origin_material(): void
@@ -91,6 +119,7 @@ class ProdevPrintMastercardTest extends TestCase
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
+        $this->seedOrigin(65, 'B KRAFT 275 GR MSE 75 X 102 CM', 275);
 
         $html = Livewire::test('pages::production.old_prodev_print', ['part' => 65])
             ->assertOk()
@@ -137,6 +166,7 @@ class ProdevPrintMastercardTest extends TestCase
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
+        $this->seedOrigin($partId, $materialName, 250);
 
         $html = Livewire::test('pages::production.old_prodev_print', ['part' => $partId])
             ->assertOk()

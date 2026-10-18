@@ -276,6 +276,10 @@ class BatchLookupTest extends TestCase
         }
         $this->assertSame('v2:inv-batch', $item->target);
         $this->assertSame('Batch & Quality', SysAppMenu::query()->find($item->parent_id)->label);
-        $this->assertSame('INV', SysAppMenu::query()->find(SysAppMenu::query()->find($item->parent_id)->parent_id)->code);
+        $root = $item;
+        while ($root->parent_id) {
+            $root = SysAppMenu::query()->find($root->parent_id);
+        }
+        $this->assertSame('INV', $root->code);
     }
 }

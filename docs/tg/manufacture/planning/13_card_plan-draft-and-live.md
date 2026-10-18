@@ -42,3 +42,4 @@
 
 ## Already exists? Searched where, result
 `concept:find "schedule"`, `"work order"`: no card on the plan. Searched: `prd_plan_run` is read/written only by `AutoPlanRunner`, `PlanConfirmService`, `PlanChangeService`, `Ppic` and `PpicSeedDummy`; the screen REMARKs are the only other description. Indonesian user's guide: `docs/guides/production/02_planning_scheduling.md`.
+- Re-checked 2026-10-18 after `tests/Feature/LiveScheduleTest.php` changed: the test now expects a Gantt task only for live rows that finish after `Ppic::origin()` (yesterday 00:00) and has a second test that builds its own confirmed operation inside the window (WoFixture) and expects one locked task. The Gantt behaviour in finding 1 (late rows older than a day are listed but not drawn) is unchanged and still reported, not fixed; 2 tests passed on `--env=mockup`.
