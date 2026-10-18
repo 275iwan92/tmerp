@@ -95,7 +95,8 @@ final class Screens
             ['code' => 'FINACC', 'short' => 'FIN', 'label' => 'Finance', 'icon' => 'fa-solid fa-coins', 'groups' => [
                 ['label' => 'Master', 'items' => [
                     $it('acc-coa-form', ['Master of Accounts Form', 'fa-solid fa-book', 'v2 baru: akun GL di atas tm2acc.fin_account; dibuka dari grid acc-coa', null]),
-                    $it('acc-journal-form', ['Journal Entry Form', 'fa-solid fa-file-pen', 'v2 baru: jurnal umum manual (header + baris debit / kredit) di atas tm2acc.fin_voucher + fin_voucher_line; dibuka dari grid acc-journal', null]),
+                    $it('acc-cash-bank-form', ['Cash and Bank Voucher Form', 'fa-solid fa-money-check-dollar', 'v2 baru: voucher kas & bank (BKM / BKK / BBM / BBK) di atas tm2acc.fin_voucher + fin_voucher_line; dibuka dari grid acc-cash-bank', null]),
+                    $it('acc-journal-form',['Journal Entry Form', 'fa-solid fa-file-pen', 'v2 baru: jurnal umum manual (header + baris debit / kredit) di atas tm2acc.fin_voucher + fin_voucher_line; dibuka dari grid acc-journal', null]),
                 ]],
                 ['label' => t('Cash & Bank'), 'items' => [
                     $it('petty-cash', ['Petty Cash', 'fa-solid fa-wallet', 'v2 baru: tm2acc.fin_petty_cash + fin_petty_cash_tx (PO Kontan)', null]),

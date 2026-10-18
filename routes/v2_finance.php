@@ -2,6 +2,7 @@
 
 use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinVoucher;
+use App\Services\Acc\CashBankVoucherService;
 use App\Services\Acc\ChartOfAccountService;
 use App\Services\Acc\ManualJournalService;
 use App\Support\V2\Data\CustomerInvoice;
@@ -158,4 +159,40 @@ Route::prefix('v2/acc/journal')->name('v2.acc.journal.')->middleware('module:FIN
             return $form($v->voucher_id)->with('v2_flash', tf('Reversing journal :no posted.', ['no' => $rev->voucher_number]));
         });
     })->whereNumber('id')->name('reverse');
+});
+
+// Cash & Bank v2 (layar acc-cash-bank-form, form dokumen): save / confirm (= simpan lalu Post ke GL) / cancel (draft). Aturan = App\Services\Acc\CashBankVoucherService (dipindah dari v1 pages::finance.cash-bank).
+Route::prefix('v2/acc/cash-bank')->name('v2.acc.cashbank.')->middleware('module:FINACC')->group(function () {
+    Route::post('/save', function (Request $r, CashBankVoucherService $svc) {
+        $v = $r->filled('id') ? FinVoucher::with('lines')->findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+        $open = fn (FinVoucher $x) => redirect(route('v2.screen', 'acc-cash-bank-form').'?id='.$x->voucher_id);
+
+        try {
+            if ($v && $action === 'cancel') {
+                $svc->cancel($v, $user);
+
+                return redirect(route('v2.screen', 'acc-cash-bank'))->with('v2_flash', t('Draft cancelled.'));
+            }
+            if ($v && $action === 'duplicate') {
+                return $open($svc->duplicate($v, $user))->with('v2_flash', t('Copied into a new Draft.'));
+            }
+            $v = $svc->save($v, $r->only(['voucher_type', 'entry_date', 'main_account_id', 'partner_name', 'reference_no', 'ppn_type', 'efaktur_no', 'pph_type', 'bupot_no']), (array) $r->input('lines', []), $user);
+            if ($action === 'confirm') {
+                $svc->post($v, $user);
+
+                return $open($v)->with('v2_flash', tf('Voucher :no posted to the General Ledger.', ['no' => $v->voucher_number]));
+            }
+
+            return $open($v)->with('v2_flash', tf('Draft :no saved.', ['no' => $v->voucher_number]));
+        } catch (HttpException $e) {
+            if ($e->getStatusCode() !== 422) {
+                throw $e;
+            }
+
+            // Bila simpan berhasil tetapi Post ditolak (mis. tidak seimbang), draft tetap tersimpan dan pesannya tampil di form.
+            return ($v?->voucher_id ? $open($v) : back()->withInput())->withErrors(['voucher' => $e->getMessage()]);
+        }
+    })->name('save');
 });

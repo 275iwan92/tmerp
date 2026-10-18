@@ -147,7 +147,6 @@ final class MenuRoutes
             // diaktifkan -- Master Card lama ada di production.old-prodev.print.
             'PROD_CARD' => route('production.prodev'),
             'PROD_LAYOUT' => route('production.prodev'),
-            'FIN_CASH' => route('finance.cash-bank'),
             // Accounting Process Engine (mockup blueprint, 2026-09-19)
             'FIN_ENGINE' => route('v2.screen', 'acc-engine'),
             'FIN_DASH' => route('v2.screen', 'acc-dashboard'),

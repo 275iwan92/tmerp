@@ -8,8 +8,15 @@ use App\Models\Acc\FinVoucherLine;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Cashier / Cash & Bank (v1: pages::finance.cash-bank): bukti kas dan bank masuk / keluar (BKM, BKK, BBM, BBK).
-// Buka / New = form v1 (simpan draft, posting, batal).
+/*
+ * REMARK
+ * Tujuan       : Grid Cash & Bank: bukti kas dan bank masuk / keluar (BKM, BKK, BBM, BBK) dengan baris jurnal dan cetak; Open dan + New Record membuka form v2 acc-cash-bank-form.
+ * Sumber hulu  : tm2acc.fin_voucher + fin_voucher_line + fin_account.
+ * Input        : Pencarian, statistik status, filter Type / Cash-Bank Account / Status.
+ * Output       : Baris grid dengan detail baris jurnal; kolom cetak payment-voucher.
+ * Dipakai oleh : Menu FIN_CASH (v2:acc-cash-bank), layar acc-cash-bank-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::finance.cash-bank sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class CashBankGrid extends AccGrid
 {
     private const TYPES = ['BKM' => 'Cash Receipt', 'BKK' => 'Cash Payment', 'BBM' => 'Bank Receipt', 'BBK' => 'Bank Payment'];
@@ -43,9 +50,19 @@ class CashBankGrid extends AccGrid
         return 'fa-solid fa-cash-register';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'finance.cash-bank';
+        return true;
+    }
+
+    public function openUrl(): ?string
+    {
+        return route('v2.screen', 'acc-cash-bank-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'acc-cash-bank-form').'?new=1';
     }
 
     protected function models(): array

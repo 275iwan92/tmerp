@@ -224,7 +224,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::middleware('module:FINACC')->group(function () {
             Route::redirect('/finance/coa', '/v2/s/acc-coa');
-            Route::livewire('/finance/cash-bank', 'pages::finance.cash-bank')->name('finance.cash-bank');
+            Route::redirect('/finance/cash-bank', '/v2/s/acc-cash-bank');
 
             // Accounting Process Engine (mockup MODULE_accounting-*-blueprint.html, 2026-09-19)
             Route::livewire('/finance/payables', 'pages::finance.payables')->name('finance.payables');
