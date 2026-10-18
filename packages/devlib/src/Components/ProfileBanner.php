@@ -49,7 +49,7 @@ class ProfileBanner extends DevlibComponent
                     <div class="dl-pbanner__id">
                         <div class="dl-pbanner__name">{{ $name }}</div>
                         @if ($subtitle)<div class="dl-pbanner__sub">{{ $subtitle }}</div>@endif
-                        @foreach ($groups as $g)
+                        @foreach (array_filter($groups, fn ($g) => ! empty($g['badges'])) as $g)
                             <div class="dl-pbanner__grp">
                                 <span class="dl-pbanner__gl">{{ $groupLabel($g['label']) }}</span>
                                 <span class="dl-pbanner__chips">

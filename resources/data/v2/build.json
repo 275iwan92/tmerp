@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-18 01:06",
+    "generated": "2026-10-18 10:55",
     "database": "ddtsys",
     "totals": {
         "objects": 175,
@@ -22,11 +22,11 @@
         "tables": 428,
         "databases": 10,
         "models": 380,
-        "migrations": 639,
-        "tests": 201,
+        "migrations": 641,
+        "tests": 205,
         "dictionary": 15501,
         "languages": 4,
-        "commits": "1411",
+        "commits": "1417",
         "since": "2026-08-06"
     },
     "modules": [
@@ -154,16 +154,16 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 137,
+            "commits": 141,
             "days": 9,
             "last": "2026-10-18",
-            "screens": 162,
-            "objects": 20,
+            "screens": 164,
+            "objects": 22,
             "engines": 48,
-            "tests": 82
+            "tests": 87
         }
     ],
-    "untracked": 1183,
+    "untracked": 1185,
     "days": [
         {
             "date": "2026-10-05",
@@ -246,8 +246,8 @@
         {
             "date": "2026-10-18",
             "iwan": 0,
-            "jo": 2,
-            "other": 5
+            "jo": 6,
+            "other": 7
         }
     ],
     "weeks": [
@@ -314,8 +314,8 @@
         {
             "week": "2026-W42",
             "iwan": 10,
-            "jo": 61,
-            "other": 63
+            "jo": 65,
+            "other": 65
         }
     ],
     "items": [
@@ -338,7 +338,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-10",
             "built_by": "jo",
-            "changed_at": "2026-10-13",
+            "changed_at": "2026-10-18",
             "changed_by": null
         },
         {
@@ -646,8 +646,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-25",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-18",
+            "changed_by": "jo"
         },
         {
             "type": "REPORT",
@@ -2340,7 +2340,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-18",
             "changed_by": null
         },
         {
@@ -2549,7 +2549,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-13",
+            "changed_at": "2026-10-18",
             "changed_by": null
         },
         {
@@ -4375,8 +4375,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-18",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",
@@ -5805,8 +5805,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-04",
             "built_by": null,
-            "changed_at": "2026-10-04",
-            "changed_by": null
+            "changed_at": "2026-10-18",
+            "changed_by": "jo"
         },
         {
             "type": "OBJECT",

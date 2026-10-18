@@ -14,7 +14,10 @@
     use App\Services\Hrm\EmployeeProfileService as Profile;
     use App\Services\Hrm\EmployeeRecordService as Records;
     use App\Services\Hrm\EmployeeRoleService as Roles;
+    use App\Models\Master\EmpEmployeeWorkCenterSkill;
+    use App\Services\Hrm\KpiResultService as Kpi;
     use App\Services\Hrm\PositionService as Positions;
+    use Carbon\CarbonImmutable;
     use App\Support\V2\Data\EmployeeProfile as Data;
     use App\Support\V2\Src;
     use Devlib\Locale;
@@ -38,9 +41,16 @@
     $isAdmin = (bool) $user->is_admin;
     $acct = $isAdmin && ! $new ? app(Account::class)->userOf($e) : null;
     $tabs = ['profile' => $tab('Profile', 'profile'), 'job' => $tab('Job', 'job'), 'contract' => 'Contract', 'family' => $tab('Family', 'family'), 'education' => 'Education']
-        + ($new ? [] : ['documents' => 'Documents', 'bpjs' => 'BPJS']) + ['bank' => 'Bank', 'discipline' => 'Discipline'] + ($isAdmin && ! $new ? ['account' => 'Account'] : []);
+        + ($new ? [] : ['kpi' => 'KPI', 'skills' => 'Skills', 'documents' => 'Documents', 'bpjs' => 'BPJS']) + ['bank' => 'Bank', 'discipline' => 'Discipline'] + ($isAdmin && ! $new ? ['account' => 'Account'] : []);
     $seeSalary = fn ($c) => $user->is_admin || (! $e->position?->salary_hidden_from_hr && $c && in_array($c->employment_type, ['KONTRAK', 'BORONGAN'], true));
     $statusTone = ['WORKING' => 'success', 'DIRUMAHKAN' => 'warn', 'CUTI' => 'info'];
+    $kpiSvc = app(Kpi::class);
+    $canEnter = $kpiSvc->canEnter($user);
+    $months = Kpi::window();
+    $monthLabel = fn (string $m) => CarbonImmutable::parse($m.'-01')->format('M Y');
+    $monthOptions = collect(range(0, 5))->mapWithKeys(fn ($i) => [now()->startOfMonth()->subMonths($i)->format('Y-m') => now()->startOfMonth()->subMonths($i)->format('M Y')])->all();
+    $certified = $new ? collect() : EmpEmployeeWorkCenterSkill::with('workCenter.machine')->where('employee_id', $e->employee_id)->where('activate', true)->get()->filter(fn ($x) => $x->workCenter?->activate)->sortBy(fn ($x) => $x->workCenter->work_center_name);
+    $centerOptions = $certified->mapWithKeys(fn ($x) => [$x->work_center_id => $x->workCenter->work_center_name.($x->workCenter->machine ? ' · '.$x->workCenter->machine->machine_name : '')])->all();
     $held = $new ? collect() : app(Roles::class)->held($e);
     $roleOptions = $held->mapWithKeys(fn ($h) => [$h['position']->position_id => $h['position']->position_name.($h['primary'] ? ' · '.t('primary') : '')])->all();
     $heldIds = $held->pluck('position.position_id')->all();
@@ -271,6 +281,61 @@
     </x-slot:discipline>
 
     @unless ($new)
+        <x-slot:kpi>
+            @if ($held->isEmpty())
+                <x-dl::alert tone="info" message="No position yet. Choose the main position in the Job tab and Save." />
+            @else
+                <x-dl::switcher label="Position" :options="$roleOptions">
+                    @foreach ($held as $h)
+                        @php($pos = $h['position'])
+                        @php($posKpis = app(Positions::class)->kpis($pos))
+                        @php($weightOk = $posKpis->isNotEmpty() && abs($posKpis->sum('weight_pct') - 100) < 0.01)
+                        @php($matrix = $kpiSvc->matrix($e, $pos->position_id))
+                        @php($agg = $kpiSvc->forPosition($e, $pos->position_id))
+                        <x-dl::switch-case :value="(string) $pos->position_id">
+                            @if ($posKpis->isEmpty())
+                                <x-dl::alert tone="warn" message="No KPI is defined for this position yet. HR Officer adds them in Master Position." />
+                            @else
+                                <x-dl::action-bar>
+                                    @if ($canEnter && $weightOk)
+                                        <x-dl::button type="button" size="sm" variant="secondary" icon="fa-pen-to-square" label="Enter Results" data-dl-open="emp-kpi-{{ $pos->position_id }}" />
+                                    @endif
+                                    <x-dl::badge :label="$agg['pct'] === null ? 'No results yet' : tf('Capability :p%', ['p' => round($agg['pct'] * 100)])" :tone="$agg['pct'] === null ? 'neutral' : ($agg['pct'] >= 0.8 ? 'success' : ($agg['pct'] >= 0.5 ? 'warn' : 'danger'))" />
+                                </x-dl::action-bar>
+                                @unless ($weightOk)
+                                    <x-dl::alert tone="warn" message="The KPI weights of this position must add up to 100% before results can be entered." />
+                                @endunless
+                                <x-dl::table :columns="array_merge(['name' => 'KPI', 'target' => ['Target', 'num' => true, 'raw' => true]], collect($months)->mapWithKeys(fn ($m) => ['m'.$m => [$monthLabel($m), 'num' => true, 'raw' => true]])->all(), ['score' => ['Score (3 months)', 'num' => true, 'raw' => true]])"
+                                    :rows="$posKpis->map(fn ($k) => array_merge(['name' => raw($k->kpi_name), 'target' => Locale::decimal($k->target_value, 2).' '.$k->unit],
+                                        collect($months)->mapWithKeys(fn ($m) => ['m'.$m => isset($matrix[$k->id_position_kpi][$m]) ? Locale::decimal($matrix[$k->id_position_kpi][$m], 2) : '—'])->all(),
+                                        ['score' => isset($agg['scores'][$k->id_position_kpi]) ? round($agg['scores'][$k->id_position_kpi] * 100).'%' : '—']))->all()"
+                                    empty="No KPI." :source="Src::of('tm2mst.emp_kpi_result', 'tm2mst.org_position_kpi')" />
+                            @endif
+                        </x-dl::switch-case>
+                    @endforeach
+                </x-dl::switcher>
+            @endif
+        </x-slot:kpi>
+
+        <x-slot:skills>
+            <x-dl::card title="Capability against KPI" description="Weighted average of the KPI scores of the last 3 months. Calculated from the monthly results; nothing is stored.">
+                @foreach ($held as $h)
+                    @php($agg = $kpiSvc->forPosition($e, $h['position']->position_id))
+                    @php($aggText = $agg['pct'] === null ? t('No results yet') : round($agg['pct'] * 100).'%')
+                    <x-dl::progress :value="($agg['pct'] ?? 0) * 100" :tone="$agg['pct'] === null ? 'accent' : 'auto'" :label="raw($h['position']->position_name.($h['primary'] ? ' · '.t('primary') : ''))" :text="$aggText" />
+                @endforeach
+            </x-dl::card>
+            <x-dl::card title="By machine" description="Only results tagged with the machine count. Certified machines come from the roster certification (yes / no) and are not changed here.">
+                @forelse ($certified as $c)
+                    @php($pct = $kpiSvc->forWorkCenter($e, $c->work_center_id))
+                    @php($pctText = $pct === null ? t('No tagged results') : round($pct * 100).'%')
+                    <x-dl::progress :value="($pct ?? 0) * 100" :tone="$pct === null ? 'accent' : 'auto'" :label="raw($c->workCenter->work_center_name.($c->workCenter->machine ? ' · '.$c->workCenter->machine->machine_name : ''))" :text="$pctText" />
+                @empty
+                    <x-dl::alert tone="info" message="This employee is not certified for any machine or work center yet." />
+                @endforelse
+            </x-dl::card>
+        </x-slot:skills>
+
         <x-slot:documents>
             <x-dl::action-bar>
                 <x-dl::button type="button" size="sm" variant="secondary" icon="fa-upload" label="Upload Document" data-dl-open="emp-document" />
@@ -463,6 +528,35 @@
                 </x-dl::action-bar>
             </x-dl::action-form>
         </x-dl::modal>
+    @endif
+
+    @if ($canEnter)
+        @foreach ($held as $h)
+            @php($pos = $h['position'])
+            @php($posKpis = app(Positions::class)->kpis($pos))
+            @if ($posKpis->isNotEmpty() && abs($posKpis->sum('weight_pct') - 100) < 0.01)
+                <x-dl::modal id="emp-kpi-{{ $pos->position_id }}" :title="'Enter Results'" icon="fa-bullseye" size="lg">
+                    <x-dl::action-form action="{{ route('v2.hrm.employee.kpi-result', $e->employee_id) }}">
+                        <input type="hidden" name="position_id" value="{{ $pos->position_id }}">
+                        <x-dl::form.row :cols="2">
+                            <x-dl::field.select name="period_month" label="Month" required :options="$monthOptions" :value="array_key_first($monthOptions)" :placeholder="null" :source="Src::of('tm2mst.emp_kpi_result.period_month')" />
+                            <x-dl::field.select name="work_center_id" label="Machine (optional)" :options="$centerOptions" placeholder="— not tied to a machine —" :source="Src::of('tm2mst.emp_kpi_result.work_center_id')" />
+                        </x-dl::form.row>
+                        <x-dl::field.display label="Position" :value="raw($pos->position_name)" :source="Src::of('tm2mst.org_position.position_name')" />
+                        @foreach ($posKpis as $k)
+                            <x-dl::field.decimal :name="'actual['.$k->id_position_kpi.']'" :label="raw($k->kpi_name.' · '.t($k->direction === 'HIGHER' ? 'target at least' : 'target at most').' '.Locale::decimal($k->target_value, 2).' '.$k->unit)"
+                                :source="Src::of('tm2mst.emp_kpi_result.actual_value')" />
+                        @endforeach
+                        <x-dl::field.text name="note" label="Note" :source="Src::of('tm2mst.emp_kpi_result.note')" />
+                        <x-dl::alert tone="info" message="Saving the same month and machine again replaces the earlier values. The target and weight used for scoring are frozen at the first entry." />
+                        <x-dl::action-bar>
+                            <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                            <x-dl::button preset="save" />
+                        </x-dl::action-bar>
+                    </x-dl::action-form>
+                </x-dl::modal>
+            @endif
+        @endforeach
     @endif
 
     <x-dl::modal id="emp-document" title="Upload Document" icon="fa-file-arrow-up">

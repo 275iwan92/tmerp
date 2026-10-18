@@ -38,6 +38,7 @@ use App\Models\Master\OrgPosition;
 use App\Models\Master\OrgPositionKpi;
 use App\Services\Hrm\EmployeeProfileService;
 use App\Services\Hrm\EmployeeRoleService;
+use App\Services\Hrm\KpiResultService;
 use App\Services\Hrm\PositionService;
 use App\Services\Hrm\EmployeeRecordService;
 use App\Services\Payroll\PayrollAccess;
@@ -356,6 +357,13 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $open($employee, 'job', t('Primary position changed. Approvals, the organization chart and payroll follow the new primary position.'));
         })->name('position.primary');
+        // Hasil KPI bulanan (tab KPI); hanya HR Officer. Persen kemampuan dihitung dari sini, tidak disimpan (KpiResultService).
+        Route::post('/kpi-result', function (Request $r, int $employee, KpiResultService $svc) use ($open, $emp) {
+            $n = $svc->save($emp($employee), (int) $r->input('position_id'), (string) $r->input('period_month'), $r->filled('work_center_id') ? (int) $r->input('work_center_id') : null,
+                (array) $r->input('actual', []), $r->input('note'), Auth::user());
+
+            return $open($employee, 'kpi', tf(':n KPI result(s) saved.', ['n' => $n]));
+        })->name('kpi-result');
     });
 
     // Master Position v2 (hrm-position-form): save / activate / deactivate jabatan, dan KPI jabatan (hanya HR Officer). Aturan = PositionService.
