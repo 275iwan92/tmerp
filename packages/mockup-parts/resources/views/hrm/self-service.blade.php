@@ -1,5 +1,10 @@
-{{-- Tampilan objek x-mp::hrm.self-service (MockupParts\Components\Hrm\SelfService). Susunan dan teks = layar asalnya; nilai di $me
-     sudah jadi (diterjemahkan / diformat pemilik data). $T = terjemahkan teks English yang di layar asal memakai t(). --}}
+{{-- REMARK
+     Tujuan       : Tampilan objek x-mp::hrm.self-service (MockupParts Components Hrm SelfService): satu pegawai, tab data diri sampai Security.
+     Sumber hulu  : App Support V2 Data SelfService::desk(); SOP dari tm2mnt.mnt_document (company, Approved).
+     Input        : $me (nilai sudah jadi), $crumbs; $T menerjemahkan teks English.
+     Output       : Layar Edit Profile / Self-Service.
+     Dipakai oleh : Rute v2.profile.
+     Status       : Aktif; sumber SOP pindah ke mnt_document 2026-10-18. --}}
 @php
     use Devlib\Lang;
     $T = fn (string $s) => Lang::text($s);
@@ -70,7 +75,7 @@
     {{-- ===================== SOP (read-only) ===================== --}}
     <x-slot:sop>
         <x-dl::card title="SOP That Apply to Me" :description="Lang::raw($m['sop']['count'])" icon="fa-book">
-            <x-dl::table :source="$src('tm2mst.sop_document')" :empty="$T('No SOP documents apply to your department yet.')"
+            <x-dl::table :source="$src('tm2mnt.mnt_document')" :empty="$T('No SOP documents apply to your department yet.')"
                 :columns="['code' => 'Code', 'title' => 'Title', 'rev' => 'Rev', 'dept' => 'Department', 'since' => 'Effective']" :rows="$m['sop']['rows']" />
             @if ($m['sop']['docs'])
                 <x-dl::action-bar align="start">

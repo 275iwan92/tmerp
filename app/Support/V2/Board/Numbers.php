@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Angka dan daftar untuk widget Opening Board (satu kali hitung per permintaan).
+ * Sumber hulu  : Banyak tabel tm2*; dokumen SOP / WI = tm2mnt.mnt_document (+ mnt_document_line), register SOP / WI tunggal sejak 2026-10-18 (sop_document dilebur).
+ * Input        : Tidak ada.
+ * Output       : Koleksi dan angka per widget.
+ * Dipakai oleh : Widget di App\Support\V2\Board\Widgets.
+ * Status       : Aktif. documents() membaca MntDocument company in force (2026-10-18).
+ */
+
 namespace App\Support\V2\Board;
 
 use App\Models\Hrr\AppApplication;
@@ -13,7 +23,7 @@ use App\Models\Master\OrgPosition;
 use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdMachineDowntime;
 use App\Models\Master\SalesPerson;
-use App\Models\Master\SopDocument;
+use App\Models\Mnt\MntDocument;
 use App\Models\Master\SupSupplier;
 use App\Models\Master\SysHoliday;
 use App\Models\Prd\PrdWo;
@@ -827,12 +837,11 @@ final class Numbers
 
     // ---- Dokumen kerja: Job Description, SOP, Work Instruction ----------------------------------------------------------
 
-    /** @return Collection<int, SopDocument> dokumen aktif satu jenis (SOP | WI), yang paling baru berlaku di atas */
+    /** @return Collection<int, MntDocument> dokumen aktif satu jenis (SOP | WI), yang paling baru berlaku di atas */
     public function documents(string $type): Collection
     {
-        return $this->once('docs:'.$type, fn () => Schema::connection('tm2mst')->hasColumn('sop_document', 'doc_type')
-            ? SopDocument::query()->with('department')->where('activate', true)->where('doc_type', $type)->orderByDesc('effective_date')->orderBy('title')->get()
-            : ($type === 'SOP' ? SopDocument::query()->with('department')->where('activate', true)->orderBy('title')->get() : collect()));
+        return $this->once('docs:'.$type, fn () => MntDocument::company()->inForce()->with('department')->where('kind', $type)
+            ->orderByDesc('effective_date')->orderBy('title')->get());
     }
 
     /** @return array{positions: int, filled: int} jabatan aktif dan yang Job Description-nya sudah diisi */

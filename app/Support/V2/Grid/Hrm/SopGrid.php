@@ -1,13 +1,23 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Grid v2 hrm-sop: daftar SOP dan Work Instruction perusahaan; Open / New membuka form v1 pages::hrm.sop-documents.
+ * Sumber hulu  : tm2mnt.mnt_document (+ mnt_document_line), register SOP / WI tunggal sejak 2026-10-18 (sop_document dilebur).
+ * Input        : Pencarian dan filter grid.
+ * Output       : Baris dokumen (doc_set kosong); non HR Officer hanya melihat yang Approved.
+ * Dipakai oleh : Menu HRM_SOP, Grids registry.
+ * Status       : Aktif.
+ */
+
 namespace App\Support\V2\Grid\Hrm;
 
 use App\Models\Master\OrgDepartment;
-use App\Models\Master\SopDocument;
+use App\Models\Mnt\MntDocument;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// SOP dan Work Instruction, satu register (v1: pages::hrm.sop-documents).
+// SOP dan Work Instruction perusahaan = tm2mnt.mnt_document dengan doc_set kosong (v1: pages::hrm.sop-documents). HR Officer menulis; yang lain hanya melihat yang Approved.
 class SopGrid extends HrmGrid
 {
     public function slug(): string
@@ -42,7 +52,7 @@ class SopGrid extends HrmGrid
 
     protected function models(): array
     {
-        return [SopDocument::class, OrgDepartment::class];
+        return [MntDocument::class, OrgDepartment::class];
     }
 
     public function search(): string
@@ -52,7 +62,8 @@ class SopGrid extends HrmGrid
 
     protected function query(): Builder
     {
-        return SopDocument::query()->with('department')->orderBy('title');
+        return MntDocument::company()->with('department')
+            ->when(! auth()->user()?->isHrOfficer(), fn (Builder $q) => $q->inForce())->orderBy('title');
     }
 
     public function columns(): array
@@ -62,6 +73,7 @@ class SopGrid extends HrmGrid
             ['key' => 'type', 'label' => 'Document Type'],
             ['key' => 'dept', 'label' => 'Department Scope'],
             ['key' => 'revision', 'label' => 'Revision'],
+            ['key' => 'status', 'label' => 'Status'],
             ['key' => 'effective', 'label' => 'Effective', 'type' => 'date'],
         ];
     }
@@ -69,8 +81,8 @@ class SopGrid extends HrmGrid
     protected function row(Model $m): array
     {
         return [
-            'name' => $m->title, 'code' => $m->sop_code, 'type' => SopDocument::TYPES[$m->doc_type] ?? 'SOP', 'dept' => $m->department?->department_name ?? t('All departments'),
-            'revision' => $m->revision, 'effective' => $m->effective_date ? substr((string) $m->effective_date, 0, 10) : null,
+            'name' => $m->title, 'code' => $m->doc_no, 'type' => MntDocument::COMPANY_KINDS[$m->kind] ?? 'SOP', 'dept' => $m->department?->department_name ?? t('All departments'),
+            'revision' => $m->revision, 'status' => $m->isApproved() ? 'Approved' : 'Draft', 'effective' => $m->effective_date ? substr((string) $m->effective_date, 0, 10) : null,
         ];
     }
 

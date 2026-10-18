@@ -1,11 +1,21 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Uji Opening Board (widget, dashboard, angka).
+ * Sumber hulu  : App\Support\V2\Board.
+ * Input        : Pengguna admin dan data dummy.
+ * Output       : Lulus atau gagal.
+ * Dipakai oleh : php artisan test --env=mockup.
+ * Status       : Aktif.
+ */
+
 namespace Tests\Feature;
 
 use App\Assistant\ErpAsker;
 use App\Assistant\Metrics\BoardWidgets;
 use App\Models\Master\ProdMachine;
-use App\Models\Master\SopDocument;
+use App\Models\Mnt\MntDocument;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysBoardTemplate;
 use App\Models\Sys\SysKpiTarget;
@@ -293,7 +303,7 @@ class OpeningBoardTest extends TestCase
         // Downtime setahun mencakup downtime bulan ini.
         $this->assertGreaterThanOrEqual($month->downtime($month->from(), $month->to())['events'], $n->downtime($n->from(), $n->to())['events']);
         // SOP + Work Instruction = semua dokumen aktif di register.
-        $this->assertSame(SopDocument::query()->where('activate', true)->count(), $n->documents('SOP')->count() + $n->documents('WI')->count());
+        $this->assertSame(MntDocument::company()->inForce()->count(), $n->documents('SOP')->count() + $n->documents('WI')->count());
         $jd = $n->jobDescriptionCoverage();
         $this->assertLessThanOrEqual($jd['positions'], $jd['filled']);
     }

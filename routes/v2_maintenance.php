@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Rute Maintenance v2 (master, order, daily check, dokumen).
+ * Sumber hulu  : Services/Maintenance.
+ * Input        : Permintaan layar Maintenance.
+ * Output       : Perubahan data Maintenance dan redirect.
+ * Dipakai oleh : Layar maintenance-*.
+ * Status       : Aktif. Perubahan dokumen SOP / WI hanya HR Officer (2026-10-18).
+ */
+
 use App\Models\Master\MatRaw;
 use App\Models\Mnt\MntAsset;
 use App\Models\Mnt\MntAssetPart;
@@ -126,8 +136,8 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
     })->name('asset.save');
 
     // ------------------------------------------------------------ SOP and Work Instructions
-    Route::post('/document/save', function (Request $r) use ($head, $doc) {
-        $head();
+    Route::post('/document/save', function (Request $r) use ($doc) {
+        abort_unless(MaintenanceAccess::canManageDocuments(Auth::user()), 403, t('Only the HR Officer can change SOP and Work Instruction documents.'));
         $action = (string) $r->input('action', 'save');
         $m = $r->filled('id') ? MntDocument::findOrFail($r->integer('id')) : null;
         $login = Auth::user()->login;

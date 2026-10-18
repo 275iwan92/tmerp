@@ -17,7 +17,7 @@
     $home = route('v2.screen', 'maintenance-documents');
     $document = request('id') ? MntDocument::with('lines')->find((int) request('id')) : null;
     abort_if(request('id') && ! $document, 404);
-    $head = MaintenanceAccess::canManage(auth()->user());
+    $head = MaintenanceAccess::canManageDocuments(auth()->user());
 @endphp
 
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Daftar SOP / WI set alat Maintenance di layar v2 maintenance-documents.
+ * Sumber hulu  : tm2mnt.mnt_document (+ mnt_document_line), register SOP / WI tunggal sejak 2026-10-18 (sop_document dilebur).
+ * Input        : Maintenance::documentListRows.
+ * Output       : Baris daftar; tombol New hanya untuk HR Officer.
+ * Dipakai oleh : Layar maintenance-documents.
+ * Status       : Aktif.
+ */
+
 namespace App\Support\V2\Grid\Maint;
 
 use App\Models\Mnt\MntDocument;
@@ -47,7 +57,7 @@ class DocumentListGrid extends DocListGrid
 
     public function newUrl(): ?string
     {
-        return MaintenanceAccess::canManage(auth()->user()) ? parent::newUrl() : null;
+        return MaintenanceAccess::canManageDocuments(auth()->user()) ? parent::newUrl() : null;
     }
 
     public function columns(): array

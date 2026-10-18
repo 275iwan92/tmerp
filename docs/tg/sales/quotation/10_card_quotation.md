@@ -53,3 +53,4 @@ Searched: tables `quo_*` and `%quotation%` in all `ddt*`; `grep` `Quotation` in 
 > Re-checked 2026-10-17: `QuoQuotation::totals()` now reads the PPN rate with `TaxRate::ppn(issued_date)` (table `fin_tax_rate`, screen Master Data > Tax Rate); the rate for current documents is unchanged (11).
 
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): line numbers of `SecUser.php` re-read (REMARK block added, `isProdManagerOrAbove` removed): `canViewSalesPrice` is now 289-294; content unchanged.
+- Re-checked 2026-10-18 after the SOP register merge (sop_document folded into mnt_document): citations of `app/Models/Sys/SecUser.php` (comment only, lines unchanged) still correct.

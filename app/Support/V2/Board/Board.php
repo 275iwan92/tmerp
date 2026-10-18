@@ -1,10 +1,20 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Data Opening Board per pengguna (ringkasan, job description, SOP departemen, widget).
+ * Sumber hulu  : Model pegawai, jabatan, tm2mnt.mnt_document (+ mnt_document_line), register SOP / WI tunggal sejak 2026-10-18 (sop_document dilebur).
+ * Input        : Pengguna yang login.
+ * Output       : Array papan awal.
+ * Dipakai oleh : Layar home v2.
+ * Status       : Aktif. SOP departemen kini dari MntDocument (company, in force).
+ */
+
 namespace App\Support\V2\Board;
 
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\OrgPosition;
-use App\Models\Master\SopDocument;
+use App\Models\Mnt\MntDocument;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysBoardTemplate;
 use App\Models\Sys\SysConstant;
@@ -264,9 +274,9 @@ final class Board
             'weather' => self::weather(),
             'jobdesc' => $position && trim((string) $position->job_description) !== ''
                 ? ['title' => $position->position_name, 'updated' => Locale::d($position->job_description_updated_at) ?? '—', 'html' => $position->job_description] : null,
-            'sops' => $position?->department_id ? SopDocument::query()->where('department_id', $position->department_id)->where('activate', true)->orderBy('sop_code')->get()
-                ->map(fn (SopDocument $s) => ['code' => $s->sop_code, 'title' => $s->title, 'revision' => $s->revision, 'effective' => Locale::d($s->effective_date) ?? '—',
-                    'html' => $s->content])->all() : [],
+            'sops' => $position?->department_id ? MntDocument::company()->inForce()->with('lines')->where('department_id', $position->department_id)->orderBy('doc_no')->get()
+                ->map(fn (MntDocument $s) => ['code' => $s->doc_no, 'title' => $s->title, 'revision' => $s->revision, 'effective' => Locale::d($s->effective_date) ?? '—',
+                    'html' => $s->contentText()])->all() : [],
         ] + self::board($user);
     }
 

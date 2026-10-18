@@ -103,3 +103,4 @@ Relations of the tables this sub-module uses. Solid line = real foreign key (dat
 | `prod_product` | `co_order_legacy_detail` | 1:N | `product_id` | logical |
 
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): cited line numbers of `app/Models/Sys/SecUser.php` re-read (REMARK block added at the top, `isProdManagerOrAbove` removed) and corrected; `StageBuilder.php` has no line number here, the "no CRM write found" statement is unchanged.
+- Re-checked 2026-10-18 after the SOP register merge (sop_document folded into mnt_document): citations of `app/Models/Sys/SecUser.php` (comment only, lines unchanged) and `app/Support/V2/Board/Numbers.php` (not cited by line) still correct.

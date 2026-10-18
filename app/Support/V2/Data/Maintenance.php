@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Data layar Maintenance v2 (aset, dokumen, rencana, order, KPI).
+ * Sumber hulu  : tm2mnt.* dan tm2mst.
+ * Input        : Parameter layar.
+ * Output       : Array baris layar.
+ * Dipakai oleh : Layar maintenance-*.
+ * Status       : Aktif. Daftar dokumen hanya set alat (doc_set terisi) sejak 2026-10-18.
+ */
+
 declare(strict_types=1);
 
 namespace App\Support\V2\Data;
@@ -115,7 +125,7 @@ final class Maintenance
     /** Baris daftar dokumen SOP / WI. */
     public static function documentListRows(): array
     {
-        return MntDocument::query()->withCount('lines')->orderBy('doc_no')->get()->map(fn ($d) => ['id' => $d->id_document, 'code' => $d->doc_no,
+        return MntDocument::equipment()->withCount('lines')->orderBy('doc_no')->get()->map(fn ($d) => ['id' => $d->id_document, 'code' => $d->doc_no,
             'title' => DocumentTranslator::t($d->title), 'kind' => MntDocument::KINDS[$d->kind] ?? $d->kind, 'set' => $d->doc_set, 'revision' => $d->revision,
             'status' => self::STATUS_LABELS[$d->status] ?? $d->status, 'lines' => $d->lines_count, 'approved_at' => $d->approved_at?->toDateString(),
             'items' => $d->lines()->orderBy('seq_no')->get()->map(fn ($l) => ['seq' => $l->seq_no, 'section' => DocumentTranslator::t($l->section), 'text' => DocumentTranslator::t($l->line_text)])->all()])->all();

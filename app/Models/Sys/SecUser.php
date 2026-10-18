@@ -255,7 +255,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
     }
 
     // Gate input Deskripsi Kerja (org_position.job_description) & SOP
-    // (sop_document) -- permintaan user 2026-09-13: "Yang input adalah HR
+    // (tm2mnt.mnt_document, doc_set kosong) -- permintaan user 2026-09-13: "Yang input adalah HR
     // Officer. Begitu pula dengan SOP." is_admin bypass total via hasGroup().
     public function isHrOfficer(): bool
     {

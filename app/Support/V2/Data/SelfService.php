@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Data layar Edit Profile / Self-Service v2 (satu pegawai: data diri, cuti, izin, jadwal, SOP yang berlaku).
+ * Sumber hulu  : Model emp_* dan tm2mnt.mnt_document (+ mnt_document_line), register SOP / WI tunggal sejak 2026-10-18 (sop_document dilebur).
+ * Input        : Id pegawai.
+ * Output       : Array bagian layar.
+ * Dipakai oleh : x-mp::hrm.self-service.
+ * Status       : Aktif. sopDocuments() membaca MntDocument company in force (2026-10-18).
+ */
+
 namespace App\Support\V2\Data;
 
 use App\Models\Master\EmpBadgePhotoRequest;
@@ -16,7 +26,7 @@ use App\Models\Master\EmpOutPermitRequest;
 use App\Models\Master\EmpResignRequest;
 use App\Models\Master\EmpShiftRoster;
 use App\Models\Master\EmpShiftSwapRequest;
-use App\Models\Master\SopDocument;
+use App\Models\Mnt\MntDocument;
 use App\Models\Sys\SecUser;
 use App\Services\Hrm\EmployeeBankService;
 use App\Services\Security\SecurityRecoveryService;
@@ -66,7 +76,7 @@ final class SelfService
     {
         $departmentId = $e->position?->department_id;
 
-        return SopDocument::with('department')->where('activate', true)
+        return MntDocument::company()->inForce()->with(['department', 'lines'])
             ->where(fn ($q) => $q->whereNull('department_id')->when($departmentId, fn ($q2) => $q2->orWhere('department_id', $departmentId)))
             ->orderBy('title')->get();
     }
@@ -604,9 +614,9 @@ final class SelfService
             'jobdesc' => ['position' => $e->position?->position_name ?? '—', 'text' => $e->position?->job_description ?: null],
             'sop' => [
                 'count' => $sops->count().' '.t('documents'),
-                'rows' => $sops->map(fn ($d) => ['code' => $d->sop_code, 'title' => $d->title, 'rev' => $d->revision, 'dept' => $d->department_id ? $d->department?->department_name : t('All departments'), 'since' => Locale::d($d->effective_date) ?? '—'])->all(),
-                'docs' => $sops->map(fn ($d) => ['id' => $d->sop_id, 'code' => $d->sop_code, 'title' => $d->title,
-                    'line' => $d->sop_code.' · Rev '.$d->revision.($d->effective_date ? ' · '.t('effective').' '.Locale::d($d->effective_date) : ''), 'purpose' => $d->purpose ?: null, 'content' => $d->content ?: '—'])->values()->all(),
+                'rows' => $sops->map(fn ($d) => ['code' => $d->doc_no, 'title' => $d->title, 'rev' => $d->revision, 'dept' => $d->department_id ? $d->department?->department_name : t('All departments'), 'since' => Locale::d($d->effective_date) ?? '—'])->all(),
+                'docs' => $sops->map(fn ($d) => ['id' => $d->id_document, 'code' => $d->doc_no, 'title' => $d->title,
+                    'line' => $d->doc_no.' · Rev '.$d->revision.($d->effective_date ? ' · '.t('effective').' '.Locale::d($d->effective_date) : ''), 'purpose' => $d->purpose ?: null, 'content' => $d->contentText() ?: '—'])->values()->all(),
             ],
             'family' => [
                 'rows' => $e->families->map(fn ($f) => ['rel' => $f->relation, 'name' => $f->full_name, 'birth' => Locale::d($f->birth_date) ?? '—', 'status' => $f->is_deceased ? t('Deceased').' — '.Locale::d($f->deceased_date) : t('Dependant')])->all(),
