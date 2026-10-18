@@ -104,3 +104,4 @@ Relations of the tables this sub-module uses. Solid line = real foreign key (dat
 
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): cited line numbers of `app/Models/Sys/SecUser.php` re-read (REMARK block added at the top, `isProdManagerOrAbove` removed) and corrected; `StageBuilder.php` has no line number here, the "no CRM write found" statement is unchanged.
 - Re-checked 2026-10-18 after the SOP register merge (sop_document folded into mnt_document): citations of `app/Models/Sys/SecUser.php` (comment only, lines unchanged) and `app/Support/V2/Board/Numbers.php` (not cited by line) still correct.
+- Re-checked 2026-10-18 after `app/Support/V2/Data/Crm.php` line 216 changed (the Customer 360 button "Master Customer" now opens the v2 form `md-customer-form?id=` instead of the v1 page); no line was added or removed, so every cited line number is unchanged, content still true.

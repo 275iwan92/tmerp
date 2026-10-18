@@ -34,3 +34,4 @@
 
 ## Already exists? Searched where
 Searched: `Crm`, `CrmActivities`, `CrmComplaints`, `x-mp::sales.customer-card`, menu Sales > CRM, routes `v2.crm.*`. Result: ALREADY EXISTS; no new table needed (the rule "Customer 360 hanya membaca", i.e. read-only, is met: no writes in `Crm.php`).
+- Re-checked 2026-10-18 after `app/Support/V2/Data/Crm.php` line 216 changed (the Customer 360 button "Master Customer" now opens the v2 form `md-customer-form?id=` instead of the v1 page); no line was added or removed, so every cited line number is unchanged, content still true.

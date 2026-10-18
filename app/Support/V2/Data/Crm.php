@@ -213,7 +213,7 @@ final class Crm
             'buttons' => [
                 ['fa-phone-volume', '+ Activity', $actUrl.'?new=1&customer_id='.$c->id_customer],
                 ['fa-triangle-exclamation', '+ Complaint', $cmpUrl.'?new=1&customer_id='.$c->id_customer],
-                ['fa-building', 'Master Customer', route('master.customer').'?open='.$c->id_customer],
+                ['fa-building', 'Master Customer', route('v2.screen', 'md-customer-form').'?id='.$c->id_customer],
                 ['back', 'Back', $home],
             ],
             'facts' => [$top, [

@@ -14,7 +14,7 @@ final class Screens
             'master-product' => ['Master Product', 'fa-solid fa-box', 'docs/flow_product_master.md (baru, v2)', null],
             'product-acc' => ['ACC Digital / Proof Digital', 'fa-solid fa-stamp', 'docs/flow_product_master.md §5', null],
             'master-raw' => ['Master Raw Material', 'fa-solid fa-layer-group', 'master/raw-material/index.blade.php', 'mockup_master_rawmaterial.html'],
-            'master-customer' => ['Master Customer', 'fa-solid fa-building', 'master/customer.blade.php', 'mockup_master_customer.html'],
+            'master-customer' => ['Master Customer', 'fa-solid fa-building', 'v2: md-customer (CustomerGrid) + md-customer-form', 'mockup_master_customer.html'],
             'master-matcat' => ['Raw Material Categories', 'fa-solid fa-sitemap', 'v2: md-matcat (App\Support\V2\Grid\Master\MatCategoryGrid)', null],
             'master-uom' => ['Units of Measure', 'fa-solid fa-ruler', 'master/uom.blade.php', 'mockup_master_uom_v4.html'],
             'master-currency' => ['Currencies & Exchange Rates', 'fa-solid fa-coins', 'master/currency.blade.php', null],
@@ -229,6 +229,11 @@ final class Screens
                 ['label' => 'Security', 'items' => [
                     $it('security-permissions', ['Groups on Modules', 'fa-solid fa-user-lock', 'v2: App\Support\V2\Data\GroupPermissions (sec_group_permission)', null]),
                     $it('approval-setting', ['Approval Levels', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),
+                ]],
+            ]],
+            ['code' => 'MDATA', 'short' => 'MD', 'label' => 'Master Data', 'icon' => 'fa-solid fa-database', 'groups' => [
+                ['label' => 'Customer', 'items' => [
+                    $it('md-customer-form', ['Master Customer Form', 'fa-solid fa-building', 'v2 baru: customer (identitas, spek cetak, penjualan dan keuangan, alamat, kontak dan cabang tambahan) di atas tm2mst.cust_customer; dibuka dari grid md-customer', null]),
                 ]],
             ]],
             // Khusus developer: tidak tampil untuk akun biasa.

@@ -61,7 +61,7 @@
         :created-by="$v->created_by" :created-at="$v->created_at?->toDateTimeString()" :updated-by="$v->updated_by" :updated-at="$v->updated_at?->toDateTimeString()">
         <x-slot:special>
             @if (! $new && $draft)
-                <x-dl::button type="submit" name="action" value="cancel" variant="secondary" icon="fa-ban" label="Cancel Draft" formnovalidate />
+                <x-dl::button type="submit" name="action" value="cancel" variant="secondary" icon="fa-ban" label="Cancel Draft" formnovalidate data-dl-confirm="{{ t('Cancel this draft?') }}" />
             @endif
         </x-slot:special>
         <x-slot:strip>

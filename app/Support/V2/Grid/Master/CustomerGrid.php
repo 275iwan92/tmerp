@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Customer (v1: pages::master.customer).
+/*
+ * REMARK
+ * Tujuan       : Grid Master Customer: daftar customer dengan grup, tipe, industri, batas kredit, termin bayar, status persetujuan dan jumlah Customer Order; Open dan + New Record membuka form v2 md-customer-form.
+ * Sumber hulu  : tm2mst.cust_customer + fin_payment_term; jumlah Customer Order dari tm2sdi.co_order (query terpisah).
+ * Input        : Pencarian, statistik, filter Type / Industry / Payment Term / Approval.
+ * Output       : Baris grid; tombol aktif / nonaktif membalik cust_customer.activate.
+ * Dipakai oleh : Menu MD_CUST dan PRE_MD_CUST (v2:md-customer), layar md-customer-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::master.customer sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class CustomerGrid extends MasterDataGrid
 {
     private array $orders = [];
@@ -24,14 +32,19 @@ class CustomerGrid extends MasterDataGrid
         return 'Master Customer';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'master.customer';
+        return true;
     }
 
-    protected function v1Component(): ?string
+    public function openUrl(): ?string
     {
-        return 'pages::master.customer';
+        return route('v2.screen', 'md-customer-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'md-customer-form').'?new=1';
     }
 
     protected function models(): array

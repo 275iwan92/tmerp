@@ -133,7 +133,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_planning.php';
         require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
-        require __DIR__.'/v2_finance.php';
+        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php';
         require __DIR__.'/v2_warehouse.php';
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
@@ -207,7 +207,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::livewire('/notifications', 'pages::notification.index')->name('notifications.index');
 
         Route::middleware('module:MDATA')->group(function () {
-            Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
+            Route::redirect('/master/customer', '/v2/s/md-customer');
             Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');
             Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
             Route::livewire('/master/shift', 'pages::master.shift')->name('master.shift');

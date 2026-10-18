@@ -69,6 +69,13 @@
 | Master Data > Supplier Corrugated Index | `v2:md-supplier-corrugated-index` | Input index lembar gelombang per supplier dan substance (SW / DW umum), index per m2 lembar trim, dasar PPN, tanggal berlaku (2026-10-17) | `SupplierCorrugatedIndexLookup` (`sup_corrugated_index`, `SupCorrugatedIndex`) | `CorrugatedSheetPriceEngine`: harga per lembar = (lebar trim x panjang / 10000 x index / up) x (1 - diskon) / (1 + tarif PPN) | tampil |
 | Master Data > Tax Rate | `v2:md-tax-rate` | Input tarif pajak (PPN) menurut tanggal berlaku seperti kurs: PPN 10% sejak 01-Apr-1985, 11% sejak 01-Apr-2022; dokumen memakai tarif pada tanggalnya sendiri; konstanta `PPN` tinggal cadangan bila tabel kosong (2026-10-17) | `TaxRateLookup` (`fin_tax_rate`, `FinTaxRate`) | `TaxRate::ppn(tanggal)` dipakai `PaperPriceEngine`, `PoOrder::recalcTax`, `DeliveryOrderPrint`, Customer Order, Quotation, invoice (tanpa tanggal = hari ini) | tampil |
 
+## Master Data
+
+| Jalur menu | Slug / rute | Tujuan | File utama | Engine / service yang dipakai | Menu |
+|---|---|---|---|---|---|
+| Master Data > Customer > Master Customer | `v2:md-customer` | Grid customer (grup, tipe, industri, batas kredit, termin bayar, status persetujuan, jumlah Customer Order); Open dan + New Record membuka form md-customer-form; rute lama /master/customer mengalihkan ke sini | `app/Support/V2/Grid/Master/CustomerGrid.php` | `MasterDataGrid`, `DbGrid` | tampil |
+| Master Data > Customer > Master Customer Form | `v2:md-customer-form` | Form master customer (`x-dl::form` panel top, kind master): strip kode / batas kredit / saldo piutang / jumlah cabang / jumlah kontak; tab Overview (identitas, tipe, NPWP, kategori, status persetujuan, prospect, catatan), Printing Specs, Sales & Finance (divisi, price list, profil pajak, termin, mata uang, batas kredit, rating, tier, credit check), Sites & Contacts (alamat kantor pusat + area dari pencarian wilayah, PIC utama, kontak dan cabang tambahan lewat dialog Add / Edit dengan satu default), Governance (NPWP terverifikasi, KYC), History. Tombol: Block (konfirmasi) atau Unblock (dialog alasan; admin atau akses modul Finance, alasan masuk catatan), Deactivate / Activate, New, Undo, Save. Disimpan ke `tm2mst.cust_customer`, `cust_customer_contact`, `cust_customer_branch`. Halaman v1 diarsipkan di `tmerp_unused/master_customer_v1_2026-10-18.blade.php`; tombol Master Customer di panel CRM membuka form ini | `resources/views/v2/screens/md-customer-form.blade.php`, `routes/v2_master.php` (`v2.md.customer.*`) | `App\Services\Master\CustomerMasterService` | disembunyikan (dibuka dari grid) |
+
 ## Finance
 
 | Jalur menu | Slug / rute | Tujuan | File utama | Engine / service yang dipakai | Menu |

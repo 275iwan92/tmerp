@@ -41,3 +41,4 @@
 Searched: columns `stat_*`, `doc_status`, `sub_state`, `status` in `ddtsdi`, `ddtmst`, `ddtsys`; tables `%state_log%`/`%doc_state%` across the whole server; `InquiryStage`, `IqpInquiry`, `QuoQuotation`, `CoOrder`; CLAUDE.md and `docs/ringkas/globaluserrules.md` (A.12, A.20). Result: the A.20 flags ALREADY EXIST and are consistent with the data; the `doc_state_log` table does NOT exist; no new column is proposed.
 
 > Re-checked 2026-10-17: `QuoQuotation::totals()` now reads the PPN rate with `TaxRate::ppn(issued_date)` (table `fin_tax_rate`, screen Master Data > Tax Rate); the rate for current documents is unchanged (11).
+- Re-checked 2026-10-18 after `app/Support/V2/Data/Crm.php` line 216 changed (the Customer 360 button "Master Customer" now opens the v2 form `md-customer-form?id=` instead of the v1 page); no line was added or removed, so every cited line number is unchanged, content still true.

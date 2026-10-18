@@ -54,7 +54,6 @@ final class MenuRoutes
             'PRE_COST_REVISE' => route('v2.screen', 'sales-procost-revise'),
             'PRE_COST_RECALC' => route('v2.screen', 'sales-procost-recalc'),
             // Pintasan master: dipakai selama baris asalnya belum ber-target v2 (tm2sys); di ddtsys target v2 yang menang.
-            'PRE_MD_CUST' => route('master.customer'),
             'PRE_MD_PROD' => route('v2.screen', 'master-product'),
             'PRE_MD_RAW' => route('master.raw-material.list'),
             'PRE_MD_MATCAT' => route('v2.screen', 'md-matcat'),
@@ -103,7 +102,6 @@ final class MenuRoutes
             'PROC_MON_PO' => route('v2.screen', 'pur-rpt-outstanding-po'),
             'PROC_MON_PV' => route('v2.screen', 'pur-rpt-outstanding-pv'),
             'MD_PROD' => route('v2.screen', 'master-product'),
-            'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
             'MD_SUPCAT' => route('v2.screen', 'md-supplier-category'),
             'MD_RAW' => route('master.raw-material.list'),

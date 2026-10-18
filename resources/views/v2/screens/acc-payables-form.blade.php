@@ -59,7 +59,7 @@
         :created-by="$b?->created_by" :created-at="$b?->created_at?->toDateTimeString()" :updated-by="$b?->updated_by" :updated-at="$b?->updated_at?->toDateTimeString()">
         <x-slot:special>
             @if (! $new && $pending)
-                <x-dl::button type="submit" name="action" value="cancel" variant="secondary" icon="fa-ban" :label="$b->doc_status === 'DRAFT' ? 'Cancel Draft' : 'Cancel Bill'" formnovalidate />
+                <x-dl::button type="submit" name="action" value="cancel" variant="secondary" icon="fa-ban" :label="$b->doc_status === 'DRAFT' ? 'Cancel Draft' : 'Cancel Bill'" formnovalidate data-dl-confirm="{{ t('Cancel this bill?') }}" />
             @endif
             @if ($posted && (float) $b->tax_amount > 0 && ! $b->tax_validated)
                 <x-dl::button type="submit" name="action" value="validate_tax" variant="secondary" icon="fa-circle-check" label="Validate Tax Invoice" formnovalidate />
