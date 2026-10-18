@@ -61,6 +61,7 @@ Of 65 WO rows, 63 carry `source_delivery_id`. For all 63: `qty` equals `ship_qty
 
 ## Tests
 `tests/Feature/ProductionWoGenerationTest.php` (5 tests), `tests/Feature/WoBomFromInquiryTest.php`, `tests/Feature/WoBomWasteSpillTest.php`, `tests/Feature/WoResetTest.php`, `tests/Feature/WoProcessApplyTest.php`. Results of this session are in `../90_findings_planning-ppic.md` section "Tests run".
+Update 2026-10-18: `ProductionWoGenerationTest` was rewritten (5 passed on `--env=mockup`): each test builds its own Inquiry, CO, Plan Delivery and WO through `tests/Support/WoFixture.php` and cleans up; the generate test now checks the routing snapshot path (3 operations, Cetak rate 6000 from `prod_part_process_machine_rate`).
 
 ## Relations
 - **source**: CPDEL row (`../../sales/order/11_card_cpdel.md`), ProDev engine (`../../sales/prodev/20_engine_spec.md`), Inquiry part (`../../sales/inquiry-product/11_card_inquiry-and-part.md`).

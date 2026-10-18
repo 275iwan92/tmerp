@@ -4,24 +4,38 @@ namespace Tests\Feature;
 
 use App\Models\Sdi\CoOrder;
 use App\Models\Sys\SecUser;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Tests\Support\WoFixture;
 use Tests\TestCase;
 
-// Expand-row master-detail grid CO (co/list.blade.php, dibangun 2026-08-24)
-// diperluas 2026-08-29 (permintaan user) nampilin External Cost, bukan cuma
-// Product/Service items -- dummy data di migration
-// 2026_08_29_000001_seed_co_external_cost_dummy.php (CO2600001/order_id=2).
+// Expand-row master-detail grid CO (co/list.blade.php): menampilkan item DAN External Cost.
+// CO dan ongkos kirimnya dibangun tes ini sendiri (WoFixture) dan dihapus di tearDown.
 class CoListExpandRowTest extends TestCase
 {
-    private function admin(): SecUser
+    use WoFixture;
+
+    protected function setUp(): void
     {
-        return SecUser::where('login', 'johiwan')->firstOrFail();
+        parent::setUp();
+        $this->setUpWoFixture();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->tearDownWoFixture();
+        parent::tearDown();
     }
 
     public function test_expand_row_shows_items_and_external_costs(): void
     {
-        $this->actingAs($this->admin());
-        $order = CoOrder::where('co_no', 'CO2600001')->firstOrFail();
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
+        $chain = $this->seedChain('CO1');
+        DB::connection('tm2sdi')->table('co_order_external_cost')->insert([
+            'order_id' => $chain['order_id'], 'category' => 'Trucking', 'description' => 'Ongkos kirim ke gudang customer',
+            'nominal' => 750000, 'tax_treatment' => 'TAXABLE', 'created_by' => 'test',
+        ]);
+        $order = CoOrder::findOrFail($chain['order_id']);
 
         $test = Livewire::test('pages::co.list');
 

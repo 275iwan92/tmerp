@@ -51,6 +51,7 @@ Without `--env=mockup` the test command uses the databases named `tm2*`; tests m
 | `WoResetTest` (7), `ProductionOutputTest` (7) | `--env=mockup` | 6 passed + 1 skipped each (39 and 37 assertions) |
 | `tests/Feature/LiveScheduleTest.php` | both | FAILED: gantt has 0 tasks for 13 live rows (finding 10) |
 | `tests/Feature/ProductionWoGenerationTest.php` | plain | 4 passed, 1 ERROR: `test_generate_creates_wo_with_operations_and_correct_qty` fails at cleanup with a foreign-key error (`prd_wo_material` still references the WO that the test deletes) |
+| 2026-10-18 update: `ProductionWoDetailRebuildTest` (7 passed) and `ProductionWoGenerationTest` (5 passed) were rewritten | `--env=mockup` | Both build their own Inquiry, CO, Plan Delivery and WO through `tests/Support/WoFixture.php` (no dependence on the dummy WOs removed by rule B.17) and delete them, their material bookings, operations and materials in tearDown. This also fixes the cleanup error in the row above; the residue in the `tm2*` databases listed below was not touched. |
 | `LearningEngine`, `PlanEvents`, schedule commands | not run / no test | see the cards |
 
 ### Residue my test run left in the live-named databases (NOT cleaned, for Jo to decide)

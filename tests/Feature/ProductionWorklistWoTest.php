@@ -3,11 +3,11 @@
 /*
  * REMARK
  * Tujuan       : Uji Worklist WO, WO Detail (QC gate, Breakdown dan Subkontrak) dan Production Output.
- * Sumber hulu  : Fixture dummy WO2600231 di tm2*.
+ * Sumber hulu  : WO fixture yang dibangun tes ini sendiri (WoFixture); master asli (mesin OFF-02, vendor subkon, scrap type) hanya dibaca.
  * Input        : Tidak ada.
- * Output       : Lulus atau gagal; state dummy dipulihkan di tearDown.
- * Dipakai oleh : php artisan test (database tm2*, fixture WO2600225-262).
- * Status       : Aktif. Uji Rule Library dan papan v1 dihapus 2026-10-18.
+ * Output       : Lulus atau gagal; fixture dan PO/PR subkon yang lahir dari tes dihapus di tearDown.
+ * Dipakai oleh : php artisan test.
+ * Status       : Aktif. Menggantikan fixture lama WO2600225-262 (aturan B.17, 2026-10-18).
  */
 
 namespace Tests\Feature;
@@ -16,41 +16,44 @@ use App\Models\Master\SupSupplier;
 use App\Models\Prd\PrdBreakdownEvent;
 use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWo;
-use App\Models\Prd\PrdWoOperation;
 use App\Models\Prd\PrdWoOperationOutput;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
 use App\Models\Sys\SecUser;
 use Livewire\Livewire;
+use Tests\Support\WoFixture;
 use Tests\TestCase;
 
-// Worklist WO / WO Detail (QC Gate + Breakdown&Subcontract) / Production Output. Semua mutasi memulihkan
-// state dummy di akhir test (dipakai ulang test lain dan demo manual di browser).
+// Worklist WO / WO Detail (QC Gate + Breakdown&Subcontract) / Production Output. Dua WO fixture: satu RUNNING (800 pcs),
+// satu QC_HOLD; keduanya dihapus di tearDown apa pun hasil tesnya.
 class ProductionWorklistWoTest extends TestCase
 {
-    private ?array $wo231Snapshot = null;
+    use WoFixture;
 
-    // Test Breakdown yang gagal di tengah dulu meninggalkan task WO2600231 di BREAKDOWN +
-    // event yatim (28 baris, 2026-09-22..30) sehingga test lain ikut gagal. Snapshot di
-    // setUp, pulihkan di tearDown apa pun hasil test-nya.
+    private ?PrdWo $running = null;
+
+    private ?PrdWo $qcHold = null;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->first();
-        $this->wo231Snapshot = $op ? [
-            'id' => $op->operation_id, 'task_status' => $op->task_status, 'machine_id' => $op->machine_id,
-            'max_event' => (int) PrdBreakdownEvent::max('event_id'),
-        ] : null;
+        $this->setUpWoFixture();
     }
 
     protected function tearDown(): void
     {
-        if ($snap = $this->wo231Snapshot) {
-            PrdBreakdownEvent::where('operation_id', $snap['id'])->where('event_id', '>', $snap['max_event'])->delete();
-            PrdWoOperation::whereKey($snap['id'])->update(['task_status' => $snap['task_status'], 'machine_id' => $snap['machine_id']]);
-        }
-
+        $this->tearDownWoFixture();
         parent::tearDown();
+    }
+
+    private function runningWo(): PrdWo
+    {
+        return $this->running ??= $this->seedWo('WLRUN', [['Cetak', 'RUNNING', 800]]);
+    }
+
+    private function qcHoldWo(): PrdWo
+    {
+        return $this->qcHold ??= $this->seedWo('WLQC', [['Cetak', 'QC_HOLD', 800]]);
     }
 
     private function admin(): SecUser
@@ -66,21 +69,22 @@ class ProductionWorklistWoTest extends TestCase
     public function test_worklist_wo_renders_seeded_data(): void
     {
         $this->actingAs($this->admin());
+        $woNo = $this->runningWo()->wo_no;
 
         Livewire::test('pages::production.wo-list')
             ->assertSee('Total WO')
-            ->assertSee('WO2600231');
+            ->assertSee($woNo);
     }
 
     public function test_wo_detail_renders_conditional_action_buttons(): void
     {
         $this->actingAs($this->admin());
 
-        $running = PrdWo::where('wo_no', 'WO2600231')->firstOrFail();
+        $running = $this->runningWo();
         Livewire::test('pages::production.wo-entry', ['wo' => $running->wo_id])
             ->assertSee('Lapor Breakdown');
 
-        $qcHold = PrdWo::where('wo_no', 'WO2600227')->firstOrFail();
+        $qcHold = $this->qcHoldWo();
         Livewire::test('pages::production.wo-entry', ['wo' => $qcHold->wo_id])
             ->assertSee('Lulus')
             ->assertSee('Tolak');
@@ -88,7 +92,7 @@ class ProductionWorklistWoTest extends TestCase
 
     public function test_qc_pass_requires_qa_group(): void
     {
-        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600227'))->firstOrFail();
+        $op = $this->qcHoldWo()->operations()->firstOrFail();
         $this->assertSame('QC_HOLD', $op->task_status);
 
         // rina (SALES_STAFF, bukan QA) -- ditolak, status tak berubah.
@@ -112,7 +116,7 @@ class ProductionWorklistWoTest extends TestCase
     {
         $this->actingAs($this->admin());
 
-        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600227'))->firstOrFail();
+        $op = $this->qcHoldWo()->operations()->firstOrFail();
 
         $component = Livewire::test('pages::production.wo-entry', ['wo' => $op->wo_id])
             ->call('openQcReject', $op->operation_id)
@@ -134,7 +138,7 @@ class ProductionWorklistWoTest extends TestCase
     {
         $this->actingAs($this->admin());
 
-        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->firstOrFail();
+        $op = $this->runningWo()->operations()->firstOrFail();
         $originalMachineId = $op->machine_id;
         $this->assertSame('RUNNING', $op->task_status);
 
@@ -162,7 +166,7 @@ class ProductionWorklistWoTest extends TestCase
 
     public function test_breakdown_subcontract_requires_ops_manager_and_creates_po(): void
     {
-        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->firstOrFail();
+        $op = $this->runningWo()->operations()->firstOrFail();
         $vendor = SupSupplier::where('is_subcon', true)->where('activate', true)->firstOrFail();
 
         $this->actingAs($this->admin());
@@ -221,7 +225,7 @@ class ProductionWorklistWoTest extends TestCase
     {
         $this->actingAs($this->admin());
 
-        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->firstOrFail();
+        $op = $this->runningWo()->operations()->firstOrFail();
         $this->assertSame('800.0000', $op->qty);
         $printDefect = PrdScrapType::where('type_code', 'PRINT_DEFECT')->firstOrFail();
         $makeready = PrdScrapType::where('type_code', 'MAKEREADY')->firstOrFail();
@@ -257,7 +261,7 @@ class ProductionWorklistWoTest extends TestCase
     {
         $this->actingAs($this->admin());
 
-        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->firstOrFail();
+        $op = $this->runningWo()->operations()->firstOrFail();
         $printDefect = PrdScrapType::where('type_code', 'PRINT_DEFECT')->firstOrFail();
         $colorOff = PrdScrapType::where('type_code', 'COLOR_OFF')->firstOrFail();
 
