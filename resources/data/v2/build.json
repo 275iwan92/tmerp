@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-18 23:40",
+    "generated": "2026-10-19 00:06",
     "database": "ddtsys",
     "totals": {
         "objects": 175,
@@ -14,7 +14,7 @@
         "forms": 114,
         "grids": 108,
         "reports": 70,
-        "grid_classes": 183,
+        "grid_classes": 182,
         "lookups": 57,
         "report_grids": 47,
         "engines": 62,
@@ -22,11 +22,11 @@
         "tables": 428,
         "databases": 10,
         "models": 380,
-        "migrations": 642,
-        "tests": 215,
+        "migrations": 643,
+        "tests": 216,
         "dictionary": 15728,
         "languages": 4,
-        "commits": "1430",
+        "commits": "1432",
         "since": "2026-08-06"
     },
     "modules": [
@@ -163,14 +163,8 @@
             "tests": 90
         }
     ],
-    "untracked": 1194,
+    "untracked": 1196,
     "days": [
-        {
-            "date": "2026-10-05",
-            "iwan": 43,
-            "jo": 0,
-            "other": 2
-        },
         {
             "date": "2026-10-06",
             "iwan": 0,
@@ -247,7 +241,13 @@
             "date": "2026-10-18",
             "iwan": 0,
             "jo": 10,
-            "other": 16
+            "other": 18
+        },
+        {
+            "date": "2026-10-19",
+            "iwan": 0,
+            "jo": 0,
+            "other": 0
         }
     ],
     "weeks": [
@@ -315,7 +315,7 @@
             "week": "2026-W42",
             "iwan": 10,
             "jo": 69,
-            "other": 74
+            "other": 76
         }
     ],
     "items": [
@@ -833,7 +833,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-18",
             "changed_by": null
         },
         {
@@ -2417,7 +2417,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-18",
             "changed_by": null
         },
         {
@@ -2725,7 +2725,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-18",
             "changed_by": null
         },
         {
@@ -2800,9 +2800,9 @@
             "name": "Warehouse & Location",
             "module": "Inventory",
             "qc": "READY_FOR_QC",
-            "built_at": "2026-09-30",
+            "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-02",
             "changed_by": null
         },
         {
@@ -3262,9 +3262,9 @@
             "name": "Master Warehouse",
             "module": "Master Data",
             "qc": "READY_FOR_QC",
-            "built_at": "2026-09-30",
+            "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-02",
             "changed_by": null
         },
         {

@@ -34,7 +34,6 @@ final class Grids
         Master\SupplierGrid::class,
         Master\RawMaterialGrid::class,
         Master\MatCategoryGrid::class,
-        Master\WarehouseGrid::class,
         Master\ShiftGrid::class,
         Master\HolidayCalendarGrid::class,
         Master\UomUnitLookup::class,

@@ -7,6 +7,16 @@ use App\Support\V2\Grid\DbLookup;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 
+/*
+ * REMARK
+ * Tujuan       : Lembar Gedung (satu baris = satu gedung gudang): kode, nama, stok yang disimpan, ukuran, lantai, tinggi bersih, bentuk, alamat, Active. Sejak 2026-10-19 juga satu-satunya layar master gudang (halaman v1 Master Warehouse dipindah ke tmerp_unused, menu MD_WH dan INV_REF_WH membuka lembar ini).
+ * Sumber hulu  : tm2mst.wh_warehouse (Warehouse Map menggambar gedung dari sini).
+ * Input        : Isian lembar; pilihan Stock Kept termasuk VIRTUAL (gedung sistem VIRT milik VirtualLocationService).
+ * Output       : wh_warehouse berubah lewat DbLookup::save.
+ * Dipakai oleh : Menu INV_WH_BLD, MD_WH, INV_REF_WH (v2:wh-buildings); rute lama /master/warehouse* mengalihkan ke sini.
+ * Status       : Aktif.
+ */
+
 // Inventory > Warehouse > Buildings (tm2mst.wh_warehouse): satu baris = satu GEDUNG gudang (user 2026-10-02: A5, A6, A10 dan
 // gedung lain; perusahaan lain cukup menambah baris). Ukuran dalam meter, bentuk kotak / huruf L / garis luar sendiri,
 // 1-3 lantai -- dari sini Warehouse Map digambar. Area dan bin gedung itu diisi di Storage Areas dan Bins.
@@ -59,7 +69,7 @@ class BuildingLookup extends DbLookup
         return [
             ['key' => 'warehouse_code', 'label' => 'Code', 'required' => true, 'unique' => true, 'lockSaved' => true, 'case' => 'uppercase', 'width' => '120px'],
             ['key' => 'warehouse_name', 'label' => 'Building Name', 'required' => true, 'width' => '240px'],
-            ['key' => 'warehouse_type', 'label' => 'Stock Kept', 'type' => 'select', 'options' => ['MIX' => 'Mixed', 'RM' => 'Raw Material', 'SFG' => 'Semi Finished Goods', 'FG' => 'Finished Goods', 'WASTE' => 'Waste', 'TRANSIT' => 'Transit'], 'required' => true, 'width' => '170px'],
+            ['key' => 'warehouse_type', 'label' => 'Stock Kept', 'type' => 'select', 'options' => ['MIX' => 'Mixed', 'RM' => 'Raw Material', 'SFG' => 'Semi Finished Goods', 'FG' => 'Finished Goods', 'WASTE' => 'Waste', 'TRANSIT' => 'Transit', 'VIRTUAL' => 'Virtual (system)'], 'required' => true, 'width' => '170px'],
             ['key' => 'length_m', 'label' => 'Length (m)', 'type' => 'number', 'decimals' => 2, 'width' => '110px'],
             ['key' => 'width_m', 'label' => 'Width (m)', 'type' => 'number', 'decimals' => 2, 'width' => '110px'],
             ['key' => 'floor_count', 'label' => 'Floors', 'type' => 'select', 'options' => [1 => '1', 2 => '2', 3 => '3'], 'required' => true, 'width' => '90px'],
@@ -90,7 +100,7 @@ class BuildingLookup extends DbLookup
     protected function rules(): array
     {
         return ['warehouse_code' => ['string', 'max:20', 'regex:/^[A-Z0-9_\-]+$/'], 'warehouse_name' => ['string', 'max:100'],
-            'warehouse_type' => [Rule::in(['MIX', 'RM', 'SFG', 'FG', 'WASTE', 'TRANSIT'])], 'length_m' => ['min:1', 'max:2000'], 'width_m' => ['min:1', 'max:2000'],
+            'warehouse_type' => [Rule::in(['MIX', 'RM', 'SFG', 'FG', 'WASTE', 'TRANSIT', 'VIRTUAL'])], 'length_m' => ['min:1', 'max:2000'], 'width_m' => ['min:1', 'max:2000'],
             'floor_count' => ['integer', 'min:1', 'max:'.WhWarehouse::MAX_FLOORS], 'shape' => [Rule::in(array_keys(WhWarehouse::SHAPES))],
             'height_f1_m' => ['min:0', 'max:50'], 'height_f2_m' => ['min:0', 'max:50'], 'height_f3_m' => ['min:0', 'max:50'],
             'notch_length_m' => ['min:0'], 'notch_width_m' => ['min:0'], 'notch_corner' => [Rule::in(array_keys(WhWarehouse::CORNERS))],

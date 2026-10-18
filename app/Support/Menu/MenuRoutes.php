@@ -104,7 +104,6 @@ final class MenuRoutes
             'MD_SUPCAT' => route('v2.screen', 'md-supplier-category'),
             // Material Category = pembentuk kode item: satu layar di kedua situs (v2, dropdown saling terkait).
             'MD_MATCAT' => route('v2.screen', 'md-matcat'),
-            'MD_WH' => route('master.warehouse.list'),
             'MD_UOM' => route('v2.screen', 'md-uom'),
             // Konversi Satuan: di v1 panel di dalam Master Satuan; baris menunya sendiri hanya punya layar v2 (Grid Lookup).
             'MD_UOM_CONV' => route('v2.screen', 'md-uom-conversion'),
@@ -124,7 +123,6 @@ final class MenuRoutes
             'INV_WH_RPT_QC' => route('v2.screen', 'inv-rpt-inspection'),
             'INV_REF_MATCAT' => route('v2.screen', 'md-matcat'),
             'INV_REF_PROD' => route('v2.screen', 'master-product'),
-            'INV_REF_WH' => route('master.warehouse.list'),
             'MD_MACHINE' => route('master.machine'),
             'MD_SHIFT' => route('master.shift'),
             // MD_CURRENCY ternyata belum pernah dipetakan sejak dibuat

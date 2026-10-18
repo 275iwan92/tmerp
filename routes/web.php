@@ -216,10 +216,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::redirect('/master/raw-material/create', '/v2/s/md-raw-form?new=1')->name('master.raw-material.create');
             Route::get('/master/raw-material/{material}/edit', fn (int $material) => redirect('/v2/s/md-raw-form?id='.$material))->name('master.raw-material.edit');
 
-            Route::livewire('/master/warehouse', 'pages::master.warehouse.index')->name('master.warehouse.list');
-            Route::livewire('/master/warehouse/create', 'pages::master.warehouse.entry')->name('master.warehouse.create');
-            Route::livewire('/master/warehouse/{warehouse}/edit', 'pages::master.warehouse.entry')->name('master.warehouse.edit');
-            Route::livewire('/master/warehouse/{warehouse}/print-labels', 'pages::master.warehouse.print-labels')->name('master.warehouse.print-labels');
+            Route::redirect('/master/warehouse', '/v2/s/wh-buildings');
+            Route::redirect('/master/warehouse/create', '/v2/s/wh-buildings');
+            Route::redirect('/master/warehouse/{warehouse}/edit', '/v2/s/wh-buildings');
+            Route::redirect('/master/warehouse/{warehouse}/print-labels', '/v2/s/label-location');
         });
 
         Route::middleware('module:FINACC')->group(function () {
