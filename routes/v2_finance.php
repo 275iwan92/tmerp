@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\Acc\FinAccount;
+use App\Models\Acc\FinAsset;
 use App\Models\Acc\FinInvoice;
 use App\Models\Acc\FinVoucher;
 use App\Services\Acc\CashBankVoucherService;
 use App\Services\Acc\ChartOfAccountService;
+use App\Services\Acc\FixedAssetService;
 use App\Services\Acc\ManualJournalService;
 use App\Services\Acc\VendorBillService;
 use App\Support\V2\Data\CustomerInvoice;
@@ -248,4 +250,63 @@ Route::prefix('v2/acc/payables')->name('v2.acc.payables.')->middleware('module:F
             return $open($b->fresh())->with('v2_flash', tf('Payment :no posted: Dr accounts payable, Cr bank.', ['no' => $v->voucher_number]));
         }, $b);
     })->whereNumber('id')->name('pay');
+});
+
+// Fixed Assets v2 (layar acc-fixed-asset-form, form dokumen): save / confirm (= Capitalize) dan dispose (dialog); Depreciation Run (layar acc-depreciation-run) memposting penyusutan bulanan.
+// Aturan = App\Services\Acc\FixedAssetService (dipindah dari v1 pages::finance.assets); rumus dan jurnal = AssetService.
+Route::prefix('v2/acc')->name('v2.acc.')->middleware('module:FINACC')->group(function () {
+    $open = fn (FinAsset $a) => redirect(route('v2.screen', 'acc-fixed-asset-form').'?id='.$a->asset_id);
+    $guard = function (callable $run, ?FinAsset $a = null) use ($open) {
+        try {
+            return $run();
+        } catch (HttpException $e) {
+            if ($e->getStatusCode() !== 422) {
+                throw $e;
+            }
+
+            return ($a ? $open($a) : back()->withInput())->withErrors(['asset' => $e->getMessage()]);
+        }
+    };
+
+    Route::post('/asset/save', function (Request $r, FixedAssetService $svc) use ($open, $guard) {
+        $a = $r->filled('id') ? FinAsset::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+
+        return $guard(function () use ($r, $svc, $open, $a, $action, $user) {
+            $a = $svc->save($a, $r->only(['asset_name', 'category_id', 'acq_date', 'start_date', 'cost', 'residual', 'life', 'method', 'cc_id', 'location', 'source_ref', 'credit_account_id']), $user);
+            if ($action === 'confirm') {
+                $svc->capitalize($a->refresh(), $user);
+
+                return $open($a)->with('v2_flash', tf('Asset :code capitalized: Dr asset account / Cr counter account, depreciation schedule active.', ['code' => $a->asset_code]));
+            }
+
+            return $open($a)->with('v2_flash', tf('Draft asset :code saved.', ['code' => $a->asset_code]));
+        }, $a);
+    })->name('asset.save');
+
+    Route::post('/asset/{id}/dispose', function (Request $r, int $id, FixedAssetService $svc) use ($open, $guard) {
+        $a = FinAsset::findOrFail($id);
+
+        return $guard(function () use ($r, $svc, $open, $a) {
+            $svc->dispose($a, $r->only(['disp_date', 'disp_amount', 'disp_bank']), Auth::user());
+
+            return $open($a->fresh())->with('v2_flash', t('Asset disposed; the gain or loss on disposal goes to other income / other expense.'));
+        }, $a);
+    })->whereNumber('id')->name('asset.dispose');
+
+    Route::post('/depreciation-run/{period}/{kind}', function (string $period, string $kind, FixedAssetService $svc) {
+        $back = redirect(route('v2.screen', 'acc-depreciation-run').'?'.http_build_query(['period' => $period, 'kind' => $kind]));
+        try {
+            $voucherId = $svc->run($period, $kind, Auth::user());
+        } catch (HttpException $e) {
+            if ($e->getStatusCode() !== 422) {
+                throw $e;
+            }
+
+            return $back->withErrors(['run' => $e->getMessage()]);
+        }
+
+        return $voucherId ? $back->with('v2_flash', tf('Depreciation journal for :period posted.', ['period' => $period])) : $back->withErrors(['run' => t('No asset needs depreciation in this period.')]);
+    })->where(['period' => '\d{4}-\d{2}', 'kind' => 'fixed|amortization'])->name('depr.run');
 });

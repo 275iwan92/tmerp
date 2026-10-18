@@ -2,8 +2,15 @@
 
 namespace App\Support\V2\Grid\Acc;
 
-// Fixed Assets (v1: pages::finance.assets): daftar aset tetap + penyusutannya. Buka = tampilan aset v1 (jadwal penyusutan,
-// kapitalisasi, pelepasan); New = form aset baru v1. Jalankan penyusutan bulanan tetap di layar v1.
+/*
+ * REMARK
+ * Tujuan       : Grid Fixed Assets: daftar aset tetap dengan akumulasi dan nilai buku; Open dan + New Record membuka form v2 acc-fixed-asset-form (New = kartu Start pilih kategori).
+ * Sumber hulu  : tm2acc.fin_asset + fin_asset_category + fin_asset_depr (induk AssetGrid).
+ * Input        : Pencarian, statistik status, filter Category / Status.
+ * Output       : Baris grid.
+ * Dipakai oleh : Menu ACC_FIXEDASSET (v2:acc-fixed-asset), layar acc-fixed-asset-form (kembali ke daftar); penyusutan bulanan di layar acc-depreciation-run.
+ * Status       : Aktif. Halaman v1 pages::finance.assets sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class FixedAssetGrid extends AssetGrid
 {
     public function slug(): string
@@ -21,9 +28,19 @@ class FixedAssetGrid extends AssetGrid
         return 'fa-solid fa-building';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'finance.assets';
+        return true;
+    }
+
+    public function openUrl(): ?string
+    {
+        return route('v2.screen', 'acc-fixed-asset-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'acc-fixed-asset-form').'?new=1';
     }
 
     protected function types(): array

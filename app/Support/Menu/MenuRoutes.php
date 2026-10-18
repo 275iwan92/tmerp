@@ -152,7 +152,6 @@ final class MenuRoutes
             'FIN_DASH' => route('v2.screen', 'acc-dashboard'),
             'FIN_BANK' => route('v2.screen', 'acc-bank'),
             'ACC_GL' => route('v2.screen', 'acc-rpt-ledger'),
-            'ACC_FIXEDASSET' => route('finance.assets'),
             'ACC_AMORT' => route('finance.amortization'),
             'ACC_CLOSE' => route('v2.screen', 'acc-closing'),
             'ACC_TAX' => route('v2.screen', 'acc-tax'),

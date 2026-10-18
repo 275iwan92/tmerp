@@ -1,17 +1,17 @@
 {
-    "generated": "2026-10-18 22:37",
+    "generated": "2026-10-18 22:47",
     "database": "ddtsys",
     "totals": {
         "objects": 175,
         "modules": 9,
         "modules_done": 7,
-        "screens": 291,
-        "v2": 285,
+        "screens": 292,
+        "v2": 286,
         "v1": 4,
         "not_built": 2,
-        "waiting_qc": 288,
+        "waiting_qc": 289,
         "locked": 1,
-        "forms": 113,
+        "forms": 114,
         "grids": 108,
         "reports": 70,
         "grid_classes": 183,
@@ -22,11 +22,11 @@
         "tables": 428,
         "databases": 10,
         "models": 380,
-        "migrations": 641,
-        "tests": 209,
-        "dictionary": 15564,
+        "migrations": 642,
+        "tests": 210,
+        "dictionary": 15582,
         "languages": 4,
-        "commits": "1424",
+        "commits": "1425",
         "since": "2026-08-06"
     },
     "modules": [
@@ -104,13 +104,13 @@
         },
         {
             "label": "Finance & Accounting",
-            "total": 24,
-            "v2": 24,
+            "total": 25,
+            "v2": 25,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 24,
+            "waiting_qc": 25,
             "locked": 0,
-            "form": 7,
+            "form": 8,
             "grid": 10,
             "report": 7
         },
@@ -163,7 +163,7 @@
             "tests": 90
         }
     ],
-    "untracked": 1188,
+    "untracked": 1189,
     "days": [
         {
             "date": "2026-10-05",
@@ -247,7 +247,7 @@
             "date": "2026-10-18",
             "iwan": 0,
             "jo": 10,
-            "other": 10
+            "other": 11
         }
     ],
     "weeks": [
@@ -315,7 +315,7 @@
             "week": "2026-W42",
             "iwan": 10,
             "jo": 69,
-            "other": 68
+            "other": 69
         }
     ],
     "items": [
@@ -449,6 +449,17 @@
             "built_at": "2026-10-02",
             "built_by": null,
             "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:ACC_DEPR_RUN",
+            "name": "Depreciation Run",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -2164,7 +2175,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
+            "changed_at": "2026-10-18",
             "changed_by": null
         },
         {
