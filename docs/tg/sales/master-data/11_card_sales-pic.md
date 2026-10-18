@@ -12,7 +12,7 @@
 |---|---|---|
 | Master | `sales_person` 5 rows, all active: Johannes Iwan, Siti Rahma, Budi Santoso (INTERNAL); Agen Mitra Jaya (freelance), CV Perantara Cetak (EXTERNAL). `employee_id` NULL in all five. Columns: `sales_name`, `sales_type` (INTERNAL/EXTERNAL), `employee_id`, `phone`, `activate`. | FACT, query 2026-10-16; `show columns` |
 | Input screen | `md-sales-person` (`SalesPersonLookup`): a name already used by documents cannot be renamed, only deactivated; the menu appears twice (id 1182 Master Data, id 1192 Sales > CRM > Master Data). | FACT, `SalesPersonLookup.php:10-37`; `sys_app_menu` |
-| Inquiry | Lookup `sales_person` in Inquiry New; default = NAME of the logged-in user (`auth()->user()->name`); stored in `iqp_inquiry.pic_sales` varchar(100) as text, not an id. | FACT, `inquiry-new.blade.php:47`, `Lookups.php:17-18`, `Sales.php:35-40` |
+| Inquiry | Lookup `sales_person` in Inquiry New; default = NAME of the logged-in user (`auth()->user()->name`); stored in `iqp_inquiry.pic_sales` varchar(100) as text, not an id. | FACT, `inquiry-new.blade.php:47`, `Lookups.php:27-28`, `Sales.php:35-40` |
 | Quotation | `quo_quotation.sales_pic` is filled from the first inquiry's `pic_sales`; may be changed (header field). | FACT, `QuotationBuilder.php:72`, `Data/Quotation.php:24` |
 | Customer Order | `co_order.sales_person_id` (id) is filled by matching the NAME `pic_sales` to `sales_person.sales_name`; no match -> NULL ("daripada menebak" = rather than guessing). | FACT, `CoOrderBuilder.php:289-299` |
 | KPI | Target per sales (`SysKpiTarget.sales_person_id`) is used by the numbers board; names are chosen from `sales_person`. | FACT that `Board/Numbers.php:152-163,277-288` refers to it; the KPI figures are NOT checked |

@@ -29,7 +29,7 @@
 ## Findings (recorded, not fixed)
 1. **Three masters with no input screen found**: `ref_finishing_type`, `mat_join_type`, and `prod_type` / `prod_type_size` / `prod_type_param` (CLAUDE.md item 7). Not searched across Setup menus beyond the keywords above; they may only be filled by migration/seeder.
 2. **Constant `INQUIRY_ARTWORK_MAX_MB` has no row** in `sys_constant` (always 10), so it cannot be changed from the Constants screen.
-3. **`Sales::masters()['materials']` loads all active-confirmed `mat_raw` every time `masters()` is called**, while Inquiry New only uses `finishing_types` (`inquiry-new.blade.php:19`, `inquiry-revise.blade.php:31`); the only user of `materials` is the `paper` lookup (`Lookups.php:19`). Useless read load if that lookup is not used; NOT measured and NOT checked whether the `paper` lookup is used by other screens.
+3. **`Sales::masters()['materials']` loads all active-confirmed `mat_raw` every time `masters()` is called**, while Inquiry New only uses `finishing_types` (`inquiry-new.blade.php:19`, `inquiry-revise.blade.php:31`); the only user of `materials` is the `paper` lookup (`Lookups.php:29`). Useless read load if that lookup is not used; NOT measured and NOT checked whether the `paper` lookup is used by other screens.
 4. **Two ways to store material**: Sales chooses a category (`category_id`), engine/seeder fills `rawmat_id`; in the data more rows have a definite material than a category (80 vs 43). Not wrong, but readers must handle both (`Sales::materialRows` already does, lines 93-108).
 
 ## Already exists? Searched where, result

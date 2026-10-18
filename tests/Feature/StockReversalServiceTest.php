@@ -248,11 +248,12 @@ class StockReversalServiceTest extends TestCase
     {
         $in = $this->postDoc(1, 100, now()->subDays(2));
         $this->actingAs(SecUser::where('is_admin', true)->firstOrFail());
+        $form = route('v2.screen', 'inv-stock-in-form').'?class=RM&id='.$in['doc_id'];
 
-        $page = Livewire::test('pages::inventory.stock-in', ['category' => 'RM'])->call('openEdit', $in['doc_id'])
-            ->assertSee('Duplicate')->call('openReverse')->assertSet('reverseReason', 'Kesalahan transaksi no. '.RmStock::find($in['doc_id'])->doc_no)
-            ->assertSee('Cancel Document')->set('reverseReason', '')->call('reverseDoc')->assertHasErrors('reverseReason');
-        $page->set('reverseReason', 'salah ketik')->call('reverseDoc')->assertHasNoErrors()->assertSee('reversed by');
+        $this->get($form)->assertOk()->assertSee('Duplicate')->assertSee('Cancel Document')->assertSee('Kesalahan transaksi no. '.RmStock::find($in['doc_id'])->doc_no);
+        $this->post(route('v2.inv.stockin.reverse', ['RM', $in['doc_id']]), ['reason' => ''])->assertSessionHasErrors('document');
+        $this->post(route('v2.inv.stockin.reverse', ['RM', $in['doc_id']]), ['reason' => 'salah ketik'])->assertRedirect();
+        $this->get($form)->assertOk()->assertSee('reversed by');
         $this->assertTrue(RmStock::find($in['doc_id'])->stat_cancel);
     }
 }

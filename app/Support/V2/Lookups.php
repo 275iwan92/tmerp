@@ -6,6 +6,16 @@ use App\Support\V2\Data\Sales;
 use Devlib\Lookup;
 use Illuminate\Support\Facades\DB;
 
+/*
+ * REMARK
+ * Tujuan       : Mendaftarkan semua Devlib\Lookup yang dipakai layar v2 (customer, sales person, bahan, product, item stok, bin, batch, pegawai, wilayah).
+ * Sumber hulu  : Tabel master tm2mst / tm2inv; daftar kecil lewat App\Support\V2\Data\Sales, data besar dicari ke server (search / find).
+ * Input        : Nama lookup, kata cari, parameter ctx dari field.
+ * Output       : Baris lookup untuk x-dl::field.lookup dan kolom lookup x-dl::lines.
+ * Dipakai oleh : Semua layar v2 dengan field atau baris lookup; Devlib route devlib.lookup.
+ * Status       : Aktif. Lookup stock_item_rm / _fg / _sfg, stock_bin, stock_batch ditambah 2026-10-19 untuk dokumen stok manual (Stock In).
+ */
+
 // Lookup = data master yang dipilih di layar v2 (bentuk sama dengan tabel tujuannya, lihat `source`).
 // Semua dibaca dari database situs (ddt* / tm2*): daftar kecil lewat App\Support\V2\Data\Sales, data besar dicari ke server.
 final class Lookups
@@ -47,6 +57,17 @@ final class Lookups
             'search' => fn (string $q) => self::employees()->where(fn ($w) => $w->where('e.full_name', 'like', "%{$q}%")->orWhere('e.employee_code', 'like', "%{$q}%")->orWhere('p.position_name', 'like', "%{$q}%"))
                 ->orderBy('e.full_name')->limit(50)->get(),
             'find' => fn ($v) => self::employees()->where('e.employee_id', (int) $v)->first()]);
+
+        // Dokumen stok manual (Stock In dst.): item per kelas (RM bahan, FG product, SFG part; memilih item mengisi satuan stok), bin dan batch.
+        foreach (['RM' => 'tm2mst.mat_raw', 'FG' => 'tm2mst.prod_product', 'SFG' => 'tm2mst.prod_part'] as $class => $table) {
+            Lookup::define('stock_item_'.strtolower($class), ['key' => 'id', 'label' => 'label', 'source' => $table.' (activate = 1)', 'fill' => ['uom_code' => 'uom'],
+                'columns' => ['name' => 'Item Name', 'code' => 'Code', 'uom' => 'Unit'],
+                'search' => fn (string $q) => Data\StockEntry::itemSearch($class, $q), 'find' => fn ($v) => Data\StockEntry::itemFind($class, $v)]);
+        }
+        Lookup::define('stock_bin', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.wh_loc (activate = 1, is_usable = 1)', 'columns' => ['code' => 'Bin', 'warehouse' => 'Warehouse'],
+            'search' => fn (string $q) => Data\StockEntry::binSearch($q), 'find' => fn ($v) => Data\StockEntry::binFind($v)]);
+        Lookup::define('stock_batch', ['key' => 'id', 'label' => 'label', 'source' => 'tm2inv.inv_batch (activate = 1)', 'columns' => ['batch_no' => 'Batch', 'lot' => 'Supplier lot', 'item' => 'Item', 'expiry' => 'Expiry'],
+            'search' => fn (string $q) => Data\StockEntry::batchSearch($q), 'find' => fn ($v) => Data\StockEntry::batchFind($v)]);
 
         // Wilayah kirim = v_geo_full_address (5 level, sama dengan AddressPicker v1). Nilai = "LEVEL:id".
         Lookup::define('geo_area', ['key' => 'area', 'label' => 'full_label', 'source' => 'tm2mst.v_geo_full_address',

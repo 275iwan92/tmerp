@@ -142,6 +142,9 @@ final class Screens
                     $it('label-item', ['Print Item Label (QR)', 'fa-solid fa-tag', 'v2 baru: label posisi stok (item, bin, qty, tanggal datang, QR + barcode)', null, true]),
                     $it('scan-track', ['Track via QR/Barcode', 'fa-solid fa-magnifying-glass-location', 'v2 baru: lacak bin / item / transfer dari kode hasil pindai', null, true]),
                 ]],
+                ['label' => 'Stock Documents', 'items' => [
+                    $it('inv-stock-in-form', ['Stock In Form', 'fa-solid fa-arrow-right-to-bracket', 'v2 baru: dokumen Stock In manual (RM, FG, SFG) di atas tm2inv.rm_stock / fg_stock / sfg_stock; Confirm = posting ke Kartu Stok lewat StockPostingService; dibuka dari grid inv-*-stock-in', null]),
+                ]],
                 ['label' => 'Stock Adjustment', 'items' => [
                     $it('approval-stock', ['Adjustment & Opname Approval Center', 'fa-solid fa-stamp', 'inventory/stock-adjustment-approval.blade.php', null]),
                 ]],

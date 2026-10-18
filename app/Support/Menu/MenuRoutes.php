@@ -175,9 +175,6 @@ final class MenuRoutes
             'INV_SLOW_SFG' => route('v2.screen', 'inv-sfg-rpt-slow'),
             // Stock In (item pertama di tiap grup Input -- lihat migration
             // 2026_08_22_000007). Stock Out/Return/Adjustment (ITEM2-5) masih NOT_BUILT.
-            'INV_RM_ITEM1' => route('inv.stock-in.index', ['category' => 'RM']),
-            'INV_FG_ITEM1' => route('inv.stock-in.index', ['category' => 'FG']),
-            'INV_SFG_ITEM1' => route('inv.stock-in.index', ['category' => 'SFG']),
             // Stock Out + Return from Production diperluas ke SFG 2026-08-22
             // (barang setengah jadi yg sempat nunggu di gudang lanjut ke proses
             // berikutnya, dan bisa diretur balik kalau cacat/tak kepakai). FG

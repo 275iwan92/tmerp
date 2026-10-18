@@ -133,7 +133,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_planning.php';
         require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
-        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php';
+        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php';
         require __DIR__.'/v2_warehouse.php';
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
@@ -252,7 +252,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // sidebarmenustandard.md §5. {material?} tetap opsional utk deep-link.
 
             // inventory_tier4.md #1.1 -- {category} = RM|FG|SFG, pola sama seperti Laporan.
-            Route::livewire('/inventory/stock-in/{category}', 'pages::inventory.stock-in')->name('inv.stock-in.index');
+            Route::get('/inventory/stock-in/{category}', fn (Illuminate\Http\Request $r, string $category) => redirect($r->query('open') ? '/v2/s/inv-stock-in-form?class='.strtoupper($category).'&id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/inv-stock-in-form?class='.strtoupper($category).'&new=1' : '/v2/s/inv-'.strtolower($category).'-stock-in')))->name('inv.stock-in.index');
             // Stock Out & Return v1 dikunci RM saja (inventory_rules.yaml out_wajib_wo /
             // fg_out_bukan_milik_modul) -- {category} tetap di URL, ditolak di
             // level route (mount()) kalau bukan RM, bukan cuma disembunyikan di UI.

@@ -14,6 +14,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
+/*
+ * REMARK
+ * Tujuan       : Induk grid dokumen stok (Stock In / Out / Return / Adjustment per kelas RM, FG, SFG): daftar dokumen dengan gudang, kategori, sumber, referensi dan status; Open dan + New Record membuka form v2 bila jenisnya sudah punya (Stock In: inv-stock-in-form), selain itu halaman v1.
+ * Sumber hulu  : tm2inv.rm_stock / fg_stock / sfg_stock + baris, tm2mst.wh_warehouse dan item master (query terpisah).
+ * Input        : Pencarian, statistik, filter Category / Source / Warehouse / Status.
+ * Output       : Baris grid.
+ * Dipakai oleh : Menu Inventory > Stock (v2:inv-*-stock-in / -out / -return / -adj), layar inv-stock-in-form (kembali ke daftar).
+ * Status       : Aktif. Stock In sudah v2 (halaman v1 dipindah ke tmerp_unused 2026-10-19); Stock Out, Return dan Adjustment masih membuka halaman v1 (Master T5 berlanjut).
+ */
+
 // Dokumen stok (v1: pages::inventory.stock-in/out/return/adjustment {category}). Satu turunan = satu kelas
 // stok (RM/FG/SFG) x satu jenis dokumen. Stock In juga menampilkan dokumen otomatis dari SPB (ref PV), bukan
 // hanya MANUAL seperti daftar v1 (backlog04: "layar Stock In v2 untuk melihat dokumen Stock In hasil SPB").
@@ -30,6 +40,9 @@ abstract class StockDocGrid extends DbGrid
         'return' => ['stock-return', 'Return from Production', 'inv.stock-return.index'],
         'adj' => ['stock-adj', 'Stock Adjustment & Physical Count', 'inv.stock-adj.index'],
     ];
+
+    // Jenis dokumen yang sudah punya form v2 (slug layar, satu form untuk RM / FG / SFG): Stock In. Jenis lain masih ke halaman v1 sampai dipindah.
+    protected const V2_FORMS = ['in' => 'inv-stock-in-form'];
 
     protected const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'APPROVED' => 'info', 'CONFIRMED' => 'info',
         'POSTED' => 'success', 'REJECTED' => 'danger', 'CANCELLED' => 'danger'];
@@ -89,13 +102,26 @@ abstract class StockDocGrid extends DbGrid
         return $this->category() === 'FG' && in_array($this->kind(), ['out', 'return'], true) ? null : self::KINDS[$this->kind()][2];
     }
 
+    protected function canCreate(): bool
+    {
+        return isset(self::V2_FORMS[$this->kind()]) || parent::canCreate();
+    }
+
     public function openUrl(): ?string
     {
+        if (isset(self::V2_FORMS[$this->kind()])) {
+            return route('v2.screen', self::V2_FORMS[$this->kind()]).'?class='.$this->category().'&id={id}';
+        }
+
         return $this->v1Route() ? route($this->v1Route(), ['category' => $this->category()]).'?open={id}' : null;
     }
 
     public function newUrl(): ?string
     {
+        if (isset(self::V2_FORMS[$this->kind()])) {
+            return route('v2.screen', self::V2_FORMS[$this->kind()]).'?class='.$this->category().'&new=1';
+        }
+
         return $this->v1Route() ? route($this->v1Route(), ['category' => $this->category()]).'?new=1' : null;
     }
 
