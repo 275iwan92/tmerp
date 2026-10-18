@@ -1,5 +1,5 @@
 <?php
-
+/* REMARK Tujuan: membatalkan dokumen stok POSTED dengan dokumen pembalik (Stock Out, Return, Stock In manual), menyalin Draft (Duplicate), dan menjaga qty_returned: Stock Out yang sudah punya Return ditolak dibatalkan (returnedRefusal), pembatalan Return memulihkan sisa pada baris sumber (restoreReturned). Sumber hulu: dokumen POSTED dan Kartu Stok. Input: kategori, id dokumen, alasan, login. Output: dokumen pembalik REVERSAL, status CANCELLED, jurnal pemakaian dibalik. Dipakai oleh: route v2.inv.stockdoc.reverse, layar inv-stock-doc-form. Status: Aktif; aturan Return ditambah 2026-10-19. */
 namespace App\Services\Inventory;
 
 use App\Models\Acc\FinVoucher;
@@ -58,7 +58,7 @@ class StockReversalService
             (bool) $h->reverses_doc_id || $h->doc_cat === self::DOC_CAT => self::msg('A reversal document cannot be cancelled again.'),
             ! in_array($h->doc_cat, self::REVERSIBLE_CATS, true) => self::msg('Adjustment, Opname and opening balance are corrected from their own screens, not by a reversal.'),
             ! in_array((string) $h->ref_doc_type, self::OWN_REFS, true) => self::msg('This document was created by another process (:ref). Cancel it from its source document.', ['ref' => $h->ref_doc_type]),
-            default => null,
+            default => $this->returnedRefusal($h),
         };
     }
 
@@ -158,7 +158,7 @@ class StockReversalService
             return $fail((string) $result['error']);
         }
 
-        $revNo = $cfg['header']::whereKey($revId)->value('doc_no');
+        $revNo = $cfg['header']::whereKey($revId)->value('doc_no'); $this->restoreReturned($header);
         $db->transaction(fn () => $cfg['header']::whereKey($docId)->update(['stat_cancel' => true, 'flow_status' => 'CANCELLED', 'cancel_reason' => $reason,
             'cancelled_by' => $login, 'cancelled_at' => now(), 'update_by' => $login]));
 
@@ -192,9 +192,31 @@ class StockReversalService
         }
         $docs = new StockDocumentService;
         $prefix = str_contains((string) $h->doc_no, '/') ? strtok($h->doc_no, '/') : 'DUP';
-        $lines = $h->lines->map(fn ($l) => $l->only([...$cfg['items'], ...self::LINE_COLS, 'action_type']))->all();
+        $lines = $h->lines->map(fn ($l) => $l->only([...$cfg['items'], ...self::LINE_COLS, 'action_type', 'source_detail_id', 'return_condition', 'line_note']))->all();
 
         return $docs->saveDraft($category, null, ['doc_no' => $docs->nextDocNo($category, $prefix), 'doc_date' => now()->toDateString()]
             + $h->only(['doc_type', 'doc_cat', 'ref_doc_type', 'ref_doc_id', 'ref_doc_no', 'wo_id', 'wo_no', 'warehouse_id', 'issued_to_dept', 'process_code', 'notes']), $lines, $login);
+    }
+
+    // Stock Out yang barangnya sudah (sebagian) diretur tidak boleh dibatalkan: pembaliknya memasukkan lagi jumlah penuh, jadi stok ganda (2026-10-19, Jo).
+    // Batalkan dulu Return-nya; pembatalan Return memulihkan sisa (restoreReturned).
+    private function returnedRefusal(Model $h): ?string
+    {
+        return $h->doc_cat === 'STOCK' && (int) $h->doc_type === -1 && (float) $h->lines()->sum('qty_returned') > 0.0001
+            ? self::msg('This Stock Out has been returned (partly or fully). Cancel its Return documents first.')
+            : null;
+    }
+
+    // Return dibatalkan: sisa yang boleh diretur pada baris Stock Out sumber dipulihkan (kebalikan StockPostingService::addReturned).
+    private function restoreReturned(Model $header): void
+    {
+        if ($header->doc_cat !== 'RETURN') {
+            return;
+        }
+        foreach ($header->lines as $line) {
+            if ($line->source_detail_id) {
+                $line::query()->where('doc_detail_id', $line->source_detail_id)->update(['qty_returned' => DB::raw('GREATEST(COALESCE(qty_returned, 0) - '.abs((float) $line->qty).', 0)')]);
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar dokumen stok manual v2 (form dokumen Inventory): Stock In dan Stock Out (inv-stock-doc-form), disusul Return dan Adjustment.
+ * Tujuan       : Route layar dokumen stok manual v2 (form dokumen Inventory): Stock In, Stock Out dan Return from Production (inv-stock-doc-form), disusul Adjustment.
  * Sumber hulu  : App\Services\Inventory\StockDocEntryService (simpan Draft, Confirm = posting), StockReversalService (Cancel dengan dokumen pembalik, Duplicate), StockDocumentService.
  * Input        : POST form dokumen (stock_kind, stock_class, id, action save / confirm / cancel / duplicate) dan POST dialog Cancel Document (alasan).
  * Output       : Redirect ke form (id dokumen) atau ke grid jenis dan kelasnya dengan flash v2_flash / errors.
@@ -20,6 +20,18 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v2/inv/stock-doc')->name('v2.inv.stockdoc.')->middleware('module:INV')->group(function () {
     $form = fn (string $kind, string $class, int $id) => redirect(route('v2.screen', 'inv-stock-doc-form').'?kind='.$kind.'&class='.$class.'&id='.$id);
     $grid = fn (string $kind, string $class) => redirect(route('v2.screen', 'inv-'.strtolower($class).'-stock-'.$kind));
+
+    // Return baru: kartu awal memilih Stock Out sumber, lalu form terbuka dengan baris dari sumber itu.
+    Route::post('/{kind}/{class}/start', function (Request $r, string $kind, string $class) {
+        $class = strtoupper($class);
+        abort_unless($kind === 'return' && StockDocEntryService::supports($kind, $class), 404);
+        $source = (int) $r->input('source');
+        if (! app(StockDocEntryService::class)->returnableSource($class, $source)) {
+            return back()->withErrors(['source' => t('Choose a posted Stock Out that still has a returnable balance.')]);
+        }
+
+        return redirect(route('v2.screen', 'inv-stock-doc-form').'?kind=return&class='.$class.'&new=1&source='.$source);
+    })->name('start');
 
     Route::post('/save', function (Request $r, StockDocEntryService $svc) use ($form, $grid) {
         $kind = (string) $r->input('stock_kind');
@@ -41,7 +53,7 @@ Route::prefix('v2/inv/stock-doc')->name('v2.inv.stockdoc.')->middleware('module:
             return $form($kind, $class, $copy)->with('v2_flash', t('Draft copy created. Correct it, then Confirm.'));
         }
 
-        $id = $svc->save($kind, $class, $id, $r->only(['doc_date', 'doc_cat', 'warehouse_id', 'issued_to_dept', 'process_code', 'notes']), (array) $r->input('lines'), $user);
+        $id = $svc->save($kind, $class, $id, $r->only(['doc_date', 'doc_cat', 'warehouse_id', 'issued_to_dept', 'process_code', 'notes', 'source_doc_id']), (array) $r->input('lines'), $user);
         if ($action === 'confirm') {
             $res = $svc->post($class, $id, $user);
             if (! $res['posted']) {

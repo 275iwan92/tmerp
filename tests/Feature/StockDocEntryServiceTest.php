@@ -2,7 +2,7 @@
 
 /*
  * REMARK
- * Tujuan       : Menjaga dokumen stok manual v2 (Stock In RM / FG / SFG dan Stock Out RM / SFG): simpan Draft (nomor, baris, batch, aturan header dan baris), Posted tidak bisa diubah, Confirm memposting ke Kartu Stok (Stock Out ditolak bila saldo minus), Cancel dengan pembalik, Cancel Draft, Duplicate, route dan layar, FG tanpa Stock Out, dan tidak ada jalur ke halaman v1 inventory.stock-in / stock-out.
+ * Tujuan       : Menjaga dokumen stok manual v2 (Stock In RM / FG / SFG dan Stock Out RM / SFG; Return: StockReturnEntryTest): simpan Draft (nomor, baris, batch, aturan header dan baris), Posted tidak bisa diubah, Confirm memposting ke Kartu Stok (Stock Out ditolak bila saldo minus), Cancel dengan pembalik, Cancel Draft, Duplicate, route dan layar, FG tanpa Stock Out, dan tidak ada jalur ke halaman v1 inventory.stock-in / stock-out.
  * Sumber hulu  : App\Services\Inventory\StockDocEntryService, StockPostingService, StockReversalService, layar inv-stock-doc-form, grid inv-*-stock-in / -stock-out, routes/v2_stockdocs.php.
  * Input        : User johiwan (admin); item, bin dan gudang yang sudah ada di database. Seluruh uji berjalan di transaksi tm2inv / tm2acc / tm2mst yang di-rollback, jadi posting ke Kartu Stok dan batch uji tidak tersisa.
  * Output       : Lulus bila aturan terpenuhi dan database kembali seperti semula.
@@ -291,8 +291,8 @@ class StockDocEntryServiceTest extends TestCase
             }
         }
         $this->assertNull(Grids::find('inv-fg-stock-out')->newUrl(), 'FG tidak punya Stock Out');
-        // Return dan Adjustment belum dipindah: tetap halaman v1.
-        $this->assertStringContainsString('/inventory/stock-return/RM', Grids::find('inv-rm-stock-return')->newUrl());
+        // Adjustment belum dipindah: tetap halaman v1 (Return: lihat StockReturnEntryTest).
+        $this->assertStringContainsString('/inventory/stock-adjustment/RM', Grids::find('inv-rm-stock-adj')->newUrl());
 
         foreach (['stock-in', 'stock-out'] as $v1) {
             $this->assertFileDoesNotExist(resource_path('views/pages/inventory/'.$v1.'.blade.php'));

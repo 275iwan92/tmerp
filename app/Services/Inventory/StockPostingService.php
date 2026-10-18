@@ -1,5 +1,5 @@
 <?php
-
+/* REMARK Tujuan: memposting dokumen stok (RM, FG, SFG) ke Kartu Stok (rantai saldo, harga rata-rata, jurnal pemakaian Stock Out) dan, untuk Return from Production, menambah qty_returned baris Stock Out sumber di transaksi yang sama (addReturned). Sumber hulu: dokumen DRAFT dari StockDocumentService / StockDocEntryService / Pick List / Subcon / SPB. Input: kategori dan id dokumen, login. Output: baris Kartu Stok, status POSTED, jurnal USG. Dipakai oleh: StockDocEntryService::post, StockReversalService, PickListService, PvPostingService, SubconStockService, StockTransferService. Status: Aktif; qty_returned dipindah dari halaman v1 Return ke sini 2026-10-19. */
 namespace App\Services\Inventory;
 
 use App\Models\Inventory\FgStock;
@@ -200,7 +200,7 @@ class StockPostingService
                         $usageJournalRows[] = ['category' => $category, 'item_id' => $itemId, 'qty' => abs($qtyFinal), 'unit_cost' => (float) $card->avg_unitprice];
                     }
 
-                    $netByItem[$itemId] = ($netByItem[$itemId] ?? 0) + $qtyFinal;
+                    $netByItem[$itemId] = ($netByItem[$itemId] ?? 0) + $qtyFinal; $this->addReturned($cat, $line);
                 }
 
                 $header->update([
@@ -336,5 +336,14 @@ class StockPostingService
             $cat === 'RETURN' => abs($qty),
             default => $docType === -1 ? -abs($qty) : abs($qty),
         };
+    }
+
+    // Return from Production: sisa yang boleh diretur pada baris Stock Out sumber (qty_returned) bertambah dalam transaksi posting yang sama
+    // (2026-10-19, Jo: sebelumnya dikerjakan halaman v1 sesudah posting, di luar transaksi). Pemulihannya saat Return dibatalkan: StockReversalService.
+    private function addReturned(string $cat, $line): void
+    {
+        if ($cat === 'RETURN' && $line->source_detail_id) {
+            $line::query()->where('doc_detail_id', $line->source_detail_id)->update(['qty_returned' => DB::raw('COALESCE(qty_returned, 0) + '.abs((float) $line->qty))]);
+        }
     }
 }

@@ -224,51 +224,55 @@
                 "id": "Daftar menampilkan dokumen retur kelas stok ini. Cari dengan no dokumen atau no Stock Out, atau pakai tab Draft / Waiting / Posted dan filter kolom."
             },
             {
-                "en": "Click + New Record. Fill Tanggal Dokumen and click the dashed Ref. Stock Out box to open the list of Stock Out documents that can still be returned.",
-                "id": "Klik + New Record. Isi Tanggal Dokumen lalu klik kotak putus-putus Ref. Stock Out untuk membuka daftar Stock Out yang masih bisa diretur."
+                "en": "Click + New Record. A Start card asks which posted Stock Out is being returned: choose it from the list of Stock Outs that still have a returnable quantity and click Start.",
+                "id": "Klik + New Record. Kartu Start menanyakan Stock Out yang diretur: pilih dari daftar Stock Out yang masih punya sisa retur lalu klik Start."
             },
             {
-                "en": "Click a Stock Out. Its lines are copied in with Dikeluarkan and Sisa Boleh (what may still be returned). Choose Gudang Purpose (bahan layak).",
-                "id": "Klik satu Stock Out. Baris-barisnya disalin lengkap dengan Dikeluarkan dan Sisa Boleh (yang masih boleh diretur). Pilih Gudang Purpose (bahan layak)."
+                "en": "The form opens with one row per Stock Out line, showing Issued and Returnable (what may still be returned). Choose the Destination warehouse (usable goods).",
+                "id": "Form terbuka dengan satu baris per baris Stock Out, memuat Issued dan Returnable (yang masih boleh diretur). Pilih Destination warehouse (barang layak)."
             },
             {
-                "en": "On each line enter Qty Retur, choose Kondisi (GOOD or SCRAP) and Lokasi Purpose. Lines you do not return must not stay with a quantity.",
-                "id": "Di tiap baris isi Qty Retur, pilih Kondisi (GOOD atau SCRAP) dan Lokasi Purpose. Baris yang tidak diretur jangan dibiarkan berisi jumlah."
+                "en": "On each line you return, enter Return qty, choose Condition (GOOD or SCRAP) and the Bin. Leave the quantity empty on lines that are not returned.",
+                "id": "Di tiap baris yang diretur isi Return qty, pilih Condition (GOOD atau SCRAP) dan Bin. Biarkan jumlah kosong pada baris yang tidak diretur."
             },
             {
-                "en": "For SCRAP lines Keterangan is required. Click Save Draft, then open the draft and click Confirm & Post.",
-                "id": "Untuk baris SCRAP, Keterangan wajib diisi. Klik Save Draft, lalu buka draft dan klik Confirm & Post."
+                "en": "For SCRAP lines the Description is required. Click Save, then Confirm to post.",
+                "id": "Untuk baris SCRAP, Description wajib diisi. Klik Save, lalu Confirm untuk posting."
             },
             {
-                "en": "After posting the goods are added back to the Stock Card and the returned quantity is counted on the Stock Out. The document is read-only; Cancel works only on a draft.",
-                "id": "Setelah posting barang masuk lagi ke Kartu Stok dan jumlah retur tercatat di Stock Out. Dokumen jadi hanya-baca; Cancel hanya untuk draft."
+                "en": "After posting the goods are added back to the Stock Card and the returned quantity is counted on the Stock Out in the same step. The document is read-only.",
+                "id": "Setelah posting barang masuk lagi ke Kartu Stok dan jumlah retur tercatat di Stock Out pada langkah yang sama. Dokumen jadi hanya-baca."
+            },
+            {
+                "en": "Cancel on a draft discards it. Cancel on a posted Return posts a reversal and gives the returnable quantity back. A Stock Out that has a Return cannot be cancelled until its Returns are cancelled.",
+                "id": "Cancel pada draft membuangnya. Cancel pada Return yang sudah posting membuat pembalik dan mengembalikan sisa retur. Stock Out yang punya Return tidak bisa dibatalkan sebelum Return-nya dibatalkan."
             }
         ],
         "fields": [
             {
-                "label": "Doc No.",
-                "en": "Filled by the system when the draft is first saved.",
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved (RTN/yy/#####).",
                 "id": "Diisi sistem saat draft pertama disimpan."
             },
             {
-                "label": "Document Date *",
+                "label": "Date *",
                 "en": "Date of the return. Required. Starts as today.",
                 "id": "Tanggal retur. Wajib. Awalnya hari ini."
             },
             {
-                "label": "Ref. Stock Out *",
-                "en": "The posted, not cancelled Stock Out being returned, picked from the list of Stock Outs with a remaining returnable quantity. Fixed once saved. Required.",
-                "id": "Stock Out yang sudah posting dan tidak dibatalkan yang diretur, dipilih dari daftar Stock Out yang masih punya sisa retur. Tidak bisa diganti setelah disimpan. Wajib."
+                "label": "Stock Out",
+                "en": "The posted, not cancelled Stock Out being returned, chosen on the Start card. Shown here, fixed once the form is open.",
+                "id": "Stock Out yang sudah posting dan tidak dibatalkan yang diretur, dipilih di kartu Start. Ditampilkan di sini, tidak bisa diganti setelah form terbuka."
             },
             {
-                "label": "Destination Warehouse (usable goods) *",
+                "label": "Destination warehouse (usable goods) *",
                 "en": "Warehouse that receives the returned goods. Good-condition lines can only use its usable locations. Required.",
                 "id": "Gudang penerima barang retur. Baris kondisi layak hanya bisa memakai lokasi yang bisa dipakai di gudang ini. Wajib."
             },
             {
-                "label": "Source Process",
-                "en": "Process the goods came back from. Filled from the Stock Out, can be changed. Optional.",
-                "id": "Proses asal barang kembali. Terisi dari Stock Out, bisa diubah. Opsional."
+                "label": "Target process",
+                "en": "Process of the Stock Out, copied from it and shown only.",
+                "id": "Proses pada Stock Out, disalin darinya dan hanya ditampilkan."
             },
             {
                 "label": "Notes",
@@ -277,7 +281,7 @@
             },
             {
                 "label": "Item",
-                "en": "Item of the line, copied from the Stock Out.",
+                "en": "Item of the line, copied from the Stock Out (rows cannot be added or removed).",
                 "id": "Item baris, disalin dari Stock Out."
             },
             {
@@ -287,27 +291,27 @@
             },
             {
                 "label": "Returnable",
-                "en": "Quantity that may still be returned (issued minus earlier returns). Qty Retur cannot go above it.",
-                "id": "Jumlah yang masih boleh diretur (dikeluarkan dikurangi retur sebelumnya). Qty Retur tidak boleh melebihinya."
+                "en": "Quantity that may still be returned (issued minus earlier returns). Return qty cannot go above it.",
+                "id": "Jumlah yang masih boleh diretur (dikeluarkan dikurangi retur sebelumnya). Return qty tidak boleh melebihinya."
             },
             {
-                "label": "Return Qty *",
-                "en": "Quantity coming back, more than zero and not above Sisa Boleh. Required. The row turns red when too high.",
-                "id": "Jumlah yang kembali, lebih dari nol dan tidak lebih dari Sisa Boleh. Wajib. Baris menjadi merah bila kelebihan."
+                "label": "Return qty *",
+                "en": "Quantity coming back, more than zero and not above Returnable. Leave empty on lines that are not returned; at least one line needs a quantity.",
+                "id": "Jumlah yang kembali, lebih dari nol dan tidak lebih dari Returnable. Kosongkan pada baris yang tidak diretur; minimal satu baris berjumlah."
             },
             {
                 "label": "Condition *",
-                "en": "GOOD (Layak) goes back to a usable location. SCRAP (Afkir) goes to a location that is not usable, for example a waste bin.",
+                "en": "GOOD goes back to a usable bin of the destination warehouse. SCRAP goes to a bin that is not usable, for example a waste bin.",
                 "id": "GOOD (Layak) kembali ke lokasi yang bisa dipakai. SCRAP (Afkir) ke lokasi yang tidak bisa dipakai, misalnya bin waste."
             },
             {
-                "label": "Destination Location *",
-                "en": "Location that receives the goods. The list changes with Kondisi. Required.",
-                "id": "Lokasi penerima barang. Daftarnya berubah sesuai Kondisi. Wajib."
+                "label": "Bin *",
+                "en": "Bin that receives the goods: a usable bin of the destination warehouse for GOOD, a non-usable bin for SCRAP. Required on every returned line.",
+                "id": "Bin penerima barang: bin yang bisa dipakai di gudang tujuan untuk GOOD, bin yang tidak bisa dipakai untuk SCRAP. Wajib pada setiap baris yang diretur."
             },
             {
                 "label": "Description",
-                "en": "Reason for the line. Required for SCRAP lines, optional for GOOD.",
+                "en": "Reason for the line, saved with the line. Required for SCRAP lines, optional for GOOD.",
                 "id": "Alasan untuk baris. Wajib untuk baris SCRAP, opsional untuk GOOD."
             }
         ]
@@ -1719,51 +1723,55 @@
                 "id": "Daftar menampilkan dokumen retur kelas stok ini. Cari dengan no dokumen atau no Stock Out, atau pakai tab Draft / Waiting / Posted dan filter kolom."
             },
             {
-                "en": "Click + New Record. Fill Tanggal Dokumen and click the dashed Ref. Stock Out box to open the list of Stock Out documents that can still be returned.",
-                "id": "Klik + New Record. Isi Tanggal Dokumen lalu klik kotak putus-putus Ref. Stock Out untuk membuka daftar Stock Out yang masih bisa diretur."
+                "en": "Click + New Record. A Start card asks which posted Stock Out is being returned: choose it from the list of Stock Outs that still have a returnable quantity and click Start.",
+                "id": "Klik + New Record. Kartu Start menanyakan Stock Out yang diretur: pilih dari daftar Stock Out yang masih punya sisa retur lalu klik Start."
             },
             {
-                "en": "Click a Stock Out. Its lines are copied in with Dikeluarkan and Sisa Boleh (what may still be returned). Choose Gudang Purpose (bahan layak).",
-                "id": "Klik satu Stock Out. Baris-barisnya disalin lengkap dengan Dikeluarkan dan Sisa Boleh (yang masih boleh diretur). Pilih Gudang Purpose (bahan layak)."
+                "en": "The form opens with one row per Stock Out line, showing Issued and Returnable (what may still be returned). Choose the Destination warehouse (usable goods).",
+                "id": "Form terbuka dengan satu baris per baris Stock Out, memuat Issued dan Returnable (yang masih boleh diretur). Pilih Destination warehouse (barang layak)."
             },
             {
-                "en": "On each line enter Qty Retur, choose Kondisi (GOOD or SCRAP) and Lokasi Purpose. Lines you do not return must not stay with a quantity.",
-                "id": "Di tiap baris isi Qty Retur, pilih Kondisi (GOOD atau SCRAP) dan Lokasi Purpose. Baris yang tidak diretur jangan dibiarkan berisi jumlah."
+                "en": "On each line you return, enter Return qty, choose Condition (GOOD or SCRAP) and the Bin. Leave the quantity empty on lines that are not returned.",
+                "id": "Di tiap baris yang diretur isi Return qty, pilih Condition (GOOD atau SCRAP) dan Bin. Biarkan jumlah kosong pada baris yang tidak diretur."
             },
             {
-                "en": "For SCRAP lines Keterangan is required. Click Save Draft, then open the draft and click Confirm & Post.",
-                "id": "Untuk baris SCRAP, Keterangan wajib diisi. Klik Save Draft, lalu buka draft dan klik Confirm & Post."
+                "en": "For SCRAP lines the Description is required. Click Save, then Confirm to post.",
+                "id": "Untuk baris SCRAP, Description wajib diisi. Klik Save, lalu Confirm untuk posting."
             },
             {
-                "en": "After posting the goods are added back to the Stock Card and the returned quantity is counted on the Stock Out. The document is read-only; Cancel works only on a draft.",
-                "id": "Setelah posting barang masuk lagi ke Kartu Stok dan jumlah retur tercatat di Stock Out. Dokumen jadi hanya-baca; Cancel hanya untuk draft."
+                "en": "After posting the goods are added back to the Stock Card and the returned quantity is counted on the Stock Out in the same step. The document is read-only.",
+                "id": "Setelah posting barang masuk lagi ke Kartu Stok dan jumlah retur tercatat di Stock Out pada langkah yang sama. Dokumen jadi hanya-baca."
+            },
+            {
+                "en": "Cancel on a draft discards it. Cancel on a posted Return posts a reversal and gives the returnable quantity back. A Stock Out that has a Return cannot be cancelled until its Returns are cancelled.",
+                "id": "Cancel pada draft membuangnya. Cancel pada Return yang sudah posting membuat pembalik dan mengembalikan sisa retur. Stock Out yang punya Return tidak bisa dibatalkan sebelum Return-nya dibatalkan."
             }
         ],
         "fields": [
             {
-                "label": "Doc No.",
-                "en": "Filled by the system when the draft is first saved.",
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved (RTN/yy/#####).",
                 "id": "Diisi sistem saat draft pertama disimpan."
             },
             {
-                "label": "Document Date *",
+                "label": "Date *",
                 "en": "Date of the return. Required. Starts as today.",
                 "id": "Tanggal retur. Wajib. Awalnya hari ini."
             },
             {
-                "label": "Ref. Stock Out *",
-                "en": "The posted, not cancelled Stock Out being returned, picked from the list of Stock Outs with a remaining returnable quantity. Fixed once saved. Required.",
-                "id": "Stock Out yang sudah posting dan tidak dibatalkan yang diretur, dipilih dari daftar Stock Out yang masih punya sisa retur. Tidak bisa diganti setelah disimpan. Wajib."
+                "label": "Stock Out",
+                "en": "The posted, not cancelled Stock Out being returned, chosen on the Start card. Shown here, fixed once the form is open.",
+                "id": "Stock Out yang sudah posting dan tidak dibatalkan yang diretur, dipilih di kartu Start. Ditampilkan di sini, tidak bisa diganti setelah form terbuka."
             },
             {
-                "label": "Destination Warehouse (usable goods) *",
+                "label": "Destination warehouse (usable goods) *",
                 "en": "Warehouse that receives the returned goods. Good-condition lines can only use its usable locations. Required.",
                 "id": "Gudang penerima barang retur. Baris kondisi layak hanya bisa memakai lokasi yang bisa dipakai di gudang ini. Wajib."
             },
             {
-                "label": "Source Process",
-                "en": "Process the goods came back from. Filled from the Stock Out, can be changed. Optional.",
-                "id": "Proses asal barang kembali. Terisi dari Stock Out, bisa diubah. Opsional."
+                "label": "Target process",
+                "en": "Process of the Stock Out, copied from it and shown only.",
+                "id": "Proses pada Stock Out, disalin darinya dan hanya ditampilkan."
             },
             {
                 "label": "Notes",
@@ -1772,7 +1780,7 @@
             },
             {
                 "label": "Item",
-                "en": "Item of the line, copied from the Stock Out.",
+                "en": "Item of the line, copied from the Stock Out (rows cannot be added or removed).",
                 "id": "Item baris, disalin dari Stock Out."
             },
             {
@@ -1782,27 +1790,27 @@
             },
             {
                 "label": "Returnable",
-                "en": "Quantity that may still be returned (issued minus earlier returns). Qty Retur cannot go above it.",
-                "id": "Jumlah yang masih boleh diretur (dikeluarkan dikurangi retur sebelumnya). Qty Retur tidak boleh melebihinya."
+                "en": "Quantity that may still be returned (issued minus earlier returns). Return qty cannot go above it.",
+                "id": "Jumlah yang masih boleh diretur (dikeluarkan dikurangi retur sebelumnya). Return qty tidak boleh melebihinya."
             },
             {
-                "label": "Return Qty *",
-                "en": "Quantity coming back, more than zero and not above Sisa Boleh. Required. The row turns red when too high.",
-                "id": "Jumlah yang kembali, lebih dari nol dan tidak lebih dari Sisa Boleh. Wajib. Baris menjadi merah bila kelebihan."
+                "label": "Return qty *",
+                "en": "Quantity coming back, more than zero and not above Returnable. Leave empty on lines that are not returned; at least one line needs a quantity.",
+                "id": "Jumlah yang kembali, lebih dari nol dan tidak lebih dari Returnable. Kosongkan pada baris yang tidak diretur; minimal satu baris berjumlah."
             },
             {
                 "label": "Condition *",
-                "en": "GOOD (Layak) goes back to a usable location. SCRAP (Afkir) goes to a location that is not usable, for example a waste bin.",
+                "en": "GOOD goes back to a usable bin of the destination warehouse. SCRAP goes to a bin that is not usable, for example a waste bin.",
                 "id": "GOOD (Layak) kembali ke lokasi yang bisa dipakai. SCRAP (Afkir) ke lokasi yang tidak bisa dipakai, misalnya bin waste."
             },
             {
-                "label": "Destination Location *",
-                "en": "Location that receives the goods. The list changes with Kondisi. Required.",
-                "id": "Lokasi penerima barang. Daftarnya berubah sesuai Kondisi. Wajib."
+                "label": "Bin *",
+                "en": "Bin that receives the goods: a usable bin of the destination warehouse for GOOD, a non-usable bin for SCRAP. Required on every returned line.",
+                "id": "Bin penerima barang: bin yang bisa dipakai di gudang tujuan untuk GOOD, bin yang tidak bisa dipakai untuk SCRAP. Wajib pada setiap baris yang diretur."
             },
             {
                 "label": "Description",
-                "en": "Reason for the line. Required for SCRAP lines, optional for GOOD.",
+                "en": "Reason for the line, saved with the line. Required for SCRAP lines, optional for GOOD.",
                 "id": "Alasan untuk baris. Wajib untuk baris SCRAP, opsional untuk GOOD."
             }
         ]

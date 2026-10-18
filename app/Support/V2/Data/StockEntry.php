@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * REMARK
- * Tujuan       : Bahan lookup dan baris form untuk dokumen stok manual v2 (Stock In dan Stock Out, lalu Return / Adjustment): cari item per kelas stok (RM bahan, FG product, SFG part), cari bin, cari batch, dan ubah baris dokumen tersimpan menjadi baris x-dl::lines.
+ * Tujuan       : Bahan lookup dan baris form untuk dokumen stok manual v2 (Stock In, Stock Out dan Return, lalu Adjustment): cari item per kelas stok (RM bahan, FG product, SFG part), cari bin, cari batch, dan ubah baris dokumen tersimpan menjadi baris x-dl::lines.
  * Sumber hulu  : tm2mst.mat_raw / prod_product / prod_part (activate = 1, sama dengan pencarian v1), tm2mst.wh_loc + wh_warehouse (bin aktif dan usable), tm2inv.inv_batch, baris dokumen rm_stock_d / fg_stock_d / sfg_stock_d.
  * Input        : Kelas stok (RM / FG / SFG), kata cari, id.
  * Output       : Baris lookup (Devlib\Lookup search / find) dan array baris form; hanya baca.
@@ -56,10 +56,10 @@ final class StockEntry
         return ['id' => (int) $m->{$id}, 'code' => (string) $m->{$code}, 'name' => trim((string) $m->{$name}), 'uom' => (string) $m->uom_stock, 'label' => $m->{$code}.' · '.trim((string) $m->{$name})];
     }
 
-    /** @return list<array<string, mixed>> bin aktif dan usable */
-    public static function binSearch(string $q, int $limit = 40): array
+    /** @return list<array<string, mixed>> bin aktif dan usable (Return: semua bin aktif, usable dan scrap) */
+    public static function binSearch(string $q, int $limit = 40, bool $usableOnly = true): array
     {
-        return self::bins()->where(fn ($w) => $w->where('l.location_code', 'like', "%{$q}%")->orWhere('l.location_name', 'like', "%{$q}%"))
+        return self::bins($usableOnly)->where(fn ($w) => $w->where('l.location_code', 'like', "%{$q}%")->orWhere('l.location_name', 'like', "%{$q}%"))
             ->orderBy('l.location_code')->limit($limit)->get()->map(fn ($r) => self::binRow($r))->all();
     }
 
@@ -74,14 +74,14 @@ final class StockEntry
     private static function bins(bool $usableOnly = true)
     {
         $q = WhLoc::query()->from('wh_loc as l')->join('wh_warehouse as w', 'w.id_warehouse', '=', 'l.warehouse_id')
-            ->select('l.location_id', 'l.location_code', 'l.location_name', 'l.warehouse_id', 'w.warehouse_code');
+            ->select('l.location_id', 'l.location_code', 'l.location_name', 'l.warehouse_id', 'l.is_usable', 'w.warehouse_code');
 
         return $usableOnly ? $q->where('l.activate', true)->where('l.is_usable', true) : $q;
     }
 
     private static function binRow($r): array
     {
-        return ['id' => (int) $r->location_id, 'code' => (string) $r->location_code, 'warehouse' => (string) $r->warehouse_code, 'label' => (string) $r->location_code];
+        return ['id' => (int) $r->location_id, 'code' => (string) $r->location_code, 'warehouse' => (string) $r->warehouse_code, 'type' => $r->is_usable ? 'Usable' : 'Scrap', 'label' => (string) $r->location_code];
     }
 
     /** @return list<array<string, mixed>> */

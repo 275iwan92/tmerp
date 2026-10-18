@@ -181,8 +181,6 @@ final class MenuRoutes
             // TETAP ditolak di keduanya -- barang jadi keluar cuma lewat
             // Delivery Order (Dispatch, belum dibangun), bukan Stock Out
             // generik (fg_out_bukan_milik_modul, dikonfirmasi user 2026-08-22).
-            'INV_RM_ITEM3' => route('inv.stock-return.index', ['category' => 'RM']),
-            'INV_SFG_ITEM3' => route('inv.stock-return.index', ['category' => 'SFG']),
             'INV_RM_ITEM4' => route('inv.stock-adj.index', ['category' => 'RM']),
             'INV_FG_ITEM4' => route('inv.stock-adj.index', ['category' => 'FG']),
             'INV_SFG_ITEM4' => route('inv.stock-adj.index', ['category' => 'SFG']),

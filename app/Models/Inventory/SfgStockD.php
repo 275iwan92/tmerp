@@ -1,5 +1,5 @@
 <?php
-
+/* REMARK Tujuan: baris dokumen stok barang setengah jadi (tm2inv.sfg_stock_d), termasuk qty_returned, return_condition, source_detail_id dan line_note (Description per baris, ditambah 2026-10-19). Sumber hulu: StockDocumentService, StockDocEntryService. Input: kolom baris. Output: model Eloquent. Dipakai oleh: StockPostingService, StockReversalService, grid dan form dokumen stok. Status: Aktif. */
 namespace App\Models\Inventory;
 
 use App\Models\Master\WhLoc;
@@ -21,7 +21,7 @@ class SfgStockD extends Model
 
     protected $fillable = [
         'doc_id', 'seq_no', 'parts_id', 'product_id', 'qty', 'qty_returned',
-        'qty_system', 'qty_physical', 'action_type', 'return_condition', 'source_detail_id',
+        'qty_system', 'qty_physical', 'action_type', 'return_condition', 'line_note', 'source_detail_id',
         'uom_code', 'lot_no', 'unit_price', 'qty_unitprice', 'location_id', 'cancel_reason',
         'batch_id', 'owner_type', 'owner_id',
         'create_by', 'update_by',

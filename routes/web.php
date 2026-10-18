@@ -257,7 +257,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // fg_out_bukan_milik_modul) -- {category} tetap di URL, ditolak di
             // level route (mount()) kalau bukan RM, bukan cuma disembunyikan di UI.
             Route::get('/inventory/stock-out/{category}', fn (Illuminate\Http\Request $r, string $category) => redirect($r->query('open') ? '/v2/s/inv-stock-doc-form?kind=out&class='.strtoupper($category).'&id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/inv-stock-doc-form?kind=out&class='.strtoupper($category).'&new=1' : '/v2/s/inv-'.strtolower($category).'-stock-out')))->name('inv.stock-out.index');
-            Route::livewire('/inventory/stock-return/{category}', 'pages::inventory.stock-return')->name('inv.stock-return.index');
+            Route::get('/inventory/stock-return/{category}', fn (Illuminate\Http\Request $r, string $category) => redirect($r->query('open') ? '/v2/s/inv-stock-doc-form?kind=return&class='.strtoupper($category).'&id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/inv-stock-doc-form?kind=return&class='.strtoupper($category).'&new=1' : '/v2/s/inv-'.strtolower($category).'-stock-return')))->name('inv.stock-return.index');
             // Adjustment & Opname mencakup RM/FG/SFG (inventory_tier4.md #4) -- entri
             // & approval route TERPISAH (inventory_rules.yaml layar_terpisah).
             // {doc?} opsional -- dipakai layar Persetujuan (approval) utk deep-link
