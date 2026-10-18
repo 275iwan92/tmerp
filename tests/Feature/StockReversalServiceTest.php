@@ -56,6 +56,8 @@ class StockReversalServiceTest extends TestCase
         DB::connection('tm2mst')->table('mat_raw')->where('material_id', $this->material->material_id)->update(['cur_stock' => $this->curStock]);
         $this->assertSame(0, RmStockcard::query()->where('create_by', self::BY)->count());
         $this->assertSame(0, RmStock::query()->where('create_by', self::BY)->count());
+        $this->assertSame(0, RmStock::query()->where('notes', 'like', 'Reversal of ZZV/%')->count(), 'pembalik uji lewat layar harus bersih');
+        $this->assertSame(0, RmStockcard::query()->where('create_by', 'johiwan')->where('create_log', '>=', now()->startOfDay())->whereNotIn('reference_name', ['tm2inv.inv_transfer_line:OUT', 'tm2inv.inv_transfer_line:IN'])->whereNotIn('reference_detail_id', RmStockD::query()->select('doc_detail_id'))->count(), 'baris Kartu Stok yatim dari uji harus bersih');
         $this->assertSame(0, RmStockD::query()->where('create_by', self::BY)->count());
         $this->assertSame(0, InvPeriod::query()->where('created_by', self::BY)->count());
         $this->assertSame(0, FinVoucher::withoutGlobalScopes()->where('created_by', self::BY)->count());
@@ -65,6 +67,12 @@ class StockReversalServiceTest extends TestCase
 
     private function clean(): void
     {
+        // Pembalik yang dibuat lewat route layar dibuat oleh user yang login (bukan BY): dicari lewat dokumen asalnya sebelum dokumen asal dihapus.
+        $origins = RmStock::query()->where('create_by', self::BY)->pluck('doc_id');
+        $viaScreen = RmStock::query()->whereIn('reverses_doc_id', $origins)->where('create_by', '!=', self::BY)->pluck('doc_id');
+        RmStockcard::query()->where('reference_name', app(StockPostingService::class)->referenceName('RM'))->whereIn('reference_detail_id', RmStockD::query()->whereIn('doc_id', $viaScreen)->pluck('doc_detail_id'))->delete();
+        RmStockD::query()->whereIn('doc_id', $viaScreen)->delete();
+        RmStock::query()->whereIn('doc_id', $viaScreen)->delete();
         // Pembalik + dokumen asal + salinan Duplicate: semuanya dibuat oleh BY.
         RmStockcard::query()->where('create_by', self::BY)->delete();
         RmStockD::query()->where('create_by', self::BY)->delete();
