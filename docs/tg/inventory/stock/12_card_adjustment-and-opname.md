@@ -1,7 +1,7 @@
 # Concept card: Stock Adjustment, Physical Count (Opname) and Adjustment Approval
 
 > Written 2026-10-16 (group Inventory/Stock). FACT = mockup DB (`ddtinv`, `ddtmst`) and code with line numbers, seen this session. No test was run (no DB writes allowed in this task).
-> Verified: 2026-10-16
+> Verified: 2026-10-18
 
 - **Document type**: concept card. **Module/sub-module**: Inventory > Stock > (Raw Material | Finished Goods | Semi Finished Goods) > "Stock Adjustment & Physical Count" and "Adjustment Approval" (menu `INV_RM_ITEM4`/`INV_RM_ITEM5`, `INV_FG_ITEM4`/`INV_FG_ITEM5`, `INV_SFG_ITEM4`/`INV_SFG_ITEM5`; FACT `sys_app_menu`; all three Approval items open the same screen `v2:approval-stock`).
 - **Canonical name**: a Stock Document (card `10_card_stock-document.md`) with `doc_cat` AD (single correction) or OP (scheduled physical count / opname). Flow engine module codes: AD and OP.
@@ -44,3 +44,4 @@ Searched: menu `INV_*_ITEM4/5`, `stock-adjustment.blade.php`, `ApprovalCenter`, 
 <!-- johiwan-only -->
 ## Amounts (Costing/Direksi only)
 Inactive higher steps: AD/OP step 111/114 (second level) applies 5,000,000 to 25,000,000, step 112/115 from 25,000,000; constants `INV_ADJ_LIMIT_L1` = 5,000,000 and `INV_ADJ_LIMIT_L2` = 25,000,000 (mockup `sys_constant`). Before 2026-09-30 an adjustment above 5,000,000 needed the Manajer Operasional and above 25,000,000 the Direksi; today every amount needs the single active step.
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

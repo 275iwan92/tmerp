@@ -1,6 +1,6 @@
 # Concept card: Purchase Return (PRT, retur ke supplier)
 
-> Written 2026-10-17 (group Procurement). FACT = mockup DB (`--env=mockup`, `tm2pur` = `ddtpur`) and code with line numbers seen in this session. The table has **0 rows** in the mockup data, so everything below is from code and schema; nothing was run. Verified: 2026-10-17.
+> Written 2026-10-17 (group Procurement). FACT = mockup DB (`--env=mockup`, `tm2pur` = `ddtpur`) and code with line numbers seen in this session. The table has **0 rows** in the mockup data, so everything below is from code and schema; nothing was run. Verified: 2026-10-18.
 
 - **Document type**: concept card. **Module/sub-module**: Procurement > Return > Purchase Return (`PROC_RET`, target `v2:purchase-return`, a grid whose form is the v1 component) and Purchase Return Approval Center (`PROC_RET_APPR`).
 - **Canonical name**: Purchase Return = `tm2pur.prt_return` (header) + `prt_line` (lines). Document number prefix NRB.
@@ -37,3 +37,4 @@
 
 ## Already exists? Searched where, result
 `concept:find "purchase return"` (no card; menu `PROC_RET`, `PROC_RET_APPR`); files `PurchaseReturnGrid.php`, `resources/views/pages/pur/prt/index.blade.php`, `resources/views/pages/pur/prt/entry.blade.php`; tables `prt_*`; help topics `approval-prt`. Result: ALREADY EXISTS in v1 (components) with a v2 grid; the full v2 design of Jo (Draft, Confirm, approval, ship goods with Stock Out and journal, Closed on credit note) is only a preview mentioned in the backlog (FROM DOCUMENT, not built).
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

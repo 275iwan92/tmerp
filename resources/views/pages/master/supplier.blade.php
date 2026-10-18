@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Komponen v1 untuk layar "Master Supplier" (dibuka dari grid v2 lewat Open / New). Teks tampilan (label, kolom, tab, tombol, pesan) English sesuai keputusan Jo 2026-10-18; nilai tersimpan dan kunci data tidak diubah.
+ * Sumber hulu  : Tabel dan service yang dibaca komponen ini (lihat query di file); tidak ada logika hulu baru.
+ * Input        : Isian form dan filter layar.
+ * Output       : Simpan ke tabel modul terkait lewat service yang sama seperti sebelumnya.
+ * Dipakai oleh : Grid v2 modul terkait (v1Route).
+ * Status       : Aktif; teks tampilan English (Jo 2026-10-18).
+ */
+
+
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\SupCategory;
@@ -604,12 +615,12 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
 
         if ($reasons !== []) {
             $supplier->update(['activate' => false, 'updated_by' => Auth::user()->login]);
-            $this->actionMessage = 'Tidak bisa dihapus — masih dipakai oleh '.implode(' & ', $reasons).'. Supplier sudah dinonaktifkan sebagai gantinya.';
+            $this->actionMessage = 'Cannot be deleted — still used by '.implode(' & ', $reasons).'. The supplier has been deactivated instead.';
         } else {
             $supplier->delete();
             $this->selectedId = null;
             $this->panel = 'grid';
-            $this->actionMessage = 'Supplier berhasil dihapus permanen.';
+            $this->actionMessage = 'Supplier permanently deleted.';
         }
 
         unset($this->suppliers);
@@ -624,7 +635,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
         $supplier = SupSupplier::findOrFail($this->selectedId);
         $supplier->update(['is_blacklisted' => ! $supplier->is_blacklisted, 'updated_by' => Auth::user()->login]);
 
-        $this->actionMessage = $supplier->is_blacklisted ? 'Supplier diblokir.' : 'Blokir supplier dibuka.';
+        $this->actionMessage = $supplier->is_blacklisted ? 'Supplier blocked.' : 'Supplier unblocked.';
         unset($this->suppliers);
     }
 
@@ -633,11 +644,11 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
     {
         return [
             'total' => ['label' => Translator::t('mdata_sup_stat_total', 'Total Supplier'), 'value' => $this->metricTotal, 'tone' => 'total'],
-            'active' => ['label' => Translator::t('mdata_active', 'Aktif'), 'value' => $this->metricActive, 'tone' => 'active',
+            'active' => ['label' => 'Active', 'value' => $this->metricActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'subcon' => ['label' => Translator::t('mdata_sup_stat_subcon', 'Subkontraktor'), 'value' => $this->metricSubcon, 'tone' => 'extra',
+            'subcon' => ['label' => 'Subcontractor', 'value' => $this->metricSubcon, 'tone' => 'extra',
                 'filter' => fn ($q) => $q->where('is_subcon', true)],
-            'blocked' => ['label' => Translator::t('mdata_sup_stat_blocked', 'Terblokir'), 'value' => $this->metricBlocked, 'tone' => 'critical',
+            'blocked' => ['label' => 'Blocked', 'value' => $this->metricBlocked, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('is_blacklisted', true)],
         ];
     }
@@ -655,7 +666,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.toolbar class="!border !border-[#d7dbe2] !border-b-0 rounded-t-md">
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.400ms="q" placeholder="{{ Translator::t('mdata_sup_search_placeholder', 'Cari nama / kode / PIC...') }}"
+                    <input type="text" wire:model.live.debounce.400ms="q" placeholder="{{ 'Search name / code / PIC...' }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -674,9 +685,9 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                     <thead>
                         <tr>
                             <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">Supplier</th>
-                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_rm_col_category', 'Kategori') }}</th>
-                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_sup_col_contact', 'Kontak PIC') }}</th>
-                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_sup_col_terms', 'Termin') }}</th>
+                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ 'Category' }}</th>
+                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ 'PIC Contact' }}</th>
+                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ 'Payment Term' }}</th>
                             <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_col_status', 'Status') }}</th>
                             <th class="w-10 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                         </tr>
@@ -685,28 +696,28 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                         @forelse ($this->suppliers as $s)
                             <tr wire:click="selectRow({{ $s->id_supplier }})" wire:dblclick="editRow({{ $s->id_supplier }})"
                                 class="cursor-pointer hover:bg-[#f8f9fb] {{ $selectedId === $s->id_supplier ? 'bg-[#e8f0fe]' : '' }}"
-                                title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                                title="{{ 'Double-click to open detail' }}">
                                 <x-grid.identity-cell :id="$s->id_supplier" :name="$s->supplier_name" :code="$s->supplier_code" class="!border-b !border-[#d7dbe2]" />
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->category ?: '—' }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->contact_name ?: '—' }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->paymentTerm?->term_label ?? '—' }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">
                                     <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block {{ $s->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">
-                                        {{ $s->activate ? Translator::t('mdata_active', 'Aktif') : Translator::t('mdata_inactive', 'Nonaktif') }}
+                                        {{ $s->activate ? 'Active' : 'Inactive' }}
                                     </span>
                                     @if ($s->is_blacklisted)
-                                        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] ml-1">🚫 {{ Translator::t('mdata_sup_blocked_badge', 'Blokir') }}</span>
+                                        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] ml-1">🚫 {{ 'Blocked' }}</span>
                                     @endif
                                 </td>
                                 <td class="text-right px-1 py-2 border-b border-[#d7dbe2] whitespace-nowrap">
                                     <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="editRow({{ $s->id_supplier }})" />
-                                    <x-grid.action-icon :active="$s->activate" :title="$s->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $s->id_supplier }})"
-                                        :confirm="($s->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' supplier '.$s->supplier_name.'?'"
+                                    <x-grid.action-icon :active="$s->activate" :title="$s->activate ? 'Deactivate' : 'Activate'" action="toggleActive({{ $s->id_supplier }})"
+                                        :confirm="($s->activate ? 'Deactivate' : 'Activate').' supplier '.$s->supplier_name.'?'"
                                         :variant="$s->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" :message="Translator::t('mdata_sup_empty', 'Belum ada data supplier').($q ? Translator::t('mdata_sup_empty_search_suffix', ' untuk pencarian ini') : '').'.'" />
+                            <x-grid.empty-row :colspan="6" :message="'No supplier data yet'.($q ? ' for this search' : '').'.'" />
                         @endforelse
                     </tbody>
                 </table>
@@ -718,12 +729,12 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
         @if ($panel === 'form')
             <div class="flex justify-between items-center bg-[#2c3e69] text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">
-                    {{ $editingId ? 'Edit Supplier' : 'Supplier Baru' }}
+                    {{ $editingId ? 'Edit Supplier' : 'New Supplier' }}
                     @if ($editingId)<span class="text-xs font-normal opacity-75 ml-2">{{ $supplier_code }}</span>@endif
                 </div>
             </div>
             <div class="flex gap-1 bg-[#fafbfc] border-x border-b border-[#d7dbe2] px-3 pt-2">
-                @foreach (['identitas' => 'Identitas', 'alamat' => 'Alamat', 'kontak' => 'Kontak PIC', 'termin' => 'Termin & Pajak'] as $tabKey => $tabLabel)
+                @foreach (['identitas' => 'Identity', 'alamat' => 'Address', 'kontak' => 'PIC Contact', 'termin' => 'Terms & Tax'] as $tabKey => $tabLabel)
                     <button type="button" wire:click="setFormTab('{{ $tabKey }}')"
                         class="px-3.5 py-2 text-xs font-semibold rounded-t-md border border-b-0 cursor-pointer relative -mb-px
                             {{ $formTab === $tabKey ? 'bg-white border-[#d7dbe2] text-[#2c3e69]' : 'bg-transparent border-transparent text-[#6b7280] hover:text-[#2c3e69]' }}">
@@ -736,37 +747,37 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
             </div>
             <form wire:submit="save" novalidate class="bg-white border border-t-0 border-[#d7dbe2] p-5">
                 <div class="{{ $formTab === 'identitas' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Identitas</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Identity</h3>
                     <div class="[display:grid] grid-cols-3 gap-3">
-                        <x-form.input label="Kode Supplier" name="supplier_code" wire:model="supplier_code" maxlength="50" />
+                        <x-form.input label="Supplier Code" name="supplier_code" wire:model="supplier_code" maxlength="50" />
                         <div class="col-span-2">
-                            <x-form.input label="Nama Supplier" name="supplier_name" wire:model="supplier_name" maxlength="200" />
+                            <x-form.input label="Supplier Name" name="supplier_name" wire:model="supplier_name" maxlength="200" />
                         </div>
-                        <x-form.select label="Kategori" name="category" wire:model="category" :options="$this->categories->pluck('category_code', 'category_code')" :selected="$category" />
+                        <x-form.select label="Category" name="category" wire:model="category" :options="$this->categories->pluck('category_code', 'category_code')" :selected="$category" />
                         <x-form.input label="NPWP" wire:model="tax_code" maxlength="25" placeholder="00.000.000.0-000.000" />
                         <div class="flex flex-col gap-1">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Status</label>
-                            <x-form.checkbox label="Aktif" wire:model="activate" />
+                            <x-form.checkbox label="Active" wire:model="activate" />
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Blokir</label>
-                            <x-form.checkbox label="🚫 Blokir supplier ini (bermasalah)" wire:model="is_blacklisted" label-class="text-[#c0392b]" />
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Block</label>
+                            <x-form.checkbox label="🚫 Block this supplier (problematic)" wire:model="is_blacklisted" label-class="text-[#c0392b]" />
                         </div>
                         <div class="col-span-3">
-                            <x-form.textarea label="Catatan" wire:model="note" rows="2" placeholder="mis. alasan blokir, riwayat masalah kualitas/pengiriman, dsb" />
+                            <x-form.textarea label="Notes" wire:model="note" rows="2" placeholder="e.g. reason for blocking, history of quality/delivery problems, etc." />
                         </div>
                     </div>
                 </div>
 
                 <div class="{{ $formTab === 'alamat' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Alamat</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Address</h3>
                     <div class="[display:grid] grid-cols-2 gap-3">
                         <div class="col-span-2">
-                            <x-form.textarea label="Alamat Lengkap" wire:model="default_address" rows="2" placeholder="Jalan, nomor, RT/RW, patokan" />
+                            <x-form.textarea label="Full Address" wire:model="default_address" rows="2" placeholder="Street, number, RT/RW, landmark" />
                         </div>
                         <div class="flex flex-col gap-1 col-span-2">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">
-                                Wilayah <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-lg ml-1 bg-[#fff8e1] text-[#b98900] normal-case">◆ ketik kelurahan / kecamatan / kota / provinsi / kode pos</span>
+                                Area <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-lg ml-1 bg-[#fff8e1] text-[#b98900] normal-case">◆ type sub-district / district / city / province / postal code</span>
                             </label>
                             <livewire:address-picker
                                 field-name="supplier-address"
@@ -775,16 +786,16 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                                 :initial-label="$address_label"
                                 wire:key="addr-picker-{{ $editingId ?? 'new' }}" />
                         </div>
-                        <x-form.input label="Kode Pos" wire:model="postal_code" maxlength="20" placeholder="Auto dari wilayah, bisa diubah" />
+                        <x-form.input label="Postal Code" wire:model="postal_code" maxlength="20" placeholder="Auto from area, can be changed" />
                     </div>
                 </div>
 
                 <div class="{{ $formTab === 'kontak' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Kontak PIC</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">PIC Contact</h3>
                     <div class="[display:grid] grid-cols-3 gap-3">
-                        <x-form.input label="Nama PIC" wire:model="contact_name" maxlength="200" />
-                        <x-form.input label="No. Telepon" wire:model="phone" maxlength="50" />
-                        <x-form.input label="Telepon 2" wire:model="phone_2" maxlength="50" />
+                        <x-form.input label="PIC Name" wire:model="contact_name" maxlength="200" />
+                        <x-form.input label="Phone No." wire:model="phone" maxlength="50" />
+                        <x-form.input label="Phone 2" wire:model="phone_2" maxlength="50" />
                         <x-form.input label="Fax" wire:model="fax" maxlength="20" />
                         <x-form.input label="Email" name="email" type="email" wire:model="email" maxlength="150" />
                         <x-form.input label="Website" wire:model="website" maxlength="150" />
@@ -792,18 +803,18 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="{{ $formTab === 'termin' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Termin &amp; Pajak</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Terms &amp; Tax</h3>
                     <div class="[display:grid] grid-cols-3 gap-3">
-                        <x-form.select label="Termin Bayar" name="payment_term" wire:model="payment_term"
+                        <x-form.select label="Payment Term" name="payment_term" wire:model="payment_term"
                             :options="$this->paymentTerms->pluck('term_label', 'payment_term_code')" :selected="$payment_term" />
-                        <x-form.input label="Tarif Pajak Pembelian (%)" type="number" step="0.01" min="0" max="100" wire:model="tax_purchase_value" />
-                        <x-form.input label="Tarif Pajak Jasa (%)" type="number" step="0.01" min="0" max="100" wire:model="tax_service_value" />
+                        <x-form.input label="Purchase Tax Rate (%)" type="number" step="0.01" min="0" max="100" wire:model="tax_purchase_value" />
+                        <x-form.input label="Service Tax Rate (%)" type="number" step="0.01" min="0" max="100" wire:model="tax_service_value" />
                     </div>
                 </div>
 
                 <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                    <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-[#2f6fed] text-white border border-[#2f6fed] cursor-pointer">Simpan</button>
-                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-[#2f6fed] text-white border border-[#2f6fed] cursor-pointer">Save</button>
+                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Cancel</button>
                 </div>
             </form>
         @endif
@@ -813,8 +824,8 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
             @php($d = $this->selectedSupplier)
             <div class="flex justify-between items-start bg-[#2c3e69] text-white px-5 py-4.5 rounded-t-md">
                 <div>
-                    <div class="text-base font-bold">{{ $d->supplier_name }} @if ($d->is_blacklisted)<span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] align-middle ml-2">🚫 Blokir</span>@endif</div>
-                    <div class="text-xs opacity-75 mt-1">{{ $d->supplier_code }} · {{ $d->category ?: 'kategori belum diisi' }} · {{ $d->paymentTerm?->term_label ?? 'termin belum diisi' }}</div>
+                    <div class="text-base font-bold">{{ $d->supplier_name }} @if ($d->is_blacklisted)<span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] align-middle ml-2">🚫 Blocked</span>@endif</div>
+                    <div class="text-xs opacity-75 mt-1">{{ $d->supplier_code }} · {{ $d->category ?: 'category not filled' }} · {{ $d->paymentTerm?->term_label ?? 'payment term not filled' }}</div>
                 </div>
             </div>
             @if ($actionMessage)
@@ -822,19 +833,19 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
             @endif
             <div class="bg-white border border-t-0 border-[#d7dbe2] rounded-b-md p-4.5">
                 <div class="text-xs text-[#8a94a6] bg-[#fafbfc] border border-dashed border-[#d7dbe2] rounded-md px-3.5 py-3">
-                    Riwayat Purchase Order belum tersedia — modul Purchasing (tm2pur) belum dibangun. Bagian ini akan menampilkan daftar PO per supplier begitu modul tersebut ada.
+                    Purchase Order history is not available yet — the Purchasing module (tm2pur) has not been built. This section will list POs per supplier once the module exists.
                 </div>
                 @if ($d->note)
                     <div class="text-xs text-[#8a6d00] bg-[#fff8e1] border border-dashed border-[#e6d38a] rounded-md px-3.5 py-3 mt-3">
-                        <div class="text-[10.5px] uppercase font-bold mb-1">Catatan</div>{{ $d->note }}
+                        <div class="text-[10.5px] uppercase font-bold mb-1">Notes</div>{{ $d->note }}
                     </div>
                 @endif
                 <div class="[display:grid] grid-cols-2 gap-3 mt-4">
                     <div class="border border-[#d7dbe2] rounded-md p-3">
                         <div class="flex items-center mb-2">
-                            <div class="text-[10.5px] text-[#8a94a6] uppercase">Kontak</div>
+                            <div class="text-[10.5px] text-[#8a94a6] uppercase">Contacts</div>
                             <span class="flex-1"></span>
-                            <button type="button" wire:click="openContactModal('new')" class="text-[11px] font-semibold text-[#2f6fed] cursor-pointer">+ Tambah</button>
+                            <button type="button" wire:click="openContactModal('new')" class="text-[11px] font-semibold text-[#2f6fed] cursor-pointer">+ Add</button>
                         </div>
                         <div class="flex items-start justify-between gap-2 py-1.5 border-b border-[#f0f2f5]">
                             <div>
@@ -852,29 +863,29 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                                 </div>
                                 <div class="flex gap-1 shrink-0">
                                     @unless ($ct->is_default)
-                                        <button type="button" wire:click="setDefaultContact({{ $ct->id_supplier_contact }})" title="Jadikan default" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">★</button>
+                                        <button type="button" wire:click="setDefaultContact({{ $ct->id_supplier_contact }})" title="Make default" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">★</button>
                                     @endunless
                                     <button type="button" wire:click="openContactModal('edit', {{ $ct->id_supplier_contact }})" title="Edit" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">✎</button>
-                                    <button type="button" wire:click="deleteContact({{ $ct->id_supplier_contact }})" wire:confirm="Hapus kontak {{ $ct->contact_name }}?" title="Hapus" class="w-6 h-6 rounded border border-[#f0c4c4] text-[#c0392b] text-[10px] cursor-pointer">🗑</button>
+                                    <button type="button" wire:click="deleteContact({{ $ct->id_supplier_contact }})" wire:confirm="Delete contact {{ $ct->contact_name }}?" title="Delete" class="w-6 h-6 rounded border border-[#f0c4c4] text-[#c0392b] text-[10px] cursor-pointer">🗑</button>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
                         <div class="flex items-center mb-2">
-                            <div class="text-[10.5px] text-[#8a94a6] uppercase">Alamat</div>
+                            <div class="text-[10.5px] text-[#8a94a6] uppercase">Address</div>
                             <span class="flex-1"></span>
-                            <button type="button" wire:click="openBranchModal('new')" class="text-[11px] font-semibold text-[#2f6fed] cursor-pointer">+ Tambah Cabang</button>
+                            <button type="button" wire:click="openBranchModal('new')" class="text-[11px] font-semibold text-[#2f6fed] cursor-pointer">+ Add Branch</button>
                         </div>
                         <div class="py-1.5 border-b border-[#f0f2f5]">
-                            <div class="text-xs font-semibold">Kantor Pusat <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#2f6fed] ml-1">UTAMA</span></div>
+                            <div class="text-xs font-semibold">Head Office <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#2f6fed] ml-1">UTAMA</span></div>
                             <div class="text-xs">{{ $d->default_address ?: '—' }}</div>
                             <div class="text-xs text-[#6b7280] mt-0.5">{{ $d->postal_code ?: '—' }}</div>
                         </div>
                         @foreach ($d->branches as $br)
                             <div class="flex items-start justify-between gap-2 py-1.5 border-b border-[#f0f2f5] last:border-b-0">
                                 <div>
-                                    <div class="text-xs font-semibold">{{ $br->branch_name ?: 'Cabang' }}
+                                    <div class="text-xs font-semibold">{{ $br->branch_name ?: 'Branch' }}
                                         @if ($br->is_default)<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c] ml-1">DEFAULT</span>@endif
                                     </div>
                                     <div class="text-xs">{{ $br->address ?: '—' }}</div>
@@ -882,10 +893,10 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                                 </div>
                                 <div class="flex gap-1 shrink-0">
                                     @unless ($br->is_default)
-                                        <button type="button" wire:click="setDefaultBranch({{ $br->id_supplier_branch }})" title="Jadikan default" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">★</button>
+                                        <button type="button" wire:click="setDefaultBranch({{ $br->id_supplier_branch }})" title="Make default" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">★</button>
                                     @endunless
                                     <button type="button" wire:click="openBranchModal('edit', {{ $br->id_supplier_branch }})" title="Edit" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">✎</button>
-                                    <button type="button" wire:click="deleteBranch({{ $br->id_supplier_branch }})" wire:confirm="Hapus cabang {{ $br->branch_name ?: 'ini' }}?" title="Hapus" class="w-6 h-6 rounded border border-[#f0c4c4] text-[#c0392b] text-[10px] cursor-pointer">🗑</button>
+                                    <button type="button" wire:click="deleteBranch({{ $br->id_supplier_branch }})" wire:confirm="Delete branch {{ $br->branch_name ?: 'this' }}?" title="Delete" class="w-6 h-6 rounded border border-[#f0c4c4] text-[#c0392b] text-[10px] cursor-pointer">🗑</button>
                                 </div>
                             </div>
                         @endforeach
@@ -893,10 +904,10 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </div>
             <div class="flex gap-2 mt-3">
-                <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">← Kembali ke Daftar</button>
-                <button type="button" wire:click="editSupplier" class="px-4 py-2 rounded text-xs font-semibold bg-[#2f6fed] text-white border border-[#2f6fed] cursor-pointer">Edit Supplier Ini</button>
-                <button type="button" wire:click="toggleBlacklist" wire:confirm="Ubah status blokir supplier ini?" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ $d->is_blacklisted ? '✅ Buka Blokir' : '🚫 Blokir' }}</button>
-                <button type="button" wire:click="deleteSupplier" wire:confirm="Hapus supplier ini? Kalau masih dipakai transaksi, akan dinonaktifkan saja." class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#f0c4c4] text-[#c0392b] cursor-pointer">🗑 Hapus</button>
+                <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">← Back</button>
+                <button type="button" wire:click="editSupplier" class="px-4 py-2 rounded text-xs font-semibold bg-[#2f6fed] text-white border border-[#2f6fed] cursor-pointer">Edit This Supplier</button>
+                <button type="button" wire:click="toggleBlacklist" wire:confirm="Change the blocked status of this supplier?" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ $d->is_blacklisted ? '✅ Unblock' : '🚫 Block' }}</button>
+                <button type="button" wire:click="deleteSupplier" wire:confirm="Delete this supplier? If it is still used by transactions, it will only be deactivated." class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#f0c4c4] text-[#c0392b] cursor-pointer">🗑 Delete</button>
             </div>
         @endif
 
@@ -905,25 +916,25 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
             <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeContactModal">
                 <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
                     <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                        <span>{{ $contactMode === 'edit' ? 'Edit Kontak' : 'Kontak Baru' }}</span>
+                        <span>{{ $contactMode === 'edit' ? 'Edit Contact' : 'New Contact' }}</span>
                         <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeContactModal">✕</span>
                     </div>
                     <form wire:submit="saveContact" novalidate class="p-4 flex flex-col gap-3">
-                        <x-form.input label="Nama Kontak *" name="c_contact_name" wire:model="c_contact_name" />
-                        <x-form.input label="Jabatan" wire:model="c_position" />
+                        <x-form.input label="Contact Name *" name="c_contact_name" wire:model="c_contact_name" />
+                        <x-form.input label="Position" wire:model="c_position" />
                         <div class="flex gap-2.5">
                             <div class="flex-1">
-                                <x-form.input label="Telepon" wire:model="c_phone" />
+                                <x-form.input label="Phone" wire:model="c_phone" />
                             </div>
                             <div class="flex-1">
                                 <x-form.input label="Email" name="c_email" type="email" wire:model="c_email" />
                             </div>
                         </div>
-                        <x-form.textarea label="Catatan" wire:model="c_note" rows="2" />
-                        <x-form.checkbox label="Jadikan kontak default" wire:model="c_is_default" />
+                        <x-form.textarea label="Notes" wire:model="c_note" rows="2" />
+                        <x-form.checkbox label="Make default contact" wire:model="c_is_default" />
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                            <button type="button" wire:click="closeContactModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                            <button type="button" wire:click="closeContactModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Cancel</button>
+                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Save</button>
                         </div>
                     </form>
                 </div>
@@ -935,14 +946,14 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
             <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeBranchModal">
                 <div class="bg-white rounded-xl w-[480px] max-w-[92vw] shadow-2xl">
                     <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                        <span>{{ $branchMode === 'edit' ? 'Edit Cabang' : 'Cabang Baru' }}</span>
+                        <span>{{ $branchMode === 'edit' ? 'Edit Branch' : 'New Branch' }}</span>
                         <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeBranchModal">✕</span>
                     </div>
                     <form wire:submit="saveBranch" novalidate class="p-4 flex flex-col gap-3">
-                        <x-form.input label="Nama Cabang" wire:model="branch_name" placeholder="mis. Gudang Surabaya" />
-                        <x-form.textarea label="Alamat" wire:model="branch_address" rows="2" />
+                        <x-form.input label="Branch Name" wire:model="branch_name" placeholder="e.g. Surabaya Warehouse" />
+                        <x-form.textarea label="Address" wire:model="branch_address" rows="2" />
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Wilayah</label>
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Area</label>
                             <livewire:address-picker
                                 field-name="supplier-branch-address"
                                 :initial-area-id="$branch_area_id"
@@ -952,16 +963,16 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                         <div class="flex gap-2.5">
                             <div class="flex-1">
-                                <x-form.input label="Kode Pos" wire:model="branch_postal_code" />
+                                <x-form.input label="Postal Code" wire:model="branch_postal_code" />
                             </div>
                             <div class="flex-1">
-                                <x-form.input label="Telepon" wire:model="branch_phone" />
+                                <x-form.input label="Phone" wire:model="branch_phone" />
                             </div>
                         </div>
-                        <x-form.checkbox label="Jadikan cabang default" wire:model="branch_is_default" />
+                        <x-form.checkbox label="Make default branch" wire:model="branch_is_default" />
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                            <button type="button" wire:click="closeBranchModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                            <button type="button" wire:click="closeBranchModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Cancel</button>
+                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Save</button>
                         </div>
                     </form>
                 </div>

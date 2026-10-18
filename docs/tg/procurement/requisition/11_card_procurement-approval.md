@@ -1,6 +1,6 @@
 # Concept card: Procurement approval (PR, PO, Cash PO, Purchase Return)
 
-> Written 2026-10-17 (group Procurement). FACT = mockup DB (`--env=mockup`, flow tables in `tm2mst` = schema `ddtmst`) and code with line numbers, seen in this session. The Flow engine itself belongs to the Flow module (no card yet); this card only records how Procurement documents use it. Verified: 2026-10-17.
+> Written 2026-10-17 (group Procurement). FACT = mockup DB (`--env=mockup`, flow tables in `tm2mst` = schema `ddtmst`) and code with line numbers, seen in this session. The Flow engine itself belongs to the Flow module (no card yet); this card only records how Procurement documents use it. Verified: 2026-10-18.
 
 - **Document type**: concept card. **Module/sub-module**: Procurement > Requisition > PR Approval Center (`PROC_PR_APPR`, `v2:approval-pr`), Order > PO Approval Center (`PROC_PO_APPR`, `v2:approval-po`), Return > Purchase Return Approval Center (`PROC_RET_APPR`, `v2:approval-prt`); the approver can also decide inside the document form.
 - **Canonical name**: Procurement approval = rows of `flow_config` + `flow_config_step` (the rule) and `flow_log` (the history) for module codes **PR**, **PO**, **POC** (PO Kontan / Cash PO) and **PRT** (Purchase Return), run by `FlowEngineService`.
@@ -40,3 +40,4 @@
 
 ## Already exists? Searched where, result
 Searched `concept:find "approval"`-style in code: `FlowEngineService`, `FlowDocument`, `ApprovalCenter`, `ApprovalSetting`, menu `PROC_*_APPR` and `SET_APPROVAL`, tables `flow_*`. Result: ALREADY EXISTS and is generic; Procurement adds no engine of its own. Design note `docs/design-notes/procurement/01_procurement-pr-po-approval-from-mrp.md` (FROM DOCUMENT) proposes a PR value limit and a "Director instruction" flag; neither exists (no constant and no column found by grep of `pr_requisition` / `po_order` columns). Checked: its sentence "PR oleh OPM; PO oleh Product Costing lalu OPM" matches only the part of the PO rule up to 1,000,000.
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

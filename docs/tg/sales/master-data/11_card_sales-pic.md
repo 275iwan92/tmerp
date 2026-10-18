@@ -31,4 +31,4 @@
 4. **`employee_id` is empty for 3 INTERNAL sales**: the link to employees is not used yet; do not fill it from `employee_id=1`.
 ## Already exists? Searched where, result
 Searched: `sales_person`, `pic_sales`, `sales_pic`, `sales_person_id` in `ddtmst`, `ddtsdi`, `ddtsys` (`information_schema`) and `grep` `app/`, `resources/views/v2`. Result: the concept ALREADY EXISTS (master + three places of storage). No new table needed; what is missing is only an agreement on one storage form.
-
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

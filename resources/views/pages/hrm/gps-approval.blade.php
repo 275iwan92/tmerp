@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Komponen v1 untuk layar "GPS Location Approval" (dibuka dari grid v2 lewat Open / New). Teks tampilan (label, kolom, tab, tombol, pesan) English sesuai keputusan Jo 2026-10-18; nilai tersimpan dan kunci data tidak diubah.
+ * Sumber hulu  : Tabel dan service yang dibaca komponen ini (lihat query di file); tidak ada logika hulu baru.
+ * Input        : Isian form dan filter layar.
+ * Output       : Simpan ke tabel modul terkait lewat service yang sama seperti sebelumnya.
+ * Dipakai oleh : Grid v2 modul terkait (v1Route).
+ * Status       : Aktif; teks tampilan English (Jo 2026-10-18).
+ */
+
+
 use App\Models\Master\AttFingerRaw;
 use App\Models\Master\AttMobileGpsLog;
 use App\Services\Hrm\AttendanceCalculationService;
@@ -16,7 +27,7 @@ use Livewire\Component;
 // BARU menuliskan att_finger_raw + memicu AttendanceCalculationService --
 // sebelum disetujui, presensi TIDAK tercatat sama sekali (Tier1 doc:
 // "PENDING_HR_LOCATION_APPROVAL").
-new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('GPS Location Approval — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 
@@ -104,7 +115,7 @@ new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Compone
     <div class="max-w-[1200px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="1">
-            <x-grid.stat-box tone="warn" label="Menunggu Approval" :value="number_format($this->pendingCount)" />
+            <x-grid.stat-box tone="warn" label="Waiting" :value="number_format($this->pendingCount)" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
@@ -112,10 +123,10 @@ new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Compone
                 <table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Karyawan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Waktu</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Jenis</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Jarak</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Employee</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Time</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Type</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Distance</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Status</th>
                             <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                         </tr>
@@ -125,18 +136,18 @@ new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Compone
                             <tr class="border-b border-[#eef1f5]" wire:key="gps-{{ $log->id_gps_log }}">
                                 <x-grid.identity-cell :id="$log->employee_id" :name="$log->employee?->full_name ?? '—'" :code="$log->employee?->employee_code" />
                                 <td class="px-3 py-2 font-mono whitespace-nowrap">{{ $log->created_at->format('d M Y H:i:s') }}</td>
-                                <td class="px-3 py-2">{{ $log->clock_type === 'IN' ? 'Masuk' : 'Pulang' }}</td>
+                                <td class="px-3 py-2">{{ $log->clock_type === 'IN' ? 'Clock In' : 'Clock Out' }}</td>
                                 <td class="px-3 py-2 font-mono {{ $log->geofence_status === 'OUT_OF_RADIUS' ? 'text-[#c0392b] font-bold' : '' }}">{{ $log->distance_meters }} m</td>
                                 <td class="px-3 py-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($log->hr_approval_status) }}">{{ $log->hr_approval_status }}</span></td>
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
                                     @if ($log->hr_approval_status === 'PENDING')
-                                        <x-grid.action-icon icon="fa-check" title="Setujui" action="approve({{ $log->id_gps_log }})" confirm="Setujui presensi ini meski di luar radius?" variant="success" />
-                                        <x-grid.action-icon icon="fa-xmark" title="Tolak" action="openReject({{ $log->id_gps_log }})" variant="danger" />
+                                        <x-grid.action-icon icon="fa-check" title="Approve" action="approve({{ $log->id_gps_log }})" confirm="Approve this attendance even though it is outside the radius?" variant="success" />
+                                        <x-grid.action-icon icon="fa-xmark" title="Reject" action="openReject({{ $log->id_gps_log }})" variant="danger" />
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Belum ada log presensi GPS." />
+                            <x-grid.empty-row :colspan="6" message="No GPS attendance logs yet." />
                         @endforelse
                     </tbody>
                 </table>
@@ -147,12 +158,12 @@ new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Compone
     @if ($showRejectModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showRejectModal', false)">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tolak Presensi GPS</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Reject GPS Attendance</div>
                 <form wire:submit="reject" class="p-4 flex flex-col gap-3">
-                    <x-form.textarea label="Alasan Penolakan *" wire:model="rejectReason" rows="3" name="rejectReason" />
+                    <x-form.textarea label="Rejection Reason *" wire:model="rejectReason" rows="3" name="rejectReason" />
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showRejectModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#c0392b] text-white cursor-pointer">Tolak</button>
+                        <button type="button" wire:click="$set('showRejectModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#c0392b] text-white cursor-pointer">Reject</button>
                     </div>
                 </form>
             </div>

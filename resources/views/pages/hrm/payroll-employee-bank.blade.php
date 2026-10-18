@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Komponen v1 untuk layar "Employee Bank Accounts" (dibuka dari grid v2 lewat Open / New). Teks tampilan (label, kolom, tab, tombol, pesan) English sesuai keputusan Jo 2026-10-18; nilai tersimpan dan kunci data tidak diubah.
+ * Sumber hulu  : Tabel dan service yang dibaca komponen ini (lihat query di file); tidak ada logika hulu baru.
+ * Input        : Isian form dan filter layar.
+ * Output       : Simpan ke tabel modul terkait lewat service yang sama seperti sebelumnya.
+ * Dipakai oleh : Grid v2 modul terkait (v1Route).
+ * Status       : Aktif; teks tampilan English (Jo 2026-10-18).
+ */
+
+
 use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Services\Hrm\EmployeeBankService;
@@ -18,7 +29,7 @@ use Livewire\Component;
 // blade.php/payroll-cash-roster.blade.php yang sudah pakai pola sama).
 // Bank dipilih dari Master Supplier kategori BANK, simpan lewat
 // EmployeeBankService (keputusan user 2026-09-23).
-new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Master Employee & Bank Account — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 
@@ -120,17 +131,17 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
     <div class="max-w-[1300px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="info" label="Total Pegawai Aktif" :value="number_format($this->stats['total'])" />
+            <x-grid.stat-box tone="info" label="Total Active Employees" :value="number_format($this->stats['total'])" />
             <x-grid.stat-box tone="active" label="Bank Transfer" :value="number_format($this->stats['bank'])" />
-            <x-grid.stat-box tone="warn" label="Cash (Tunai)" :value="number_format($this->stats['cash'])" />
+            <x-grid.stat-box tone="warn" label="Cash" :value="number_format($this->stats['cash'])" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-3 flex flex-wrap gap-3 items-end">
             <div class="max-w-[280px] flex-1">
-                <x-form.input :case-toggle="false" label="Cari NIK / Nama" wire:model.live.debounce.400ms="search" name="search" placeholder="Ketik nama atau kode..." />
+                <x-form.input :case-toggle="false" label="Search NIK / Name" wire:model.live.debounce.400ms="search" name="search" placeholder="Type a name or code..." />
             </div>
-            <x-form.select label="Metode Gaji" wire:model.live="filterMethod" name="filterMethod"
-                :options="['BANK' => 'Bank Transfer', 'CASH' => 'Cash (Tunai)']" placeholder="Semua Metode" />
+            <x-form.select label="Pay Method" wire:model.live="filterMethod" name="filterMethod"
+                :options="['BANK' => 'Bank Transfer', 'CASH' => 'Cash']" placeholder="All Methods" />
         </div>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
@@ -139,10 +150,10 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
                     <thead>
                         <tr>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Karyawan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Divisi / Posisi</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Status Kerja</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Metode Gaji</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Detail Rekening</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Department / Position</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Employment Status</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Pay Method</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Account Details</th>
                             <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                         </tr>
                     </thead>
@@ -156,23 +167,23 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
                                     @if ($row['bank'])
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dbeafe] text-[#1e40af]">BANK TRANSFER</span>
                                     @else
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e]">CASH (TUNAI)</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e]">CASH</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2">
                                     @if ($row['bank'])
                                         <div class="font-semibold">{{ $row['bank']->bank_name }} - {{ $row['bank']->account_no }}</div>
-                                        <div class="text-[10.5px] text-muted">a.n. {{ $row['bank']->account_holder_name }}</div>
+                                        <div class="text-[10.5px] text-muted">Holder: {{ $row['bank']->account_holder_name }}</div>
                                     @else
-                                        <span class="text-muted italic">Tidak Ada Rekening Bank</span>
+                                        <span class="text-muted italic">No Bank Account</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="Edit Rekening" action="openForm({{ $row['employee']->employee_id }})" />
+                                    <x-grid.action-icon icon="fa-pen" title="Edit Bank Account" action="openForm({{ $row['employee']->employee_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Tidak ada pegawai." />
+                            <x-grid.empty-row :colspan="6" message="No employees." />
                         @endforelse
                     </tbody>
                 </table>
@@ -181,13 +192,13 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
     </div>
 
     @if ($showFormModal)
-        <x-ui.modal :title="'Rekening Bank — '.$editingEmployeeName" close="$set('showFormModal', false)" size="sm">
+        <x-ui.modal :title="'Bank Account — '.$editingEmployeeName" close="$set('showFormModal', false)" size="sm">
             <form wire:submit="save" class="p-4 flex flex-col gap-3">
                 <x-form.select label="Bank" name="bankSupplierId" wire:model="bankSupplierId" :options="$this->bankOptions()"
-                    :selected="$bankSupplierId" placeholder="— Cash / Tunai —" />
-                <x-form.input label="Nomor Rekening" wire:model="accountNo" name="accountNo" :case-toggle="false" />
-                <x-form.input label="Atas Nama Rekening" wire:model="accountHolderName" name="accountHolderName" />
-                <p class="text-[11px] text-muted">Bank diambil dari Master Supplier kategori BANK. Pilih "Cash / Tunai" bila pegawai dibayar tunai — rekening lama dinonaktifkan, bukan dihapus.</p>
+                    :selected="$bankSupplierId" placeholder="— Cash —" />
+                <x-form.input label="Account No." wire:model="accountNo" name="accountNo" :case-toggle="false" />
+                <x-form.input label="Account Holder" wire:model="accountHolderName" name="accountHolderName" />
+                <p class="text-[11px] text-muted">Banks come from Master Supplier category BANK. Choose "Cash" when the employee is paid in cash — the old account is deactivated, not deleted.</p>
                 <x-ui.action-bar variant="end" class="pt-3 border-t border-line-soft">
                     <x-ui.button preset="cancel" variant="neutral" wire:click="$set('showFormModal', false)" />
                     <x-ui.button preset="save" />

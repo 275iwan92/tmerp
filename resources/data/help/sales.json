@@ -43,8 +43,8 @@
                 "id": "CO yang Rejected atau Cancelled tidak bisa diubah: klik Duplicate untuk membuat CO INSTANT baru dengan baris yang sama, perbaiki lalu Confirm lagi. CO INSTANT yang masih Draft bisa dihapus dengan Delete."
             },
             {
-                "en": "Tab Billing (after the order leaves Draft) shows, read only, the delivery notes of the order with what the customer received and which invoice billed it, the invoices and down payments, and the down payment history with its balance.",
-                "id": "Tab Billing (sesudah order keluar dari Draft) memuat, hanya baca, Surat Jalan order ini dengan yang diterima customer dan invoice yang menagihnya, invoice dan uang muka, serta riwayat uang muka beserta saldonya."
+                "en": "Tab Billing (after the order leaves Draft) is read only. It shows the delivery notes with what the customer received and the invoice that billed them. It also shows the invoices, the down payments and the down payment history with its balance.",
+                "id": "Tab Billing (sesudah order keluar dari Draft) hanya bisa dibaca. Isinya Surat Jalan order ini dengan yang diterima customer dan invoice yang menagihnya. Juga invoice, uang muka, serta riwayat uang muka beserta saldonya."
             }
         ],
         "fields": [
@@ -464,7 +464,7 @@
         "title": "CO Approval Center",
         "purpose": {
             "en": "Queue of Customer Orders waiting for your decision. Open it to check a submitted CO and Approve, Hold or Reject it. Each approver sees only the orders waiting at their own level.",
-            "id": "Antrian Customer Order yang menunggu keputusan Anda. Buka untuk memeriksa CO yang diajukan lalu Setujui, Tahan atau Tolak. Tiap approver hanya melihat order yang menunggu di levelnya."
+            "id": "Antrian Customer Order yang menunggu keputusan Anda. Buka untuk memeriksa CO yang diajukan lalu Approve, Hold atau Reject. Tiap approver hanya melihat order yang menunggu di levelnya."
         },
         "keywords": "approval co, approval customer order, persetujuan co, setujui, tolak, tahan, hold, reject, f&a spv, operational manager, antrian approval",
         "steps": [
@@ -477,16 +477,16 @@
                 "id": "Periksa baris-barisnya. Approver pertama (F&A SPV) terutama memastikan harga tidak salah input; baris tanpa harga ditandai. Order direct (INSTANT) harganya diketik manual."
             },
             {
-                "en": "Click Setujui to approve your level. After the last level the CO becomes CONFIRMED and its delivery schedule (CPDEL) is created.",
-                "id": "Klik Setujui untuk menyetujui level Anda. Setelah level terakhir, CO menjadi CONFIRMED dan jadwal kirimnya (CPDEL) dibuat."
+                "en": "Click Approve to approve your level. After the last level the CO becomes CONFIRMED and its delivery schedule (CPDEL) is created.",
+                "id": "Klik Approve untuk menyetujui level Anda. Setelah level terakhir, CO menjadi CONFIRMED dan jadwal kirimnya (CPDEL) dibuat."
             },
             {
-                "en": "Click Tolak to reject: a reason is required and the decision is final (the CO becomes REJECTED; the sales team can Duplicate it).",
-                "id": "Klik Tolak untuk menolak: alasan wajib diisi dan keputusan bersifat final (CO menjadi REJECTED; tim sales bisa Duplicate)."
+                "en": "Click Reject to reject: a reason is required and the decision is final (the CO becomes REJECTED; the sales team can Duplicate it).",
+                "id": "Klik Reject untuk menolak: alasan wajib diisi dan keputusan bersifat final (CO menjadi REJECTED; tim sales bisa Duplicate)."
             },
             {
-                "en": "Click Tahan to hold the document for now; a reason is required. Every decision is recorded with who, when and why in the Log Keputusan.",
-                "id": "Klik Tahan untuk menahan dokumen sementara; alasan wajib diisi. Setiap keputusan tercatat siapa, kapan dan mengapa di Log Keputusan."
+                "en": "Click Hold to hold the document for now; a reason is required. Every decision is recorded with who, when and why in the Log Keputusan.",
+                "id": "Klik Hold untuk menahan dokumen sementara; alasan wajib diisi. Setiap keputusan tercatat siapa, kapan dan mengapa di Log Keputusan."
             }
         ],
         "fields": [
@@ -496,7 +496,7 @@
                 "id": "Customer pemilik order."
             },
             {
-                "label": "Jalur",
+                "label": "Entry Mode",
                 "en": "Direct (INSTANT) with manually typed prices, or from Quotation (INTEGRATED).",
                 "id": "Direct (INSTANT) dengan harga diketik manual, atau dari Quotation (INTEGRATED)."
             },
@@ -506,17 +506,17 @@
                 "id": "Jumlah order setelah diskon, biaya dan pajak. Level approval bisa bergantung pada jumlah ini."
             },
             {
-                "label": "Termin",
+                "label": "Payment Term",
                 "en": "Payment term of the order.",
                 "id": "Syarat pembayaran order."
             },
             {
-                "label": "Jumlah Item",
+                "label": "Items",
                 "en": "Number of lines in the order.",
                 "id": "Jumlah baris dalam order."
             },
             {
-                "label": "Tanpa harga",
+                "label": "No price",
                 "en": "Warning shown when some lines have no price; the count of such lines.",
                 "id": "Peringatan bila ada baris tanpa harga; menunjukkan jumlah barisnya."
             },
@@ -526,27 +526,27 @@
                 "id": "Kolom baris: Item, Qty, Satuan, Harga/Unit, Disc %, Subtotal."
             },
             {
-                "label": "Sumber Harga",
+                "label": "Price Source",
                 "en": "Where the price came from: Quotation (terkunci), Input manual, or Belum ada harga.",
                 "id": "Asal harga: Quotation (terkunci), Input manual, atau Belum ada harga."
             },
             {
-                "label": "Setujui",
+                "label": "Approve",
                 "en": "Approves the current level. No reason needed.",
                 "id": "Menyetujui level berjalan. Tidak perlu alasan."
             },
             {
-                "label": "Tahan",
+                "label": "Hold",
                 "en": "Holds the document for now. A reason is required.",
                 "id": "Menahan dokumen sementara. Alasan wajib."
             },
             {
-                "label": "Tolak",
+                "label": "Reject",
                 "en": "Rejects the document finally. A reason is required.",
                 "id": "Menolak dokumen secara final. Alasan wajib."
             },
             {
-                "label": "Log Keputusan",
+                "label": "Decision Log",
                 "en": "Your own recent decisions: document, decision, level, when and the reason.",
                 "id": "Keputusan Anda sebelumnya: dokumen, keputusan, level, kapan dan alasannya."
             }

@@ -36,7 +36,7 @@ class MasterMachineMigratedDataTest extends TestCase
             ->assertSee('OFF-02')
             ->assertSee('Komori GL440')
             ->assertSee('(2015)')       // year_acquired tampil di baris Merk
-            ->assertSee('Total Unit Mesin');
+            ->assertSee('Total Machine Units');
     }
 
     public function test_new_form_offers_english_machine_types(): void

@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Komponen v1 untuk layar "Print & Send Payslips" (dibuka dari grid v2 lewat Open / New). Teks tampilan (label, kolom, tab, tombol, pesan) English sesuai keputusan Jo 2026-10-18; nilai tersimpan dan kunci data tidak diubah.
+ * Sumber hulu  : Tabel dan service yang dibaca komponen ini (lihat query di file); tidak ada logika hulu baru.
+ * Input        : Isian form dan filter layar.
+ * Output       : Simpan ke tabel modul terkait lewat service yang sama seperti sebelumnya.
+ * Dipakai oleh : Grid v2 modul terkait (v1Route).
+ * Status       : Aktif; teks tampilan English (Jo 2026-10-18).
+ */
+
+
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
@@ -21,7 +32,7 @@ use Livewire\WithPagination;
 // join lintas koneksi (CLAUDE.md §2 pola 3). Jumlah slip per periode seukuran
 // jumlah karyawan (ratusan), jadi ambil-semua lalu paginate koleksi masih
 // murah dan menghindari 2 sumber kebenaran urutan.
-new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Print & Send Payslips — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridPagination;
     use WithPagination;
@@ -145,7 +156,7 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
         $phone = EmpEmployee::where('employee_id', $slip->employee_id)->value('phone');
 
         if (blank($phone)) {
-            session()->flash('error', 'Pegawai ini belum punya nomor WhatsApp — lengkapi dulu di Master Employee.');
+            session()->flash('error', 'This employee has no WhatsApp number yet — complete it first in Master Employee.');
 
             return;
         }
@@ -172,11 +183,11 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
     <div class="max-w-[1480px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="5">
-            <x-grid.stat-box tone="total" label="Total Slip Periode Ini" :value="$this->stats['total'].' Slip'" />
-            <x-grid.stat-box tone="warn" label="Belum Dicetak" :value="$this->stats['belum_cetak'].' Slip'" />
-            <x-grid.stat-box tone="extra" label="Belum Dikirim WA" :value="$this->stats['belum_wa'].' Slip'" />
-            <x-grid.stat-box tone="critical" label="No. WA Kosong" :value="$this->stats['wa_kosong'].' Pegawai'" />
-            <x-grid.stat-box tone="critical" label="Anomali (Tak Bisa Cetak)" :value="$this->stats['anomali'].' Slip'" />
+            <x-grid.stat-box tone="total" label="Total Payslips This Period" :value="$this->stats['total'].' Slip'" />
+            <x-grid.stat-box tone="warn" label="Not Printed" :value="$this->stats['belum_cetak'].' Slip'" />
+            <x-grid.stat-box tone="extra" label="WhatsApp Not Sent" :value="$this->stats['belum_wa'].' Slip'" />
+            <x-grid.stat-box tone="critical" label="No WhatsApp No." :value="$this->stats['wa_kosong'].' Employees'" />
+            <x-grid.stat-box tone="critical" label="Anomaly (Cannot Print)" :value="$this->stats['anomali'].' Slip'" />
         </x-grid.stat-row>
 
         @if (session('error'))
@@ -187,12 +198,12 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama / kode pegawai…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search employee name / code…"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
                     <div class="flex items-center gap-1.5 shrink-0">
-                        <span class="text-[10px] font-bold uppercase text-muted">Periode</span>
+                        <span class="text-[10px] font-bold uppercase text-muted">Period</span>
                         <x-form.select wire:model.live="runId" :placeholder="false" class="shrink-0"
                             :options="$this->availableRuns->mapWithKeys(fn ($r) => [$r->id_run => $r->period_start->format('d M Y').' — '.$r->period_end->format('d M Y').' ('.$r->run_status.')'])" />
                     </div>
@@ -201,33 +212,33 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
                     <div class="flex items-center gap-2 shrink-0">
                         <button type="button" wire:click="printAll"
                             class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">
-                            <i class="fa-solid fa-print"></i> Cetak Semua ({{ $this->printableCount }})
+                            <i class="fa-solid fa-print"></i> Print All ({{ $this->printableCount }})
                         </button>
-                        <button type="button" disabled title="Kanal WhatsApp belum dibangun"
+                        <button type="button" disabled title="WhatsApp channel not built yet"
                             class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white text-[#94a3b8] border border-[#d7dbe2] cursor-not-allowed">
-                            Kirim WA Semua
-                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#eef1f5] text-[#8a94a6]">NANTI</span>
+                            Send All via WhatsApp
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#eef1f5] text-[#8a94a6]">LATER</span>
                         </button>
                     </div>
                 </x-slot:newRecord>
             </x-grid.toolbar>
 
             <div class="bg-[#fafbfd] border-b border-[#eef1f5] px-3 py-1.5 text-[11px] text-muted">
-                Slip gaji lahir otomatis dari <span class="font-semibold text-navy">Perhitungan Gaji</span> saat periode dikalkulasi — tidak dibuat manual dari layar ini.
+                Payslips are created automatically from <span class="font-semibold text-navy">Payroll Calculation</span> when the period is calculated — they are not created manually from this screen.
             </div>
 
             <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Pegawai</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Divisi / Posisi</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">No. WhatsApp</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[95px]">Metode Bayar</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[115px]">Gaji Bersih</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Employee</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Department / Position</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">WhatsApp No.</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[95px]">Payment Method</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[115px]">Net Salary</th>
                             <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[105px]">Printout</th>
-                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[105px]">Kirim WA</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">Aksi</th>
+                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[105px]">Send WhatsApp</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -237,7 +248,7 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
                             <tr wire:key="slip-{{ $slip->id_payslip }}"
                                 @if (! $slip->has_anomaly) wire:dblclick="openPayslip({{ $slip->id_payslip }})" @endif
                                 class="{{ $slip->has_anomaly ? 'bg-[#fdecec]' : 'hover:bg-[#f7faff] cursor-pointer' }}"
-                                title="Klik 2x untuk buka">
+                                title="Double-click to open">
                                 <x-grid.identity-cell :id="$slip->employee_id" :name="$emp?->full_name ?? '—'" :code="$emp?->employee_code" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     {{ $emp?->position?->department?->department_name ?? '—' }} / {{ $emp?->position?->position_name ?? '—' }}
@@ -246,8 +257,8 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
                                     @if (filled($emp?->phone))
                                         <span class="font-mono text-[11.5px]">{{ $emp->phone }}</span>
                                     @else
-                                        <span class="text-[10.5px] text-[#c0392b] font-semibold">— belum diisi —</span>
-                                        <a href="{{ route('hrm.employee') }}" class="block text-[10px] text-accent underline">Lengkapi di Master Employee</a>
+                                        <span class="text-[10.5px] text-[#c0392b] font-semibold">— not filled in —</span>
+                                        <a href="{{ route('hrm.employee') }}" class="block text-[10px] text-accent underline">Complete in Master Employee</a>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
@@ -263,13 +274,13 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
 
                                 @if ($slip->has_anomaly)
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-center" colspan="2">
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fdecec] text-[#c0392b]">ANOMALI</span>
-                                        <div class="text-[10px] text-[#a3453f] mt-0.5">{{ $slip->anomaly_note ?: 'Rate gaji tidak aktif — slip belum sah' }}</div>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fdecec] text-[#c0392b]">ANOMALY</span>
+                                        <div class="text-[10px] text-[#a3453f] mt-0.5">{{ $slip->anomaly_note ?: 'Salary rate not active — payslip not valid yet' }}</div>
                                     </td>
                                 @else
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-center">
                                         <x-grid.tickmark :on="$slip->print_flag" action="togglePrintFlag({{ $slip->id_payslip }})"
-                                            title="{{ $slip->print_flag ? 'Slip ini dicetak' : 'Slip ini tidak dicetak' }}" />
+                                            title="{{ $slip->print_flag ? 'This payslip is printed' : 'This payslip is not printed' }}" />
                                         @if ($slip->printed_at)
                                             <div class="text-[10px] text-muted mt-0.5">{{ $slip->printed_at->translatedFormat('d M H:i') }}</div>
                                         @endif
@@ -277,7 +288,7 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-center">
                                         <x-grid.tickmark :on="$slip->wa_flag" :disabled="blank($emp?->phone)"
                                             action="toggleWaFlag({{ $slip->id_payslip }})"
-                                            title="{{ blank($emp?->phone) ? 'Tidak ada nomor WA' : ($slip->wa_flag ? 'Slip ini dikirim via WA' : 'Slip ini tidak dikirim via WA') }}" />
+                                            title="{{ blank($emp?->phone) ? 'No WhatsApp number' : ($slip->wa_flag ? 'This payslip is sent via WhatsApp' : 'This payslip is not sent via WhatsApp') }}" />
                                         @if ($slip->wa_sent_at)
                                             <div class="text-[10px] text-muted mt-0.5">{{ $slip->wa_sent_at->translatedFormat('d M H:i') }}</div>
                                         @endif
@@ -286,15 +297,15 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
 
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                     @if ($slip->has_anomaly)
-                                        <span title="Tidak bisa dicetak — perbaiki dulu di Master Gaji & Pajak Pegawai"
+                                        <span title="Cannot be printed — fix it first in Master Employee Salary & Tax"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-300 cursor-not-allowed">↗</span>
                                     @else
-                                        <x-grid.action-icon icon="fa-up-right-from-square" title="Buka / Cetak" action="openPayslip({{ $slip->id_payslip }})" />
+                                        <x-grid.action-icon icon="fa-up-right-from-square" title="Open / Print" action="openPayslip({{ $slip->id_payslip }})" />
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="8" message="Belum ada slip gaji untuk periode ini." />
+                            <x-grid.empty-row :colspan="8" message="No payslips for this period yet." />
                         @endforelse
                     </tbody>
                 </table>

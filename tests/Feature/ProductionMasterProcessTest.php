@@ -23,7 +23,7 @@ class ProductionMasterProcessTest extends TestCase
         Livewire::test('pages::production.master-process')
             ->assertSee('CETAK')
             ->assertSee('LAMINASI')
-            ->assertSee('Total Proses');
+            ->assertSee('Total Processes');
     }
 
     public function test_new_form_requires_process_name(): void

@@ -12,61 +12,61 @@
     "steps": [
       {"en": "Open Master Customer. Use the search box, the status boxes (Active, Draft, Blocked, Inactive) and the filters to find a customer.", "id": "Buka Master Customer. Pakai kotak cari, kotak status (Active, Draft, Blocked, Inactive) dan filter untuk mencari customer."},
       {"en": "Click + New Record for a new customer, or double-click a row (or use Edit) to open an existing one.", "id": "Klik + New Record untuk customer baru, atau klik dua kali baris (atau pakai Edit) untuk membuka customer yang sudah ada."},
-      {"en": "On the Overview tab fill Kode Customer and Nama Customer (both required) and the other identity fields. Tipe is also required and has a default.", "id": "Di tab Overview isi Kode Customer dan Nama Customer (wajib) serta data identitas lainnya. Tipe juga wajib dan sudah terisi bawaan."},
+      {"en": "On the Overview tab fill Customer Code and Customer Name (both required) and the other identity fields. Type is also required and has a default.", "id": "Di tab Overview isi Customer Code dan Customer Name (wajib) serta data identitas lainnya. Type juga wajib dan sudah terisi bawaan."},
       {"en": "Fill the Printing Specs, Sales & Finance and Sites & Contacts tabs. Governance holds the NPWP check and KYC status.", "id": "Isi tab Printing Specs, Sales & Finance dan Sites & Contacts. Tab Governance berisi pemeriksaan NPWP dan status KYC."},
-      {"en": "Click Simpan. Save the customer first, then reopen it to add extra contacts and branches with + Tambah on the Sites & Contacts tab.", "id": "Klik Simpan. Simpan customer dulu, lalu buka lagi untuk menambah kontak dan cabang tambahan lewat + Tambah di tab Sites & Contacts."},
+      {"en": "Click Save. Save the customer first, then reopen it to add extra contacts and branches with + Tambah on the Sites & Contacts tab.", "id": "Klik Save. Save customer dulu, lalu buka lagi untuk menambah kontak dan cabang tambahan lewat + Tambah di tab Sites & Contacts."},
       {"en": "To change the approval stage click Draft, Credit Check, Approved / Active or Blocked at the top of the form; an existing customer is updated at once.", "id": "Untuk mengubah tahap persetujuan klik Draft, Credit Check, Approved / Active atau Blocked di bagian atas form; customer yang sudah ada langsung berubah."},
-      {"en": "Use Blokir to mark a bad customer as blocked. Buka Blokir needs a reason and Finance or Admin access.", "id": "Pakai Blokir untuk menandai customer bermasalah. Buka Blokir butuh alasan dan akses Finance atau Admin."},
+      {"en": "Use Block to mark a bad customer as blocked. Unblock needs a reason and Finance or Admin access.", "id": "Pakai Block untuk menandai customer bermasalah. Unblock butuh alasan dan akses Finance atau Admin."},
       {"en": "To stop using a customer, click the active toggle on its row in the grid. Nothing is deleted.", "id": "Untuk berhenti memakai customer, klik tombol aktif/nonaktif di barisnya pada grid. Data tidak dihapus."}
     ],
     "fields": [
-      {"label": "Kode Customer", "en": "Unique customer code, up to 50 characters. Required. A code already used by another customer is rejected.", "id": "Kode customer yang unik, maksimal 50 karakter. Wajib. Kode yang sudah dipakai customer lain ditolak."},
-      {"label": "Nama Customer", "en": "Full customer name, up to 200 characters. Required. It is the name shown in the grid and searched by the search box.", "id": "Nama lengkap customer, maksimal 200 karakter. Wajib. Nama ini tampil di grid dan bisa dicari lewat kotak cari."},
+      {"label": "Customer Code", "en": "Unique customer code, up to 50 characters. Required. A code already used by another customer is rejected.", "id": "Kode customer yang unik, maksimal 50 karakter. Wajib. Kode yang sudah dipakai customer lain ditolak."},
+      {"label": "Customer Name", "en": "Full customer name, up to 200 characters. Required. It is the name shown in the grid and searched by the search box.", "id": "Nama lengkap customer, maksimal 200 karakter. Wajib. Nama ini tampil di grid dan bisa dicari lewat kotak cari."},
       {"label": "Trade Name / Brand", "en": "Brand or trading name if different from the legal name.", "id": "Nama dagang atau merek bila berbeda dari nama resmi."},
       {"label": "Parent / Customer Group", "en": "Group or holding the customer belongs to. It becomes the Group column in the grid.", "id": "Grup atau induk perusahaan tempat customer bernaung. Tampil sebagai kolom Group di grid."},
-      {"label": "Kategori Industri", "en": "Free text industry of the customer, for example FMCG packaging. It feeds the Industry column and filter.", "id": "Bidang industri customer, diketik bebas, misalnya kemasan FMCG. Dipakai di kolom dan filter Industry."},
-      {"label": "Tipe", "en": "Lokal or Import. The grid shows Prospect instead when the Prospek box is ticked.", "id": "Lokal atau Import. Grid menampilkan Prospect bila kotak Prospek dicentang."},
-      {"label": "NPWP", "en": "Tax number of the customer, up to 50 characters.", "id": "Nomor NPWP customer, maksimal 50 karakter."},
-      {"label": "Kategori (Tracking Bayar)", "en": "Payment tracking category, picked from the customer category list.", "id": "Kategori untuk pelacakan pembayaran, dipilih dari daftar kategori customer."},
-      {"label": "Aktif", "en": "Tick when the customer is in use. Untick to switch it off; it stays in the master.", "id": "Centang bila customer masih dipakai. Hilangkan centang untuk menonaktifkan; data tetap ada di master."},
-      {"label": "Prospek", "en": "Tick for a prospective customer that is not official yet.", "id": "Centang untuk calon pelanggan yang belum resmi."},
-      {"label": "Catatan Internal", "en": "Internal note such as operating preferences or past problems. Unblocking adds a stamped line here.", "id": "Catatan internal, misalnya preferensi operasional atau riwayat masalah. Saat blokir dibuka, satu baris berstempel otomatis ditambahkan di sini."},
-      {"label": "Produk Utama", "en": "Printing Specs tab: the main product the customer orders. Free text, a reference for staff.", "id": "Tab Printing Specs: produk utama yang dipesan customer. Teks bebas, sebagai acuan staf."},
-      {"label": "Produk Sekunder", "en": "Secondary product the customer orders. Free text.", "id": "Produk kedua yang dipesan customer. Teks bebas."},
-      {"label": "Substrate Default", "en": "The usual material (substrate) the customer wants. Free text.", "id": "Bahan (substrate) yang biasa diminta customer. Teks bebas."},
-      {"label": "Standar Warna", "en": "Colour standard the customer follows. Free text.", "id": "Standar warna yang dipakai customer. Teks bebas."},
-      {"label": "Metode Proofing", "en": "How the customer wants proofs made. Free text.", "id": "Cara proofing yang diminta customer. Teks bebas."},
-      {"label": "Approval Artwork", "en": "How the customer approves artwork. Free text.", "id": "Cara customer menyetujui artwork. Teks bebas."},
+      {"label": "Industry Category", "en": "Free text industry of the customer, for example FMCG packaging. It feeds the Industry column and filter.", "id": "Bidang industri customer, diketik bebas, misalnya kemasan FMCG. Dipakai di kolom dan filter Industry."},
+      {"label": "Type", "en": "Lokal or Import. The grid shows Prospect instead when the Prospect box is ticked.", "id": "Lokal atau Import. Grid menampilkan Prospect bila kotak Prospect dicentang."},
+      {"label": "Tax ID (NPWP)", "en": "Tax number of the customer, up to 50 characters.", "id": "Nomor NPWP customer, maksimal 50 karakter."},
+      {"label": "Category (Payment Tracking)", "en": "Payment tracking category, picked from the customer category list.", "id": "Kategori untuk pelacakan pembayaran, dipilih dari daftar kategori customer."},
+      {"label": "Active", "en": "Tick when the customer is in use. Untick to switch it off; it stays in the master.", "id": "Centang bila customer masih dipakai. Hilangkan centang untuk menonaktifkan; data tetap ada di master."},
+      {"label": "Prospect", "en": "Tick for a prospective customer that is not official yet.", "id": "Centang untuk calon pelanggan yang belum resmi."},
+      {"label": "Internal Notes", "en": "Internal note such as operating preferences or past problems. Unblocking adds a stamped line here.", "id": "Catatan internal, misalnya preferensi operasional atau riwayat masalah. Saat blokir dibuka, satu baris berstempel otomatis ditambahkan di sini."},
+      {"label": "Main Product", "en": "Printing Specs tab: the main product the customer orders. Free text, a reference for staff.", "id": "Tab Printing Specs: produk utama yang dipesan customer. Teks bebas, sebagai acuan staf."},
+      {"label": "Secondary Product", "en": "Secondary product the customer orders. Free text.", "id": "Produk kedua yang dipesan customer. Teks bebas."},
+      {"label": "Default Substrate", "en": "The usual material (substrate) the customer wants. Free text.", "id": "Bahan (substrate) yang biasa diminta customer. Teks bebas."},
+      {"label": "Color Standard", "en": "Colour standard the customer follows. Free text.", "id": "Standar warna yang dipakai customer. Teks bebas."},
+      {"label": "Proofing Method", "en": "How the customer wants proofs made. Free text.", "id": "Cara proofing yang diminta customer. Teks bebas."},
+      {"label": "Artwork Approval", "en": "How the customer approves artwork. Free text.", "id": "Cara customer menyetujui artwork. Teks bebas."},
       {"label": "Retained Sample", "en": "Whether and how a retained sample is kept for the customer. Free text.", "id": "Apakah dan bagaimana sampel disimpan untuk customer. Teks bebas."},
-      {"label": "Verifikasi Barcode", "en": "Barcode verification requirement of the customer. Free text.", "id": "Persyaratan verifikasi barcode dari customer. Teks bebas."},
-      {"label": "Preferensi Finishing", "en": "Preferred finishing such as varnish or lamination. Free text.", "id": "Finishing yang disukai, misalnya vernis atau laminasi. Teks bebas."},
-      {"label": "Pemilik Die-Cut", "en": "Who owns the die-cut tool, the customer or Telasih. Free text.", "id": "Siapa pemilik pisau die-cut, customer atau Telasih. Teks bebas."},
-      {"label": "Instruksi Packing", "en": "Packing instruction for delivery. Free text.", "id": "Instruksi pengepakan untuk pengiriman. Teks bebas."},
-      {"label": "Catatan Kualitas & Kriteria Reject", "en": "Quality notes and the customer's reject criteria. Free text.", "id": "Catatan kualitas dan kriteria reject dari customer. Teks bebas."},
-      {"label": "Divisi (SBU)", "en": "Sales division responsible for the customer, picked from the active divisions.", "id": "Divisi penjualan yang menangani customer, dipilih dari divisi yang aktif."},
+      {"label": "Barcode Verification", "en": "Barcode verification requirement of the customer. Free text.", "id": "Persyaratan verifikasi barcode dari customer. Teks bebas."},
+      {"label": "Finishing Preference", "en": "Preferred finishing such as varnish or lamination. Free text.", "id": "Finishing yang disukai, misalnya vernis atau laminasi. Teks bebas."},
+      {"label": "Die-Cut Owner", "en": "Who owns the die-cut tool, the customer or Telasih. Free text.", "id": "Siapa pemilik pisau die-cut, customer atau Telasih. Teks bebas."},
+      {"label": "Packing Instruction", "en": "Packing instruction for delivery. Free text.", "id": "Instruksi pengepakan untuk pengiriman. Teks bebas."},
+      {"label": "Quality Notes & Reject Criteria", "en": "Quality notes and the customer's reject criteria. Free text.", "id": "Catatan kualitas dan kriteria reject dari customer. Teks bebas."},
+      {"label": "Division (SBU)", "en": "Sales division responsible for the customer, picked from the active divisions.", "id": "Divisi penjualan yang menangani customer, dipilih dari divisi yang aktif."},
       {"label": "Price List", "en": "Price list code for this customer, free text up to 50 characters.", "id": "Kode daftar harga untuk customer ini, teks bebas maksimal 50 karakter."},
-      {"label": "Profil Pajak", "en": "PPN 11% (domestic taxable) or Bebas PPN (bonded zone). Required.", "id": "PPN 11% (kena pajak dalam negeri) atau Bebas PPN (kawasan berikat). Wajib."},
-      {"label": "Termin Bayar", "en": "Payment term picked from the active payment terms.", "id": "Termin pembayaran, dipilih dari daftar termin yang aktif."},
-      {"label": "Mata Uang", "en": "Currency code typed by hand, for example IDR (default IDR).", "id": "Kode mata uang yang diketik, misalnya IDR (bawaan IDR)."},
-      {"label": "Limit Kredit", "en": "Credit limit amount, zero or more. It shows in the grid and in the form header.", "id": "Nilai limit kredit, nol atau lebih. Tampil di grid dan di bagian atas form."},
+      {"label": "Tax Profile", "en": "PPN 11% (domestic taxable) or Bebas PPN (bonded zone). Required.", "id": "PPN 11% (kena pajak dalam negeri) atau Bebas PPN (kawasan berikat). Wajib."},
+      {"label": "Payment Term", "en": "Payment term picked from the active payment terms.", "id": "Termin pembayaran, dipilih dari daftar termin yang aktif."},
+      {"label": "Currency", "en": "Currency code typed by hand, for example IDR (default IDR).", "id": "Kode mata uang yang diketik, misalnya IDR (bawaan IDR)."},
+      {"label": "Credit Limit", "en": "Credit limit amount, zero or more. It shows in the grid and in the form header.", "id": "Nilai limit kredit, nol atau lebih. Tampil di grid dan di bagian atas form."},
       {"label": "Credit Checking", "en": "Tick to switch credit checking on for this customer.", "id": "Centang untuk mengaktifkan pengecekan kredit customer ini."},
       {"label": "Credit Rating", "en": "A (low risk), B (medium risk) or C (high risk). Required.", "id": "A (risiko rendah), B (risiko sedang) atau C (risiko tinggi). Wajib."},
-      {"label": "Saldo Piutang Berjalan", "en": "Current receivable balance. Read only, filled by the system.", "id": "Saldo piutang saat ini. Hanya baca, diisi sistem."},
-      {"label": "Alamat Lengkap", "en": "Head office address: street, number, RT/RW and landmark.", "id": "Alamat kantor pusat: jalan, nomor, RT/RW dan patokan."},
-      {"label": "Wilayah", "en": "Type a sub-district, district, city, province or postal code and pick the area. The postal code is filled from it.", "id": "Ketik kelurahan, kecamatan, kota, provinsi atau kode pos lalu pilih wilayahnya. Kode pos terisi otomatis."},
-      {"label": "Kode Pos", "en": "Postal code, filled from the area but can be changed.", "id": "Kode pos, terisi dari wilayah tetapi boleh diubah."},
-      {"label": "Sapaan", "en": "Bapak or Ibu, the form of address for the contact person.", "id": "Bapak atau Ibu, sapaan untuk PIC."},
-      {"label": "Nama PIC", "en": "Main contact person of the customer.", "id": "Orang yang jadi kontak utama customer."},
-      {"label": "No. Telepon", "en": "Main phone number of the customer.", "id": "Nomor telepon utama customer."},
+      {"label": "Current Receivable Balance", "en": "Current receivable balance. Read only, filled by the system.", "id": "Saldo piutang saat ini. Hanya baca, diisi sistem."},
+      {"label": "Full Address", "en": "Head office address: street, number, RT/RW and landmark.", "id": "Alamat kantor pusat: jalan, nomor, RT/RW dan patokan."},
+      {"label": "Area", "en": "Type a sub-district, district, city, province or postal code and pick the area. The postal code is filled from it.", "id": "Ketik kelurahan, kecamatan, kota, provinsi atau kode pos lalu pilih wilayahnya. Kode pos terisi otomatis."},
+      {"label": "Postal Code", "en": "Postal code, filled from the area but can be changed.", "id": "Kode pos, terisi dari wilayah tetapi boleh diubah."},
+      {"label": "Salutation", "en": "Bapak or Ibu, the form of address for the contact person.", "id": "Bapak atau Ibu, sapaan untuk PIC."},
+      {"label": "PIC Name", "en": "Main contact person of the customer.", "id": "Orang yang jadi kontak utama customer."},
+      {"label": "Phone No.", "en": "Main phone number of the customer.", "id": "Nomor telepon utama customer."},
       {"label": "Email", "en": "Main e-mail address. It must be a valid address.", "id": "Alamat e-mail utama. Harus berupa alamat yang sah."},
       {"label": "Website", "en": "Customer website.", "id": "Situs web customer."},
-      {"label": "Nama Kontak", "en": "Extra contact (+ Tambah, after the customer is saved): the person's name. Required. Also Jabatan, Telepon, Email and Catatan.", "id": "Kontak tambahan (+ Tambah, setelah customer disimpan): nama orangnya. Wajib. Ada juga Jabatan, Telepon, Email dan Catatan."},
-      {"label": "Jadikan kontak default", "en": "Makes this extra contact the default one; the previous default is cleared.", "id": "Menjadikan kontak ini sebagai default; default sebelumnya dilepas."},
-      {"label": "Nama Cabang", "en": "Extra branch or site (+ Tambah): its name, Alamat, Wilayah, Kode Pos and Telepon.", "id": "Cabang atau lokasi tambahan (+ Tambah): namanya, Alamat, Wilayah, Kode Pos dan Telepon."},
-      {"label": "Jadikan cabang default", "en": "Makes this branch the default one; the previous default is cleared.", "id": "Menjadikan cabang ini sebagai default; default sebelumnya dilepas."},
-      {"label": "Validasi NPWP", "en": "Governance tab: tick once Finance has verified the NPWP.", "id": "Tab Governance: centang setelah Finance memverifikasi NPWP."},
-      {"label": "Status KYC", "en": "Menunggu Verifikasi, Terverifikasi or Ditolak. Required.", "id": "Menunggu Verifikasi, Terverifikasi atau Ditolak. Wajib."},
-      {"label": "Alasan Unblock", "en": "Reason typed when using Buka Blokir. Required; only Finance and Admin users can unblock.", "id": "Alasan yang diisi saat Buka Blokir. Wajib; hanya user Finance dan Admin yang boleh membuka blokir."}
+      {"label": "Contact Name", "en": "Extra contact (+ Tambah, after the customer is saved): the person's name. Required. Also Position, Phone, Email and Notes.", "id": "Kontak tambahan (+ Tambah, setelah customer disimpan): nama orangnya. Wajib. Ada juga Position, Phone, Email dan Notes."},
+      {"label": "Make default contact", "en": "Makes this extra contact the default one; the previous default is cleared.", "id": "Menjadikan kontak ini sebagai default; default sebelumnya dilepas."},
+      {"label": "Branch Name", "en": "Extra branch or site (+ Tambah): its name, Address, Area, Postal Code and Phone.", "id": "Cabang atau lokasi tambahan (+ Tambah): namanya, Address, Area, Postal Code dan Phone."},
+      {"label": "Make default branch", "en": "Makes this branch the default one; the previous default is cleared.", "id": "Menjadikan cabang ini sebagai default; default sebelumnya dilepas."},
+      {"label": "NPWP Validation", "en": "Governance tab: tick once Finance has verified the NPWP.", "id": "Tab Governance: centang setelah Finance memverifikasi NPWP."},
+      {"label": "KYC Status", "en": "Menunggu Verifikasi, Terverifikasi or Ditolak. Required.", "id": "Menunggu Verifikasi, Terverifikasi atau Ditolak. Wajib."},
+      {"label": "Unblock Reason", "en": "Reason typed when using Unblock. Required; only Finance and Admin users can unblock.", "id": "Alasan yang diisi saat Unblock. Wajib; hanya user Finance dan Admin yang boleh membuka blokir."}
     ]
   },
   {
@@ -82,32 +82,32 @@
     "steps": [
       {"en": "Open Master Supplier and use the search box or the Category and Payment Term filters to find a vendor.", "id": "Buka Master Supplier dan pakai kotak cari atau filter Category dan Payment Term untuk mencari vendor."},
       {"en": "Click + New Record, or double-click a row, to open the form.", "id": "Klik + New Record, atau klik dua kali baris, untuk membuka form."},
-      {"en": "On the Identitas tab fill Kode Supplier, Nama Supplier (both required), Kategori and NPWP. Fill the Alamat, Kontak PIC and Termin & Pajak tabs.", "id": "Di tab Identitas isi Kode Supplier, Nama Supplier (wajib), Kategori dan NPWP. Lanjut isi tab Alamat, Kontak PIC dan Termin & Pajak."},
-      {"en": "Click Simpan. The older supplier list opens afterwards. Click a supplier once there to see its detail page.", "id": "Klik Simpan. Setelah itu daftar supplier lama terbuka. Klik satu kali pada supplier untuk melihat halaman detailnya."},
-      {"en": "On the detail page + Tambah adds extra contacts and branches. Edit Supplier Ini returns to the form.", "id": "Di halaman detail, + Tambah menambah kontak dan cabang tambahan. Edit Supplier Ini kembali ke form."},
-      {"en": "On the detail page Blokir marks a problem vendor and Buka Blokir clears it. Hapus deletes a supplier only when no transaction uses it; otherwise it is switched off instead.", "id": "Di halaman detail, Blokir menandai vendor bermasalah dan Buka Blokir membukanya. Hapus menghapus supplier hanya bila belum dipakai transaksi; bila sudah dipakai, supplier dinonaktifkan."}
+      {"en": "On the Identity tab fill Supplier Code, Supplier Name (both required), Category and NPWP. Fill the Address, PIC Contact and Terms & Tax tabs.", "id": "Di tab Identity isi Supplier Code, Supplier Name (wajib), Category dan NPWP. Lanjut isi tab Address, PIC Contact dan Terms & Tax."},
+      {"en": "Click Save. The older supplier list opens afterwards. Click a supplier once there to see its detail page.", "id": "Klik Save. Setelah itu daftar supplier lama terbuka. Klik satu kali pada supplier untuk melihat halaman detailnya."},
+      {"en": "On the detail page + Tambah adds extra contacts and branches. Edit This Supplier returns to the form.", "id": "Di halaman detail, + Tambah menambah kontak dan cabang tambahan. Edit This Supplier kembali ke form."},
+      {"en": "On the detail page Block marks a problem vendor and Unblock clears it. Delete deletes a supplier only when no transaction uses it; otherwise it is switched off instead.", "id": "Di halaman detail, Block menandai vendor bermasalah dan Unblock membukanya. Delete menghapus supplier hanya bila belum dipakai transaksi; bila sudah dipakai, supplier dinonaktifkan."}
     ],
     "fields": [
-      {"label": "Kode Supplier", "en": "Unique supplier code, up to 50 characters. Required.", "id": "Kode supplier yang unik, maksimal 50 karakter. Wajib."},
-      {"label": "Nama Supplier", "en": "Full supplier name, up to 200 characters. Required. It is shown wherever a supplier is picked.", "id": "Nama lengkap supplier, maksimal 200 karakter. Wajib. Nama ini tampil di semua tempat yang memilih supplier."},
-      {"label": "Kategori", "en": "Vendor category picked from Supplier Category (for example BANK or EKSPEDISI). It is saved as the category code.", "id": "Kategori vendor, dipilih dari Supplier Category (misalnya BANK atau EKSPEDISI). Disimpan sebagai kode kategori."},
-      {"label": "NPWP", "en": "Tax number of the supplier, up to 25 characters.", "id": "Nomor NPWP supplier, maksimal 25 karakter."},
-      {"label": "Aktif", "en": "Tick when the supplier is in use. Untick to switch it off.", "id": "Centang bila supplier masih dipakai. Hilangkan centang untuk menonaktifkan."},
-      {"label": "Blokir supplier ini (bermasalah)", "en": "Tick to mark the supplier as blocked. The grid shows it in the Blacklist column.", "id": "Centang untuk menandai supplier diblokir. Grid menampilkannya di kolom Blacklist."},
-      {"label": "Catatan", "en": "Free note, for example why the supplier was blocked or past quality and delivery problems.", "id": "Catatan bebas, misalnya alasan blokir atau riwayat masalah kualitas dan pengiriman."},
-      {"label": "Alamat Lengkap", "en": "Supplier address: street, number, RT/RW and landmark.", "id": "Alamat supplier: jalan, nomor, RT/RW dan patokan."},
-      {"label": "Kode Pos", "en": "Postal code, filled from the area picker but can be changed.", "id": "Kode pos, terisi dari pilihan wilayah tetapi boleh diubah."},
-      {"label": "Nama PIC", "en": "Contact person at the supplier. It is searched by the search box.", "id": "Orang yang jadi kontak di supplier. Bisa dicari lewat kotak cari."},
-      {"label": "No. Telepon", "en": "Main phone number.", "id": "Nomor telepon utama."},
-      {"label": "Telepon 2", "en": "Second phone number.", "id": "Nomor telepon kedua."},
+      {"label": "Supplier Code", "en": "Unique supplier code, up to 50 characters. Required.", "id": "Kode supplier yang unik, maksimal 50 karakter. Wajib."},
+      {"label": "Supplier Name", "en": "Full supplier name, up to 200 characters. Required. It is shown wherever a supplier is picked.", "id": "Nama lengkap supplier, maksimal 200 karakter. Wajib. Nama ini tampil di semua tempat yang memilih supplier."},
+      {"label": "Category", "en": "Vendor category picked from Supplier Category (for example BANK or EKSPEDISI). It is saved as the category code.", "id": "Category vendor, dipilih dari Supplier Category (misalnya BANK atau EKSPEDISI). Disimpan sebagai kode kategori."},
+      {"label": "Tax ID (NPWP)", "en": "Tax number of the supplier, up to 25 characters.", "id": "Nomor NPWP supplier, maksimal 25 karakter."},
+      {"label": "Active", "en": "Tick when the supplier is in use. Untick to switch it off.", "id": "Centang bila supplier masih dipakai. Hilangkan centang untuk menonaktifkan."},
+      {"label": "Block this supplier (problematic)", "en": "Tick to mark the supplier as blocked. The grid shows it in the Blacklist column.", "id": "Centang untuk menandai supplier diblokir. Grid menampilkannya di kolom Blacklist."},
+      {"label": "Notes", "en": "Free note, for example why the supplier was blocked or past quality and delivery problems.", "id": "Catatan bebas, misalnya alasan blokir atau riwayat masalah kualitas dan pengiriman."},
+      {"label": "Full Address", "en": "Supplier address: street, number, RT/RW and landmark.", "id": "Alamat supplier: jalan, nomor, RT/RW dan patokan."},
+      {"label": "Postal Code", "en": "Postal code, filled from the area picker but can be changed.", "id": "Kode pos, terisi dari pilihan wilayah tetapi boleh diubah."},
+      {"label": "PIC Name", "en": "Contact person at the supplier. It is searched by the search box.", "id": "Orang yang jadi kontak di supplier. Bisa dicari lewat kotak cari."},
+      {"label": "Phone No.", "en": "Main phone number.", "id": "Nomor telepon utama."},
+      {"label": "Phone 2", "en": "Second phone number.", "id": "Nomor telepon kedua."},
       {"label": "Fax", "en": "Fax number, up to 20 characters.", "id": "Nomor fax, maksimal 20 karakter."},
       {"label": "Email", "en": "Supplier e-mail address. It must be a valid address.", "id": "Alamat e-mail supplier. Harus berupa alamat yang sah."},
       {"label": "Website", "en": "Supplier website.", "id": "Situs web supplier."},
-      {"label": "Termin Bayar", "en": "Payment term picked from the active payment terms. It shows in the grid.", "id": "Termin pembayaran, dipilih dari daftar termin yang aktif. Tampil di grid."},
-      {"label": "Tarif Pajak Pembelian (%)", "en": "Purchase tax rate in percent, 0 to 100. It is stored on the supplier record.", "id": "Tarif pajak pembelian dalam persen, 0 sampai 100. Disimpan di data supplier."},
-      {"label": "Tarif Pajak Jasa (%)", "en": "Service tax rate in percent, 0 to 100. It is stored on the supplier record.", "id": "Tarif pajak jasa dalam persen, 0 sampai 100. Disimpan di data supplier."},
-      {"label": "Nama Kontak", "en": "Extra contact (+ Tambah on the detail page): the person's name. Required. Also Jabatan, Telepon, Email, Catatan and Jadikan kontak default.", "id": "Kontak tambahan (+ Tambah di halaman detail): nama orangnya. Wajib. Ada juga Jabatan, Telepon, Email, Catatan dan Jadikan kontak default."},
-      {"label": "Nama Cabang", "en": "Extra branch (+ Tambah on the detail page): its name, Alamat, Wilayah, Kode Pos, Telepon and Jadikan cabang default.", "id": "Cabang tambahan (+ Tambah di halaman detail): namanya, Alamat, Wilayah, Kode Pos, Telepon dan Jadikan cabang default."}
+      {"label": "Payment Term", "en": "Payment term picked from the active payment terms. It shows in the grid.", "id": "Termin pembayaran, dipilih dari daftar termin yang aktif. Tampil di grid."},
+      {"label": "Purchase Tax Rate (%)", "en": "Purchase tax rate in percent, 0 to 100. It is stored on the supplier record.", "id": "Tarif pajak pembelian dalam persen, 0 sampai 100. Disimpan di data supplier."},
+      {"label": "Service Tax Rate (%)", "en": "Service tax rate in percent, 0 to 100. It is stored on the supplier record.", "id": "Tarif pajak jasa dalam persen, 0 sampai 100. Disimpan di data supplier."},
+      {"label": "Contact Name", "en": "Extra contact (+ Tambah on the detail page): the person's name. Required. Also Position, Phone, Email, Notes and Make default contact.", "id": "Kontak tambahan (+ Tambah di halaman detail): nama orangnya. Wajib. Ada juga Position, Phone, Email, Notes dan Make default contact."},
+      {"label": "Branch Name", "en": "Extra branch (+ Tambah on the detail page): its name, Address, Area, Postal Code, Phone and Make default branch.", "id": "Cabang tambahan (+ Tambah di halaman detail): namanya, Address, Area, Postal Code, Phone dan Make default branch."}
     ]
   },
   {
@@ -115,6 +115,7 @@
     "type": "INPUT",
     "module": "MDATA",
     "title": "Supplier Category",
+    "title_id": "Kategori Supplier",
     "purpose": {
       "en": "The list of vendor categories used in Master Supplier, such as BANK or EKSPEDISI. Open it to add a new category or switch one off.",
       "id": "Daftar kategori vendor yang dipakai di Master Supplier, seperti BANK atau EKSPEDISI. Buka untuk menambah kategori baru atau menonaktifkannya."
@@ -185,6 +186,7 @@
     "type": "INPUT",
     "module": "MDATA",
     "title": "Raw Material Master",
+    "title_id": "Master Bahan Baku",
     "purpose": {
       "en": "The master list of raw materials, services and free samples with their specs, units, stock limits and accounts. Open it to create a new item or update an item before it is used in purchasing.",
       "id": "Master daftar bahan baku, jasa dan contoh gratis beserta spesifikasi, satuan, batas stok dan akunnya. Buka untuk membuat item baru atau mengubah item sebelum dipakai di pembelian."
@@ -192,58 +194,58 @@
     "keywords": "bahan baku, raw material, item, material, kertas, art carton, kode item, uom, gramatur, gsm, reorder point, stok minimum, confirm item, master item",
     "steps": [
       {"en": "Open Raw Material Master and search by code, name or brand, or filter by Category, Item Type or Unit.", "id": "Buka Raw Material Master dan cari berdasarkan kode, nama atau merek, atau saring dengan Category, Item Type atau Unit."},
-      {"en": "Click + New Record, or open a row, to get the item form. Type the Nama Item and pick Tipe Item.", "id": "Klik + New Record, atau buka satu baris, untuk membuka form item. Ketik Nama Item dan pilih Tipe Item."},
-      {"en": "On tab 1. Kategori pick Kategori, Jenis and the deeper levels. The Kode Item is built from them and filled by the system.", "id": "Di tab 1. Kategori pilih Kategori, Jenis dan level di bawahnya. Kode Item dibentuk dari pilihan itu dan diisi sistem."},
-      {"en": "Fill tab 2. Spesifikasi & QC, tab 3. UOM & Pengadaan and tab 4. Stok & Lokasi.", "id": "Isi tab 2. Spesifikasi & QC, tab 3. UOM & Pengadaan dan tab 4. Stok & Lokasi."},
-      {"en": "Click Simpan. The item is saved as DRAFT and the form reopens on the saved item.", "id": "Klik Simpan. Item tersimpan sebagai DRAFT dan form terbuka lagi pada item yang tersimpan."},
+      {"en": "Click + New Record, or open a row, to get the item form. Type the Item Name and pick Item Type.", "id": "Klik + New Record, atau buka satu baris, untuk membuka form item. Ketik Item Name dan pilih Item Type."},
+      {"en": "On tab 1. Category pick Category, Type and the deeper levels. The Item Code is built from them and filled by the system.", "id": "Di tab 1. Category pilih Category, Type dan level di bawahnya. Item Code dibentuk dari pilihan itu dan diisi sistem."},
+      {"en": "Fill tab 2. Spesifikasi & QC, tab 3. UOM & Pengadaan and tab 4. Stock & Lokasi.", "id": "Isi tab 2. Spesifikasi & QC, tab 3. UOM & Pengadaan dan tab 4. Stock & Lokasi."},
+      {"en": "Click Save. The item is saved as DRAFT and the form reopens on the saved item.", "id": "Klik Save. Item tersimpan sebagai DRAFT dan form terbuka lagi pada item yang tersimpan."},
       {"en": "On tab 5. Akuntansi (GL) pick the three accounts, then click Confirm. After Confirm the category and item code are locked.", "id": "Di tab 5. Akuntansi (GL) pilih ketiga akun, lalu klik Confirm. Setelah Confirm, kategori dan kode item terkunci."},
-      {"en": "Hapus deletes the item permanently after a confirmation.", "id": "Hapus menghapus item secara permanen setelah konfirmasi."}
+      {"en": "Delete deletes the item permanently after a confirmation.", "id": "Delete menghapus item secara permanen setelah konfirmasi."}
     ],
     "fields": [
-      {"label": "Nama Item", "en": "Item name, up to 200 characters. Required.", "id": "Nama item, maksimal 200 karakter. Wajib."},
-      {"label": "Kode Item", "en": "Item code. Read only: built from the prefixes of the chosen categories, with a number added if the code exists.", "id": "Kode item. Hanya baca: dibentuk dari prefix kategori yang dipilih, dengan angka tambahan bila kode sudah ada."},
-      {"label": "Tipe Item", "en": "MATERIAL (stock raw material), SERVICE or FREE_SAMPLE (sample from a supplier). Required.", "id": "MATERIAL (bahan baku stok), SERVICE (jasa) atau FREE_SAMPLE (contoh dari supplier). Wajib."},
-      {"label": "Dapat Dibeli (PO)", "en": "Ya or Tidak: whether the item can be bought with a purchase order.", "id": "Ya atau Tidak: apakah item boleh dibeli lewat PO."},
-      {"label": "Kategori", "en": "Level 1 of the item hierarchy, picked from Raw Material Category. Locked after Confirm.", "id": "Level 1 hirarki item, dipilih dari Raw Material Category. Terkunci setelah Confirm."},
-      {"label": "Jenis", "en": "Level 2, available after Kategori is picked.", "id": "Level 2, aktif setelah Kategori dipilih."},
-      {"label": "Gramatur/Spec", "en": "Level 3, available after Jenis is picked.", "id": "Level 3, aktif setelah Jenis dipilih."},
-      {"label": "Ukuran", "en": "Optional level 4. Pick it when the category has sizes.", "id": "Level 4, opsional. Pilih bila kategori punya ukuran."},
-      {"label": "Merek", "en": "Optional level 5, the brand level of the hierarchy.", "id": "Level 5, opsional, tingkat merek pada hirarki."},
-      {"label": "Kode HS", "en": "Customs HS code, for example 4810.13.00.", "id": "Kode HS kepabeanan, misalnya 4810.13.00."},
-      {"label": "Kode Lama", "en": "Item code in the old system, for reference.", "id": "Kode item di sistem lama, sebagai acuan."},
-      {"label": "Nama Lama", "en": "Item name in the old system, for reference.", "id": "Nama item di sistem lama, sebagai acuan."},
-      {"label": "Gramatur (gsm)", "en": "Paper weight in gsm.", "id": "Berat kertas dalam gsm."},
-      {"label": "Panjang Plano (cm)", "en": "Length of the sheet in cm.", "id": "Panjang lembar dalam cm."},
-      {"label": "Lebar Plano (cm)", "en": "Width of the sheet in cm.", "id": "Lebar lembar dalam cm."},
-      {"label": "Ketebalan (mm)", "en": "Thickness in mm.", "id": "Ketebalan dalam mm."},
-      {"label": "Merek Pabrik", "en": "Manufacturer brand. It shows in the grid and is searched.", "id": "Merek pabrik. Tampil di grid dan bisa dicari."},
-      {"label": "Warna", "en": "Colour of the material.", "id": "Warna bahan."},
-      {"label": "Wajib QC Saat Terima", "en": "Ya turns on the quality gate for this item at goods receipt; Tidak sends it straight to stock.", "id": "Ya mengaktifkan gerbang QC untuk item ini saat barang diterima; Tidak langsung masuk stok."},
-      {"label": "Masa Simpan (hari)", "en": "Shelf life in days.", "id": "Masa simpan dalam hari."},
-      {"label": "Batas Kelembaban (%)", "en": "Moisture limit in percent.", "id": "Batas kelembaban dalam persen."},
-      {"label": "UoM Stok", "en": "Unit used to count stock, picked from Units of Measure. Shown as Stock Unit in the grid.", "id": "Satuan untuk menghitung stok, dipilih dari Units of Measure. Tampil sebagai Stock Unit di grid."},
-      {"label": "UoM Beli (PO)", "en": "Unit used when buying.", "id": "Satuan yang dipakai saat membeli."},
-      {"label": "UoM Pemakaian", "en": "Unit used when the material is consumed.", "id": "Satuan yang dipakai saat bahan dipakai."},
-      {"label": "Konversi Beli → Stok", "en": "How many stock units one purchase unit gives. Only a starting value; it can be overwritten at goods receipt.", "id": "Berapa satuan stok untuk satu satuan beli. Hanya nilai awal; bisa ditimpa manual saat penerimaan barang."},
-      {"label": "Konversi Stok → Pakai", "en": "How many usage units one stock unit gives.", "id": "Berapa satuan pakai untuk satu satuan stok."},
-      {"label": "Lead Time (hari)", "en": "Usual days from order to delivery.", "id": "Lama hari yang biasa dari pesan sampai barang datang."},
-      {"label": "Toleransi Terima (%)", "en": "Receiving tolerance in percent.", "id": "Toleransi penerimaan dalam persen."},
-      {"label": "Pajak Masukan", "en": "PPN or Non-PPN input tax for the purchase.", "id": "Pajak masukan untuk pembelian: PPN atau Non-PPN."},
-      {"label": "Supplier Saran", "en": "Suggested supplier, picked from Master Supplier.", "id": "Supplier yang disarankan, dipilih dari Master Supplier."},
+      {"label": "Item Name", "en": "Item name, up to 200 characters. Required.", "id": "Nama item, maksimal 200 karakter. Wajib."},
+      {"label": "Item Code", "en": "Item code. Read only: built from the prefixes of the chosen categories, with a number added if the code exists.", "id": "Kode item. Hanya baca: dibentuk dari prefix kategori yang dipilih, dengan angka tambahan bila kode sudah ada."},
+      {"label": "Item Type", "en": "MATERIAL (stock raw material), SERVICE or FREE_SAMPLE (sample from a supplier). Required.", "id": "MATERIAL (bahan baku stok), SERVICE (jasa) atau FREE_SAMPLE (contoh dari supplier). Wajib."},
+      {"label": "Purchasable (PO)", "en": "Ya or Tidak: whether the item can be bought with a purchase order.", "id": "Ya atau Tidak: apakah item boleh dibeli lewat PO."},
+      {"label": "Category", "en": "Level 1 of the item hierarchy, picked from Raw Material Category. Locked after Confirm.", "id": "Level 1 hirarki item, dipilih dari Raw Material Category. Terkunci setelah Confirm."},
+      {"label": "Type", "en": "Level 2, available after Category is picked.", "id": "Level 2, aktif setelah Category dipilih."},
+      {"label": "Grammage/Spec", "en": "Level 3, available after Type is picked.", "id": "Level 3, aktif setelah Type dipilih."},
+      {"label": "Size", "en": "Optional level 4. Pick it when the category has sizes.", "id": "Level 4, opsional. Pilih bila kategori punya ukuran."},
+      {"label": "Brand", "en": "Optional level 5, the brand level of the hierarchy.", "id": "Level 5, opsional, tingkat merek pada hirarki."},
+      {"label": "HS Code", "en": "Customs HS code, for example 4810.13.00.", "id": "HS Code kepabeanan, misalnya 4810.13.00."},
+      {"label": "Old Code", "en": "Item code in the old system, for reference.", "id": "Kode item di sistem lama, sebagai acuan."},
+      {"label": "Old Name", "en": "Item name in the old system, for reference.", "id": "Nama item di sistem lama, sebagai acuan."},
+      {"label": "Grammage (gsm)", "en": "Paper weight in gsm.", "id": "Berat kertas dalam gsm."},
+      {"label": "Plano Length (cm)", "en": "Length of the sheet in cm.", "id": "Panjang lembar dalam cm."},
+      {"label": "Plano Width (cm)", "en": "Width of the sheet in cm.", "id": "Lebar lembar dalam cm."},
+      {"label": "Thickness (mm)", "en": "Thickness in mm.", "id": "Ketebalan dalam mm."},
+      {"label": "Manufacturer Brand", "en": "Manufacturer brand. It shows in the grid and is searched.", "id": "Merek pabrik. Tampil di grid dan bisa dicari."},
+      {"label": "Color", "en": "Colour of the material.", "id": "Warna bahan."},
+      {"label": "QC Required at Receipt", "en": "Ya turns on the quality gate for this item at goods receipt; Tidak sends it straight to stock.", "id": "Ya mengaktifkan gerbang QC untuk item ini saat barang diterima; Tidak langsung masuk stok."},
+      {"label": "Shelf Life (days)", "en": "Shelf life in days.", "id": "Masa simpan dalam hari."},
+      {"label": "Moisture Limit (%)", "en": "Moisture limit in percent.", "id": "Batas kelembaban dalam persen."},
+      {"label": "Stock UoM", "en": "Unit used to count stock, picked from Units of Measure. Shown as Stock Unit in the grid.", "id": "Satuan untuk menghitung stok, dipilih dari Units of Measure. Tampil sebagai Stock Unit di grid."},
+      {"label": "Purchase UoM (PO)", "en": "Unit used when buying.", "id": "Satuan yang dipakai saat membeli."},
+      {"label": "Usage UoM", "en": "Unit used when the material is consumed.", "id": "Satuan yang dipakai saat bahan dipakai."},
+      {"label": "Purchase → Stock Conversion", "en": "How many stock units one purchase unit gives. Only a starting value; it can be overwritten at goods receipt.", "id": "Berapa satuan stok untuk satu satuan beli. Hanya nilai awal; bisa ditimpa manual saat penerimaan barang."},
+      {"label": "Stock → Usage Conversion", "en": "How many usage units one stock unit gives.", "id": "Berapa satuan pakai untuk satu satuan stok."},
+      {"label": "Lead Time (days)", "en": "Usual days from order to delivery.", "id": "Lama hari yang biasa dari pesan sampai barang datang."},
+      {"label": "Receiving Tolerance (%)", "en": "Receiving tolerance in percent.", "id": "Toleransi penerimaan dalam persen."},
+      {"label": "Input Tax", "en": "PPN or Non-PPN input tax for the purchase.", "id": "Pajak masukan untuk pembelian: PPN atau Non-PPN."},
+      {"label": "Suggested Supplier", "en": "Suggested supplier, picked from Master Supplier.", "id": "Supplier yang disarankan, dipilih dari Master Supplier."},
       {"label": "Costing Method", "en": "AVG (moving average), FIFO, LIFO or STANDARD (fixed price).", "id": "AVG (rata-rata bergerak), FIFO, LIFO atau STANDARD (harga tetap)."},
-      {"label": "Sensitif Kurs", "en": "Ya flags the item on purchase screens as price follows the exchange rate.", "id": "Ya menandai item di layar pembelian bahwa harganya mengikuti kurs."},
+      {"label": "Exchange-Rate Sensitive", "en": "Ya flags the item on purchase screens as price follows the exchange rate.", "id": "Ya menandai item di layar pembelian bahwa harganya mengikuti kurs."},
       {"label": "Min Stock", "en": "Minimum stock quantity.", "id": "Jumlah stok minimum."},
       {"label": "Safety Stock", "en": "Safety stock quantity.", "id": "Jumlah stok pengaman."},
       {"label": "Reorder Point", "en": "Stock level at which the item should be reordered. Shown in the grid.", "id": "Level stok saat item perlu dipesan ulang. Tampil di grid."},
       {"label": "Max Stock", "en": "Maximum stock quantity.", "id": "Jumlah stok maksimum."},
-      {"label": "Default Lokasi Gudang", "en": "Default warehouse location, typed freely; it is not linked to the warehouse master yet.", "id": "Lokasi gudang bawaan, diketik bebas; belum terhubung ke master gudang."},
-      {"label": "Stok On-Hand", "en": "Stock on hand. Read only, updated by the system when goods are received.", "id": "Stok yang ada. Hanya baca, diperbarui sistem saat barang diterima."},
-      {"label": "Harga Rata² Bergerak", "en": "Moving average price. Read only, kept by the system.", "id": "Harga rata-rata bergerak. Hanya baca, dikelola sistem."},
-      {"label": "Label Klasifikasi", "en": "Optional report label only; it does not decide any account.", "id": "Label laporan, opsional; tidak menentukan akun apa pun."},
-      {"label": "Akun Aset Persediaan", "en": "Inventory asset account. Needed before Confirm.", "id": "Akun aset persediaan. Wajib terisi sebelum Confirm."},
-      {"label": "Akun HPP / Beban Pakai", "en": "Cost of goods or consumption expense account. Needed before Confirm.", "id": "Akun HPP atau beban pemakaian. Wajib terisi sebelum Confirm."},
-      {"label": "Akun Kliring GR/IR", "en": "Goods received not invoiced clearing account, used when goods are received before the invoice. Needed before Confirm.", "id": "Akun kliring barang diterima belum ditagih, dipakai saat barang masuk sebelum faktur. Wajib terisi sebelum Confirm."},
-      {"label": "Cost Center Default", "en": "Default cost center, optional.", "id": "Cost center bawaan, opsional."},
+      {"label": "Default Warehouse Location", "en": "Default warehouse location, typed freely; it is not linked to the warehouse master yet.", "id": "Lokasi gudang bawaan, diketik bebas; belum terhubung ke master gudang."},
+      {"label": "Stock On-Hand", "en": "Stock on hand. Read only, updated by the system when goods are received.", "id": "Stock yang ada. Hanya baca, diperbarui sistem saat barang diterima."},
+      {"label": "Moving Average Price", "en": "Moving average price. Read only, kept by the system.", "id": "Harga rata-rata bergerak. Hanya baca, dikelola sistem."},
+      {"label": "Classification Label", "en": "Optional report label only; it does not decide any account.", "id": "Label laporan, opsional; tidak menentukan akun apa pun."},
+      {"label": "Inventory Asset Account", "en": "Inventory asset account. Needed before Confirm.", "id": "Akun aset persediaan. Wajib terisi sebelum Confirm."},
+      {"label": "COGS / Consumption Expense Account", "en": "Cost of goods or consumption expense account. Needed before Confirm.", "id": "Akun HPP atau beban pemakaian. Wajib terisi sebelum Confirm."},
+      {"label": "GR/IR Clearing Account", "en": "Goods received not invoiced clearing account, used when goods are received before the invoice. Needed before Confirm.", "id": "Akun kliring barang diterima belum ditagih, dipakai saat barang masuk sebelum faktur. Wajib terisi sebelum Confirm."},
+      {"label": "Default Cost Center", "en": "Default cost center, optional.", "id": "Cost center bawaan, opsional."},
       {"label": "Profit Center", "en": "Default profit center, optional.", "id": "Profit center bawaan, opsional."}
     ]
   },
@@ -252,6 +254,7 @@
     "type": "INPUT",
     "module": "MDATA",
     "title": "Raw Material Category",
+    "title_id": "Kategori Bahan Baku",
     "purpose": {
       "en": "The five linked category levels that build the item code of every raw material: item code = prefix 1 + 2 + 3 + 4 + 5. Open it to add an entry to a chain, rename one, or switch one off.",
       "id": "Lima tingkat kategori yang saling terkait dan membentuk kode item setiap bahan baku: kode item = prefix 1 + 2 + 3 + 4 + 5. Buka untuk menambah entri pada satu rantai, mengganti nama, atau menonaktifkannya."
@@ -308,6 +311,7 @@
     "type": "INPUT",
     "module": "MDATA",
     "title": "Units of Measure",
+    "title_id": "Satuan (UoM)",
     "purpose": {
       "en": "The list of units used for items and quantities, such as PCS, KG or M. Open it to add a unit, set the base unit of a dimension or switch a unit off.",
       "id": "Daftar satuan untuk item dan jumlah, seperti PCS, KG atau M. Buka untuk menambah satuan, menentukan satuan dasar sebuah dimensi atau menonaktifkan satuan."
@@ -355,6 +359,7 @@
     "type": "INPUT",
     "module": "MDATA",
     "title": "Currency",
+    "title_id": "Master Mata Uang",
     "purpose": {
       "en": "The list of currencies used in the ERP, with the word used for amounts in words on printed documents. Open it to add a currency or switch one off.",
       "id": "Daftar mata uang yang dipakai di ERP, beserta kata untuk terbilang di dokumen cetak. Buka untuk menambah mata uang atau menonaktifkannya."
@@ -379,6 +384,7 @@
     "type": "INPUT",
     "module": "MDATA",
     "title": "Exchange Rates",
+    "title_id": "Master Kurs",
     "purpose": {
       "en": "The exchange rate of each currency in Rupiah. Open it when a rate changes: add a new row and the old row stays as history.",
       "id": "Kurs tiap mata uang terhadap Rupiah. Buka saat kurs berubah: tambah baris baru dan baris lama tetap tersimpan sebagai riwayat."
@@ -402,6 +408,7 @@
     "type": "INPUT",
     "module": "MDATA",
     "title": "Shift Master",
+    "title_id": "Master Shift",
     "purpose": {
       "en": "The work shifts of each department with start, break and end times for every day of the week. Open it to add a shift or change its hours.",
       "id": "Shift kerja tiap departemen dengan jam masuk, istirahat dan pulang untuk setiap hari dalam seminggu. Buka untuk menambah shift atau mengubah jamnya."
@@ -410,18 +417,18 @@
     "steps": [
       {"en": "Open Shift Master. The grid shows each shift, its department and how many active employees use it.", "id": "Buka Shift Master. Grid menampilkan tiap shift, departemennya dan jumlah pegawai aktif yang memakainya."},
       {"en": "Click + New Record, or double-click a row, to open the shift form.", "id": "Klik + New Record, atau klik dua kali baris, untuk membuka form shift."},
-      {"en": "Type the Nama Shift and pick the Departemen. Both are required.", "id": "Ketik Nama Shift dan pilih Departemen. Keduanya wajib."},
-      {"en": "In Jam Kerja per Hari fill Masuk, Ist. Mulai, Ist. Selesai and Pulang for each working day. Leave Masuk and Pulang empty for a day off.", "id": "Di Jam Kerja per Hari isi Masuk, Ist. Mulai, Ist. Selesai dan Pulang untuk tiap hari kerja. Kosongkan Masuk dan Pulang untuk hari libur."},
-      {"en": "Click Simpan. Use the active toggle in the grid to switch a shift off.", "id": "Klik Simpan. Pakai tombol aktif/nonaktif di grid untuk menonaktifkan shift."}
+      {"en": "Type the Shift Name and pick the Department. Both are required.", "id": "Ketik Shift Name dan pilih Department. Keduanya wajib."},
+      {"en": "In Working Hours per Day fill Clock In, Break Start, Break End and Clock Out for each working day. Leave Clock In and Clock Out empty for a day off.", "id": "Di Working Hours per Day isi Clock In, Break Start, Break End dan Clock Out untuk tiap hari kerja. Kosongkan Clock In dan Clock Out untuk hari libur."},
+      {"en": "Click Save. Use the active toggle in the grid to switch a shift off.", "id": "Klik Save. Pakai tombol aktif/nonaktif di grid untuk menonaktifkan shift."}
     ],
     "fields": [
-      {"label": "Nama Shift *", "en": "Name of the shift, up to 150 characters, for example TM Production Shift 1. Required.", "id": "Nama shift, maksimal 150 karakter, misalnya TM Production Shift 1. Wajib."},
-      {"label": "Departemen *", "en": "Department the shift belongs to, picked from the active departments. Required.", "id": "Departemen pemilik shift, dipilih dari departemen yang aktif. Wajib."},
-      {"label": "Masuk", "en": "Start time of the working day, one per day from Senin to Minggu (HH:MM).", "id": "Jam mulai kerja, satu per hari dari Senin sampai Minggu (JJ:MM)."},
-      {"label": "Ist. Mulai", "en": "Break start time, optional.", "id": "Jam mulai istirahat, opsional."},
-      {"label": "Ist. Selesai", "en": "Break end time, optional.", "id": "Jam selesai istirahat, opsional."},
-      {"label": "Pulang", "en": "End time of the working day. A day counts as a working day only when both Masuk and Pulang are filled.", "id": "Jam pulang. Hari dihitung hari kerja hanya bila Masuk dan Pulang sama-sama terisi."},
-      {"label": "Aktif", "en": "Untick to switch the shift off.", "id": "Hilangkan centang untuk menonaktifkan shift."}
+      {"label": "Shift Name *", "en": "Name of the shift, up to 150 characters, for example TM Production Shift 1. Required.", "id": "Nama shift, maksimal 150 karakter, misalnya TM Production Shift 1. Wajib."},
+      {"label": "Department *", "en": "Department the shift belongs to, picked from the active departments. Required.", "id": "Department pemilik shift, dipilih dari departemen yang aktif. Wajib."},
+      {"label": "Clock In", "en": "Start time of the working day, one per day from Senin to Minggu (HH:MM).", "id": "Jam mulai kerja, satu per hari dari Senin sampai Minggu (JJ:MM)."},
+      {"label": "Break Start", "en": "Break start time, optional.", "id": "Jam mulai istirahat, opsional."},
+      {"label": "Break End", "en": "Break end time, optional.", "id": "Jam selesai istirahat, opsional."},
+      {"label": "Clock Out", "en": "End time of the working day. A day counts as a working day only when both Clock In and Clock Out are filled.", "id": "Jam pulang. Hari dihitung hari kerja hanya bila Clock In dan Clock Out sama-sama terisi."},
+      {"label": "Active", "en": "Untick to switch the shift off.", "id": "Hilangkan centang untuk menonaktifkan shift."}
     ]
   },
   {
@@ -526,6 +533,7 @@
     "type": "INPUT",
     "module": "SETUP",
     "title": "Account",
+    "title_id": "Akun",
     "purpose": {
       "en": "The login accounts of ERP users. Open it to create an account, change its name, e-mail or group, reset a password or switch an account off.",
       "id": "Akun login pengguna ERP. Buka untuk membuat akun, mengubah nama, e-mail atau grup, mereset password atau menonaktifkan akun."
@@ -533,17 +541,17 @@
     "keywords": "akun, account, user, pengguna, login, username, password, reset password, grup user, nonaktifkan akun, wajib ganti password, security",
     "steps": [
       {"en": "Open Account and search by login, name or e-mail, or filter by Group or Administrator.", "id": "Buka Account dan cari berdasarkan login, nama atau e-mail, atau saring dengan Group atau Administrator."},
-      {"en": "Click + New Record to create an account. Fill Username, Nama lengkap, Email, Password awal and Grup, then click Simpan.", "id": "Klik + New Record untuk membuat akun. Isi Username, Nama lengkap, Email, Password awal dan Grup, lalu klik Simpan."},
+      {"en": "Click + New Record to create an account. Fill Username, Full Name, Email, Initial Password and Group, then click Save.", "id": "Klik + New Record untuk membuat akun. Isi Username, Full Name, Email, Initial Password dan Group, lalu klik Save."},
       {"en": "To change an account, double-click its row or use Edit. Username cannot be changed and the password is not edited here.", "id": "Untuk mengubah akun, klik dua kali barisnya atau pakai Edit. Username tidak bisa diganti dan password tidak diubah di sini."},
       {"en": "Use Reset Password on the row to issue a new default password. It is shown once on the screen, and the user must change it at next login.", "id": "Pakai Reset Password pada baris untuk membuat password default baru. Password tampil satu kali di layar, dan user wajib menggantinya saat login berikutnya."},
       {"en": "Use the active toggle to switch an account off or on. You cannot switch off your own account.", "id": "Pakai tombol aktif/nonaktif untuk mematikan atau menghidupkan akun. Akun sendiri tidak bisa dinonaktifkan."}
     ],
     "fields": [
       {"label": "Username", "en": "Login name, up to 190 characters. Required and unique. Fixed once the account exists.", "id": "Nama login, maksimal 190 karakter. Wajib dan unik. Tidak bisa diubah setelah akun dibuat."},
-      {"label": "Nama lengkap", "en": "Full name of the user, shown in the ERP. Required.", "id": "Nama lengkap user, tampil di ERP. Wajib."},
+      {"label": "Full Name", "en": "Full name of the user, shown in the ERP. Required.", "id": "Full Name user, tampil di ERP. Wajib."},
       {"label": "Email", "en": "E-mail address, optional but it must be valid. Changing it makes the user verify the address again.", "id": "Alamat e-mail, opsional tetapi harus sah. Bila diubah, user harus memverifikasi alamat itu lagi."},
-      {"label": "Password awal", "en": "Initial password, at least 8 characters. Asked only for a new account.", "id": "Password awal, minimal 8 karakter. Hanya diminta untuk akun baru."},
-      {"label": "Grup", "en": "The group of the user. Required. The group sets what the user can open: see Group.", "id": "Grup milik user. Wajib. Grup menentukan apa yang boleh dibuka user: lihat Group."}
+      {"label": "Initial Password", "en": "Initial password, at least 8 characters. Asked only for a new account.", "id": "Initial Password, minimal 8 karakter. Hanya diminta untuk akun baru."},
+      {"label": "Group", "en": "The group of the user. Required. The group sets what the user can open: see Group.", "id": "Group milik user. Wajib. Group menentukan apa yang boleh dibuka user: lihat Group."}
     ]
   },
   {
@@ -551,6 +559,7 @@
     "type": "INPUT",
     "module": "SETUP",
     "title": "Group",
+    "title_id": "Grup",
     "purpose": {
       "en": "The groups that hold users sharing the same access level. A group is an access level, not a job title. Open it to create a group, set its level or switch it off.",
       "id": "Grup yang menampung user dengan tingkat akses yang sama. Grup adalah level akses, bukan jabatan. Buka untuk membuat grup, menentukan levelnya atau menonaktifkannya."
@@ -558,15 +567,15 @@
     "keywords": "grup, group, level akses, hak akses, level manajemen, security group, staf, supervisor, manager, direksi, anggota grup",
     "steps": [
       {"en": "Open Group and search by group code or name. The grid shows the level and how many members each group has.", "id": "Buka Group dan cari berdasarkan kode atau nama grup. Grid menampilkan level dan jumlah anggota tiap grup."},
-      {"en": "Click + New Record. Type the Kode grup and Nama grup and pick the Level manajemen.", "id": "Klik + New Record. Ketik Kode grup dan Nama grup lalu pilih Level manajemen."},
-      {"en": "Click Simpan. On an existing group only the name and level can be changed.", "id": "Klik Simpan. Pada grup yang sudah ada hanya nama dan level yang bisa diubah."},
+      {"en": "Click + New Record. Type the Group Code and Group Name and pick the Level manajemen.", "id": "Klik + New Record. Ketik Group Code dan Group Name lalu pilih Level manajemen."},
+      {"en": "Click Save. On an existing group only the name and level can be changed.", "id": "Klik Save. Pada grup yang sudah ada hanya nama dan level yang bisa diubah."},
       {"en": "Per-module rights (access, input, approve, export) are set per group in the security setup rights panel, not in this form.", "id": "Hak per modul (akses, input, approve, export) diatur per grup di panel hak akses pengaturan keamanan, bukan di form ini."},
       {"en": "Use the active toggle to switch a group off.", "id": "Pakai tombol aktif/nonaktif untuk menonaktifkan grup."}
     ],
     "fields": [
-      {"label": "Kode grup", "en": "Group code, up to 40 characters, for example PRODUKSI_SPV. Required and unique. Saved in capitals with spaces turned into underscores. Fixed once saved.", "id": "Kode grup, maksimal 40 karakter, misalnya PRODUKSI_SPV. Wajib dan unik. Disimpan huruf besar, spasi jadi garis bawah. Tetap setelah disimpan."},
-      {"label": "Nama grup", "en": "Name of the group, up to 100 characters. Required.", "id": "Nama grup, maksimal 100 karakter. Wajib."},
-      {"label": "Level manajemen (1=Staf .. 5=Direksi)", "en": "Access level 1 Staf, 2 Supervisor, 3 Manager, 4 GM or 5 Direksi. Modules need a minimum level, so a higher level opens more screens.", "id": "Level akses 1 Staf, 2 Supervisor, 3 Manager, 4 GM atau 5 Direksi. Modul punya level minimum, jadi level lebih tinggi membuka lebih banyak layar."}
+      {"label": "Group Code", "en": "Group code, up to 40 characters, for example PRODUKSI_SPV. Required and unique. Saved in capitals with spaces turned into underscores. Fixed once saved.", "id": "Group Code, maksimal 40 karakter, misalnya PRODUKSI_SPV. Wajib dan unik. Disimpan huruf besar, spasi jadi garis bawah. Tetap setelah disimpan."},
+      {"label": "Group Name", "en": "Name of the group, up to 100 characters. Required.", "id": "Group Name, maksimal 100 karakter. Wajib."},
+      {"label": "Management Level (1=Staff .. 5=Director)", "en": "Access level 1 Staf, 2 Supervisor, 3 Manager, 4 GM or 5 Direksi. Modules need a minimum level, so a higher level opens more screens.", "id": "Level akses 1 Staf, 2 Supervisor, 3 Manager, 4 GM atau 5 Direksi. Modul punya level minimum, jadi level lebih tinggi membuka lebih banyak layar."}
     ]
   },
   {
@@ -582,7 +591,7 @@
     "steps": [
       {"en": "Open Support Tickets and search by ticket number, sender or problem, or filter by Screen or Status. New tickets are not created here; users send them from the Help window.", "id": "Buka Support Tickets dan cari berdasarkan nomor tiket, pengirim atau masalah, atau saring dengan Screen atau Status. Tiket baru tidak dibuat di sini; user mengirimnya dari jendela Bantuan."},
       {"en": "Open a ticket to read the description, the screen it came from, any pictures and the earlier replies.", "id": "Buka tiket untuk membaca deskripsi, layar asalnya, gambar lampiran dan balasan sebelumnya."},
-      {"en": "Type an answer and click Kirim. The reply reaches the sender, and a ticket that was Open moves to In progress.", "id": "Ketik jawaban lalu klik Kirim. Balasan sampai ke pengirim, dan tiket yang tadinya Open berpindah ke In progress."},
+      {"en": "Type an answer and click Send. The reply reaches the sender, and a ticket that was Open moves to In progress.", "id": "Ketik jawaban lalu klik Send. Balasan sampai ke pengirim, dan tiket yang tadinya Open berpindah ke In progress."},
       {"en": "Write what was fixed in Resolution note, then click Mark done, or Not a bug (close) if it is not a fault.", "id": "Tulis apa yang diperbaiki di Resolution note, lalu klik Mark done, atau Not a bug (close) bila bukan kerusakan."},
       {"en": "Use In progress to mark a ticket as being handled, and Close to leave the ticket window without changing the status.", "id": "Pakai In progress untuk menandai tiket sedang ditangani, dan Close untuk keluar dari jendela tiket tanpa mengubah status."}
     ],
@@ -600,6 +609,7 @@
     "type": "INPUT",
     "module": "SETUP",
     "title": "Approval Setting",
+    "title_id": "Pengaturan Persetujuan",
     "purpose": {
       "en": "Defines, for each document type such as PR, PO or CO, how many approval levels it has, which position approves at each level and from what value. Open it to add or change an approval route.",
       "id": "Menentukan, untuk tiap jenis dokumen seperti PR, PO atau CO, berapa level persetujuannya, jabatan mana yang menyetujui tiap level dan mulai nilai berapa. Buka untuk menambah atau mengubah alur persetujuan."
@@ -633,6 +643,7 @@
     "type": "INPUT",
     "module": "SETUP",
     "title": "Acting Officer",
+    "title_id": "Pejabat Pengganti",
     "purpose": {
       "en": "Names who stands in for an approver position while the holder is away. Open it before leave or a business trip so approvals do not wait.",
       "id": "Menentukan siapa yang menggantikan jabatan approver selama pemegangnya berhalangan. Buka sebelum cuti atau dinas luar supaya persetujuan tidak tertunda."
@@ -690,6 +701,7 @@
     "type": "INPUT",
     "module": "SETUP",
     "title": "Constants",
+    "title_id": "Konstanta",
     "purpose": {
       "en": "All settings values read by engines, prints and rules, each holding a number, a text or both. Open it to change a value such as a rate, a limit or the application time zone.",
       "id": "Semua nilai pengaturan yang dibaca engine, cetakan dan aturan, masing-masing berisi angka, teks atau keduanya. Buka untuk mengubah nilai seperti tarif, batas atau zona waktu aplikasi."

@@ -34,3 +34,4 @@
 
 ## Already exists? Searched where, result
 Searched: tables/columns `market`, `size`, `finishing`, `join`, `category`, `gram` in `ddtmst`; menu `sys_app_menu`; `grep` `app/Support/V2`, `resources/views/v2`, `packages`. Result: all masters ALREADY EXIST; no new table is needed. The only shortfalls are input screens (finding 1) and a constant row (finding 2).
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

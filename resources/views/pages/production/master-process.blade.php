@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Komponen v1 untuk layar "Process Master" (dibuka dari grid v2 lewat Open / New). Teks tampilan (label, kolom, tab, tombol, pesan) English sesuai keputusan Jo 2026-10-18; nilai tersimpan dan kunci data tidak diubah.
+ * Sumber hulu  : Tabel dan service yang dibaca komponen ini (lihat query di file); tidak ada logika hulu baru.
+ * Input        : Isian form dan filter layar.
+ * Output       : Simpan ke tabel modul terkait lewat service yang sama seperti sebelumnya.
+ * Dipakai oleh : Grid v2 modul terkait (v1Route).
+ * Status       : Aktif; teks tampilan English (Jo 2026-10-18).
+ */
+
+
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\ManagesProcessMachineCapability;
 use App\Models\Master\OrgDepartment;
@@ -22,7 +33,7 @@ use Livewire\Component;
 // Angka yang belum diisi DIBIARKAN KOSONG, tidak diganti 0: CostingEngine &
 // Scheduling membaca master ini, dan 0 akan diperlakukan sebagai fakta.
 // Kolom "Kesiapan" di grid yang menunjukkan mana yang masih perlu dilengkapi.
-new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Process Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 
@@ -334,7 +345,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
         if ($data['min_lot_qty'] !== '' && $data['max_lot_qty'] !== ''
             && (int) $data['min_lot_qty'] > (int) $data['max_lot_qty']) {
             $this->activeTab = 'capacity';
-            $this->addError('max_lot_qty', 'Lot maksimum harus >= lot minimum.');
+            $this->addError('max_lot_qty', 'Maximum lot must be >= minimum lot.');
 
             return;
         }
@@ -343,7 +354,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
         // CostingEngine akan salah 3 digit. Blokir di sini, bukan di engine.
         if ($data['standard_rate'] !== '' && $data['cost_basis'] === '') {
             $this->activeTab = 'cost';
-            $this->addError('cost_basis', 'Pilih basis ongkos dulu — tarif tanpa basis tidak bisa dipakai menghitung HPP.');
+            $this->addError('cost_basis', 'Select a cost basis first — a rate without a basis cannot be used to calculate COGS (HPP).');
 
             return;
         }
@@ -443,20 +454,20 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Proses', 'value' => $this->statTotal, 'tone' => 'total'],
-            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+            'total' => ['label' => 'Total Processes', 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => 'Active', 'value' => $this->statActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
             'bottleneck' => ['label' => 'Bottleneck', 'value' => $this->statBottleneck, 'tone' => 'warn',
-                'subtitle' => 'Kapasitas penentu',
+                'subtitle' => 'Limiting capacity',
                 'filter' => fn ($q) => $q->where('activate', true)->where('is_bottleneck', true)],
-            'subcon' => ['label' => 'Subkon', 'value' => $this->statSubcon, 'tone' => 'extra',
-                'subtitle' => 'Dikerjakan pihak ke-3',
+            'subcon' => ['label' => 'Subcontract', 'value' => $this->statSubcon, 'tone' => 'extra',
+                'subtitle' => 'Done by a third party',
                 'filter' => fn ($q) => $q->where('activate', true)->where('inhouse', false)],
-            'nomachine' => ['label' => 'Tanpa Mesin', 'value' => $this->statNoMachine, 'tone' => 'critical',
-                'subtitle' => 'Belum bisa dijadwalkan',
+            'nomachine' => ['label' => 'No Machine', 'value' => $this->statNoMachine, 'tone' => 'critical',
+                'subtitle' => 'Cannot be scheduled yet',
                 'filter' => fn ($q) => $q->where('activate', true)->where('is_manual', false)
                     ->whereDoesntHave('capabilities', fn ($qq) => $qq->where('activate', true))],
-            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+            'inactive' => ['label' => 'Inactive', 'value' => $this->statInactive, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('activate', false)],
         ];
     }
@@ -474,10 +485,10 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <x-form.input wire:model.live.debounce.300ms="search" placeholder="Cari kode atau nama proses…" :case-toggle="false" class="w-56 shrink-0" />
+                    <x-form.input wire:model.live.debounce.300ms="search" placeholder="Search code or process name…" :case-toggle="false" class="w-56 shrink-0" />
                 </div>
                 <x-slot:tools>
-                    <x-form.select wire:model.live="stageFilter" liveSync :selected="$stageFilter" placeholder="Semua Tahap"
+                    <x-form.select wire:model.live="stageFilter" liveSync :selected="$stageFilter" placeholder="All Stages"
                         :options="\App\Models\Master\ProdProcess::STAGES" class="shrink-0" />
                 </x-slot:tools>
                 <x-slot:newRecord>
@@ -490,26 +501,26 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                     <thead>
                         <tr>
                             @foreach ([
-                                'Kode' => 'w-[72px]', 'Proses & Departemen' => '', 'Tahap' => 'w-[110px]',
-                                'Eksekusi' => 'w-[96px]', 'Kapasitas / Jam' => 'w-[132px]',
+                                'Code' => 'w-[72px]', 'Process & Department' => '', 'Stage' => 'w-[110px]',
+                                'Execution' => 'w-[96px]', 'Capacity / Hour' => 'w-[132px]',
                                 'Setup' => 'w-[70px] num', 'Waste Std' => 'w-[92px] num',
-                                'Mesin' => 'w-[92px]', 'Ongkos Std' => 'w-[124px] num',
-                                'Kesiapan' => 'w-[104px]', 'Status' => 'w-[80px]',
+                                'Mesin' => 'w-[92px]', 'Std Cost' => 'w-[124px] num',
+                                'Readiness' => 'w-[104px]', 'Status' => 'w-[80px]',
                             ] as $label => $w)
                                 <th class="{{ $w }}">{{ $label }}</th>
                             @endforeach
-                            <th class="text-right w-[100px]">Aksi</th>
+                            <th class="text-right w-[100px]">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->processes as $p)
                             @php($ready = $p->readinessScore())
-                            <tr wire:key="process-{{ $p->id_process }}" wire:dblclick="openModal('edit', {{ $p->id_process }})" class="cursor-pointer" title="Klik 2x untuk buka detail">
+                            <tr wire:key="process-{{ $p->id_process }}" wire:dblclick="openModal('edit', {{ $p->id_process }})" class="cursor-pointer" title="Double-click to open details">
                                 <td>
                                     @if ($p->process_code)
                                         <x-ui.badge tone="code" size="md" mono>{{ $p->process_code }}</x-ui.badge>
                                     @else
-                                        <span class="text-[10px] text-warn-ink" title="Kode proses belum diisi">belum</span>
+                                        <span class="text-[10px] text-warn-ink" title="Process code not filled in">belum</span>
                                     @endif
                                 </td>
                                 <td>
@@ -518,7 +529,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                         <div class="min-w-0">
                                             <div class="font-semibold text-[12.5px] truncate">{{ $p->process_name }}</div>
                                             <div class="text-[10.5px] text-muted truncate">
-                                                {{ $p->department?->department_name ?? 'Dept belum diisi' }}
+                                                {{ $p->department?->department_name ?? 'Department not filled in' }}
                                                 @if ($p->is_bottleneck) <span class="text-warn-ink font-bold">· BOTTLENECK</span> @endif
                                             </div>
                                         </div>
@@ -544,14 +555,14 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                     @if ($p->default_speed_per_hour > 0)
                                         <div class="text-[11.5px] leading-tight">
                                             <span class="font-mono font-semibold">{{ number_format((float) $p->default_speed_per_hour, 0, ',', '.') }}</span>
-                                            <span class="text-[10px] text-muted">{{ $p->output_uom === 'LEMBAR' ? 'Lembar' : ucfirst(strtolower($p->output_uom)) }} / Jam</span>
+                                            <span class="text-[10px] text-muted">{{ $p->output_uom === 'LEMBAR' ? 'Sheet' : ucfirst(strtolower($p->output_uom)) }} / Hour</span>
                                         </div>
                                         {{-- Bar pembanding kapasitas antar-baris (permintaan user 2026-09-22) --}}
                                         <x-ui.progress class="mt-1" tone="info" :value="max(3, round((float) $p->default_speed_per_hour / $this->speedScaleMax * 100))" />
                                     @elseif ($p->is_manual)
                                         <span class="text-[10.5px] text-muted">Manual</span>
                                     @else
-                                        <span class="text-[10.5px] text-warn-ink">belum diisi</span>
+                                        <span class="text-[10.5px] text-warn-ink">not filled in</span>
                                     @endif
                                 </td>
                                 <td class="num">
@@ -575,11 +586,11 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                 <td>
                                     @if ($p->capabilities_count > 0)
                                         <x-ui.badge-button tone="success" size="md" icon="fa-gears" wire:click="openModal('edit', {{ $p->id_process }})"
-                                            title="Lihat mesin pelaksana">{{ $p->capabilities_count }} unit</x-ui.badge-button>
+                                            title="See executing machines">{{ $p->capabilities_count }} unit</x-ui.badge-button>
                                     @elseif ($p->is_manual)
-                                        <span class="text-[10.5px] text-muted">tanpa mesin</span>
+                                        <span class="text-[10.5px] text-muted">no machine</span>
                                     @else
-                                        <x-ui.badge tone="danger" title="Proses ini belum bisa dijadwalkan">belum ada</x-ui.badge>
+                                        <x-ui.badge tone="danger" title="This process cannot be scheduled yet">none yet</x-ui.badge>
                                     @endif
                                 </td>
                                 <td class="num">
@@ -587,25 +598,25 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                         <div class="font-mono text-[11.5px]">{{ number_format((float) $p->standard_rate, 0, ',', '.') }}</div>
                                         <div class="text-[10px] text-muted">{{ \App\Models\Master\ProdProcess::COST_BASIS[$p->cost_basis] ?? '—' }}</div>
                                     @else
-                                        <span class="text-[10.5px] text-warn-ink">belum diisi</span>
+                                        <span class="text-[10.5px] text-warn-ink">not filled in</span>
                                     @endif
                                 </td>
                                 <td>
                                     <x-ui.badge :tone="\App\View\Components\Ui\Tone::forScore($ready)" size="md" mono
-                                        title="Kelengkapan data agar bisa dipakai engine">{{ $ready }}%</x-ui.badge>
+                                        title="Data completeness required for engine use">{{ $ready }}%</x-ui.badge>
                                 </td>
                                 <td>
-                                    <x-ui.badge :tone="$p->activate ? 'success' : 'muted'" pill>{{ $p->activate ? 'AKTIF' : 'NONAKTIF' }}</x-ui.badge>
+                                    <x-ui.badge :tone="$p->activate ? 'success' : 'muted'" pill>{{ $p->activate ? 'ACTIVE' : 'INACTIVE' }}</x-ui.badge>
                                 </td>
                                 <td class="text-right whitespace-nowrap">
                                     <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $p->id_process }})" />
-                                    <x-grid.action-icon :active="$p->activate" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->id_process }})"
-                                        :confirm="($p->activate ? 'Nonaktifkan' : 'Aktifkan').' proses '.$p->process_name.'?'"
+                                    <x-grid.action-icon :active="$p->activate" :title="$p->activate ? 'Deactivate' : 'Activate'" action="toggleActive({{ $p->id_process }})"
+                                        :confirm="($p->activate ? 'Deactivate' : 'Activate').' process '.$p->process_name.'?'"
                                         :variant="$p->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="12" message="Tidak ada." />
+                            <x-grid.empty-row :colspan="12" message="None." />
                         @endforelse
                     </tbody>
                 </x-ui.table>
@@ -615,18 +626,18 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ FORM (NEW/EDIT) ============ --}}
         @if ($panel === 'form')
-            <x-ui.panel-header :title="$mode === 'edit' ? 'Edit Proses'.($process_code ? ' : '.$process_code : '') : 'Proses Baru'">
+            <x-ui.panel-header :title="$mode === 'edit' ? 'Edit Process'.($process_code ? ' : '.$process_code : '') : 'New Process'">
                 @if ($mode === 'edit')
-                    <x-slot:aside>{{ $this->capabilityRows->where('activate', true)->count() }} mesin pelaksana</x-slot:aside>
+                    <x-slot:aside>{{ $this->capabilityRows->where('activate', true)->count() }} executing machines</x-slot:aside>
                 @endif
             </x-ui.panel-header>
 
             <div class="bg-surface border border-t-0 border-line rounded-b-md overflow-hidden">
                 <x-ui.tabs model="activeTab" :active="$activeTab" :tabs="[
-                    'main' => '1. Info Utama',
-                    'capacity' => '2. Parameter & Kapasitas',
-                    'cost' => '3. Ongkos & Tooling',
-                    'machines' => '4. Mesin Pelaksana',
+                    'main' => '1. Main Info',
+                    'capacity' => '2. Parameters & Capacity',
+                    'cost' => '3. Cost & Tooling',
+                    'machines' => '4. Executing Machines',
                 ]" :badges="$mode === 'edit' ? ['machines' => [
                     'text' => $this->capabilityRows->where('activate', true)->count(),
                     'tone' => $this->capabilityRows->where('activate', true)->count() > 0 ? 'success' : 'danger',
@@ -636,77 +647,77 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                     {{-- TAB 1 --}}
                     <div @if ($activeTab !== 'main') style="display:none" @endif>
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3">
-                            <x-form.input label="Kode Proses" name="process_code" wire:model="process_code" placeholder="mis. CE, PLG, LAM" hint="Huruf/angka, maks 10 karakter. Dipakai di SPK & routing." />
-                            <x-form.select label="Status Aktif" wire:model="process_activate" :placeholder="false" :options="['1' => 'Aktif', '0' => 'Nonaktif']" />
+                            <x-form.input label="Process Code" name="process_code" wire:model="process_code" placeholder="e.g. CE, PLG, LAM" hint="Letters/digits, max 10 characters. Used in the SPK (work order) & routing." />
+                            <x-form.select label="Active Status" wire:model="process_activate" :placeholder="false" :options="['1' => 'Active', '0' => 'Inactive']" />
                         </div>
 
                         <div class="mt-3">
-                            <x-form.input label="Nama Proses *" name="process_name" wire:model="process_name" placeholder="mis. Cetak Offset 4 Warna" />
+                            <x-form.input label="Process Name *" name="process_name" wire:model="process_name" placeholder="e.g. Offset Print 4 Colours" />
                         </div>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                            <x-form.select label="Tahap Produksi" name="process_stage" wire:model="process_stage" :options="\App\Models\Master\ProdProcess::STAGES" placeholder="— pilih tahap —" />
-                            <x-form.select label="Departemen Terkait" name="department_id" wire:model="department_id" :options="$this->departmentOptions" placeholder="— pilih departemen —" />
+                            <x-form.select label="Production Stage" name="process_stage" wire:model="process_stage" :options="\App\Models\Master\ProdProcess::STAGES" placeholder="— select stage —" />
+                            <x-form.select label="Related Department" name="department_id" wire:model="department_id" :options="$this->departmentOptions" placeholder="— select department —" />
                         </div>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                            <x-form.input label="Urutan Routing" type="number" name="routing_seq" wire:model="routing_seq" placeholder="10, 20, 30…" hint="Usulan urutan di BOP" />
-                            <x-form.input label="Warna Gantt" type="color" wire:model="gantt_color" hint="Pembeda proses di MPS" />
-                            <x-form.input label="Sertifikasi Kru" name="skill_code" wire:model="skill_code" placeholder="mis. OP-OFFSET" />
+                            <x-form.input label="Routing Sequence" type="number" name="routing_seq" wire:model="routing_seq" placeholder="10, 20, 30…" hint="Suggested order in the BOP" />
+                            <x-form.input label="Gantt Colour" type="color" wire:model="gantt_color" hint="Tells processes apart in the MPS" />
+                            <x-form.input label="Crew Certification" name="skill_code" wire:model="skill_code" placeholder="e.g. OP-OFFSET" />
                         </div>
 
                         <x-ui.card class="mt-3  [display:grid] grid-cols-1 md:grid-cols-3 gap-2">
-                            <x-form.checkbox label="Dikerjakan sendiri (in-house)" wire:model="inhouse" />
-                            <x-form.checkbox label="Proses tangan — tanpa mesin" wire:model="is_manual" />
-                            <x-form.checkbox label="Wajib lewat QC gate" wire:model="qc_required" />
+                            <x-form.checkbox label="Done in-house" wire:model="inhouse" />
+                            <x-form.checkbox label="Manual process — no machine" wire:model="is_manual" />
+                            <x-form.checkbox label="Must pass the QC gate" wire:model="qc_required" />
                         </x-ui.card>
                         @if (! $inhouse)
                             <div class="mt-3 max-w-xs">
-                                <x-form.input label="Lead Time Subkon (hari)" type="number" name="subcon_lead_days" wire:model="subcon_lead_days" />
+                                <x-form.input label="Subcontract Lead Time (days)" type="number" name="subcon_lead_days" wire:model="subcon_lead_days" />
                             </div>
                         @endif
 
                         <div class="mt-3">
-                            <x-form.textarea label="Keterangan" name="description" wire:model="description" autogrow placeholder="Catatan cara kerja, syarat bahan, hal yang sering salah…" />
+                            <x-form.textarea label="Description" name="description" wire:model="description" autogrow placeholder="Notes on how to work, material requirements, common mistakes…" />
                         </div>
                     </div>
 
                     {{-- TAB 2 --}}
                     <div @if ($activeTab !== 'capacity') style="display:none" @endif>
-                        <p class="text-[11px] text-muted mb-3">Angka di sini adalah <strong>nilai default</strong> proses. Kalau satu mesin punya angka berbeda, isi override-nya di tab <strong>Mesin Pelaksana</strong> — jangan ubah angka default ini.</p>
+                        <p class="text-[11px] text-muted mb-3">The numbers here are the <strong>default values</strong> of the process. If one machine has different numbers, enter the override in the tab <strong>Executing Machines</strong> — do not change these default numbers.</p>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3">
-                            <x-form.select label="Satuan Hasil (UoM)" name="output_uom" wire:model="output_uom" :placeholder="false" :options="array_map('t', \App\Models\Master\ProdProcess::OUTPUT_UOM)" />
-                            <x-form.input label="Setup Time / Make-ready (menit)" type="number" name="default_setup_minutes" wire:model="default_setup_minutes" placeholder="mis. 45" />
+                            <x-form.select label="Output Unit (UoM)" name="output_uom" wire:model="output_uom" :placeholder="false" :options="array_map('t', \App\Models\Master\ProdProcess::OUTPUT_UOM)" />
+                            <x-form.input label="Setup Time / Make-ready (minutes)" type="number" name="default_setup_minutes" wire:model="default_setup_minutes" placeholder="e.g. 45" />
                         </div>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                            <x-form.input label="Kapasitas Standar (per jam)" name="default_speed_per_hour" wire:model="default_speed_per_hour" placeholder="mis. 10000" hint="Dalam satuan hasil di atas" />
-                            <x-form.input label="Jumlah Kru Standar / Shift" type="number" name="default_manpower" wire:model="default_manpower" placeholder="mis. 3" />
+                            <x-form.input label="Standard Capacity (per hour)" name="default_speed_per_hour" wire:model="default_speed_per_hour" placeholder="e.g. 10000" hint="In the output unit above" />
+                            <x-form.input label="Standard Crew Count / Shift" type="number" name="default_manpower" wire:model="default_manpower" placeholder="e.g. 3" />
                         </div>
 
                         <x-ui.card class="mt-4" title="Waste / Spoilage">
-                            <x-slot:intro>Offset punya dua komponen waste: lembar make-ready yang <em>tetap</em> (habis berapa pun ordernya) plus persentase yang ikut naik sesuai volume. Isi keduanya.</x-slot:intro>
+                            <x-slot:intro>Offset has two waste components: the make-ready sheets that are <em>tetap</em> (used up whatever the order size) plus a percentage that grows with volume. Fill in both.</x-slot:intro>
                             <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3">
-                                <x-form.input label="Waste Berjalan (%)" name="default_waste_pct" wire:model="default_waste_pct" placeholder="mis. 2.5" />
-                                <x-form.input label="Insheet Tetap (qty)" type="number" name="default_waste_fixed_qty" wire:model="default_waste_fixed_qty" placeholder="mis. 150" />
-                                <x-form.input label="Toleransi Kirim (%)" name="default_tolerance_pct" wire:model="default_tolerance_pct" placeholder="mis. 5" />
+                                <x-form.input label="Running Waste (%)" name="default_waste_pct" wire:model="default_waste_pct" placeholder="e.g. 2.5" />
+                                <x-form.input label="Fixed Insheet (qty)" type="number" name="default_waste_fixed_qty" wire:model="default_waste_fixed_qty" placeholder="e.g. 150" />
+                                <x-form.input label="Delivery Tolerance (%)" name="default_tolerance_pct" wire:model="default_tolerance_pct" placeholder="e.g. 5" />
                             </div>
                         </x-ui.card>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                            <x-form.input label="Lot Minimum" type="number" name="min_lot_qty" wire:model="min_lot_qty" />
-                            <x-form.input label="Lot Maksimum" type="number" name="max_lot_qty" wire:model="max_lot_qty" />
+                            <x-form.input label="Minimum Lot" type="number" name="min_lot_qty" wire:model="min_lot_qty" />
+                            <x-form.input label="Maximum Lot" type="number" name="max_lot_qty" wire:model="max_lot_qty" />
                         </div>
 
                         <x-ui.card class="mt-3  [display:grid] grid-cols-1 md:grid-cols-2 gap-2">
                             <x-form.checkbox wire:model="is_bottleneck">
-                                <span class="font-semibold">Proses bottleneck</span>
-                                <span class="block text-[10.5px] text-muted">Kapasitas penentu — dijadwalkan lebih dulu</span>
+                                <span class="font-semibold">Bottleneck process</span>
+                                <span class="block text-[10.5px] text-muted">Limiting capacity — scheduled first</span>
                             </x-form.checkbox>
                             <x-form.checkbox wire:model="allow_parallel">
-                                <span class="font-semibold">Boleh paralel antar-mesin</span>
-                                <span class="block text-[10.5px] text-muted">1 WO boleh dipecah ke beberapa mesin sekaligus</span>
+                                <span class="font-semibold">Parallel allowed across machines</span>
+                                <span class="block text-[10.5px] text-muted">1 WO may be split across several machines at once</span>
                             </x-form.checkbox>
                         </x-ui.card>
                     </div>
@@ -714,23 +725,23 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                     {{-- TAB 3 --}}
                     <div @if ($activeTab !== 'cost') style="display:none" @endif>
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3">
-                            <x-form.select label="Basis Ongkos" name="cost_basis" wire:model="cost_basis" :options="\App\Models\Master\ProdProcess::COST_BASIS" placeholder="— pilih basis —" />
-                            <x-form.input label="Tarif Standar (IDR)" name="standard_rate" wire:model="standard_rate" placeholder="mis. 250000" hint="Dalam satuan basis di sebelah" />
+                            <x-form.select label="Cost Basis" name="cost_basis" wire:model="cost_basis" :options="\App\Models\Master\ProdProcess::COST_BASIS" placeholder="— select basis —" />
+                            <x-form.input label="Standard Rate (IDR)" name="standard_rate" wire:model="standard_rate" placeholder="e.g. 250000" hint="In the basis unit next to it" />
                         </div>
-                        <p class="text-[11px] text-muted mt-2">Tarif tanpa basis tidak akan disimpan — "250.000" bisa berarti per jam atau per 1.000 lembar, dan CostingEngine tidak boleh menebak.</p>
+                        <p class="text-[11px] text-muted mt-2">A rate without a basis will not be saved — "250,000" could mean per hour or per 1,000 sheets, and the CostingEngine must not guess.</p>
 
-                        <x-ui.card class="mt-4" title="Kebutuhan Tooling">
-                            <x-slot:intro>Dipakai ProDev untuk memunculkan biaya tooling & memperingatkan kalau tooling-nya belum ada.</x-slot:intro>
+                        <x-ui.card class="mt-4" title="Tooling Requirements">
+                            <x-slot:intro>Used by ProDev to show tooling cost & warn when the tooling does not exist yet.</x-slot:intro>
                             <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-2">
-                                <x-form.checkbox label="Butuh Plate (CTP)" wire:model="requires_plate" />
-                                <x-form.checkbox label="Butuh Pisau / Plong" wire:model="requires_die" />
-                                <x-form.checkbox label="Butuh tooling lain (mould/cliche/film)" wire:model="requires_tooling" />
+                                <x-form.checkbox label="Needs Plate (CTP)" wire:model="requires_plate" />
+                                <x-form.checkbox label="Needs Knife / Die-cut" wire:model="requires_die" />
+                                <x-form.checkbox label="Needs other tooling (mould/cliche/film)" wire:model="requires_tooling" />
                             </div>
                         </x-ui.card>
 
                         @if ($mode === 'edit' && $this->whereUsed)
-                            <x-ui.card class="mt-4" title="Dipakai Di Mana (Where-used)">
-                                <x-slot:intro>Relasi ke modul lain adalah FK <em>logis</em> lintas-database — MySQL tidak menjaganya, jadi periksa daftar ini sebelum menonaktifkan proses.</x-slot:intro>
+                            <x-ui.card class="mt-4" title="Used Where (Where-used)">
+                                <x-slot:intro>Relations to other modules are a <em>logis</em> cross-database — MySQL does not enforce it, so check this list before deactivating the process.</x-slot:intro>
                                 <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-1.5">
                                     @foreach ($this->whereUsed as $label => $count)
                                         <div class="flex justify-between items-center text-[11.5px] px-2 py-1 rounded bg-surface-alt">
@@ -746,25 +757,25 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                     {{-- TAB 4: MATRIKS KAPABILITAS --}}
                     <div @if ($activeTab !== 'machines') style="display:none" @endif>
                         @if ($mode !== 'edit')
-                            <x-alert.banner type="info" message="Simpan proses ini dulu, lalu mesin pelaksananya bisa dipasang di sini." />
+                            <x-alert.banner type="info" message="Save this process first, then its executing machines can be attached here." />
                         @else
-                            <p class="text-[11px] text-muted mb-3">Daftar mesin yang <strong>bisa</strong> mengerjakan proses ini. Inilah yang muncul sebagai pilihan mesin di routing/BOP dan Scheduling. Mesin bertanda <strong>Utama</strong> diusulkan lebih dulu, tapi officer tetap bebas memilih yang lain.</p>
+                            <p class="text-[11px] text-muted mb-3">The list of machines that <strong>can</strong> perform this process. These appear as machine choices in routing/BOP and Scheduling. A machine marked <strong>Primary</strong> is suggested first, but the officer is still free to choose another.</p>
 
                             @if ($is_manual)
-                                <x-alert.banner type="warn" message="Proses ini ditandai proses tangan (tanpa mesin). Kalau ternyata ada mesinnya, hapus centang 'Proses tangan' di tab 1." />
+                                <x-alert.banner type="warn" message="This process is marked as a manual process (no machine). If it does have a machine, untick 'Manual process' in tab 1." />
                             @endif
 
                             <x-ui.card variant="muted" class="flex flex-wrap items-end gap-2 mb-3">
                                 <div class="flex-1 min-w-[280px]">
-                                    <x-form.select label="Tambah mesin pelaksana" name="capPickId" wire:model="capPickId" :options="$this->machineCandidates" placeholder="— pilih mesin —" />
+                                    <x-form.select label="Add executing machine" name="capPickId" wire:model="capPickId" :options="$this->machineCandidates" placeholder="— select machine —" />
                                 </div>
-                                <x-ui.button wire:click="capAdd" :disabled="! $capPickId">+ Tambah Mesin</x-ui.button>
+                                <x-ui.button wire:click="capAdd" :disabled="! $capPickId">+ Add Machine</x-ui.button>
                             </x-ui.card>
 
                             <x-ui.table size="sm" framed>
                                     <thead>
                                         <tr>
-                                            @foreach (['Mesin', 'Jenis / Dept', 'Kapasitas Efektif', 'Setup', 'Waste', 'Tarif / Jam', 'Kru', 'Est. 10.000 unit', 'Peran', ''] as $h)
+                                            @foreach (['Mesin', 'Type / Dept', 'Effective Capacity', 'Setup', 'Waste', 'Rate / Hour', 'Kru', 'Est. 10.000 unit', 'Role', ''] as $h)
                                                 <th>{{ $h }}</th>
                                             @endforeach
                                         </tr>
@@ -789,9 +800,9 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                                         <td class="whitespace-nowrap">
                                                             @if ($rp['params'][$f]['value'] !== null)
                                                                 <span class="font-mono text-[11.5px]">{{ number_format((float) $rp['params'][$f]['value'], 0, ',', '.') }}</span>
-                                                                <span class="block text-[9.5px] {{ $rp['params'][$f]['source'] === 'CAPABILITY' ? 'text-info-ink font-bold' : 'text-muted' }}">{{ $rp['params'][$f]['source'] === 'CAPABILITY' ? 'khusus mesin' : ($rp['params'][$f]['source'] === 'PROCESS' ? 'default proses' : 'dari mesin') }}</span>
+                                                                <span class="block text-[9.5px] {{ $rp['params'][$f]['source'] === 'CAPABILITY' ? 'text-info-ink font-bold' : 'text-muted' }}">{{ $rp['params'][$f]['source'] === 'CAPABILITY' ? 'machine-specific' : ($rp['params'][$f]['source'] === 'PROCESS' ? 'default proses' : 'from machine') }}</span>
                                                             @else
-                                                                <span class="text-[10px] text-warn-ink">belum ada</span>
+                                                                <span class="text-[10px] text-warn-ink">none yet</span>
                                                             @endif
                                                         </td>
                                                     @endforeach
@@ -806,15 +817,15 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                                         @if ($rp['params']['hourly_rate']['value'] > 0)
                                                             <span class="font-mono text-[11.5px]">{{ number_format((float) $rp['params']['hourly_rate']['value'], 0, ',', '.') }}</span>
                                                         @else
-                                                            <span class="text-[10px] text-warn-ink">belum ada</span>
+                                                            <span class="text-[10px] text-warn-ink">none yet</span>
                                                         @endif
                                                     </td>
                                                     <td class="font-mono text-[11.5px]">{{ $rp['params']['manpower']['value'] ?? '—' }}</td>
                                                     <td class="whitespace-nowrap">
                                                         @if ($rp['hours_10k'] !== null)
-                                                            <span class="font-mono font-semibold text-[11.5px]">{{ number_format($rp['hours_10k'], 2, ',', '.') }}</span><span class="text-[10px] text-muted"> jam</span>
+                                                            <span class="font-mono font-semibold text-[11.5px]">{{ number_format($rp['hours_10k'], 2, ',', '.') }}</span><span class="text-[10px] text-muted"> hours</span>
                                                         @else
-                                                            <span class="text-[10px] text-muted" title="Kapasitas per jam belum diisi di lapis mana pun">tak bisa dihitung</span>
+                                                            <span class="text-[10px] text-muted" title="Capacity per hour is not filled in at any level">cannot be calculated</span>
                                                         @endif
                                                     </td>
                                                 @else
@@ -822,18 +833,18 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                                 @endif
                                                 <td class="whitespace-nowrap">
                                                     <x-ui.badge-button :tone="$cap->preference_rank === 1 ? 'highlight' : 'muted'" wire:click="capTogglePrimary({{ $cap->capability_id }})"
-                                                        title="Klik untuk ubah mesin utama / alternatif">{{ $cap->preference_rank === 1 ? '★ Utama' : 'Alternatif' }}</x-ui.badge-button>
+                                                        title="Click to switch primary / alternative machine">{{ $cap->preference_rank === 1 ? '★ Primary' : 'Alternative' }}</x-ui.badge-button>
                                                     <x-ui.badge-button size="xs" class="flex mt-1" :tone="$cap->is_certified ? 'success' : 'warn'" wire:click="capToggleCertified({{ $cap->capability_id }})"
-                                                        title="Sudah terbukti produksi?">{{ $cap->is_certified ? 'Tervalidasi' : 'Belum divalidasi' }}</x-ui.badge-button>
+                                                        title="Already proven in production?">{{ $cap->is_certified ? 'Validated' : 'Not validated yet' }}</x-ui.badge-button>
                                                 </td>
                                                 <td class="text-right whitespace-nowrap">
-                                                    <x-grid.action-icon icon="fa-sliders" title="Atur parameter khusus mesin ini" action="capEdit({{ $cap->capability_id }})" />
+                                                    <x-grid.action-icon icon="fa-sliders" title="Set parameters specific to this machine" action="capEdit({{ $cap->capability_id }})" />
                                                     @if ($cap->activate)
-                                                        <x-grid.action-icon icon="fa-ban" title="Lepas mesin dari proses ini" variant="danger"
+                                                        <x-grid.action-icon icon="fa-ban" title="Detach machine from this process" variant="danger"
                                                             action="capRemove({{ $cap->capability_id }})"
-                                                            :confirm="'Lepas '.$cap->machine->machine_code.' dari proses ini? Parameter yang sudah disetel tetap disimpan.'" />
+                                                            :confirm="'Detach '.$cap->machine->machine_code.' from this process? Parameters already set are kept.'" />
                                                     @else
-                                                        <x-grid.action-icon icon="fa-rotate" title="Pasang kembali" action="capRestore({{ $cap->capability_id }})" />
+                                                        <x-grid.action-icon icon="fa-rotate" title="Re-attach" action="capRestore({{ $cap->capability_id }})" />
                                                     @endif
                                                 </td>
                                             </tr>
@@ -842,20 +853,20 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                             @if ($capEditingId === $cap->capability_id)
                                                 <tr wire:key="capedit-{{ $cap->capability_id }}" class="bg-surface-hover">
                                                     <td colspan="10" class="px-3 py-3">
-                                                        <p class="text-[10px] font-bold text-accent uppercase mb-1">Parameter khusus {{ $cap->machine->machine_code }}</p>
-                                                        <p class="text-[11px] text-muted mb-2.5">Kosongkan sebuah kotak berarti <strong>ikut nilai default proses</strong>. Isi hanya yang memang beda di mesin ini.</p>
+                                                        <p class="text-[10px] font-bold text-accent uppercase mb-1">Specific parameters {{ $cap->machine->machine_code }}</p>
+                                                        <p class="text-[11px] text-muted mb-2.5">Leaving a box empty means <strong>follow the process default value</strong>. Fill in only what really differs on this machine.</p>
                                                         <div class="[display:grid] grid-cols-2 md:grid-cols-4 gap-2.5">
-                                                            <x-form.input label="Kapasitas / jam" name="capForm.speed_per_hour" wire:model="capForm.speed_per_hour" placeholder="default proses" />
-                                                            <x-form.input label="Setup (menit)" type="number" name="capForm.setup_minutes" wire:model="capForm.setup_minutes" placeholder="default proses" />
+                                                            <x-form.input label="Capacity / hour" name="capForm.speed_per_hour" wire:model="capForm.speed_per_hour" placeholder="default proses" />
+                                                            <x-form.input label="Setup (minutes)" type="number" name="capForm.setup_minutes" wire:model="capForm.setup_minutes" placeholder="default proses" />
                                                             <x-form.input label="Waste (%)" name="capForm.waste_pct" wire:model="capForm.waste_pct" placeholder="default proses" />
-                                                            <x-form.input label="Insheet tetap" type="number" name="capForm.waste_fixed_qty" wire:model="capForm.waste_fixed_qty" placeholder="default proses" />
-                                                            <x-form.input label="Tarif / jam (IDR)" name="capForm.hourly_rate" wire:model="capForm.hourly_rate" placeholder="tarif mesin" />
+                                                            <x-form.input label="Fixed insheet" type="number" name="capForm.waste_fixed_qty" wire:model="capForm.waste_fixed_qty" placeholder="default proses" />
+                                                            <x-form.input label="Rate / hour (IDR)" name="capForm.hourly_rate" wire:model="capForm.hourly_rate" placeholder="machine rate" />
                                                             <x-form.input label="Kru" type="number" name="capForm.manpower" wire:model="capForm.manpower" placeholder="default proses" />
-                                                            <x-form.input label="Gramatur min" type="number" name="capForm.gsm_min" wire:model="capForm.gsm_min" placeholder="batas mesin" />
-                                                            <x-form.input label="Gramatur maks" type="number" name="capForm.gsm_max" wire:model="capForm.gsm_max" placeholder="batas mesin" />
+                                                            <x-form.input label="Min grammage" type="number" name="capForm.gsm_min" wire:model="capForm.gsm_min" placeholder="machine limit" />
+                                                            <x-form.input label="Max grammage" type="number" name="capForm.gsm_max" wire:model="capForm.gsm_max" placeholder="machine limit" />
                                                         </div>
                                                         <div class="mt-2.5">
-                                                            <x-form.input label="Catatan" name="capForm.note" wire:model="capForm.note" placeholder="mis. hanya untuk duplex di atas 250 gsm" />
+                                                            <x-form.input label="Notes" name="capForm.note" wire:model="capForm.note" placeholder="e.g. only for duplex above 250 gsm" />
                                                         </div>
                                                         <x-ui.action-bar variant="inline">
                                                             <x-ui.button preset="save" size="sm" type="button" wire:click="capSaveParams" />
@@ -866,7 +877,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                             @endif
                                         @empty
                                             <tr><td colspan="10" class="px-3 py-6 text-center text-muted text-[12px]">
-                                                Belum ada mesin dipasangkan. Tanpa ini proses tidak akan muncul sebagai pilihan di routing & tidak bisa dijadwalkan.
+                                                No machine attached yet. Without this the process will not appear as a choice in routing & cannot be scheduled.
                                             </td></tr>
                                         @endforelse
                                     </tbody>

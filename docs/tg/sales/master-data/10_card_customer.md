@@ -35,5 +35,4 @@
 
 ## Already exists? Searched where, result
 Searched: `cust_*` in `ddtmst` (`information_schema`: `cust_customer`, `_bank`, `_branch`, `_contact`, `cust_category`, `cust_receiving_hour`), menu `sys_app_menu`, `grep` `app/Support/V2`, `app/Services/Sales`. Result: the concept ALREADY EXISTS; no new table needed.
-
-
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

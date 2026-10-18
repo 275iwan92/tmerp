@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Komponen v1 untuk layar "Manpower Requisition" (dibuka dari grid v2 lewat Open / New). Teks tampilan (label, kolom, tab, tombol, pesan) English sesuai keputusan Jo 2026-10-18; nilai tersimpan dan kunci data tidak diubah.
+ * Sumber hulu  : Tabel dan service yang dibaca komponen ini (lihat query di file); tidak ada logika hulu baru.
+ * Input        : Isian form dan filter layar.
+ * Output       : Simpan ke tabel modul terkait lewat service yang sama seperti sebelumnya.
+ * Dipakai oleh : Grid v2 modul terkait (v1Route).
+ * Status       : Aktif; teks tampilan English (Jo 2026-10-18).
+ */
+
+
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Hrr\RcrRequisition;
 use App\Models\Hrr\RcrTrack;
@@ -13,7 +24,7 @@ use Livewire\WithPagination;
 // L1 (grid) -- docs/recruitment_tier4.md SECTION 6. Record lahir dari grid ini
 // sendiri (mirip PR) -> toolbar "+ New Record" (griduistandard.md §7 pola
 // pur/pr/index.blade.php: Aksi cuma Buka, approval/submit divalidasi di entry).
-new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Manpower Requisition — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
     use HasGridPagination;
@@ -102,7 +113,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
             <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->stats['total'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Approval</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Waiting Approval</p>
             <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->stats['submitted'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
@@ -110,7 +121,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
             <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->stats['approved'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-            <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Ditolak</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Rejected</p>
             <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->stats['rejected'] }}</p>
         </div>
     </div>
@@ -118,7 +129,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
     <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-2.5 py-2 overflow-x-auto mb-3">
         <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-sm">🔍</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. permohonan atau posisi…"
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search requisition no. or position…"
                 class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
         </div>
         <span class="flex-1"></span>
@@ -130,24 +141,24 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5] bg-[#f4f6fa]">
                 <tr>
-                    <th class="text-left px-3 py-2">Permohonan</th>
-                    <th class="text-left px-3 py-2">Departemen</th>
+                    <th class="text-left px-3 py-2">Requisition</th>
+                    <th class="text-left px-3 py-2">Department</th>
                     <th class="text-left px-3 py-2">Track</th>
                     <th class="text-right px-3 py-2">Headcount</th>
                     <th class="text-left px-3 py-2">Status</th>
-                    <th class="px-3 py-2 text-right w-[70px]">Aksi</th>
+                    <th class="px-3 py-2 text-right w-[70px]">Action</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#eef1f5]">
                 @forelse ($this->rows as $r)
                     <tr wire:key="req-{{ $r->id_requisition }}"
                         ondblclick="window.location.href='{{ route('hrm.recruitment.requisition.entry', $r->id_requisition) }}'"
-                        class="cursor-pointer hover:bg-[#f8fafc]" title="Klik 2x untuk buka detail">
+                        class="cursor-pointer hover:bg-[#f8fafc]" title="Double-click to open">
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2.5">
                                 <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($r->id_requisition) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($r->position_title ?: 'RC') }}</div>
                                 <div>
-                                    <div class="font-semibold text-[13px]">{{ $r->position_title ?: '(belum diisi)' }}</div>
+                                    <div class="font-semibold text-[13px]">{{ $r->position_title ?: '(not filled)' }}</div>
                                     <div class="text-[11px] text-muted font-mono">{{ $r->requisition_no }}</div>
                                 </div>
                             </div>
@@ -165,12 +176,12 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
                             } }}">{{ $r->status }}</span>
                         </td>
                         <td class="px-3 py-2 text-right whitespace-nowrap">
-                            <a href="{{ route('hrm.recruitment.requisition.entry', $r->id_requisition) }}" wire:click.stop title="Buka"
+                            <a href="{{ route('hrm.recruitment.requisition.entry', $r->id_requisition) }}" wire:click.stop title="Open"
                                 class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="px-3 py-6 text-center text-muted text-xs">Belum ada permohonan tenaga kerja.</td></tr>
+                    <tr><td colspan="6" class="px-3 py-6 text-center text-muted text-xs">No manpower requisitions yet.</td></tr>
                 @endforelse
             </tbody>
         </table>

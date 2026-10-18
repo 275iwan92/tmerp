@@ -1,7 +1,7 @@
 # Concept card: Stock Out and Return from Production
 
 > Written 2026-10-16 (group Inventory/Stock). FACT = mockup DB (`ddtinv`) and code with line numbers, seen this session. No test was run (no DB writes allowed in this task).
-> Verified: 2026-10-16
+> Verified: 2026-10-18
 
 - **Document type**: concept card. **Module/sub-module**: Inventory > Stock > Raw Material / Semi Finished Goods > "Stock Out" (`INV_RM_ITEM2`, `INV_SFG_ITEM2`) and "Return from Production" (`INV_RM_ITEM3`, `INV_SFG_ITEM3`); the same menu items exist under Finished Goods (`INV_FG_ITEM2`, `INV_FG_ITEM3`) but are read-only lists (see Facts).
 - **Canonical name**: Stock Out = Stock Document (card `10_card_stock-document.md`) with `doc_type` -1 and `doc_cat` STOCK. Return from Production (RTP) = Stock Document with `doc_cat` RETURN, `doc_type` 1, `ref_doc_type` OUT, pointing at one POSTED Stock Out.
@@ -40,3 +40,4 @@
 
 ## Already exists? Searched where
 Searched: `stock-out.blade.php`, `stock-return.blade.php`, `RmStockD.qty_returned`, `StockPostingService` journal block, `PickListService`, `SubconStockService`, design notes 05 and 06 (FROM DOCUMENT: out needs a Work Order, return needs the Stock Out as reference; v1 deliberately simplified). The concept ALREADY EXISTS in simplified form.
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

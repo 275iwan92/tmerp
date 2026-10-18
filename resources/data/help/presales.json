@@ -289,13 +289,13 @@
                 "id": "Klik Confirm. Form terkunci dan inquiry muncul di Pro-Dev New. Artwork masih bisa diunggah setelah Confirm."
             },
             {
-                "en": "After Confirm you can still use Batalkan (reason required) or Tandai Kalah (reason required). Duplicate copies the specification to another customer as a new Draft.",
-                "id": "Setelah Confirm masih ada Batalkan (alasan wajib) atau Tandai Kalah (alasan wajib). Duplicate menyalin spesifikasi ke customer lain sebagai Draft baru."
+                "en": "After Confirm you can still use Cancel (reason required) or Mark Lost (reason required). Duplicate copies the specification to another customer as a new Draft.",
+                "id": "Setelah Confirm masih ada Cancel (alasan wajib) atau Mark Lost (alasan wajib). Duplicate menyalin spesifikasi ke customer lain sebagai Draft baru."
             }
         ],
         "fields": [
             {
-                "label": "No. Inkuiri",
+                "label": "Inquiry No.",
                 "en": "Inquiry number, shown as automatic until the first Save.",
                 "id": "Nomor inquiry, tertulis otomatis sampai Save pertama."
             },
@@ -310,7 +310,7 @@
                 "id": "Tanggal customer membutuhkan jawaban atau produk. Terisi 14 hari dari hari ini; boleh diubah."
             },
             {
-                "label": "PIC Sales",
+                "label": "Sales PIC",
                 "en": "Sales person who owns the inquiry, picked from the sales person master. Recorded as the basis for commission.",
                 "id": "Sales pemilik inquiry, dipilih dari master sales. Tercatat sebagai dasar komisi."
             },
@@ -380,22 +380,22 @@
                 "id": "Jumlah order satu jenjang. Tambah jenjang sebanyak yang ingin dihitung harganya oleh customer."
             },
             {
-                "label": "Utama",
+                "label": "Main",
                 "en": "Marks the main tier. Exactly one tier must be Utama.",
                 "id": "Menandai jenjang utama. Harus tepat satu jenjang yang Utama."
             },
             {
-                "label": "Nama Part",
+                "label": "Part Name",
                 "en": "Name of the part, for example Body or Lid. It fills automatically when a part role is chosen with the tag icon.",
                 "id": "Nama part, misalnya Body atau Lid. Terisi otomatis saat peran part dipilih lewat ikon tag."
             },
             {
-                "label": "Peran Part",
+                "label": "Choose Part Role",
                 "en": "Role of the part (Body, Lid, Base, Sleeve, Tray, Insert, Divider, Left, Right, MonoForm). Required before dimensions and the dieline preview open.",
                 "id": "Peran part (Body, Lid, Base, Sleeve, Tray, Insert, Divider, Left, Right, MonoForm). Wajib dipilih sebelum dimensi dan pratinjau dieline aktif."
             },
             {
-                "label": "Tipe Part",
+                "label": "Part Type",
                 "en": "Material family of the part: Paper, Paper + Sheet, Paper + SF, Sheet or Kraft.",
                 "id": "Jenis bahan part: Paper, Paper + Sheet, Paper + SF, Sheet atau Kraft."
             },
@@ -405,17 +405,17 @@
                 "id": "Berapa lembar part ini dalam satu produk jadi."
             },
             {
-                "label": "Isi per Pack (pcs)",
+                "label": "Qty per Pack (pcs)",
                 "en": "Number of finished pieces in one pack, for example 400.",
                 "id": "Jumlah produk jadi dalam satu pak, misalnya 400."
             },
             {
-                "label": "Artwork / Desain (luar)",
+                "label": "Artwork / Design (outer)",
                 "en": "Outer artwork image (jpg or png). It is placed on the dieline preview and can be uploaded again after Confirm.",
                 "id": "Gambar artwork sisi luar (jpg atau png). Ditempatkan di pratinjau dieline dan bisa diunggah ulang setelah Confirm."
             },
             {
-                "label": "Artwork Sisi Dalam (opsional)",
+                "label": "Inner Side Artwork (optional)",
                 "en": "Inner side artwork for two-sided printing. Shown on the Sisi Dalam tab of the dieline preview.",
                 "id": "Artwork sisi dalam untuk cetak dua sisi. Tampil di tab Sisi Dalam pratinjau dieline."
             },
@@ -425,27 +425,27 @@
                 "id": "Dimensi produk part, diisi di panel dieline. Dieline dan ukuran bentangan ikut berubah saat Anda mengetik."
             },
             {
-                "label": "Jenis",
+                "label": "Type",
                 "en": "Material row: material type picked from the material master. Row #1 is always Paper, row #2 is Sheet/SF; + Tambah Bahan adds an extra layer.",
                 "id": "Baris bahan: jenis bahan dari master bahan. Baris #1 selalu Paper, baris #2 Sheet/SF; + Tambah Bahan menambah lapisan."
             },
             {
-                "label": "Gramatur / Spec",
+                "label": "Grammage / Spec",
                 "en": "Grammage or specification of the material. Brand and plano size are decided later by Purchasing and Pro-Dev.",
                 "id": "Gramatur atau spesifikasi bahan. Merek dan ukuran plano ditentukan belakangan oleh Purchasing dan Pro-Dev."
             },
             {
-                "label": "Notasi Warna",
+                "label": "Colour Notation",
                 "en": "Colours as front/back, from 1/0 to 6/6 (for example 4/4). The front, back and total colours are derived automatically.",
                 "id": "Warna dalam format depan/belakang, dari 1/0 sampai 6/6 (misalnya 4/4). Jumlah warna depan, belakang dan total dihitung otomatis."
             },
             {
-                "label": "Catatan Warna (Pantone)",
+                "label": "Colour Note (Pantone)",
                 "en": "Free note about special colours, for example Pantone 485 C.",
                 "id": "Catatan bebas tentang warna khusus, misalnya Pantone 485 C."
             },
             {
-                "label": "Jenis Finishing",
+                "label": "Finishing Type",
                 "en": "Optional decorative process (hot print, UV spot, emboss, lamination). More than one can be added, with Atribut / Varian describing the detail.",
                 "id": "Proses dekoratif tambahan (opsional): hot print, UV spot, emboss, laminasi. Boleh lebih dari satu, dengan Atribut / Varian untuk detailnya."
             },
@@ -456,11 +456,11 @@
             },
             {
                 "label": "External / Third-Party Costs",
-                "en": "Known third-party costs (trucking, expedition, outside service) with Type, Amount (Rp) and Tax Treatment. They flow into the quotation and the order.",
-                "id": "Biaya pihak ketiga yang sudah pasti (trucking, ekspedisi, jasa luar) dengan Type, Amount (Rp) dan Tax Treatment. Mengalir ke quotation dan order."
+                "en": "Known third-party costs (trucking, expedition, outside service) with Type, Amount (IDR) and Tax Treatment. They flow into the quotation and the order.",
+                "id": "Biaya pihak ketiga yang sudah pasti (trucking, ekspedisi, jasa luar) dengan Type, Amount (IDR) dan Tax Treatment. Mengalir ke quotation dan order."
             },
             {
-                "label": "Rakitan (part gabungan)",
+                "label": "Assembly (combined parts)",
                 "en": "After at least two parts are saved, combine them into an assembly: Assembly name, Join type, Qty of each part, and the parts to combine.",
                 "id": "Setelah minimal dua part tersimpan, gabungkan menjadi rakitan: Assembly name, Join type, jumlah tiap part, dan part yang digabung."
             }
@@ -740,7 +740,7 @@
                 "id": "Mesin cetak yang dipilih dari master mesin. Ukuran mejanya bisa membatasi canvas."
             },
             {
-                "label": "Mesin plong / ponds",
+                "label": "Die-cut machine (plong / pond)",
                 "en": "Die-cutting machine picked from the machine master. Its bed size can limit the canvas.",
                 "id": "Mesin plong yang dipilih dari master mesin. Ukuran mejanya bisa membatasi canvas."
             },
@@ -825,7 +825,7 @@
                 "id": "Tabel field yang berubah dengan nilai sebelum dan sesudah serta di mana harus diulang. Berasal dari Inquiry Revise."
             },
             {
-                "label": "Jumlah Up (Auto Up / Target up)",
+                "label": "1. Number of Ups",
                 "en": "Number of ups on the sheet: automatic maximum, or a manual target. See Pro-Dev New for the other imposition fields.",
                 "id": "Jumlah up di lembar: maksimum otomatis, atau target manual. Lihat Pro-Dev New untuk isian imposition lainnya."
             },
@@ -835,7 +835,7 @@
                 "id": "Custom, Press bed, Die-cut bed (Pond) atau Press + Die-cut. Menentukan meja mesin mana yang membatasi canvas."
             },
             {
-                "label": "Printing machine and Mesin plong / ponds",
+                "label": "Printing machine and Die-cutting machine",
                 "en": "Machines picked from the machine master for printing and die-cutting.",
                 "id": "Mesin cetak dan mesin plong yang dipilih dari master mesin."
             },
@@ -910,7 +910,7 @@
                 "id": "Tanggal part terakhir diubah (kolom daftar)."
             },
             {
-                "label": "Status Layout",
+                "label": "Layout Status",
                 "en": "BELUM MULAI (no layout yet), DRAFT (saved) or CONFIRMED. Filter Not Confirmed shows the first two.",
                 "id": "BELUM MULAI (belum ada layout), DRAFT (tersimpan) atau CONFIRMED. Filter Not Confirmed menampilkan dua status pertama."
             },
@@ -935,7 +935,7 @@
                 "id": "Arah serat kertas terhadap dieline, atau tanpa batasan."
             },
             {
-                "label": "Printing machine and Mesin plong / ponds",
+                "label": "Printing machine and Die-cutting machine",
                 "en": "Machines picked from the machine master for printing and die-cutting.",
                 "id": "Mesin cetak dan mesin plong yang dipilih dari master mesin."
             },
@@ -1223,7 +1223,7 @@
         ],
         "fields": [
             {
-                "label": "File master card (boleh banyak sekaligus)",
+                "label": "Master card files (several at once allowed)",
                 "en": "Upload field for master card files: .xlsx, .xlsm, .xls, .jpg, .jpeg or .png, many at once.",
                 "id": "Isian unggah file master card: .xlsx, .xlsm, .xls, .jpg, .jpeg atau .png, boleh banyak sekaligus."
             },
@@ -1238,7 +1238,7 @@
                 "id": "Kode item kartu. Dibaca dari file; bisa dikoreksi."
             },
             {
-                "label": "No. Desain",
+                "label": "Design No.",
                 "en": "Design number of the product. Required before the card can become a Master Product; filled in the dialog if empty.",
                 "id": "Nomor desain produk. Wajib sebelum kartu bisa menjadi Master Product; diisi di dialog bila kosong."
             },
@@ -1263,12 +1263,12 @@
                 "id": "Kartu utuh (Double Join = A + B), Part A saja atau Part B saja. Kartu part terpisah dengan nomor desain sama digabung menjadi satu produk."
             },
             {
-                "label": "Sambungan",
+                "label": "Joint",
                 "en": "Join type of the product, picked from the join master. Leave empty for no join.",
                 "id": "Jenis sambungan produk, dipilih dari master sambungan. Kosongkan bila tanpa sambungan."
             },
             {
-                "label": "Isi per Pack (pcs)",
+                "label": "Qty per Pack (pcs)",
                 "en": "Number of pieces in one pack.",
                 "id": "Jumlah pcs dalam satu pak."
             },
@@ -1278,7 +1278,7 @@
                 "id": "Panjang produk dalam mm. Width W (mm) dan Height H (mm) adalah dua dimensi lainnya."
             },
             {
-                "label": "Isi 1 Cetakan",
+                "label": "UP per Sheet",
                 "en": "Number of pieces per print or die, for example 8 UP, 1/2 UP or 1 SET.",
                 "id": "Jumlah produk per cetakan atau pisau, misalnya 8 UP, 1/2 UP atau 1 SET."
             },
@@ -1298,27 +1298,27 @@
                 "id": "Catatan bebas dari kartu."
             },
             {
-                "label": "Kategori master #1",
+                "label": "Master category #1",
                 "en": "Master material category matching material #1 of the card (one field per material). A material without a match blocks the conversion.",
                 "id": "Kategori bahan master yang cocok dengan bahan #1 di kartu (satu isian per bahan). Bahan tanpa kecocokan menghalangi konversi."
             },
             {
-                "label": "Artwork produk",
+                "label": "Product artwork",
                 "en": "Artwork image per part (jpg or png). It is placed on the dieline and carried to the Master Product or Inquiry.",
                 "id": "Gambar artwork per part (jpg atau png). Ditempatkan di dieline dan ikut ke Master Product atau Inquiry."
             },
             {
-                "label": "Qty order (tier 1)",
+                "label": "Order qty (tier 1)",
                 "en": "Only in Make Inquiry. Quantity of the first tier of the new inquiry (required).",
                 "id": "Hanya di Make Inquiry. Jumlah jenjang pertama inquiry baru (wajib)."
             },
             {
-                "label": "Deadline quotation",
+                "label": "Quotation deadline",
                 "en": "Only in Make Inquiry. Date the quotation should be ready (required). Filled as 3 days from today.",
                 "id": "Hanya di Make Inquiry. Tanggal quotation harus siap (wajib). Terisi 3 hari dari hari ini."
             },
             {
-                "label": "PIC Sales",
+                "label": "Sales PIC",
                 "en": "Only in Make Inquiry. Sales person of the new inquiry, picked from the sales person master (required).",
                 "id": "Hanya di Make Inquiry. Sales untuk inquiry baru, dipilih dari master sales (wajib)."
             }
@@ -1341,79 +1341,79 @@
             },
             {
                 "en": "Click + New Record. First create a Product Category: leave the parent empty and give it a name. A category is only a group.",
-                "id": "Klik + New Record. Buat dulu Kategori Produk: kosongkan induk dan beri nama. Kategori hanya pengelompok."
+                "id": "Klik + New Record. Buat dulu Category Produk: kosongkan induk dan beri nama. Category hanya pengelompok."
             },
             {
-                "en": "Create a Category Detail: choose the parent category, name it and choose the Tipe Produk (dieline).",
-                "id": "Buat Detail Kategori: pilih kategori induk, beri nama dan pilih Tipe Produk (dieline)."
+                "en": "Create a Category Detail: choose the parent category, name it and choose the Product Type (dieline).",
+                "id": "Buat Detail Category: pilih kategori induk, beri nama dan pilih Product Type (dieline)."
             },
             {
                 "en": "Set the starting values for the Inquiry (print colours, qty tiers, paper and sheet material), and add the standard sizes with their dimensions.",
                 "id": "Atur nilai awal untuk Inquiry (warna cetak, jenjang qty, bahan paper dan sheet), dan tambahkan ukuran pasaran beserta dimensinya."
             },
             {
-                "en": "Click Save. Keep Aktif ticked so the entry appears in Inquiry New; untick it to hide it.",
-                "id": "Klik Save. Biarkan Aktif tercentang agar muncul di Inquiry New; hilangkan centang untuk menyembunyikannya."
+                "en": "Click Save. Keep Active ticked so the entry appears in Inquiry New; untick it to hide it.",
+                "id": "Klik Save. Biarkan Active tercentang agar muncul di Inquiry New; hilangkan centang untuk menyembunyikannya."
             }
         ],
         "fields": [
             {
-                "label": "Kategori Produk (induk)",
+                "label": "Product Category (parent)",
                 "en": "Empty means this record is a Category (for example Dus Makanan). A chosen parent makes it a Category Detail (for example PPL).",
-                "id": "Kosong berarti record ini adalah Kategori (misalnya Dus Makanan). Bila induk dipilih, record menjadi Detail Kategori (misalnya PPL)."
+                "id": "Kosong berarti record ini adalah Category (misalnya Dus Makanan). Bila induk dipilih, record menjadi Detail Category (misalnya PPL)."
             },
             {
-                "label": "Nama (bahasa sales)",
+                "label": "Name (sales wording)",
                 "en": "Name as Sales say it, for example Paper Lunch Box (PPL). Shown in the Inquiry form.",
                 "id": "Nama seperti yang diucapkan Sales, misalnya Paper Lunch Box (PPL). Tampil di form Inquiry."
             },
             {
-                "label": "Kode",
+                "label": "Code",
                 "en": "Unique code. Made automatically from the name when left empty.",
                 "id": "Kode unik. Dibuat otomatis dari nama bila dikosongkan."
             },
             {
-                "label": "Urutan tampil",
+                "label": "Display order",
                 "en": "Display order in the lists. Filled automatically as the last order plus 10; can be changed.",
-                "id": "Urutan tampil di daftar. Terisi otomatis urutan terakhir ditambah 10; boleh diubah."
+                "id": "Display order di daftar. Terisi otomatis urutan terakhir ditambah 10; boleh diubah."
             },
             {
-                "label": "Aktif (muncul di Inquiry New)",
+                "label": "Active (shown in Inquiry New)",
                 "en": "Tick to show the record in the Inquiry New form. Untick to hide it without deleting.",
                 "id": "Centang agar record muncul di form Inquiry New. Hilangkan centang untuk menyembunyikan tanpa menghapus."
             },
             {
-                "label": "Ganti foto",
+                "label": "Change photo",
                 "en": "Photo of the product, image file up to 4 MB. Shown in the list.",
-                "id": "Foto produk, file gambar maksimal 4 MB. Tampil di daftar."
+                "id": "Photo produk, file gambar maksimal 4 MB. Tampil di daftar."
             },
             {
-                "label": "Tipe Produk (dieline)",
+                "label": "Product Type (dieline)",
                 "en": "Only for a Category Detail (required): the dieline product type. The size columns follow this type.",
-                "id": "Hanya untuk Detail Kategori (wajib): tipe produk dieline. Kolom ukuran mengikuti tipe ini."
+                "id": "Hanya untuk Detail Category (wajib): tipe produk dieline. Kolom ukuran mengikuti tipe ini."
             },
             {
-                "label": "Warna cetak",
+                "label": "Print colour",
                 "en": "Starting colour notation filled in the Inquiry, from 1/0 to 4/4.",
                 "id": "Notasi warna awal yang terisi di Inquiry, dari 1/0 sampai 4/4."
             },
             {
-                "label": "Jenjang qty (dipisah koma)",
+                "label": "Qty tiers (comma separated)",
                 "en": "Starting qty tiers for the Inquiry, separated by commas, for example 1000,3000,5000.",
                 "id": "Jenjang qty awal untuk Inquiry, dipisah koma, misalnya 1000,3000,5000."
             },
             {
-                "label": "Bahan #1 Paper and Bahan #2 Sheet / SF",
-                "en": "Starting materials, picked level by level (Kategori, Jenis, Gramatur/Spec, then optional Ukuran and Merek) from the material categories.",
-                "id": "Bahan awal, dipilih bertingkat (Kategori, Jenis, Gramatur/Spec, lalu Ukuran dan Merek yang opsional) dari kategori bahan."
+                "label": "Material #1 Paper and Material #2 Sheet / SF",
+                "en": "Starting materials, picked level by level (Category, Type, Grammage/Spec, then optional Ukuran and Merek) from the material categories.",
+                "id": "Bahan awal, dipilih bertingkat (Category, Type, Grammage/Spec, lalu Ukuran dan Merek yang opsional) dari kategori bahan."
             },
             {
-                "label": "Catatan untuk sales",
+                "label": "Notes for sales",
                 "en": "Advice for Sales shown with this entry, for example which material to use for oily food.",
                 "id": "Saran untuk Sales yang menyertai entri ini, misalnya bahan untuk makanan berminyak."
             },
             {
-                "label": "Nama ukuran",
+                "label": "Size name",
                 "en": "Standard market size of a detail, for example R8 (18 x 18 x 6.7 cm), with one dimension column per parameter of the product type. Add rows with Tambah Ukuran.",
                 "id": "Ukuran pasaran standar sebuah detail, misalnya R8 (18 x 18 x 6,7 cm), dengan satu kolom dimensi per parameter tipe produk. Tambah baris dengan Tambah Ukuran."
             }
@@ -1447,8 +1447,8 @@
                 "id": "Klik part atau rakitan di pohon produk untuk melihat dieline, mockup, bahan, proses, warna dan finishing-nya."
             },
             {
-                "en": "Use the tabs ACC Customer, Riwayat Order & Harga Jual and Cabang Revisi to see approvals, earlier orders and derived products.",
-                "id": "Pakai tab ACC Customer, Riwayat Order & Harga Jual dan Cabang Revisi untuk melihat persetujuan, order terdahulu dan produk turunan."
+                "en": "Use the tabs Customer ACC, Order History & Selling Price and Revision Branch to see approvals, earlier orders and derived products.",
+                "id": "Pakai tab Customer ACC, Order History & Selling Price dan Revision Branch untuk melihat persetujuan, order terdahulu dan produk turunan."
             }
         ],
         "fields": [
@@ -1458,7 +1458,7 @@
                 "id": "Nama produk (wajib, satu-satunya isian yang bisa diubah). Sales mengubahnya agar sesuai PO customer."
             },
             {
-                "label": "Customer (pemilik product)",
+                "label": "Customer (product owner)",
                 "en": "Customer who owns the product. Shown only.",
                 "id": "Customer pemilik produk. Hanya ditampilkan."
             },
@@ -1478,9 +1478,9 @@
                 "id": "Produk induk bila produk ini dibuat dari revisi. Hanya ditampilkan."
             },
             {
-                "label": "Order terakhir",
+                "label": "Last order",
                 "en": "Latest order of the product with qty and date. Shown only.",
-                "id": "Order terakhir produk dengan qty dan tanggal. Hanya ditampilkan."
+                "id": "Last Order produk dengan qty dan tanggal. Hanya ditampilkan."
             },
             {
                 "label": "Status",
@@ -1488,27 +1488,27 @@
                 "id": "ACTIVE (resmi, setelah Quotation WIN) atau DRAFT (masih di Pro-Dev). Bisa dipakai sebagai filter."
             },
             {
-                "label": "ACC Digital",
+                "label": "Digital ACC",
                 "en": "ADA when a Digital ACC is recorded, BELUM when not. Digital ACC is required before printing.",
                 "id": "ADA bila ACC Digital sudah dicatat, BELUM bila belum. ACC Digital wajib sebelum proses cetak."
             },
             {
-                "label": "Dieline & Mockup, Bahan & BOM, BOP, Warna & Finishing",
+                "label": "Dieline & Mockup, Material & BOM, BOP, Color & Finishing",
                 "en": "Read-only tabs of a part: dieline and 3D mockup, materials and inks, production steps, colour notation and finishing.",
                 "id": "Tab part yang hanya bisa dilihat: dieline dan mockup 3D, bahan dan tinta, langkah produksi, notasi warna dan finishing."
             },
             {
-                "label": "ACC Customer",
+                "label": "Customer ACC",
                 "en": "Latest customer approvals by type, with date, person and channel. They are recorded and printed from the Pro-Dev form.",
                 "id": "Persetujuan customer terakhir per jenis, dengan tanggal, petugas dan kanal. Dicatat dan dicetak dari form Pro-Dev."
             },
             {
-                "label": "Riwayat Order & Harga Jual",
+                "label": "Order & Selling Price History",
                 "en": "Earlier quotations and orders of the product with date, qty, selling price per pcs and result.",
                 "id": "Quotation dan order terdahulu produk ini dengan tanggal, qty, harga jual per pcs dan hasil."
             },
             {
-                "label": "Cabang Revisi",
+                "label": "Revision Branches",
                 "en": "Parent, this product and derived products made by revisions, each with its status.",
                 "id": "Induk, produk ini dan produk turunan hasil revisi, masing-masing dengan statusnya."
             }
@@ -1574,17 +1574,17 @@
                 "id": "Catatan yang ditulis saat kontak."
             },
             {
-                "label": "Tindak lanjut",
+                "label": "Next action",
                 "en": "Date of the next action planned.",
                 "id": "Tanggal tindak lanjut berikutnya yang direncanakan."
             },
             {
-                "label": "Apa",
+                "label": "What",
                 "en": "What the next action is.",
                 "id": "Apa tindak lanjut berikutnya."
             },
             {
-                "label": "Jatuh tempo",
+                "label": "Due",
                 "en": "LEWAT (date has passed), HARI INI (today), NANTI (later) or a dash when no next date was set. Also a filter.",
                 "id": "LEWAT (tanggal sudah lewat), HARI INI, NANTI atau tanda strip bila tidak ada tanggal berikutnya. Bisa dipakai sebagai filter."
             },
@@ -1594,7 +1594,7 @@
                 "id": "Pengguna yang mencatat follow-up. Juga filter bernama Oleh."
             },
             {
-                "label": "Jenis, Hasil, Oleh, Jatuh tempo (filters)",
+                "label": "Type, Result, By, Due (filters)",
                 "en": "Filters to narrow the log by contact type, result, user or due state.",
                 "id": "Filter untuk mempersempit log menurut jenis kontak, hasil, pengguna atau status jatuh tempo."
             }
@@ -1604,7 +1604,8 @@
         "key": "quotation-outstanding",
         "type": "REPORT",
         "module": "SALES",
-        "title": "Quotation Terbuka / Open Quotations",
+        "title": "Open Quotations",
+        "title_id": "Quotation Terbuka",
         "purpose": {
             "en": "Issued quotations that still wait for the customer's decision (not WIN, LOST or Cancelled), grouped by Sales PIC. Open it to chase old, expired or never followed-up quotations.",
             "id": "Quotation terbit yang masih menunggu keputusan customer (belum WIN, LOST atau Cancelled), dikelompokkan menurut Sales PIC. Buka untuk menagih quotation yang lama, kedaluwarsa atau belum pernah di-follow-up."
@@ -1640,7 +1641,7 @@
                 "id": "Sales pemilik quotation. Juga dasar pengelompokan dan filter."
             },
             {
-                "label": "Terbit",
+                "label": "Issued",
                 "en": "Date the quotation was issued.",
                 "id": "Tanggal quotation diterbitkan."
             },
@@ -1670,17 +1671,17 @@
                 "id": "Jumlah follow-up yang tercatat. Nol berarti customer belum pernah di-follow-up."
             },
             {
-                "label": "Follow-up terakhir",
+                "label": "Last follow-up",
                 "en": "Date of the latest follow-up.",
                 "id": "Tanggal follow-up terakhir."
             },
             {
-                "label": "Tindak lanjut berikut",
+                "label": "Upcoming follow-up",
                 "en": "Date of the next planned action.",
                 "id": "Tanggal tindak lanjut berikutnya yang direncanakan."
             },
             {
-                "label": "Sales PIC, Customer, Masa berlaku (filters)",
+                "label": "Sales PIC, Customer, Validity (filters)",
                 "en": "Filters to narrow the report by sales person, customer or validity.",
                 "id": "Filter untuk mempersempit laporan menurut sales, customer atau masa berlaku."
             }

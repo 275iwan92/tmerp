@@ -40,3 +40,4 @@ Searched: columns `source`/`channel`/`lead` in tm2sdi and tm2mst (`information_s
 
 
 > Re-checked 2026-10-17: `MasterCardService` now sets the default `ppn_percent` with `TaxRate::ppn()` and the Inquiry nota print falls back to `TaxRate::ppn(inquiry_date)` instead of a fixed 11; nothing else in this card changed.
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

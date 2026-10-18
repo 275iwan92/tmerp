@@ -12,55 +12,55 @@
     "steps": [
       {"en": "In the grid, search by name, code, NIK or position, or click a status box or filter (Department, Position, Work Status, Pay Frequency) to narrow the list.", "id": "Di grid, cari berdasarkan nama, kode, NIK atau posisi, atau klik kotak status atau filter (Department, Position, Work Status, Pay Frequency) untuk menyaring daftar."},
       {"en": "Click + New Record to register a new employee, or open a row to edit one. The employee code is created by the system.", "id": "Klik + New Record untuk mendaftarkan karyawan baru, atau buka satu baris untuk mengubahnya. Kode karyawan dibuat otomatis oleh sistem."},
-      {"en": "Fill the Overview & Identitas tab and the Job Alignment tab, then click Simpan. The other tabs only work after the first save.", "id": "Isi tab Overview & Identitas dan tab Job Alignment, lalu klik Simpan. Tab lainnya baru bisa dipakai setelah data disimpan sekali."},
+      {"en": "Fill the Profile tab and the Job tab, then click Save. The other tabs only work after the first save.", "id": "Isi tab Profile dan tab Job, lalu klik Save. Tab lainnya baru bisa dipakai setelah data disimpan sekali."},
       {"en": "After the first save, add family members, education, contracts and the salary bank account in their tabs.", "id": "Setelah disimpan pertama kali, tambahkan anggota keluarga, pendidikan, kontrak dan rekening gaji di tab masing-masing."},
-      {"en": "When the strict mandatory switch is on, the Keluarga tab must hold Ayah, Ibu, Mertua Ayah and Mertua Ibu before you can leave a newly registered employee.", "id": "Bila saklar field wajib (strict) menyala, tab Keluarga harus berisi Ayah, Ibu, Mertua Ayah dan Mertua Ibu sebelum Anda keluar dari karyawan yang baru didaftarkan."},
+      {"en": "When the strict mandatory switch is on, the Family tab must hold Ayah, Ibu, Mertua Ayah and Mertua Ibu before you can leave a newly registered employee.", "id": "Bila saklar field wajib (strict) menyala, tab Family harus berisi Ayah, Ibu, Mertua Ayah dan Mertua Ibu sebelum Anda keluar dari karyawan yang baru didaftarkan."},
       {"en": "For a new employee a login card is shown once after saving. Print it or pass the login details to the employee, because it will not be shown again.", "id": "Untuk karyawan baru, kartu login muncul satu kali setelah disimpan. Cetak atau berikan data login ke karyawan, karena tidak akan ditampilkan lagi."},
-      {"en": "To stop an employee from appearing in payroll and attendance lists, untick Aktif (or use the activate toggle in the grid) instead of deleting the record.", "id": "Agar karyawan tidak muncul di daftar gaji dan presensi, hilangkan centang Aktif (atau pakai tombol aktif di grid) dan jangan menghapus data."}
+      {"en": "To stop an employee from appearing in payroll and attendance lists, untick Active (or use the activate toggle in the grid) instead of deleting the record.", "id": "Agar karyawan tidak muncul di daftar gaji dan presensi, hilangkan centang Active (atau pakai tombol aktif di grid) dan jangan menghapus data."}
     ],
     "fields": [
-      {"label": "Nama Lengkap", "en": "Full name of the employee, typed as on the KTP. Always required.", "id": "Nama lengkap karyawan, diketik sesuai KTP. Selalu wajib diisi."},
-      {"label": "Panggilan", "en": "Nickname, optional.", "id": "Nama panggilan, boleh dikosongkan."},
-      {"label": "Jenis Kelamin", "en": "Laki-laki or Perempuan. Required when the strict mandatory switch is on.", "id": "Laki-laki atau Perempuan. Wajib bila saklar field wajib (strict) menyala."},
-      {"label": "Agama", "en": "Pick from the list (Islam, Kristen, Katolik, Hindu, Buddha, Konghucu, Lainnya). Optional.", "id": "Pilih dari daftar (Islam, Kristen, Katolik, Hindu, Buddha, Konghucu, Lainnya). Boleh dikosongkan."},
-      {"label": "Kota Lahir", "en": "City of birth, typed. Optional.", "id": "Kota kelahiran, diketik. Boleh dikosongkan."},
-      {"label": "Tanggal Lahir (sesuai KTP) * — usia minimal 17 tahun", "en": "Birth date as on the KTP. The employee must be at least 17 years old, otherwise saving is refused.", "id": "Tanggal lahir sesuai KTP. Karyawan minimal berusia 17 tahun, bila kurang data tidak bisa disimpan."},
+      {"label": "Full name", "en": "Full name of the employee, typed as on the KTP. Always required.", "id": "Nama lengkap karyawan, diketik sesuai KTP. Selalu wajib diisi."},
+      {"label": "Nickname", "en": "Nickname, optional.", "id": "Nama panggilan, boleh dikosongkan."},
+      {"label": "Gender", "en": "Laki-laki or Perempuan. Required when the strict mandatory switch is on.", "id": "Laki-laki atau Perempuan. Wajib bila saklar field wajib (strict) menyala."},
+      {"label": "Religion", "en": "Pick from the list (Islam, Kristen, Katolik, Hindu, Buddha, Konghucu, Lainnya). Optional.", "id": "Pilih dari daftar (Islam, Kristen, Katolik, Hindu, Buddha, Konghucu, Lainnya). Boleh dikosongkan."},
+      {"label": "Birth place", "en": "City of birth, typed. Optional.", "id": "Kota kelahiran, diketik. Boleh dikosongkan."},
+      {"label": "Birth date (as on KTP)", "en": "Birth date as on the KTP. The employee must be at least 17 years old, otherwise saving is refused.", "id": "Tanggal lahir sesuai KTP. Karyawan minimal berusia 17 tahun, bila kurang data tidak bisa disimpan."},
       {"label": "NIK KTP", "en": "National ID number, exactly 16 digits. Used for identity checks and payroll tax data.", "id": "Nomor NIK KTP, tepat 16 digit angka. Dipakai untuk pengecekan identitas dan data pajak gaji."},
-      {"label": "No. Kartu Keluarga (KK)", "en": "Family card number, typed.", "id": "Nomor Kartu Keluarga, diketik."},
-      {"label": "NPWP", "en": "Tax number, optional.", "id": "Nomor NPWP, boleh dikosongkan."},
-      {"label": "Telepon / WA (No. Smartphone Utama)", "en": "Main mobile number. It is used to recover the employee's account and as the WhatsApp address for payslips. Employees without it show in the Without WhatsApp Number report.", "id": "Nomor HP utama. Dipakai untuk memulihkan akun karyawan dan sebagai alamat WhatsApp slip gaji. Karyawan tanpa nomor ini muncul di laporan Karyawan Tanpa No. WhatsApp."},
-      {"label": "Email Pribadi", "en": "Personal email. Required for a new registration when the strict mandatory switch is on.", "id": "Email pribadi. Wajib untuk registrasi baru bila saklar field wajib (strict) menyala."},
-      {"label": "Alamat KTP", "en": "Address as on the KTP, optional.", "id": "Alamat sesuai KTP, boleh dikosongkan."},
-      {"label": "Alamat Tinggal / Domisili", "en": "Current living address. Required when the strict switch is on.", "id": "Alamat tempat tinggal sekarang. Wajib bila saklar strict menyala."},
-      {"label": "Tanggal Bergabung", "en": "Date the employee joined the company.", "id": "Tanggal karyawan mulai bekerja di perusahaan."},
-      {"label": "Status Kerja", "en": "Bekerja (working), Dirumahkan (furloughed) or Cuti (on leave). It appears as Work Status in the grid.", "id": "Bekerja, Dirumahkan atau Cuti. Tampil sebagai Work Status di grid."},
-      {"label": "Berlaku Sejak", "en": "Date the current work status started, optional.", "id": "Tanggal status kerja saat ini mulai berlaku, boleh dikosongkan."},
-      {"label": "Nama", "en": "Emergency contact name (Kontak Darurat section).", "id": "Nama kontak darurat (bagian Kontak Darurat)."},
-      {"label": "Hubungan", "en": "Relationship of the emergency contact to the employee. In the family dialog the same label is a list of relations (Suami, Istri, Anak, Ayah, Ibu, Mertua Ayah, Mertua Ibu).", "id": "Hubungan kontak darurat dengan karyawan. Di dialog keluarga, label yang sama berupa daftar hubungan (Suami, Istri, Anak, Ayah, Ibu, Mertua Ayah, Mertua Ibu)."},
-      {"label": "Telepon", "en": "Phone number of the emergency contact.", "id": "Nomor telepon kontak darurat."},
-      {"label": "Aktif", "en": "Tick for a current employee. Untick when the employee leaves; the record stays in the system.", "id": "Centang untuk karyawan yang masih bekerja. Hilangkan centang bila karyawan keluar; datanya tetap tersimpan."},
-      {"label": "Jabatan (Departemen — Posisi)", "en": "Pick the position from Position Master, shown as Department and Position. Required when the strict switch is on. It decides department, reporting line and some access rules.", "id": "Pilih posisi dari Master Posisi, tampil sebagai Departemen dan Posisi. Wajib bila saklar strict menyala. Menentukan departemen, atasan dan sebagian aturan akses."},
-      {"label": "Mesin Default", "en": "Optional default machine. It only pre-fills scheduling and does not lock any assignment.", "id": "Mesin bawaan, boleh dikosongkan. Hanya mengisi awal jadwal dan tidak mengunci penugasan."},
-      {"label": "Shift Default", "en": "Optional default shift. It only pre-fills the shift roster and does not lock any assignment.", "id": "Shift bawaan, boleh dikosongkan. Hanya mengisi awal roster shift dan tidak mengunci penugasan."},
-      {"label": "Tipe", "en": "Education tab: kind of activity (Sertifikasi, Seminar, Pelatihan, Pendidikan Formal). Contract dialog: employment type (Tetap, Kontrak, Harian, Borongan).", "id": "Tab Pendidikan: jenis kegiatan (Sertifikasi, Seminar, Pelatihan, Pendidikan Formal). Dialog kontrak: jenis kerja (Tetap, Kontrak, Harian, Borongan)."},
-      {"label": "Nama Kegiatan", "en": "Education tab: name of the course, certificate or school. Required.", "id": "Tab Pendidikan: nama kursus, sertifikat atau sekolah. Wajib diisi."},
-      {"label": "Penyelenggara", "en": "Education tab: organizer or institution, optional.", "id": "Tab Pendidikan: penyelenggara atau lembaga, boleh dikosongkan."},
-      {"label": "Tanggal", "en": "Education tab: date of the activity. Required.", "id": "Tab Pendidikan: tanggal kegiatan. Wajib diisi."},
-      {"label": "Biaya (Rp)", "en": "Education tab: cost of the activity, 0 or more.", "id": "Tab Pendidikan: biaya kegiatan, 0 atau lebih."},
-      {"label": "Dibiayai Oleh", "en": "Education tab: who paid (Perusahaan, Pribadi or Sharing).", "id": "Tab Pendidikan: siapa yang membayar (Perusahaan, Pribadi atau Sharing)."},
-      {"label": "Ikatan Dinas", "en": "Education tab: tick when the employee is bound to stay with the company after this activity.", "id": "Tab Pendidikan: centang bila karyawan terikat dinas setelah kegiatan ini."},
-      {"label": "Nama Lengkap *", "en": "Family dialog: full name of the family member. Ayah, Ibu, Mertua Ayah and Mertua Ibu can only be added once each; at most 20 children.", "id": "Dialog keluarga: nama lengkap anggota keluarga. Ayah, Ibu, Mertua Ayah dan Mertua Ibu masing-masing hanya sekali; anak maksimal 20."},
-      {"label": "Tanggal Lahir", "en": "Family dialog: birth date of the family member, optional.", "id": "Dialog keluarga: tanggal lahir anggota keluarga, boleh dikosongkan."},
+      {"label": "Family card (KK) no.", "en": "Family card number, typed.", "id": "Nomor Kartu Family, diketik."},
+      {"label": "Tax ID (NPWP)", "en": "Tax number, optional.", "id": "Nomor NPWP, boleh dikosongkan."},
+      {"label": "Mobile / WhatsApp (main)", "en": "Main mobile number. It is used to recover the employee's account and as the WhatsApp address for payslips. Employees without it show in the Without WhatsApp Number report.", "id": "Nomor HP utama. Dipakai untuk memulihkan akun karyawan dan sebagai alamat WhatsApp slip gaji. Karyawan tanpa nomor ini muncul di laporan Karyawan Tanpa No. WhatsApp."},
+      {"label": "Personal email", "en": "Personal email. Required for a new registration when the strict mandatory switch is on.", "id": "Email pribadi. Wajib untuk registrasi baru bila saklar field wajib (strict) menyala."},
+      {"label": "KTP address", "en": "Address as on the KTP, optional.", "id": "Alamat sesuai KTP, boleh dikosongkan."},
+      {"label": "Residence address", "en": "Current living address. Required when the strict switch is on.", "id": "Alamat tempat tinggal sekarang. Wajib bila saklar strict menyala."},
+      {"label": "Join date", "en": "Date the employee joined the company.", "id": "Date karyawan mulai bekerja di perusahaan."},
+      {"label": "Work Status", "en": "Bekerja (working), Dirumahkan (furloughed) or Cuti (on leave). It appears as Work Status in the grid.", "id": "Bekerja, Dirumahkan atau Cuti. Tampil sebagai Work Status di grid."},
+      {"label": "Work status since", "en": "Date the current work status started, optional.", "id": "Date status kerja saat ini mulai berlaku, boleh dikosongkan."},
+      {"label": "Name", "en": "Emergency contact name (Kontak Darurat section).", "id": "Nama kontak darurat (bagian Kontak Darurat)."},
+      {"label": "Relation", "en": "Relationship of the emergency contact to the employee. In the family dialog the same label is a list of relations (Suami, Istri, Anak, Ayah, Ibu, Mertua Ayah, Mertua Ibu).", "id": "Relation kontak darurat dengan karyawan. Di dialog keluarga, label yang sama berupa daftar hubungan (Suami, Istri, Anak, Ayah, Ibu, Mertua Ayah, Mertua Ibu)."},
+      {"label": "Phone", "en": "Phone number of the emergency contact.", "id": "Nomor telepon kontak darurat."},
+      {"label": "Active", "en": "Tick for a current employee. Untick when the employee leaves; the record stays in the system.", "id": "Centang untuk karyawan yang masih bekerja. Hilangkan centang bila karyawan keluar; datanya tetap tersimpan."},
+      {"label": "Position (department — position)", "en": "Pick the position from Position Master, shown as Department and Position. Required when the strict switch is on. It decides department, reporting line and some access rules.", "id": "Pilih posisi dari Master Posisi, tampil sebagai Departemen dan Posisi. Wajib bila saklar strict menyala. Menentukan departemen, atasan dan sebagian aturan akses."},
+      {"label": "Default machine", "en": "Optional default machine. It only pre-fills scheduling and does not lock any assignment.", "id": "Mesin bawaan, boleh dikosongkan. Hanya mengisi awal jadwal dan tidak mengunci penugasan."},
+      {"label": "Default shift", "en": "Optional default shift. It only pre-fills the shift roster and does not lock any assignment.", "id": "Shift bawaan, boleh dikosongkan. Hanya mengisi awal roster shift dan tidak mengunci penugasan."},
+      {"label": "Type", "en": "Education tab: kind of activity (Sertifikasi, Seminar, Pelatihan, Pendidikan Formal). Contract dialog: employment type (Tetap, Kontrak, Harian, Borongan).", "id": "Tab Pendidikan: jenis kegiatan (Sertifikasi, Seminar, Pelatihan, Pendidikan Formal). Dialog kontrak: jenis kerja (Tetap, Kontrak, Harian, Borongan)."},
+      {"label": "Activity", "en": "Education tab: name of the course, certificate or school. Required.", "id": "Tab Pendidikan: nama kursus, sertifikat atau sekolah. Wajib diisi."},
+      {"label": "Organizer", "en": "Education tab: organizer or institution, optional.", "id": "Tab Pendidikan: penyelenggara atau lembaga, boleh dikosongkan."},
+      {"label": "Date", "en": "Education tab: date of the activity. Required.", "id": "Tab Pendidikan: tanggal kegiatan. Wajib diisi."},
+      {"label": "Cost", "en": "Education tab: cost of the activity, 0 or more.", "id": "Tab Pendidikan: biaya kegiatan, 0 atau lebih."},
+      {"label": "Funded by", "en": "Education tab: who paid (Perusahaan, Pribadi or Sharing).", "id": "Tab Pendidikan: siapa yang membayar (Perusahaan, Pribadi atau Sharing)."},
+      {"label": "Service bond", "en": "Education tab: tick when the employee is bound to stay with the company after this activity.", "id": "Tab Pendidikan: centang bila karyawan terikat dinas setelah kegiatan ini."},
+      {"label": "Full name *", "en": "Family dialog: full name of the family member. Ayah, Ibu, Mertua Ayah and Mertua Ibu can only be added once each; at most 20 children.", "id": "Dialog keluarga: nama lengkap anggota keluarga. Ayah, Ibu, Mertua Ayah dan Mertua Ibu masing-masing hanya sekali; anak maksimal 20."},
+      {"label": "Birth date", "en": "Family dialog: birth date of the family member, optional.", "id": "Dialog keluarga: tanggal lahir anggota keluarga, boleh dikosongkan."},
       {"label": "NIK", "en": "Family dialog: NIK of the family member, optional.", "id": "Dialog keluarga: NIK anggota keluarga, boleh dikosongkan."},
-      {"label": "Jenis Gaji", "en": "Contract dialog: salary basis (Per Bulan, Per Hari, Per Unit). Saving a new contract closes the previous active contract automatically.", "id": "Dialog kontrak: dasar gaji (Per Bulan, Per Hari, Per Unit). Menyimpan kontrak baru otomatis menutup kontrak aktif sebelumnya."},
-      {"label": "Mulai", "en": "Contract dialog: contract start date. Required.", "id": "Dialog kontrak: tanggal mulai kontrak. Wajib diisi."},
-      {"label": "Selesai (kosong = TETAP)", "en": "Contract dialog: end date, left empty for a permanent contract. Must be after the start date.", "id": "Dialog kontrak: tanggal selesai, kosongkan untuk karyawan tetap. Harus setelah tanggal mulai."},
-      {"label": "Nominal Gaji (Rp) *", "en": "Contract dialog: salary amount of the contract. The amount is confidential and visible only to authorised users.", "id": "Dialog kontrak: nominal gaji kontrak. Nilainya rahasia dan hanya terlihat oleh user yang berwenang."},
-      {"label": "Masa Probation", "en": "Contract dialog: tick when the contract starts with a probation period. Then Probation Selesai becomes required.", "id": "Dialog kontrak: centang bila kontrak diawali masa percobaan. Setelah itu Probation Selesai wajib diisi."},
+      {"label": "Salary type", "en": "Contract dialog: salary basis (Per Bulan, Per Hari, Per Unit). Saving a new contract closes the previous active contract automatically.", "id": "Dialog kontrak: dasar gaji (Per Bulan, Per Hari, Per Unit). Menyimpan kontrak baru otomatis menutup kontrak aktif sebelumnya."},
+      {"label": "Start", "en": "Contract dialog: contract start date. Required.", "id": "Dialog kontrak: tanggal mulai kontrak. Wajib diisi."},
+      {"label": "End date", "en": "Contract dialog: end date, left empty for a permanent contract. Must be after the start date.", "id": "Dialog kontrak: tanggal selesai, kosongkan untuk karyawan tetap. Harus setelah tanggal mulai."},
+      {"label": "Salary amount *", "en": "Contract dialog: salary amount of the contract. The amount is confidential and visible only to authorised users.", "id": "Dialog kontrak: nominal gaji kontrak. Nilainya rahasia dan hanya terlihat oleh user yang berwenang."},
+      {"label": "Probation period", "en": "Contract dialog: tick when the contract starts with a probation period. Then Probation Selesai becomes required.", "id": "Dialog kontrak: centang bila kontrak diawali masa percobaan. Setelah itu Probation Selesai wajib diisi."},
       {"label": "Bank", "en": "Bank tab: the bank of the salary account, picked from Supplier Master category BANK. Leave on Cash / Tunai when the employee is paid in cash.", "id": "Tab Rekening Bank: bank rekening gaji, dipilih dari Master Supplier kategori BANK. Biarkan Cash / Tunai bila karyawan dibayar tunai."},
-      {"label": "No. Rekening", "en": "Bank tab: account number, required once a bank is chosen.", "id": "Tab Rekening Bank: nomor rekening, wajib bila bank dipilih."},
-      {"label": "Atas Nama", "en": "Bank tab: account holder name, required once a bank is chosen. Click Save in this tab to store the bank account.", "id": "Tab Rekening Bank: nama pemilik rekening, wajib bila bank dipilih. Klik Save di tab ini untuk menyimpan rekening."},
-      {"label": "Alasan", "en": "Kedisiplinan tab: reason of the discipline record. Use Tambah Catatan, choose a type (Teguran Verbal, SP1, SP2, SP3, Alpha) and the incident date.", "id": "Tab Kedisiplinan: alasan catatan kedisiplinan. Pakai Tambah Catatan, pilih tipe (Teguran Verbal, SP1, SP2, SP3, Alpha) dan tanggal kejadian."}
+      {"label": "Account no.", "en": "Bank tab: account number, required once a bank is chosen.", "id": "Tab Rekening Bank: nomor rekening, wajib bila bank dipilih."},
+      {"label": "Account holder", "en": "Bank tab: account holder name, required once a bank is chosen. Click Save in this tab to store the bank account.", "id": "Tab Rekening Bank: nama pemilik rekening, wajib bila bank dipilih. Klik Save di tab ini untuk menyimpan rekening."},
+      {"label": "Reason", "en": "Discipline tab: reason of the discipline record. Use Add Record, choose a type (Verbal warning, SP1, SP2, SP3, Alpha) and the incident date.", "id": "Tab Discipline: alasan catatan kedisiplinan. Pakai Add Record, pilih tipe (Verbal warning, SP1, SP2, SP3, Alpha) dan tanggal kejadian."}
     ]
   },
   {
@@ -76,15 +76,15 @@
     "steps": [
       {"en": "Open the screen. Waiting requests are listed first. Use the status boxes or the Field and Status filters to narrow the list.", "id": "Buka layar ini. Pengajuan yang menunggu tampil paling atas. Pakai kotak status atau filter Field dan Status untuk menyaring."},
       {"en": "Read the field, the old value, the new value and the reason of the request.", "id": "Baca nama field, nilai lama, nilai baru dan alasan pengajuan."},
-      {"en": "Open the request and click Setujui (approve) if the new value is correct.", "id": "Buka pengajuan lalu klik Setujui bila nilai barunya benar."},
+      {"en": "Open the request and click Approve if the new value is correct.", "id": "Buka pengajuan lalu klik Approve bila nilai barunya benar."},
       {"en": "Approving applies the new value to the employee automatically for Tanggal Lahir, NIK KTP, Telepon / WA, Alamat KTP, Alamat Domisili, Kontak Darurat and the payroll bank account.", "id": "Persetujuan langsung mengubah data karyawan untuk Tanggal Lahir, NIK KTP, Telepon / WA, Alamat KTP, Alamat Domisili, Kontak Darurat dan rekening bank gaji."},
       {"en": "For any other field, approving only closes the request. HR must then change the data in Master Employee by hand.", "id": "Untuk field lain, persetujuan hanya menutup pengajuan. HR harus mengubah datanya sendiri di Master Employee."},
-      {"en": "To refuse, click Tolak, type the reason and confirm. The employee gets a notification with the reason and can submit again.", "id": "Untuk menolak, klik Tolak, tulis alasannya lalu konfirmasi. Karyawan menerima notifikasi berisi alasan dan bisa mengajukan ulang."}
+      {"en": "To refuse, click Reject, type the reason and confirm. The employee gets a notification with the reason and can submit again.", "id": "Untuk menolak, klik Reject, tulis alasannya lalu konfirmasi. Karyawan menerima notifikasi berisi alasan dan bisa mengajukan ulang."}
     ],
     "fields": [
-      {"label": "Alasan Penolakan", "en": "Required when rejecting. Explain why; the employee receives this text as a notification.", "id": "Wajib saat menolak. Jelaskan alasannya; teks ini diterima karyawan sebagai notifikasi."},
-      {"label": "Setujui", "en": "Action on a waiting request. Approves it and applies the new value when the field is one of those that update automatically.", "id": "Aksi pada pengajuan yang menunggu. Menyetujui dan menerapkan nilai baru bila field-nya termasuk yang berubah otomatis."},
-      {"label": "Tolak", "en": "Action on a waiting request. Opens the dialog to type the rejection reason.", "id": "Aksi pada pengajuan yang menunggu. Membuka dialog untuk menulis alasan penolakan."}
+      {"label": "Rejection Reason", "en": "Required when rejecting. Explain why; the employee receives this text as a notification.", "id": "Wajib saat menolak. Jelaskan alasannya; teks ini diterima karyawan sebagai notifikasi."},
+      {"label": "Approve", "en": "Action on a waiting request. Approves it and applies the new value when the field is one of those that update automatically.", "id": "Aksi pada pengajuan yang menunggu. Menyetujui dan menerapkan nilai baru bila field-nya termasuk yang berubah otomatis."},
+      {"label": "Reject", "en": "Action on a waiting request. Opens the dialog to type the rejection reason.", "id": "Aksi pada pengajuan yang menunggu. Membuka dialog untuk menulis alasan penolakan."}
     ]
   },
   {
@@ -115,6 +115,7 @@
     "type": "INPUT",
     "module": "HRM",
     "title": "Position Master",
+    "title_id": "Master Posisi",
     "purpose": {
       "en": "The list of job positions with their department, level and who they report to. Open it when a new position is created or the reporting line changes. The organization chart is drawn from this data.",
       "id": "Daftar posisi kerja beserta departemen, level dan atasannya. Buka saat ada posisi baru atau garis pelaporan berubah. Bagan struktur organisasi digambar dari data ini."
@@ -123,17 +124,17 @@
     "steps": [
       {"en": "Search by position name, code or department, or filter by Department and Level.", "id": "Cari berdasarkan nama posisi, kode atau departemen, atau saring berdasarkan Department dan Level."},
       {"en": "Click + New Record, or open a row to edit it.", "id": "Klik + New Record, atau buka satu baris untuk mengubahnya."},
-      {"en": "Fill Kode Posisi, Nama Posisi, Level and Departemen. These four are required.", "id": "Isi Kode Posisi, Nama Posisi, Level dan Departemen. Keempatnya wajib."},
-      {"en": "Pick Melapor Ke to set the boss position. A position cannot report to one of its own subordinates; the system refuses that loop.", "id": "Pilih Melapor Ke untuk menentukan posisi atasan. Posisi tidak boleh melapor ke bawahannya sendiri; sistem menolak putaran itu."},
-      {"en": "Click Simpan. To retire a position, use the activate toggle in the grid instead of deleting it.", "id": "Klik Simpan. Untuk menonaktifkan posisi, pakai tombol aktif di grid dan jangan menghapusnya."}
+      {"en": "Fill Code, Name, Level and Department. These four are required.", "id": "Isi Code, Name, Level dan Department. Keempatnya wajib."},
+      {"en": "Pick Reports to to set the boss position. A position cannot report to one of its own subordinates; the system refuses that loop.", "id": "Pilih Reports to untuk menentukan posisi atasan. Posisi tidak boleh melapor ke bawahannya sendiri; sistem menolak putaran itu."},
+      {"en": "Click Save. To retire a position, use the activate toggle in the grid instead of deleting it.", "id": "Klik Save. Untuk menonaktifkan posisi, pakai tombol aktif di grid dan jangan menghapusnya."}
     ],
     "fields": [
-      {"label": "Kode Posisi", "en": "Short unique code of the position, typed. Required.", "id": "Kode singkat posisi yang unik, diketik. Wajib diisi."},
+      {"label": "Code", "en": "Short unique code of the position, typed. Required.", "id": "Kode singkat posisi yang unik, diketik. Wajib diisi."},
       {"label": "Level", "en": "Organization level picked from the active levels. Required.", "id": "Level organisasi, dipilih dari daftar level aktif. Wajib diisi."},
-      {"label": "Nama Posisi", "en": "Name of the position, shown in Master Employee and on the organization chart. Required.", "id": "Nama posisi, tampil di Master Employee dan bagan organisasi. Wajib diisi."},
-      {"label": "Departemen", "en": "Department the position belongs to, picked from active departments. Required.", "id": "Departemen tempat posisi berada, dipilih dari departemen aktif. Wajib diisi."},
-      {"label": "Melapor Ke", "en": "The position this one reports to. Leave empty for the top position. It builds the organization chart.", "id": "Posisi atasan langsung. Kosongkan untuk posisi puncak. Dipakai untuk membangun bagan organisasi."},
-      {"label": "Deskripsi Kerja (tampil read-only di profil pegawai)", "en": "Job description for everyone holding this position. Only HR Officers see and edit this field; employees read it in Self-Service.", "id": "Deskripsi kerja untuk semua pemegang posisi ini. Hanya HR Officer yang melihat dan mengubahnya; karyawan membacanya di Self-Service."}
+      {"label": "Name", "en": "Name of the position, shown in Master Employee and on the organization chart. Required.", "id": "Nama posisi, tampil di Master Employee dan bagan organisasi. Wajib diisi."},
+      {"label": "Department", "en": "Department the position belongs to, picked from active departments. Required.", "id": "Department tempat posisi berada, dipilih dari departemen aktif. Wajib diisi."},
+      {"label": "Reports To", "en": "The position this one reports to. Leave empty for the top position. It builds the organization chart.", "id": "Posisi atasan langsung. Kosongkan untuk posisi puncak. Dipakai untuk membangun bagan organisasi."},
+      {"label": "Job description", "en": "Job description for everyone holding this position. Only HR Officers see and edit this field; employees read it in Self-Service.", "id": "Deskripsi kerja untuk semua pemegang posisi ini. Hanya HR Officer yang melihat dan mengubahnya; karyawan membacanya di Self-Service."}
     ]
   },
   {
@@ -142,27 +143,27 @@
     "module": "HRM",
     "title": "SOP & Work Instruction",
     "purpose": {
-      "en": "The register of SOP and Work Instruction documents. HR Officers add and edit them; everyone else can only read. Employees read the active documents in Self-Service, and the opening dashboard Work Instruction / JD / SOP lists them.",
-      "id": "Daftar dokumen SOP dan Instruksi Kerja. HR Officer menambah dan mengubahnya; yang lain hanya bisa membaca. Karyawan membaca dokumen aktif di Self-Service, dan dashboard pembuka Work Instruction / JD / SOP menampilkannya."
+      "en": "The register of SOP and Work Instruction documents. HR Officers add and edit them; everyone else can only read, including the Maintenance team. Employees read the approved documents in Self-Service, and the opening dashboard Work Instruction / JD / SOP lists them.",
+      "id": "Daftar dokumen SOP dan Instruksi Kerja. HR Officer menambah dan mengubahnya; yang lain hanya bisa membaca, termasuk tim Maintenance. Karyawan membaca dokumen yang sudah Approved di Self-Service, dan dashboard pembuka Work Instruction / JD / SOP menampilkannya."
     },
     "keywords": "sop, standard operating procedure, prosedur, dokumen sop, nomor dokumen, revisi sop, aturan kerja, work instruction, instruksi kerja, wi, petunjuk kerja, jenis dokumen",
     "steps": [
       {"en": "Search by document code or title, or filter by Document Type (SOP or Work Instruction) and Department.", "id": "Cari berdasarkan kode atau judul dokumen, atau saring berdasarkan Document Type (SOP atau Work Instruction) dan Department."},
       {"en": "Open a row. If you are not an HR Officer you see the SOP read-only and there is nothing to save.", "id": "Buka satu baris. Bila Anda bukan HR Officer, SOP tampil hanya-baca dan tidak ada yang bisa disimpan."},
-      {"en": "HR Officer: click + New Record, fill Nomor Dokumen, pick the Document Type, fill Judul SOP, and add Tujuan and Isi SOP.", "id": "HR Officer: klik + New Record, isi Nomor Dokumen, pilih Document Type, isi Judul SOP, lalu tambahkan Tujuan dan Isi SOP."},
-      {"en": "Set Revisi, Berlaku Sejak and Cakupan Departemen, then click Simpan.", "id": "Atur Revisi, Berlaku Sejak dan Cakupan Departemen, lalu klik Simpan."},
-      {"en": "To stop showing an old SOP, untick Aktif or use the activate toggle in the grid.", "id": "Agar SOP lama tidak ditampilkan lagi, hilangkan centang Aktif atau pakai tombol aktif di grid."}
+      {"en": "HR Officer: click + New Record, fill Document No., pick the Document Type, fill SOP Title, and add Purpose and the Steps (one row per step, with a section name; Add line adds a row).", "id": "HR Officer: klik + New Record, isi Document No., pilih Document Type, isi SOP Title, lalu tambahkan Purpose dan Steps (satu baris per langkah, dengan nama bagian; Add line menambah baris)."},
+      {"en": "Set Revision, Effective From and Department Scope, then click Save. A new document is a Draft; click Approve to make it visible to employees (it is then locked). To change an approved document click Back to Draft; the revision goes up and employees stop seeing it until you approve again.", "id": "Atur Revision, Effective From dan Department Scope, lalu klik Save. Dokumen baru berstatus Draft; klik Approve agar tampil untuk karyawan (dokumen lalu terkunci). Untuk mengubah dokumen yang sudah Approved klik Back to Draft; revisi naik dan karyawan tidak melihatnya sampai Anda Approve lagi."},
+      {"en": "To stop showing an old SOP, untick Active or use the activate toggle in the grid.", "id": "Agar SOP lama tidak ditampilkan lagi, hilangkan centang Active atau pakai tombol aktif di grid."}
     ],
     "fields": [
-      {"label": "Nomor Dokumen", "en": "Unique SOP document number, typed, for example 001/SOP/TM/V/2026. Required.", "id": "Nomor dokumen SOP yang unik, diketik, misalnya 001/SOP/TM/V/2026. Wajib diisi."},
-      {"label": "Revisi", "en": "Revision number of the document, starting at 0. Required.", "id": "Nomor revisi dokumen, mulai dari 0. Wajib diisi."},
+      {"label": "Document No.", "en": "Unique SOP document number, typed, for example 001/SOP/TM/V/2026. Required.", "id": "Nomor dokumen SOP yang unik, diketik, misalnya 001/SOP/TM/V/2026. Wajib diisi."},
+      {"label": "Revision", "en": "Revision number of the document (00, 01, ...). It goes up by itself on Back to Draft. Required.", "id": "Nomor revisi dokumen (00, 01, ...). Naik sendiri saat Back to Draft. Wajib diisi."},
       {"label": "Document Type", "en": "SOP for a procedure across steps or departments; Work Instruction for how to do one job at one machine or station. Picked, required. It decides in which list the document appears on the opening dashboard.", "id": "SOP untuk prosedur lintas langkah atau departemen; Work Instruction untuk cara mengerjakan satu pekerjaan di satu mesin atau pos. Dipilih, wajib. Menentukan di daftar mana dokumen tampil di dashboard pembuka."},
-      {"label": "Judul SOP", "en": "Title of the document. Required.", "id": "Judul dokumen. Wajib diisi."},
-      {"label": "Berlaku Sejak", "en": "Effective date of this revision, optional.", "id": "Tanggal berlaku revisi ini, boleh dikosongkan."},
-      {"label": "Cakupan Departemen", "en": "Department the SOP applies to. Leave on All Departments when it applies to everyone.", "id": "Departemen yang memakai SOP ini. Biarkan Semua Departemen bila berlaku untuk semua."},
-      {"label": "Tujuan", "en": "Purpose of the SOP, free text, optional.", "id": "Tujuan SOP, teks bebas, boleh dikosongkan."},
-      {"label": "Isi SOP", "en": "Full text of the SOP. It is shown to employees as typed, line breaks included.", "id": "Isi lengkap SOP. Ditampilkan ke karyawan apa adanya, termasuk baris baru."},
-      {"label": "Aktif", "en": "Tick to keep the SOP visible to employees.", "id": "Centang agar SOP tetap tampil untuk karyawan."}
+      {"label": "SOP Title", "en": "Title of the document. Required.", "id": "Judul dokumen. Wajib diisi."},
+      {"label": "Effective", "en": "Effective date of this revision, optional.", "id": "Tanggal berlaku revisi ini, boleh dikosongkan."},
+      {"label": "Department Scope", "en": "Department the SOP applies to. Leave on All Departments when it applies to everyone.", "id": "Departemen yang memakai SOP ini. Biarkan Semua Departemen bila berlaku untuk semua."},
+      {"label": "Purpose", "en": "Purpose of the SOP, free text, optional.", "id": "Purpose SOP, teks bebas, boleh dikosongkan."},
+      {"label": "Steps", "en": "The steps of the document, one row per step with a section name. Employees see them in this order.", "id": "Langkah-langkah dokumen, satu baris per langkah dengan nama bagian. Karyawan melihatnya dalam urutan ini."},
+      {"label": "Active", "en": "Tick to keep the SOP visible to employees.", "id": "Centang agar SOP tetap tampil untuk karyawan."}
     ]
   },
   {
@@ -170,6 +171,7 @@
     "type": "INPUT",
     "module": "HRM",
     "title": "Attendance",
+    "title_id": "Presensi",
     "purpose": {
       "en": "Daily attendance per employee calculated from fingerprint and mobile clock-in. Open it to check the days, recalculate a date range or correct a status by hand with an audit reason.",
       "id": "Presensi harian per karyawan hasil hitungan dari finger dan clock-in HP. Buka untuk mengecek hari kerja, menghitung ulang rentang tanggal atau mengoreksi status secara manual dengan alasan audit."
@@ -177,17 +179,17 @@
     "keywords": "presensi, absensi, attendance, finger, hadir, telat, terlambat, alpha, lembur, override status, hitung ulang presensi",
     "steps": [
       {"en": "The grid shows the last 60 days. Use the status boxes (Present, Late, Absent) or the Status and Source filters to narrow it.", "id": "Grid menampilkan 60 hari terakhir. Pakai kotak status (Present, Late, Absent) atau filter Status dan Source untuk menyaring."},
-      {"en": "Open the daily attendance form and set Dari Tanggal and Sampai Tanggal; the list there shows only that range.", "id": "Buka form presensi harian dan atur Dari Tanggal dan Sampai Tanggal; daftar di sana hanya menampilkan rentang itu."},
-      {"en": "Click Hitung Ulang Presensi to recalculate all active employees for the chosen dates, for example after new finger data arrived.", "id": "Klik Hitung Ulang Presensi untuk menghitung ulang semua karyawan aktif pada tanggal terpilih, misalnya setelah data finger baru masuk."},
-      {"en": "To correct a day, click Override Status on the row, pick the Status Baru and write the reason.", "id": "Untuk mengoreksi satu hari, klik Override Status pada baris, pilih Status Baru dan tulis alasannya."},
-      {"en": "Click Simpan Override. The row is then marked Manual in Source and your name and reason are kept as an audit trail.", "id": "Klik Simpan Override. Baris itu lalu bertanda Manual di Source dan nama serta alasan Anda tersimpan sebagai jejak audit."}
+      {"en": "Open the daily attendance form and set From Date and To Date; the list there shows only that range.", "id": "Buka form presensi harian dan atur From Date dan To Date; daftar di sana hanya menampilkan rentang itu."},
+      {"en": "Click Recalculate Attendance to recalculate all active employees for the chosen dates, for example after new finger data arrived.", "id": "Klik Recalculate Attendance untuk menghitung ulang semua karyawan aktif pada tanggal terpilih, misalnya setelah data finger baru masuk."},
+      {"en": "To correct a day, click Override Status on the row, pick the New Status and write the reason.", "id": "Untuk mengoreksi satu hari, klik Override Status pada baris, pilih New Status dan tulis alasannya."},
+      {"en": "Click Save Override. The row is then marked Manual in Source and your name and reason are kept as an audit trail.", "id": "Klik Save Override. Baris itu lalu bertanda Manual di Source dan nama serta alasan Anda tersimpan sebagai jejak audit."}
     ],
     "fields": [
-      {"label": "Dari Tanggal", "en": "First date of the range shown and recalculated. Starts on this week's Monday.", "id": "Tanggal awal rentang yang ditampilkan dan dihitung ulang. Awalnya Senin minggu ini."},
-      {"label": "Sampai Tanggal", "en": "Last date of the range. Starts on today.", "id": "Tanggal akhir rentang. Awalnya hari ini."},
-      {"label": "Cari Nama/Kode Pegawai", "en": "Search box to find an employee by name or employee code.", "id": "Kotak cari untuk menemukan karyawan berdasarkan nama atau kode karyawan."},
-      {"label": "Status Baru", "en": "New attendance status for the day, such as Hadir (H), Telat (T-5, T+5, T+15), Izin (I), Izin Disetujui (IS), Sakit (S), Cuti (C), Cuti Melahirkan (CL), Alpha (A) or Tidak Finger (F, FF).", "id": "Status presensi baru untuk hari itu, misalnya Hadir (H), Telat (T-5, T+5, T+15), Izin (I), Izin Disetujui (IS), Sakit (S), Cuti (C), Cuti Melahirkan (CL), Alpha (A) atau Tidak Finger (F, FF)."},
-      {"label": "Alasan Audit Trail (Min 10 Karakter) *", "en": "Required reason for the manual change, at least 10 characters. It is kept with your name for audit.", "id": "Alasan wajib untuk perubahan manual, minimal 10 karakter. Disimpan bersama nama Anda untuk audit."}
+      {"label": "From Date", "en": "First date of the range shown and recalculated. Starts on this week's Monday.", "id": "Tanggal awal rentang yang ditampilkan dan dihitung ulang. Awalnya Senin minggu ini."},
+      {"label": "To Date", "en": "Last date of the range. Starts on today.", "id": "Tanggal akhir rentang. Awalnya hari ini."},
+      {"label": "Search Employee Name/Code", "en": "Search box to find an employee by name or employee code.", "id": "Kotak cari untuk menemukan karyawan berdasarkan nama atau kode karyawan."},
+      {"label": "New Status", "en": "New attendance status for the day. Examples: Present (H), Telat (T-5, T+5, T+15), Izin (I), Izin Disetujui (IS), Sakit (S). Others: Cuti (C), Cuti Melahirkan (CL), Alpha (A), Tidak Finger (F, FF).", "id": "Status presensi baru untuk hari itu. Contoh: Present (H), Telat (T-5, T+5, T+15), Izin (I), Izin Disetujui (IS), Sakit (S). Lainnya: Cuti (C), Cuti Melahirkan (CL), Alpha (A), Tidak Finger (F, FF)."},
+      {"label": "Audit Trail Reason (Min 10 Characters) *", "en": "Required reason for the manual change, at least 10 characters. It is kept with your name for audit.", "id": "Alasan wajib untuk perubahan manual, minimal 10 karakter. Disimpan bersama nama Anda untuk audit."}
     ]
   },
   {
@@ -202,15 +204,15 @@
     "keywords": "cuti, sakit, izin, leave, approval cuti, pengajuan cuti, saldo cuti, cuti khusus, surat dokter, setujui, tolak",
     "steps": [
       {"en": "Open the screen. Waiting requests are listed first. Filter by Type or Status, or click a status box.", "id": "Buka layar ini. Pengajuan yang menunggu tampil paling atas. Saring berdasarkan Type atau Status, atau klik kotak status."},
-      {"en": "Check the type, the dates and number of days, the reason and the attachments (Surat Cuti, Surat Dokter, Kwitansi/Resep, Screenshot JKN, Lampiran).", "id": "Cek jenis, tanggal dan jumlah hari, alasan dan lampiran (Surat Cuti, Surat Dokter, Kwitansi/Resep, Screenshot JKN, Lampiran)."},
-      {"en": "Click Setujui to approve. For normal leave (Cuti) the days are added to the employee's used leave; sick and permission requests do not touch the leave balance.", "id": "Klik Setujui untuk menyetujui. Untuk cuti biasa (Cuti) jumlah hari ditambahkan ke cuti terpakai; sakit dan izin tidak mengurangi saldo cuti."},
-      {"en": "To refuse, click Tolak, type the reason and confirm.", "id": "Untuk menolak, klik Tolak, tulis alasannya lalu konfirmasi."},
+      {"en": "Check the type, the dates and number of days, the reason and the attachments (Surat Cuti, Surat Dokter, Kwitansi/Resep, Screenshot JKN, Attachments).", "id": "Cek jenis, tanggal dan jumlah hari, alasan dan lampiran (Surat Cuti, Surat Dokter, Kwitansi/Resep, Screenshot JKN, Attachments)."},
+      {"en": "Click Approve to approve. For normal leave (Cuti) the days are added to the employee's used leave; sick and permission requests do not touch the leave balance.", "id": "Klik Approve untuk menyetujui. Untuk cuti biasa (Cuti) jumlah hari ditambahkan ke cuti terpakai; sakit dan izin tidak mengurangi saldo cuti."},
+      {"en": "To refuse, click Reject, type the reason and confirm.", "id": "Untuk menolak, klik Reject, tulis alasannya lalu konfirmasi."},
       {"en": "The employee receives a notification of the decision in both cases.", "id": "Karyawan menerima notifikasi keputusan, baik disetujui maupun ditolak."}
     ],
     "fields": [
-      {"label": "Alasan Penolakan", "en": "Required when rejecting a request, up to 255 characters. The employee sees it in the notification.", "id": "Wajib saat menolak pengajuan, maksimal 255 karakter. Karyawan melihatnya di notifikasi."},
-      {"label": "Setujui", "en": "Approves the waiting request. If the request deducts leave balance, the used days of that year increase by the requested days.", "id": "Menyetujui pengajuan yang menunggu. Bila pengajuan memotong saldo cuti, cuti terpakai tahun itu bertambah sesuai jumlah hari."},
-      {"label": "Tolak", "en": "Opens the dialog to type the rejection reason and rejects the request.", "id": "Membuka dialog untuk menulis alasan penolakan lalu menolak pengajuan."}
+      {"label": "Rejection Reason", "en": "Required when rejecting a request, up to 255 characters. The employee sees it in the notification.", "id": "Wajib saat menolak pengajuan, maksimal 255 karakter. Karyawan melihatnya di notifikasi."},
+      {"label": "Approve", "en": "Approves the waiting request. If the request deducts leave balance, the used days of that year increase by the requested days.", "id": "Menyetujui pengajuan yang menunggu. Bila pengajuan memotong saldo cuti, cuti terpakai tahun itu bertambah sesuai jumlah hari."},
+      {"label": "Reject", "en": "Opens the dialog to type the rejection reason and rejects the request.", "id": "Membuka dialog untuk menulis alasan penolakan lalu menolak pengajuan."}
     ]
   },
   {
@@ -226,13 +228,13 @@
     "steps": [
       {"en": "Open the screen. Waiting items are listed first; the grid shows the date, time, type, distance in meters and whether it was inside or outside the radius.", "id": "Buka layar ini. Data yang menunggu tampil paling atas; grid menunjukkan tanggal, jam, jenis, jarak dalam meter dan apakah di dalam atau di luar radius."},
       {"en": "Filter by Type, Radius or Status if you need to find a record.", "id": "Saring berdasarkan Type, Radius atau Status bila perlu mencari satu catatan."},
-      {"en": "Click Setujui if the location is acceptable. The clock record is then written as attendance data and that day is recalculated.", "id": "Klik Setujui bila lokasinya dapat diterima. Catatan clock lalu masuk sebagai data presensi dan hari itu dihitung ulang."},
-      {"en": "To refuse, click Tolak and type the reason. The record does not count for attendance.", "id": "Untuk menolak, klik Tolak dan tulis alasannya. Catatan itu tidak dihitung sebagai presensi."}
+      {"en": "Click Approve if the location is acceptable. The clock record is then written as attendance data and that day is recalculated.", "id": "Klik Approve bila lokasinya dapat diterima. Catatan clock lalu masuk sebagai data presensi dan hari itu dihitung ulang."},
+      {"en": "To refuse, click Reject and type the reason. The record does not count for attendance.", "id": "Untuk menolak, klik Reject dan tulis alasannya. Catatan itu tidak dihitung sebagai presensi."}
     ],
     "fields": [
-      {"label": "Alasan Penolakan", "en": "Required when rejecting. Explain why the location is not accepted.", "id": "Wajib saat menolak. Jelaskan mengapa lokasi tidak diterima."},
-      {"label": "Setujui", "en": "Approves the waiting record, creates the clock entry and recalculates that employee's attendance for the day.", "id": "Menyetujui catatan yang menunggu, membuat data clock dan menghitung ulang presensi karyawan itu pada hari tersebut."},
-      {"label": "Tolak", "en": "Opens the dialog to type the reason and rejects the record.", "id": "Membuka dialog untuk menulis alasan lalu menolak catatan."}
+      {"label": "Rejection Reason", "en": "Required when rejecting. Explain why the location is not accepted.", "id": "Wajib saat menolak. Jelaskan mengapa lokasi tidak diterima."},
+      {"label": "Approve", "en": "Approves the waiting record, creates the clock entry and recalculates that employee's attendance for the day.", "id": "Menyetujui catatan yang menunggu, membuat data clock dan menghitung ulang presensi karyawan itu pada hari tersebut."},
+      {"label": "Reject", "en": "Opens the dialog to type the reason and rejects the record.", "id": "Membuka dialog untuk menulis alasan lalu menolak catatan."}
     ]
   },
   {
@@ -240,6 +242,7 @@
     "type": "INPUT",
     "module": "HRM",
     "title": "Salary & Tax Master",
+    "title_id": "Master Gaji & Pajak",
     "purpose": {
       "en": "Sets the salary components and tax switches of each active employee. Payroll calculation reads these settings. The amounts are confidential and only authorised users can open the edit form.",
       "id": "Mengatur komponen gaji dan saklar pajak tiap karyawan aktif. Perhitungan gaji membaca pengaturan ini. Nominalnya rahasia dan hanya user berwenang yang bisa membuka form ubah."
@@ -250,18 +253,18 @@
       {"en": "Find employees marked Not set. Payroll marks them as anomalies until a salary is set.", "id": "Cari karyawan berstatus Not set. Perhitungan gaji menandai mereka sebagai anomali sampai gajinya diatur."},
       {"en": "Click Atur Gaji & Pajak on the row. You need payroll authority; HR Officers without it cannot open it, except for security guards.", "id": "Klik Atur Gaji & Pajak pada baris. Anda perlu hak payroll; HR Officer tanpa hak itu tidak bisa membukanya, kecuali untuk satpam."},
       {"en": "Fill the salary components, choose the PTKP status and tick the BPJS and PPh21 switches that apply.", "id": "Isi komponen gaji, pilih status PTKP dan centang saklar BPJS serta PPh21 yang berlaku."},
-      {"en": "Click Simpan. The old setting is closed with an end date and a new one is created, so the salary history is kept.", "id": "Klik Simpan. Pengaturan lama ditutup dengan tanggal akhir dan dibuat yang baru, sehingga riwayat gaji tetap tersimpan."}
+      {"en": "Click Save. The old setting is closed with an end date and a new one is created, so the salary history is kept.", "id": "Klik Save. Pengaturan lama ditutup dengan tanggal akhir dan dibuat yang baru, sehingga riwayat gaji tetap tersimpan."}
     ],
     "fields": [
-      {"label": "Gaji Pokok / Bulan (Rp) *", "en": "Monthly base salary. Required, 0 or more. Confidential.", "id": "Gaji pokok per bulan. Wajib, 0 atau lebih. Rahasia."},
-      {"label": "TJ Keahlian / Bulan (Rp)", "en": "Monthly skill allowance. Default 0.", "id": "Tunjangan keahlian per bulan. Bawaan 0."},
-      {"label": "TJ Loyalitas / Bulan (Rp)", "en": "Monthly loyalty allowance. Default 0.", "id": "Tunjangan loyalitas per bulan. Bawaan 0."},
-      {"label": "TJ Prestasi / Bulan (Rp)", "en": "Monthly performance allowance. Default 0.", "id": "Tunjangan prestasi per bulan. Bawaan 0."},
-      {"label": "Bonus Pagi / Hari (Rp)", "en": "Daily early-arrival bonus amount. Default 0.", "id": "Nominal bonus datang pagi per hari. Bawaan 0."},
-      {"label": "Bonus Hadir / Hari (Rp)", "en": "Daily attendance bonus amount. Default 0.", "id": "Nominal bonus hadir per hari. Bawaan 0."},
-      {"label": "Status PTKP (wajib kalau PPh21 diaktifkan)", "en": "Non-taxable income status, from TK/0 to K/3. Required when Potong PPh21 is ticked.", "id": "Status PTKP, dari TK/0 sampai K/3. Wajib bila Potong PPh21 dicentang."},
-      {"label": "Potong BPJS (JHT/JP/Kes)", "en": "Tick to deduct BPJS for this employee in payroll. Off by default; HR switches it on per employee.", "id": "Centang untuk memotong BPJS karyawan ini di perhitungan gaji. Awalnya mati; HR menyalakannya per karyawan."},
-      {"label": "Potong PPh21 (TER)", "en": "Tick to deduct income tax PPh21 (TER method) for this employee. Off by default.", "id": "Centang untuk memotong PPh21 (metode TER) karyawan ini. Awalnya mati."}
+      {"label": "Base Salary / Month (IDR) *", "en": "Monthly base salary. Required, 0 or more. Confidential.", "id": "Gaji pokok per bulan. Wajib, 0 atau lebih. Rahasia."},
+      {"label": "Skill Allowance / Month (IDR)", "en": "Monthly skill allowance. Default 0.", "id": "Tunjangan keahlian per bulan. Bawaan 0."},
+      {"label": "Loyalty Allowance / Month (IDR)", "en": "Monthly loyalty allowance. Default 0.", "id": "Tunjangan loyalitas per bulan. Bawaan 0."},
+      {"label": "Performance Allowance / Month (IDR)", "en": "Monthly performance allowance. Default 0.", "id": "Tunjangan prestasi per bulan. Bawaan 0."},
+      {"label": "Morning Bonus / Day (IDR)", "en": "Daily early-arrival bonus amount. Default 0.", "id": "Nominal bonus datang pagi per hari. Bawaan 0."},
+      {"label": "Attendance Bonus / Day (IDR)", "en": "Daily attendance bonus amount. Default 0.", "id": "Nominal bonus hadir per hari. Bawaan 0."},
+      {"label": "PTKP Status (required when PPh21 is enabled)", "en": "Non-taxable income status, from TK/0 to K/3. Required when Potong PPh21 is ticked.", "id": "Status PTKP, dari TK/0 sampai K/3. Wajib bila Potong PPh21 dicentang."},
+      {"label": "Deduct BPJS (JHT/JP/Kes)", "en": "Tick to deduct BPJS for this employee in payroll. Off by default; HR switches it on per employee.", "id": "Centang untuk memotong BPJS karyawan ini di perhitungan gaji. Awalnya mati; HR menyalakannya per karyawan."},
+      {"label": "Deduct PPh21 (TER)", "en": "Tick to deduct income tax PPh21 (TER method) for this employee. Off by default.", "id": "Centang untuk memotong PPh21 (metode TER) karyawan ini. Awalnya mati."}
     ]
   },
   {
@@ -277,14 +280,14 @@
     "steps": [
       {"en": "Search by NIK, name or code, or filter by Department, Salary Method or Bank. The status boxes count Transfer and Cash.", "id": "Cari berdasarkan NIK, nama atau kode, atau saring berdasarkan Department, Salary Method atau Bank. Kotak status menghitung Transfer dan Cash."},
       {"en": "Open the employee row.", "id": "Buka baris karyawan."},
-      {"en": "Pick the Bank, then fill Nomor Rekening and Atas Nama Rekening.", "id": "Pilih Bank, lalu isi Nomor Rekening dan Atas Nama Rekening."},
+      {"en": "Pick the Bank, then fill Account No. and Account Holder.", "id": "Pilih Bank, lalu isi Account No. dan Account Holder."},
       {"en": "To pay in cash, clear the bank selection. The old account is deactivated.", "id": "Untuk dibayar tunai, kosongkan pilihan bank. Rekening lama dinonaktifkan."},
-      {"en": "Click Simpan.", "id": "Klik Simpan."}
+      {"en": "Click Save.", "id": "Klik Save."}
     ],
     "fields": [
       {"label": "Bank", "en": "Bank of the salary account, picked from Supplier Master category BANK. Leave empty (Cash / Tunai) for cash payment. New banks are added in Supplier Master.", "id": "Bank rekening gaji, dipilih dari Master Supplier kategori BANK. Kosongkan (Cash / Tunai) untuk gaji tunai. Bank baru ditambahkan di Master Supplier."},
-      {"label": "Nomor Rekening", "en": "Account number, up to 50 characters. Required when a bank is chosen.", "id": "Nomor rekening, maksimal 50 karakter. Wajib bila bank dipilih."},
-      {"label": "Atas Nama Rekening", "en": "Name of the account holder, up to 150 characters. Required when a bank is chosen.", "id": "Nama pemilik rekening, maksimal 150 karakter. Wajib bila bank dipilih."}
+      {"label": "Account No.", "en": "Account number, up to 50 characters. Required when a bank is chosen.", "id": "Nomor rekening, maksimal 50 karakter. Wajib bila bank dipilih."},
+      {"label": "Account Holder", "en": "Name of the account holder, up to 150 characters. Required when a bank is chosen.", "id": "Nama pemilik rekening, maksimal 150 karakter. Wajib bila bank dipilih."}
     ]
   },
   {
@@ -299,23 +302,23 @@
     "keywords": "payroll, gaji, hitung gaji, perhitungan gaji, periode gaji, kalkulasi, verifikasi, konfirmasi, tutup periode, anomali, batch run",
     "steps": [
       {"en": "Choose Bulanan (monthly) or Mingguan (weekly). Only active employees with that pay frequency are calculated.", "id": "Pilih Bulanan atau Mingguan. Hanya karyawan aktif dengan frekuensi gaji itu yang dihitung."},
-      {"en": "Set the period start and end dates, or pick an existing period in Pilih Periode, then click Jalankan Kalkulasi. You can recalculate while the status is Draft or Calculated.", "id": "Atur tanggal awal dan akhir periode, atau pilih periode yang ada di Pilih Periode, lalu klik Jalankan Kalkulasi. Hitung ulang bisa selama status Draft atau Calculated."},
+      {"en": "Set the period start and end dates, or pick an existing period in Select Period, then click Run Calculation. You can recalculate while the status is Draft or Calculated.", "id": "Atur tanggal awal dan akhir periode, atau pilih periode yang ada di Select Period, lalu klik Run Calculation. Hitung ulang bisa selama status Draft atau Calculated."},
       {"en": "Read the summary (people and totals for bank and cash). A warning shows employees with no active salary setting; fix them in Salary & Tax Master and recalculate.", "id": "Baca ringkasannya (jumlah orang dan total bank serta tunai). Peringatan menunjukkan karyawan tanpa pengaturan gaji aktif; perbaiki di Master Gaji & Pajak lalu hitung ulang."},
-      {"en": "Click Verifikasi Presensi, choose to check everyone (FULL) or a random sample, then Konfirmasi Sudah Dicek.", "id": "Klik Verifikasi Presensi, pilih cek semua pegawai (FULL) atau sampel acak, lalu Konfirmasi Sudah Dicek."},
-      {"en": "Click Konfirmasi (Kunci Presensi). It is refused while anomalies remain. After this, attendance is locked and the period cannot be recalculated.", "id": "Klik Konfirmasi (Kunci Presensi). Ditolak selama masih ada anomali. Setelah ini presensi terkunci dan periode tidak bisa dihitung ulang."},
-      {"en": "After the transfer and cash payment is done outside the system, click Tandai Sudah Dibayar.", "id": "Setelah transfer dan pembayaran tunai dilakukan di luar sistem, klik Tandai Sudah Dibayar."},
-      {"en": "Optionally click Tandai Slip Terkirim, then Tutup Periode. The next period is created automatically as Draft.", "id": "Bila perlu klik Tandai Slip Terkirim, lalu Tutup Periode. Periode berikutnya dibuat otomatis berstatus Draft."}
+      {"en": "Click Verify Attendance, choose to check everyone (FULL) or a random sample, then Confirm Checked.", "id": "Klik Verify Attendance, pilih cek semua pegawai (FULL) atau sampel acak, lalu Confirm Checked."},
+      {"en": "Click Confirm (Kunci Presensi). It is refused while anomalies remain. After this, attendance is locked and the period cannot be recalculated.", "id": "Klik Confirm (Kunci Presensi). Ditolak selama masih ada anomali. Setelah ini presensi terkunci dan periode tidak bisa dihitung ulang."},
+      {"en": "After the transfer and cash payment is done outside the system, click Mark as Paid.", "id": "Setelah transfer dan pembayaran tunai dilakukan di luar sistem, klik Mark as Paid."},
+      {"en": "Optionally click Mark Payslips as Sent, then Close Period. The next period is created automatically as Draft.", "id": "Bila perlu klik Mark Payslips as Sent, lalu Close Period. Periode berikutnya dibuat otomatis berstatus Draft."}
     ],
     "fields": [
-      {"label": "Bulanan", "en": "Switch to monthly periods.", "id": "Beralih ke periode bulanan."},
-      {"label": "Mingguan", "en": "Switch to weekly periods.", "id": "Beralih ke periode mingguan."},
-      {"label": "Pilih Periode", "en": "List of existing periods of the chosen type with their status. Picks which period you work on.", "id": "Daftar periode yang sudah ada untuk jenis terpilih beserta statusnya. Menentukan periode mana yang dikerjakan."},
-      {"label": "Jalankan Kalkulasi", "en": "Calculates base salary, allowances, overtime, bread money, BPJS and PPh21 (when switched on) and fines from the attendance of the period. Creates the payslips.", "id": "Menghitung gaji pokok, tunjangan, lembur, uang roti, BPJS dan PPh21 (bila aktif) serta denda dari presensi periode. Slip gaji dibuat."},
-      {"label": "Verifikasi Presensi", "en": "HR check of clock-in and clock-out times: FULL checks all employees, RANDOM_SAMPLE checks a random sample. Needs status Calculated.", "id": "Pengecekan HR atas jam masuk dan keluar: FULL untuk semua pegawai, RANDOM_SAMPLE untuk sampel acak. Perlu status Calculated."},
-      {"label": "Konfirmasi (Kunci Presensi)", "en": "Locks attendance for the period. Needs status Verified and no payslip anomalies.", "id": "Mengunci presensi periode. Perlu status Verified dan tidak ada anomali slip."},
-      {"label": "Tandai Sudah Dibayar", "en": "Records that the bank transfer and cash payment were executed. Needs status Confirmed.", "id": "Mencatat bahwa transfer bank dan pembayaran tunai sudah dilakukan. Perlu status Confirmed."},
-      {"label": "Tandai Slip Terkirim", "en": "Records the time the payslips were distributed. Available when the period is Paid.", "id": "Mencatat waktu slip gaji dibagikan. Tersedia saat periode berstatus Paid."},
-      {"label": "Tutup Periode", "en": "Closes a Paid period and creates the next empty period.", "id": "Menutup periode yang sudah Paid dan membuat periode berikutnya yang masih kosong."}
+      {"label": "Monthly", "en": "Switch to monthly periods.", "id": "Beralih ke periode bulanan."},
+      {"label": "Weekly", "en": "Switch to weekly periods.", "id": "Beralih ke periode mingguan."},
+      {"label": "Select Period", "en": "List of existing periods of the chosen type with their status. Picks which period you work on.", "id": "Daftar periode yang sudah ada untuk jenis terpilih beserta statusnya. Menentukan periode mana yang dikerjakan."},
+      {"label": "Run Calculation", "en": "Calculates base salary, allowances, overtime, bread money, BPJS and PPh21 (when switched on) and fines from the attendance of the period. Creates the payslips.", "id": "Menghitung gaji pokok, tunjangan, lembur, uang roti, BPJS dan PPh21 (bila aktif) serta denda dari presensi periode. Slip gaji dibuat."},
+      {"label": "Verify Attendance", "en": "HR check of clock-in and clock-out times: FULL checks all employees, RANDOM_SAMPLE checks a random sample. Needs status Calculated.", "id": "Pengecekan HR atas jam masuk dan keluar: FULL untuk semua pegawai, RANDOM_SAMPLE untuk sampel acak. Perlu status Calculated."},
+      {"label": "Confirm (Lock Attendance)", "en": "Locks attendance for the period. Needs status Verified and no payslip anomalies.", "id": "Mengunci presensi periode. Perlu status Verified dan tidak ada anomali slip."},
+      {"label": "Mark as Paid", "en": "Records that the bank transfer and cash payment were executed. Needs status Confirmed.", "id": "Mencatat bahwa transfer bank dan pembayaran tunai sudah dilakukan. Perlu status Confirmed."},
+      {"label": "Mark Payslips as Sent", "en": "Records the time the payslips were distributed. Available when the period is Paid.", "id": "Mencatat waktu slip gaji dibagikan. Tersedia saat periode berstatus Paid."},
+      {"label": "Close Period", "en": "Closes a Paid period and creates the next empty period.", "id": "Menutup periode yang sudah Paid dan membuat periode berikutnya yang masih kosong."}
     ]
   },
   {
@@ -332,15 +335,15 @@
       {"en": "Pick the period in the period list. Only periods already calculated are offered.", "id": "Pilih periode di daftar periode. Hanya periode yang sudah dihitung yang tersedia."},
       {"en": "Search by employee name or code, or use the status boxes (Not printed, WhatsApp not sent, Anomaly).", "id": "Cari berdasarkan nama atau kode karyawan, atau pakai kotak status (Not printed, WhatsApp not sent, Anomaly)."},
       {"en": "Tick or untick the Printout and Kirim WA marks per slip. WhatsApp can only be ticked when the employee has a phone number.", "id": "Centang atau hilangkan centang Printout dan Kirim WA pada tiap slip. WhatsApp hanya bisa dicentang bila karyawan punya nomor HP."},
-      {"en": "Click Cetak Semua to print all slips that are ticked for printing and have no anomaly. The button shows how many.", "id": "Klik Cetak Semua untuk mencetak semua slip yang dicentang cetak dan tanpa anomali. Tombol menunjukkan jumlahnya."},
+      {"en": "Click Print All to print all slips that are ticked for printing and have no anomaly. The button shows how many.", "id": "Klik Print All untuk mencetak semua slip yang dicentang cetak dan tanpa anomali. Tombol menunjukkan jumlahnya."},
       {"en": "Or open one row to print that single slip. Opening a slip stamps its print time.", "id": "Atau buka satu baris untuk mencetak slip itu saja. Membuka slip mencatat waktu cetaknya."},
       {"en": "Slips with an anomaly (no active salary setting) cannot be printed. Fix them in Salary & Tax Master and recalculate the period.", "id": "Slip yang anomali (tanpa pengaturan gaji aktif) tidak bisa dicetak. Perbaiki di Master Gaji & Pajak lalu hitung ulang periodenya."}
     ],
     "fields": [
-      {"label": "Periode", "en": "Selects the payroll period whose slips are listed.", "id": "Memilih periode gaji yang slipnya ditampilkan."},
+      {"label": "Period", "en": "Selects the payroll period whose slips are listed.", "id": "Memilih periode gaji yang slipnya ditampilkan."},
       {"label": "Printout", "en": "Tick to include the slip when printing all. The time it was printed appears under the tick once the slip was opened or printed.", "id": "Centang agar slip ikut saat cetak semua. Waktu cetaknya tampil di bawah centang setelah slip dibuka atau dicetak."},
-      {"label": "Kirim WA", "en": "Tick to mark the slip for WhatsApp. Disabled when the employee has no phone number. The WhatsApp channel itself is not built yet; Kirim WA Semua is disabled.", "id": "Centang untuk menandai slip dikirim lewat WhatsApp. Nonaktif bila karyawan tak punya nomor HP. Kanal WhatsApp-nya belum dibangun; Kirim WA Semua dinonaktifkan."},
-      {"label": "Cetak Semua", "en": "Opens the print of every slip of the period that is ticked for printing and has no anomaly.", "id": "Membuka cetakan semua slip periode yang dicentang cetak dan tanpa anomali."}
+      {"label": "Send WhatsApp", "en": "Tick to mark the slip for WhatsApp. Disabled when the employee has no phone number. The WhatsApp channel itself is not built yet; Send All via WhatsApp is disabled.", "id": "Centang untuk menandai slip dikirim lewat WhatsApp. Nonaktif bila karyawan tak punya nomor HP. Kanal WhatsApp-nya belum dibangun; Send All via WhatsApp dinonaktifkan."},
+      {"label": "Print All", "en": "Opens the print of every slip of the period that is ticked for printing and has no anomaly.", "id": "Membuka cetakan semua slip periode yang dicentang cetak dan tanpa anomali."}
     ]
   },
   {
@@ -355,19 +358,19 @@
     "keywords": "permohonan tenaga kerja, requisition, manpower, mpr, kebutuhan karyawan, rekrutmen, headcount, ajukan approval, tambah karyawan",
     "steps": [
       {"en": "Click + New Record. A draft requisition with a number like RCR26 plus five digits is created and opened.", "id": "Klik + New Record. Draft permohonan dengan nomor seperti RCR26 plus lima digit dibuat dan dibuka."},
-      {"en": "Fill Track, Departemen, Posisi yang Dibutuhkan, Headcount, Kualifikasi and Alasan Permohonan. Changes are saved as you leave each field while the status is Draft.", "id": "Isi Track, Departemen, Posisi yang Dibutuhkan, Headcount, Kualifikasi dan Alasan Permohonan. Perubahan tersimpan saat Anda meninggalkan tiap kolom selama status Draft."},
-      {"en": "Click Ajukan Approval. Position, qualification and reason must be filled. The approval steps of the track are created.", "id": "Klik Ajukan Approval. Posisi, kualifikasi dan alasan harus terisi. Langkah approval sesuai track dibuat."},
-      {"en": "The approver of the current step sees Keputusan Approval. They add a Catatan and click Setujui or Tolak; Tolak needs a note.", "id": "Approver pada langkah berjalan melihat Keputusan Approval. Ia mengisi Catatan lalu klik Setujui atau Tolak; Tolak wajib memakai catatan."},
-      {"en": "When all steps are approved the status becomes Approved. A rejection makes it Rejected. A Draft can be removed with Hapus.", "id": "Bila semua langkah disetujui, status menjadi Approved. Bila ditolak, menjadi Rejected. Draft dapat dihapus dengan Hapus."}
+      {"en": "Fill Track, Department, Position Needed, Headcount, Qualification and Requisition Reason. Changes are saved as you leave each field while the status is Draft.", "id": "Isi Track, Department, Position Needed, Headcount, Qualification dan Requisition Reason. Perubahan tersimpan saat Anda meninggalkan tiap kolom selama status Draft."},
+      {"en": "Click Submit for Approval. Position, qualification and reason must be filled. The approval steps of the track are created.", "id": "Klik Submit for Approval. Posisi, kualifikasi dan alasan harus terisi. Langkah approval sesuai track dibuat."},
+      {"en": "The approver of the current step sees Approval Decision. They add a Notes and click Approve or Reject; Reject needs a note.", "id": "Approver pada langkah berjalan melihat Approval Decision. Ia mengisi Notes lalu klik Approve atau Reject; Reject wajib memakai catatan."},
+      {"en": "When all steps are approved the status becomes Approved. A rejection makes it Rejected. A Draft can be removed with Delete.", "id": "Bila semua langkah disetujui, status menjadi Approved. Bila ditolak, menjadi Rejected. Draft dapat dihapus dengan Delete."}
     ],
     "fields": [
       {"label": "Track", "en": "Recruitment track, picked from the active tracks. It decides the approval steps and the candidate pipeline stages. Required.", "id": "Track rekrutmen, dipilih dari track aktif. Menentukan langkah approval dan tahap pipeline kandidat. Wajib diisi."},
-      {"label": "Departemen", "en": "Department that needs the staff, picked from active departments. It also decides who approves. Required.", "id": "Departemen yang membutuhkan tenaga kerja, dipilih dari departemen aktif. Juga menentukan siapa yang menyetujui. Wajib diisi."},
-      {"label": "Posisi yang Dibutuhkan", "en": "Free-text name of the position needed. Required to submit.", "id": "Nama posisi yang dibutuhkan, teks bebas. Wajib untuk mengajukan."},
+      {"label": "Department", "en": "Department that needs the staff, picked from active departments. It also decides who approves. Required.", "id": "Department yang membutuhkan tenaga kerja, dipilih dari departemen aktif. Juga menentukan siapa yang menyetujui. Wajib diisi."},
+      {"label": "Position Needed", "en": "Free-text name of the position needed. Required to submit.", "id": "Nama posisi yang dibutuhkan, teks bebas. Wajib untuk mengajukan."},
       {"label": "Headcount", "en": "Number of people needed, at least 1.", "id": "Jumlah orang yang dibutuhkan, minimal 1."},
-      {"label": "Kualifikasi", "en": "Required qualifications of the candidates. Required to submit.", "id": "Kualifikasi yang dibutuhkan dari kandidat. Wajib untuk mengajukan."},
-      {"label": "Alasan Permohonan", "en": "Why the staff is needed, such as replacement or expansion. Required to submit.", "id": "Alasan butuh tenaga kerja, misalnya pengganti atau penambahan. Wajib untuk mengajukan."},
-      {"label": "Catatan", "en": "Note of the approver. Optional when approving, required when rejecting.", "id": "Catatan approver. Boleh kosong saat menyetujui, wajib saat menolak."}
+      {"label": "Qualification", "en": "Required qualifications of the candidates. Required to submit.", "id": "Kualifikasi yang dibutuhkan dari kandidat. Wajib untuk mengajukan."},
+      {"label": "Requisition Reason", "en": "Why the staff is needed, such as replacement or expansion. Required to submit.", "id": "Alasan butuh tenaga kerja, misalnya pengganti atau penambahan. Wajib untuk mengajukan."},
+      {"label": "Notes", "en": "Note of the approver. Optional when approving, required when rejecting.", "id": "Catatan approver. Boleh kosong saat menyetujui, wajib saat menolak."}
     ]
   },
   {
@@ -375,23 +378,24 @@
     "type": "INPUT",
     "module": "HRM",
     "title": "Vacancy Posting",
+    "title_id": "Posting Lowongan",
     "purpose": {
       "en": "Publishes a job vacancy from an approved requisition and shows how many applicants each posting received. Open it to post a new vacancy or to close one.",
       "id": "Memasang lowongan dari permohonan yang sudah disetujui dan menunjukkan jumlah pelamar tiap lowongan. Buka untuk memasang lowongan baru atau menutupnya."
     },
     "keywords": "lowongan, vacancy, posting lowongan, channel, jobstreet, linkedin, publish, tutup lowongan, pelamar, loker",
     "steps": [
-      {"en": "Click + New Record to open the Buat & Publish Lowongan dialog.", "id": "Klik + New Record untuk membuka dialog Buat & Publish Lowongan."},
-      {"en": "Choose an approved Requisition and a Channel, then type the Judul Lowongan and the Deskripsi Publik.", "id": "Pilih Requisition yang sudah disetujui dan sebuah Channel, lalu ketik Judul Lowongan dan Deskripsi Publik."},
+      {"en": "Click + New Record to open the Buat & Publish Vacancy dialog.", "id": "Klik + New Record untuk membuka dialog Buat & Publish Vacancy."},
+      {"en": "Choose an approved Requisition and a Channel, then type the Vacancy Title and the Public Description.", "id": "Pilih Requisition yang sudah disetujui dan sebuah Channel, lalu ketik Vacancy Title dan Public Description."},
       {"en": "Click Publish. The vacancy gets a code like VAC26 plus five digits and is open immediately.", "id": "Klik Publish. Lowongan mendapat kode seperti VAC26 plus lima digit dan langsung terbuka."},
       {"en": "Check the Applicants column to see how many people applied through each vacancy.", "id": "Lihat kolom Applicants untuk mengetahui berapa orang yang melamar di tiap lowongan."},
-      {"en": "To close a vacancy use the Tutup Lowongan button on the row. Candidates can no longer apply afterwards.", "id": "Untuk menutup lowongan pakai tombol Tutup Lowongan pada baris. Setelah itu kandidat tidak bisa melamar lagi."}
+      {"en": "To close a vacancy use the Close Vacancy button on the row. Candidates can no longer apply afterwards.", "id": "Untuk menutup lowongan pakai tombol Close Vacancy pada baris. Setelah itu kandidat tidak bisa melamar lagi."}
     ],
     "fields": [
       {"label": "Requisition", "en": "Approved manpower requisition this vacancy is for. Only requisitions with status Approved are offered. Required.", "id": "Permohonan tenaga kerja yang disetujui untuk lowongan ini. Hanya permohonan berstatus Approved yang tersedia. Wajib diisi."},
       {"label": "Channel", "en": "Where the vacancy is posted: Portal Sendiri, Jobstreet, LinkedIn, Referral or Lainnya.", "id": "Tempat lowongan dipasang: Portal Sendiri, Jobstreet, LinkedIn, Referral atau Lainnya."},
-      {"label": "Judul Lowongan", "en": "Public title of the vacancy, for example Operator Cetak Offset. Required.", "id": "Judul lowongan untuk publik, misalnya Operator Cetak Offset. Wajib diisi."},
-      {"label": "Deskripsi Publik", "en": "Public description candidates read about the job. Optional.", "id": "Deskripsi pekerjaan yang dibaca kandidat. Boleh dikosongkan."}
+      {"label": "Vacancy Title", "en": "Public title of the vacancy, for example Operator Cetak Offset. Required.", "id": "Judul lowongan untuk publik, misalnya Operator Cetak Offset. Wajib diisi."},
+      {"label": "Public Description", "en": "Public description candidates read about the job. Optional.", "id": "Deskripsi pekerjaan yang dibaca kandidat. Boleh dikosongkan."}
     ]
   },
   {
@@ -399,6 +403,7 @@
     "type": "INPUT",
     "module": "HRM",
     "title": "Candidate Application Review",
+    "title_id": "Review Lamaran Kandidat",
     "purpose": {
       "en": "Read-only view of the full candidate form of one application, to review before deciding. Applications arrive from the candidate portal; nobody types them here.",
       "id": "Tampilan hanya-baca formulir lengkap kandidat untuk satu lamaran, untuk ditinjau sebelum memutuskan. Lamaran masuk dari portal kandidat; tidak diketik di sini."
@@ -437,18 +442,18 @@
     "steps": [
       {"en": "The grid lists all interviews with date, time, interviewer, location and status. Filter by Stage, Interviewer or Status. Open a row to select it on the calendar screen.", "id": "Grid menampilkan semua interview dengan tanggal, jam, interviewer, lokasi dan status. Saring berdasarkan Stage, Interviewer atau Status. Buka baris untuk memilihnya di layar kalender."},
       {"en": "On the calendar screen, candidates waiting for a schedule are listed at the side. They are in an interview stage and have no scheduled interview yet.", "id": "Di layar kalender, kandidat yang menunggu jadwal terdaftar di samping. Mereka ada di tahap interview dan belum punya jadwal."},
-      {"en": "Switch the view with Hari, Bulan, 3 Bulan or Tahun, and move with the arrows or Hari Ini.", "id": "Ganti tampilan dengan Hari, Bulan, 3 Bulan atau Tahun, dan berpindah dengan tombol panah atau Hari Ini."},
-      {"en": "Drag a candidate to a date, or to an hour in the Hari view. A dialog opens with the date and time filled in.", "id": "Seret kandidat ke sebuah tanggal, atau ke sebuah jam pada tampilan Hari. Dialog terbuka dengan tanggal dan jam sudah terisi."},
-      {"en": "Choose the Interviewer, type the Lokasi and click Simpan Jadwal. The interviewer receives a notification.", "id": "Pilih Interviewer, ketik Lokasi lalu klik Simpan Jadwal. Interviewer menerima notifikasi."},
-      {"en": "Click a scheduled interview, then Tandai Selesai after it took place, or Batalkan to cancel it.", "id": "Klik interview yang terjadwal, lalu Tandai Selesai setelah dilaksanakan, atau Batalkan untuk membatalkannya."}
+      {"en": "Switch the view with Day, Month, 3 Month or Year, and move with the arrows or Today.", "id": "Ganti tampilan dengan Day, Month, 3 Month atau Year, dan berpindah dengan tombol panah atau Today."},
+      {"en": "Drag a candidate to a date, or to an hour in the Day view. A dialog opens with the date and time filled in.", "id": "Seret kandidat ke sebuah tanggal, atau ke sebuah jam pada tampilan Day. Dialog terbuka dengan tanggal dan jam sudah terisi."},
+      {"en": "Choose the Interviewer, type the Location and click Save Schedule. The interviewer receives a notification.", "id": "Pilih Interviewer, ketik Location lalu klik Save Schedule. Interviewer menerima notifikasi."},
+      {"en": "Click a scheduled interview, then Mark Done after it took place, or Cancel to cancel it.", "id": "Klik interview yang terjadwal, lalu Mark Done setelah dilaksanakan, atau Cancel untuk membatalkannya."}
     ],
     "fields": [
-      {"label": "Tanggal", "en": "Interview date. Filled from the place where you dropped the candidate, and can be changed.", "id": "Tanggal interview. Terisi dari tempat kandidat dilepas, dan bisa diubah."},
-      {"label": "Jam", "en": "Interview start time. Starts at 09:00 or at the hour you dropped on.", "id": "Jam mulai interview. Awalnya 09:00 atau jam tempat kandidat dilepas."},
+      {"label": "Date", "en": "Interview date. Filled from the place where you dropped the candidate, and can be changed.", "id": "Tanggal interview. Terisi dari tempat kandidat dilepas, dan bisa diubah."},
+      {"label": "Time", "en": "Interview start time. Starts at 09:00 or at the hour you dropped on.", "id": "Jam mulai interview. Awalnya 09:00 atau jam tempat kandidat dilepas."},
       {"label": "Interviewer", "en": "System user who does the interview, picked from active users. Required. The person is notified.", "id": "User sistem yang mewawancarai, dipilih dari user aktif. Wajib diisi. Orangnya mendapat notifikasi."},
-      {"label": "Lokasi", "en": "Place of the interview, for example a meeting room. Free text.", "id": "Tempat interview, misalnya ruang meeting. Teks bebas."},
-      {"label": "Tandai Selesai", "en": "Sets the selected interview to Done.", "id": "Mengubah interview terpilih menjadi Done."},
-      {"label": "Batalkan", "en": "Cancels the selected interview and puts the candidate back in the waiting list.", "id": "Membatalkan interview terpilih dan mengembalikan kandidat ke daftar menunggu."}
+      {"label": "Location", "en": "Place of the interview, for example a meeting room. Free text.", "id": "Tempat interview, misalnya ruang meeting. Teks bebas."},
+      {"label": "Mark Done", "en": "Sets the selected interview to Done.", "id": "Mengubah interview terpilih menjadi Done."},
+      {"label": "Cancel", "en": "Cancels the selected interview and puts the candidate back in the waiting list.", "id": "Membatalkan interview terpilih dan mengembalikan kandidat ke daftar menunggu."}
     ]
   },
   {
@@ -456,22 +461,23 @@
     "type": "INPUT",
     "module": "HRM",
     "title": "Assessment Results",
+    "title_id": "Hasil Asesmen",
     "purpose": {
       "en": "Record the result of psychological tests and interviews. A candidate cannot move on in the Pipeline Board from these stages until a result is entered.",
       "id": "Mencatat hasil psikotes dan interview. Kandidat tidak bisa maju di Pipeline Board dari tahap ini sebelum hasilnya diisi."
     },
     "keywords": "hasil psikotes, assessment, hasil interview, penilaian kandidat, skor, rekomendasi, lanjut, tidak lanjut",
     "steps": [
-      {"en": "Click + New Record. The list Menunggu Diisi shows candidates in a test or interview stage that still have no result.", "id": "Klik + New Record. Daftar Menunggu Diisi menampilkan kandidat di tahap tes atau interview yang belum punya hasil."},
+      {"en": "Click + New Record. The list Awaiting Result shows candidates in a test or interview stage that still have no result.", "id": "Klik + New Record. Daftar Awaiting Result menampilkan kandidat di tahap tes atau interview yang belum punya hasil."},
       {"en": "Click a candidate in that list to open the result dialog for the stage.", "id": "Klik kandidat di daftar itu untuk membuka dialog hasil untuk tahap tersebut."},
-      {"en": "Type the Skor if there is one, choose a Rekomendasi and write the Catatan. The note is required.", "id": "Ketik Skor bila ada, pilih Rekomendasi dan tulis Catatan. Catatan wajib diisi."},
-      {"en": "Click Simpan. Your user is stored as the assessor. Now the candidate can be moved to the next stage in the Pipeline Board.", "id": "Klik Simpan. User Anda tersimpan sebagai penilai. Sekarang kandidat bisa dipindah ke tahap berikutnya di Pipeline Board."},
+      {"en": "Type the Score if there is one, choose a Recommendation and write the Notes. The note is required.", "id": "Ketik Score bila ada, pilih Recommendation dan tulis Notes. Notes wajib diisi."},
+      {"en": "Click Save. Your user is stored as the assessor. Now the candidate can be moved to the next stage in the Pipeline Board.", "id": "Klik Save. User Anda tersimpan sebagai penilai. Sekarang kandidat bisa dipindah ke tahap berikutnya di Pipeline Board."},
       {"en": "Use the grid to look back at results, filtered by Stage, Recommendation or Assessor.", "id": "Pakai grid untuk melihat hasil sebelumnya, disaring berdasarkan Stage, Recommendation atau Assessor."}
     ],
     "fields": [
-      {"label": "Skor", "en": "Test or interview score, a number that may have decimals. Optional.", "id": "Skor tes atau interview, angka yang boleh berdesimal. Boleh dikosongkan."},
-      {"label": "Rekomendasi", "en": "Assessor's advice: Lanjut (proceed), Tidak Lanjut (stop) or Pertimbangan (consider). Starts on Lanjut.", "id": "Saran penilai: Lanjut, Tidak Lanjut atau Pertimbangan. Awalnya Lanjut."},
-      {"label": "Catatan", "en": "Assessor's notes explaining the result. Required.", "id": "Catatan penilai yang menjelaskan hasil. Wajib diisi."}
+      {"label": "Score", "en": "Test or interview score, a number that may have decimals. Optional.", "id": "Skor tes atau interview, angka yang boleh berdesimal. Boleh dikosongkan."},
+      {"label": "Recommendation", "en": "Assessor's advice: Lanjut (proceed), Tidak Lanjut (stop) or Pertimbangan (consider). Starts on Lanjut.", "id": "Saran penilai: Lanjut, Tidak Lanjut atau Pertimbangan. Awalnya Lanjut."},
+      {"label": "Notes", "en": "Assessor's notes explaining the result. Required.", "id": "Catatan penilai yang menjelaskan hasil. Wajib diisi."}
     ]
   },
   {
@@ -485,19 +491,19 @@
     },
     "keywords": "offering, offer, penawaran kerja, offer letter, gaji diusulkan, terima offer, tolak offer, revisi offer, kontrak",
     "steps": [
-      {"en": "In the grid, find the candidate (applications in the offering stage or that already have an offer). Open the row.", "id": "Di grid, cari kandidatnya (lamaran di tahap offering atau yang sudah punya penawaran). Buka barisnya."},
-      {"en": "Opening a first time creates a Draft offer with start date 14 days ahead and contract type Tetap. Fill Gaji Diusulkan, Jenis Kontrak and Tanggal Mulai.", "id": "Pembukaan pertama membuat penawaran Draft dengan tanggal mulai 14 hari ke depan dan jenis kontrak Tetap. Isi Gaji Diusulkan, Jenis Kontrak dan Tanggal Mulai."},
-      {"en": "Click Ajukan Approval. The proposed salary must be above zero. The approvers of the track decide with Setujui or Tolak.", "id": "Klik Ajukan Approval. Gaji diusulkan harus lebih dari nol. Approver pada track memutuskan dengan Setujui atau Tolak."},
-      {"en": "When approved, click Kirim ke Kandidat. When the candidate answers, click Kandidat Menerima or Kandidat Menolak. The answer is entered by hand.", "id": "Bila disetujui, klik Kirim ke Kandidat. Saat kandidat menjawab, klik Kandidat Menerima atau Kandidat Menolak. Jawaban diinput manual."},
-      {"en": "A declined offer can be redone with Revisi Offer, which creates a new draft copy. An accepted offer goes on to Hire Provisioning.", "id": "Penawaran yang ditolak bisa diulang dengan Revisi Offer, yang membuat salinan draft baru. Penawaran yang diterima dilanjutkan ke Provisioning ke ERP."}
+      {"en": "In the grid, find the candidate (applications in the offering stage or that already have an offer). Open the row.", "id": "Di grid, cari kandidatnya (lamaran di tahap offering atau yang sudah punya penawaran). Open barisnya."},
+      {"en": "Opening a first time creates a Draft offer with start date 14 days ahead and contract type Tetap. Fill Proposed Salary, Contract Type and Start Date.", "id": "Pembukaan pertama membuat penawaran Draft dengan tanggal mulai 14 hari ke depan dan jenis kontrak Tetap. Isi Proposed Salary, Contract Type dan Start Date."},
+      {"en": "Click Submit for Approval. The proposed salary must be above zero. The approvers of the track decide with Approve or Reject.", "id": "Klik Submit for Approval. Gaji diusulkan harus lebih dari nol. Approver pada track memutuskan dengan Approve atau Reject."},
+      {"en": "When approved, click Send to Candidate. When the candidate answers, click Candidate Accepted or Candidate Declined. The answer is entered by hand.", "id": "Bila disetujui, klik Send to Candidate. Saat kandidat menjawab, klik Candidate Accepted atau Candidate Declined. Jawaban diinput manual."},
+      {"en": "A declined offer can be redone with Revise Offer, which creates a new draft copy. An accepted offer goes on to Hire Provisioning.", "id": "Penawaran yang ditolak bisa diulang dengan Revise Offer, yang membuat salinan draft baru. Penawaran yang diterima dilanjutkan ke Provision to ERP."}
     ],
     "fields": [
-      {"label": "Gaji Diusulkan", "en": "Proposed salary for the candidate. Must be above zero to submit. Confidential; it also becomes the contract salary when the candidate is provisioned.", "id": "Gaji yang diusulkan untuk kandidat. Harus lebih dari nol untuk diajukan. Rahasia; juga menjadi gaji kontrak saat kandidat diprovision."},
-      {"label": "Jenis Kontrak", "en": "Tetap, Kontrak, Harian or Borongan. It becomes the contract type of the new employee.", "id": "Tetap, Kontrak, Harian atau Borongan. Menjadi jenis kontrak karyawan baru."},
-      {"label": "Tanggal Mulai", "en": "Date the candidate starts work. It becomes the join date of the new employee.", "id": "Tanggal kandidat mulai bekerja. Menjadi tanggal bergabung karyawan baru."},
-      {"label": "Ajukan Approval", "en": "Sends the Draft offer to the approvers of the recruitment track. The fields are locked after that.", "id": "Mengirim penawaran Draft ke approver pada track rekrutmen. Setelah itu kolom terkunci."},
-      {"label": "Kirim ke Kandidat", "en": "Marks an approved offer as Sent.", "id": "Menandai penawaran yang disetujui sebagai Sent."},
-      {"label": "Revisi Offer", "en": "On a declined offer, creates a new draft with the same values to adjust and submit again.", "id": "Pada penawaran yang ditolak, membuat draft baru dengan nilai yang sama untuk disesuaikan dan diajukan lagi."}
+      {"label": "Proposed Salary", "en": "Proposed salary for the candidate. Must be above zero to submit. Confidential; it also becomes the contract salary when the candidate is provisioned.", "id": "Gaji yang diusulkan untuk kandidat. Harus lebih dari nol untuk diajukan. Rahasia; juga menjadi gaji kontrak saat kandidat diprovision."},
+      {"label": "Contract Type", "en": "Tetap, Kontrak, Harian or Borongan. It becomes the contract type of the new employee.", "id": "Tetap, Kontrak, Harian atau Borongan. Menjadi jenis kontrak karyawan baru."},
+      {"label": "Start Date", "en": "Date the candidate starts work. It becomes the join date of the new employee.", "id": "Tanggal kandidat mulai bekerja. Menjadi tanggal bergabung karyawan baru."},
+      {"label": "Submit for Approval", "en": "Sends the Draft offer to the approvers of the recruitment track. The fields are locked after that.", "id": "Mengirim penawaran Draft ke approver pada track rekrutmen. Setelah itu kolom terkunci."},
+      {"label": "Send to Candidate", "en": "Marks an approved offer as Sent.", "id": "Menandai penawaran yang disetujui sebagai Sent."},
+      {"label": "Revise Offer", "en": "On a declined offer, creates a new draft with the same values to adjust and submit again.", "id": "Pada penawaran yang ditolak, membuat draft baru dengan nilai yang sama untuk disesuaikan dan diajukan lagi."}
     ]
   },
   {
@@ -505,6 +511,7 @@
     "type": "INPUT",
     "module": "HRM",
     "title": "Provision to ERP",
+    "title_id": "Provisioning ke ERP",
     "purpose": {
       "en": "Turns a candidate who accepted the offer into a real employee with a contract and a login account. Do this once, after the offer is accepted.",
       "id": "Mengubah kandidat yang menerima penawaran menjadi karyawan sungguhan lengkap dengan kontrak dan akun login. Lakukan sekali, setelah penawaran diterima."
@@ -512,15 +519,15 @@
     "keywords": "provisioning, provision, karyawan baru, hire, diterima, buat karyawan, akun login, kandidat jadi karyawan, onboarding",
     "steps": [
       {"en": "The grid lists applications whose offer was accepted (status Waiting) and those already done. Open a Waiting row.", "id": "Grid menampilkan lamaran yang penawarannya diterima (status Waiting) dan yang sudah selesai. Buka baris Waiting."},
-      {"en": "In the dialog, pick the Posisi/Jabatan of the new employee. Positions of the requisition's department are listed first.", "id": "Di dialog, pilih Posisi/Jabatan karyawan baru. Posisi dari departemen pada permohonan ditampilkan lebih dulu."},
-      {"en": "Click Provision ke ERP and confirm. This cannot be undone.", "id": "Klik Provision ke ERP lalu konfirmasi. Ini tidak bisa dibatalkan."},
+      {"en": "In the dialog, pick the Position of the new employee. Positions of the requisition's department are listed first.", "id": "Di dialog, pilih Position karyawan baru. Posisi dari departemen pada permohonan ditampilkan lebih dulu."},
+      {"en": "Click Provision to ERP and confirm. This cannot be undone.", "id": "Klik Provision to ERP lalu konfirmasi. Ini tidak bisa dibatalkan."},
       {"en": "The system creates the employee from the candidate data, a contract from the offer, copies the candidate documents and creates a login. The application becomes Hired.", "id": "Sistem membuat karyawan dari data kandidat, kontrak dari penawaran, menyalin dokumen kandidat dan membuat akun login. Lamaran menjadi Hired."},
-      {"en": "The login and password are shown once. Give them to the new employee by hand, then click Tutup.", "id": "Login dan password ditampilkan satu kali. Berikan ke karyawan baru secara langsung, lalu klik Tutup."},
+      {"en": "The login and password are shown once. Give them to the new employee by hand, then click Close.", "id": "Login dan password ditampilkan satu kali. Berikan ke karyawan baru secara langsung, lalu klik Close."},
       {"en": "Afterwards complete the missing data in Master Employee, such as family, bank account and salary settings.", "id": "Setelah itu lengkapi data yang kurang di Master Employee, seperti keluarga, rekening bank dan pengaturan gaji."}
     ],
     "fields": [
-      {"label": "Posisi/Jabatan", "en": "Position of the new employee, picked from active positions in Position Master. Required. The requisition only holds a free-text title, so HR confirms the real position here.", "id": "Posisi karyawan baru, dipilih dari posisi aktif di Master Posisi. Wajib diisi. Permohonan hanya berisi judul teks bebas, jadi HR menentukan posisi sebenarnya di sini."},
-      {"label": "Provision ke ERP", "en": "Creates the employee, contract and login for the chosen application. Blocked if the application was already provisioned.", "id": "Membuat karyawan, kontrak dan login untuk lamaran terpilih. Ditolak bila lamaran sudah pernah diprovision."}
+      {"label": "Position", "en": "Position of the new employee, picked from active positions in Position Master. Required. The requisition only holds a free-text title, so HR confirms the real position here.", "id": "Posisi karyawan baru, dipilih dari posisi aktif di Master Posisi. Wajib diisi. Permohonan hanya berisi judul teks bebas, jadi HR menentukan posisi sebenarnya di sini."},
+      {"label": "Provision to ERP", "en": "Creates the employee, contract and login for the chosen application. Blocked if the application was already provisioned.", "id": "Membuat karyawan, kontrak dan login untuk lamaran terpilih. Ditolak bila lamaran sudah pernah diprovision."}
     ]
   },
   {
@@ -550,6 +557,7 @@
     "type": "REPORT",
     "module": "HRM",
     "title": "Employees Without WhatsApp Number",
+    "title_id": "Karyawan Tanpa Nomor WhatsApp",
     "purpose": {
       "en": "Lists active employees whose mobile number is empty. Those employees cannot recover their own account and cannot receive payslips by WhatsApp. HR uses it as a to-do list.",
       "id": "Menampilkan karyawan aktif yang nomor HP-nya kosong. Karyawan itu tidak bisa memulihkan akunnya sendiri dan tidak bisa menerima slip gaji lewat WhatsApp. HR memakainya sebagai daftar kerja."
@@ -600,6 +608,7 @@
     "type": "REPORT",
     "module": "HRM",
     "title": "Portal Sync Log",
+    "title_id": "Log Sinkronisasi Portal",
     "purpose": {
       "en": "Troubleshooting log of the candidate portal sync, which pulls new applications into the ERP every 2 minutes. Open it when a candidate says they applied but you cannot find the application.",
       "id": "Log pemecahan masalah sinkronisasi portal kandidat, yang menarik lamaran baru ke ERP tiap 2 menit. Buka bila kandidat bilang sudah melamar tapi lamarannya tidak ditemukan."

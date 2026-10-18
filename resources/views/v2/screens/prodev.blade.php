@@ -5,7 +5,7 @@
  Input        : Query part (id part atau kode); session v2_flash dan error validasi.
  Output       : Tanpa part = daftar; dengan part = kartu revisi dari produk induk, tab Imposition dan Part dan Dieline (x-dl::*). Zona beku: jangan ubah flow tanpa izin Jo.
  Dipakai oleh : Layar v2 slug prodev lewat rute v2.screen (view v2.screen memuat berkas ini)
- Status       : Aktif
+ Status       : Aktif Teks tampilan English (Jo 2026-10-18).
 --}}
 @php
     use App\Support\V2\Data\Prodev;
@@ -60,13 +60,13 @@
 @else
     {{-- Pro-Dev > Manual (Mode #2): part tanpa Inquiry. Part dari Inquiry = grid Pro-Dev > New / Revise (rulebook A.20, C.28). --}}
     <x-dl::grid id="prodev-list" :rows="Prodev::parts()" actions="worklist" :active-key="null" :new-record="null" :open-url="route('v2.screen', 'prodev').'?part={id}'"
-        search="Search part or product name/code…" source="{{ Src::of('tm2mst.prod_part', 'tm2mst.prod_product', 'tm2mst.prod_layout_group', 'tm2sdi.iqp_part.prod_part_id (kosong = manual)') }}"
+        search="Search part or product name/code…" source="{{ Src::of('tm2mst.prod_part', 'tm2mst.prod_product', 'tm2mst.prod_layout_group', 'tm2sdi.iqp_part.prod_part_id (empty = manual)') }}"
         :columns="[
             ['key' => 'code', 'label' => 'Master Card / Customer', 'type' => 'doc', 'party' => 'customer', 'src' => Src::of('tm2mst.prod_part.mastercard_code', 'tm2mst.cust_customer.customer_name')],
             ['key' => 'part_name', 'label' => 'Part', 'src' => Src::of('tm2mst.prod_part.part_name')],
             ['key' => 'product', 'label' => 'Product', 'src' => Src::of('tm2mst.prod_product.product_name')],
             ['key' => 'updated', 'label' => 'Last Updated', 'type' => 'date', 'src' => Src::of('tm2mst.prod_part.updated_at')],
-            ['key' => 'status', 'label' => 'Layout Status', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', t('NOT STARTED') => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (terbaru)'],
+            ['key' => 'status', 'label' => 'Layout Status', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', t('NOT STARTED') => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (latest)'],
         ]"
         :stats="[
             ['label' => 'All'],

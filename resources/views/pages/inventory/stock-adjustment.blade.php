@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Komponen v1 untuk layar "Adjustment Approval" (dibuka dari grid v2 lewat Open / New). Teks tampilan (label, kolom, tab, tombol, pesan) English sesuai keputusan Jo 2026-10-18; nilai tersimpan dan kunci data tidak diubah.
+ * Sumber hulu  : Tabel dan service yang dibaca komponen ini (lihat query di file); tidak ada logika hulu baru.
+ * Input        : Isian form dan filter layar.
+ * Output       : Simpan ke tabel modul terkait lewat service yang sama seperti sebelumnya.
+ * Dipakai oleh : Grid v2 modul terkait (v1Route).
+ * Status       : Aktif; teks tampilan English (Jo 2026-10-18).
+ */
+
+
 use App\Models\Inventory\FgStock;
 use App\Models\Inventory\FgStockcard;
 use App\Models\Inventory\RmStock;
@@ -446,11 +457,11 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
             if (! $post['posted']) {
                 session()->flash('error', $post['error']);
             } else {
-                session()->flash('flash', 'Disetujui & diposting ke Kartu Stok.'.(isset($post['stock_warning']) ? ' '.$post['stock_warning'] : ''));
+                session()->flash('flash', 'Approved and posted to the Stock Card.'.(isset($post['stock_warning']) ? ' '.$post['stock_warning'] : ''));
             }
         } else {
             $this->headerModel()::whereKey($this->editingId)->update(['flow_status' => $result['status'], 'update_by' => Auth::user()->login]);
-            session()->flash('flash', 'Disetujui, diteruskan ke level approval berikutnya.');
+            session()->flash('flash', 'Approved, forwarded to the next approval level.');
         }
 
         $this->approvalNote = '';
@@ -467,7 +478,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         }
 
         if (mb_strlen(trim($this->approvalNote)) < 10) {
-            $this->approvalError = 'Alasan penolakan wajib diisi, minimal 10 karakter.';
+            $this->approvalError = 'Rejection reason is required, minimum 10 characters.';
 
             return;
         }

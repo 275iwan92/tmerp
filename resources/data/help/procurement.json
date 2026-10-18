@@ -154,7 +154,7 @@
     "title": "PR Approval Center",
     "purpose": {
       "en": "Lists the Purchase Requisitions waiting for your decision. Open it when you are an approver in the PR approval path and need to Approve, Reject or Hold requests.",
-      "id": "Menampilkan Purchase Requisition yang menunggu keputusan Anda. Buka saat Anda approver di alur approval PR dan perlu menyetujui (Setujui), menolak (Tolak) atau menahan (Tahan) permintaan."
+      "id": "Menampilkan Purchase Requisition yang menunggu keputusan Anda. Buka saat Anda approver di alur approval PR dan perlu menyetujui (Approve), menolak (Reject) atau menahan (Hold) permintaan."
     },
     "keywords": "approval pr, pr approval center, setujui pr, persetujuan pr, approve requisition, tolak, tahan, hold, approver, antrian approval",
     "steps": [
@@ -167,16 +167,16 @@
         "id": "Klik sebuah PR di daftar untuk membaca ringkasan, baris, alur approval dan riwayatnya. Pakai tautan panah di samping judul untuk membuka PR lengkap."
       },
       {
-        "en": "Click Setujui to approve. The PR moves to the next approval level, or becomes Approved if yours was the last level.",
-        "id": "Klik Setujui untuk menyetujui. PR lanjut ke level approval berikutnya, atau menjadi Approved bila Anda level terakhir."
+        "en": "Click Approve to approve. The PR moves to the next approval level, or becomes Approved if yours was the last level.",
+        "id": "Klik Approve untuk menyetujui. PR lanjut ke level approval berikutnya, atau menjadi Approved bila Anda level terakhir."
       },
       {
-        "en": "Click Tolak to reject. A reason is required and asked in a confirmation dialog. Rejecting is final.",
-        "id": "Klik Tolak untuk menolak. Alasan wajib diisi dan diminta di dialog konfirmasi. Penolakan bersifat final."
+        "en": "Click Reject to reject. A reason is required and asked in a confirmation dialog. Rejecting is final.",
+        "id": "Klik Reject untuk menolak. Alasan wajib diisi dan diminta di dialog konfirmasi. Penolakan bersifat final."
       },
       {
-        "en": "Click Tahan to hold the PR when you need more information. A reason is required. The PR stays in your list and can later only be approved or rejected.",
-        "id": "Klik Tahan untuk menahan PR saat butuh informasi tambahan. Alasan wajib diisi. PR tetap di daftar Anda dan nanti hanya bisa disetujui atau ditolak."
+        "en": "Click Hold to hold the PR when you need more information. A reason is required. The PR stays in your list and can later only be approved or rejected.",
+        "id": "Klik Hold untuk menahan PR saat butuh informasi tambahan. Alasan wajib diisi. PR tetap di daftar Anda dan nanti hanya bisa disetujui atau ditolak."
       },
       {
         "en": "Check Log Keputusan to see your own recent decisions with time, level and reason.",
@@ -216,8 +216,8 @@
       },
       {
         "label": "Alasan (Tolak / Tahan)",
-        "en": "Reason typed in the confirmation dialog when you click Tolak or Tahan. It is mandatory and saved in the document history and in your Log Keputusan.",
-        "id": "Alasan yang diketik di dialog konfirmasi saat klik Tolak atau Tahan. Wajib diisi dan tersimpan di riwayat dokumen dan Log Keputusan Anda."
+        "en": "Reason typed in the confirmation dialog when you click Reject or Hold. It is mandatory and saved in the document history and in your Log Keputusan.",
+        "id": "Alasan yang diketik di dialog konfirmasi saat klik Reject atau Hold. Wajib diisi dan tersimpan di riwayat dokumen dan Log Keputusan Anda."
       }
     ]
   },
@@ -624,7 +624,7 @@
     "title": "PO Approval Center",
     "purpose": {
       "en": "Lists the Purchase Orders and Cash POs waiting for your decision. Open it when you are an approver in the PO approval path and need to Approve, Reject or Hold orders.",
-      "id": "Menampilkan Purchase Order dan PO Kontan yang menunggu keputusan Anda. Buka saat Anda approver di alur approval PO dan perlu menyetujui (Setujui), menolak (Tolak) atau menahan (Tahan) pesanan."
+      "id": "Menampilkan Purchase Order dan PO Kontan yang menunggu keputusan Anda. Buka saat Anda approver di alur approval PO dan perlu menyetujui (Approve), menolak (Reject) atau menahan (Hold) pesanan."
     },
     "keywords": "approval po, po approval center, setujui po, persetujuan po, approve purchase order, po kontan, cash po approval, tolak, tahan, hold, approver",
     "steps": [
@@ -637,16 +637,16 @@
         "id": "Klik sebuah PO untuk membaca ringkasan, baris, level approval dan riwayatnya. Pakai tautan panah di samping judul untuk membuka PO lengkap."
       },
       {
-        "en": "Click Setujui to approve. The PO moves to the next level, or becomes Approved when yours is the last level. The number of levels depends on the PO value.",
-        "id": "Klik Setujui untuk menyetujui. PO lanjut ke level berikutnya, atau menjadi Approved bila Anda level terakhir. Jumlah level bergantung pada nilai PO."
+        "en": "Click Approve to approve. The PO moves to the next level, or becomes Approved when yours is the last level. The number of levels depends on the PO value.",
+        "id": "Klik Approve untuk menyetujui. PO lanjut ke level berikutnya, atau menjadi Approved bila Anda level terakhir. Jumlah level bergantung pada nilai PO."
       },
       {
-        "en": "Click Tolak to reject. A reason is required and asked in a confirmation dialog. Rejecting is final.",
-        "id": "Klik Tolak untuk menolak. Alasan wajib diisi dan diminta di dialog konfirmasi. Penolakan bersifat final."
+        "en": "Click Reject to reject. A reason is required and asked in a confirmation dialog. Rejecting is final.",
+        "id": "Klik Reject untuk menolak. Alasan wajib diisi dan diminta di dialog konfirmasi. Penolakan bersifat final."
       },
       {
-        "en": "Click Tahan to hold the PO and ask for more information. A reason is required. The PO stays in your list and can later only be approved or rejected.",
-        "id": "Klik Tahan untuk menahan PO dan meminta informasi tambahan. Alasan wajib diisi. PO tetap di daftar Anda dan nanti hanya bisa disetujui atau ditolak."
+        "en": "Click Hold to hold the PO and ask for more information. A reason is required. The PO stays in your list and can later only be approved or rejected.",
+        "id": "Klik Hold untuk menahan PO dan meminta informasi tambahan. Alasan wajib diisi. PO tetap di daftar Anda dan nanti hanya bisa disetujui atau ditolak."
       },
       {
         "en": "Check Log Keputusan for your own recent decisions with time, level and reason.",
@@ -691,8 +691,8 @@
       },
       {
         "label": "Alasan (Tolak / Tahan)",
-        "en": "Reason typed in the confirmation dialog when you click Tolak or Tahan. Mandatory; saved in the document history and your Log Keputusan.",
-        "id": "Alasan yang diketik di dialog konfirmasi saat klik Tolak atau Tahan. Wajib; tersimpan di riwayat dokumen dan Log Keputusan Anda."
+        "en": "Reason typed in the confirmation dialog when you click Reject or Hold. Mandatory; saved in the document history and your Log Keputusan.",
+        "id": "Alasan yang diketik di dialog konfirmasi saat klik Reject atau Hold. Wajib; tersimpan di riwayat dokumen dan Log Keputusan Anda."
       }
     ]
   },
@@ -700,7 +700,8 @@
     "key": "purchase-receive",
     "type": "INPUT",
     "module": "PROC",
-    "title": "Purchase Receive / SPB",
+    "title": "Purchase Receive",
+    "title_id": "Penerimaan Pembelian / SPB",
     "purpose": {
       "en": "Record goods that arrive: from a supplier PO, material brought by a customer, or goods returning from a subcontractor. Open it when a delivery arrives; Confirm posts stock and the purchase journal and updates the PO.",
       "id": "Mencatat barang yang datang: dari PO supplier, bahan bawaan customer, atau barang kembali dari subkon. Buka saat ada kiriman tiba; Confirm memposting stok dan jurnal pembelian serta memperbarui PO."
@@ -955,33 +956,33 @@
     "title": "Purchase Return",
     "purpose": {
       "en": "Return goods to a supplier, either items rejected by QC at receiving or goods already in stock that turned out to be a problem. Open it to record the return, get approval and follow the credit note or replacement.",
-      "id": "Mengembalikan barang ke supplier, baik barang yang ditolak QC saat penerimaan maupun barang di gudang yang bermasalah belakangan. Buka untuk mencatat retur, meminta approval dan memantau credit note atau barang pengganti."
+      "id": "Mengembalikan barang ke supplier, baik barang yang ditolak QC saat penerimaan maupun barang di gudang yang bermasalah belakangan. Open untuk mencatat retur, meminta approval dan memantau credit note atau barang pengganti."
     },
     "keywords": "retur, return, purchase return, retur pembelian, nota retur, retur supplier, barang reject, credit note, ganti barang, qc reject, prt",
     "steps": [
       {
-        "en": "Click + New Record and choose the source: Dari PV (QC Reject) for goods rejected at receiving, or Dari Stok for goods already in stock.",
-        "id": "Klik + New Record lalu pilih sumbernya: Dari PV (QC Reject) untuk barang yang ditolak saat penerimaan, atau Dari Stok untuk barang yang sudah di gudang."
+        "en": "Click + New Record and choose the source: From Receipt (QC Reject) for goods rejected at receiving, or From Stock for goods already in stock.",
+        "id": "Klik + New Record lalu pilih sumbernya: From Receipt (QC Reject) untuk barang yang ditolak saat penerimaan, atau From Stock untuk barang yang sudah di gudang."
       },
       {
-        "en": "Dari PV: click a receipt (PV) that has rejected quantity. Dari Stok: type at least 2 letters of the supplier name or code and click the supplier. A Draft return is created and opened.",
-        "id": "Dari PV: klik penerimaan (PV) yang punya qty reject. Dari Stok: ketik minimal 2 huruf nama atau kode supplier lalu klik supplier. Retur Draft dibuat dan dibuka."
+        "en": "Dari PV: click a receipt (PV) that has rejected quantity. From Stock: type at least 2 letters of the supplier name or code and click the supplier. A Draft return is created and opened.",
+        "id": "Dari PV: klik penerimaan (PV) yang punya qty reject. From Stock: ketik minimal 2 huruf nama atau kode supplier lalu klik supplier. Retur Draft dibuat dan dibuka."
       },
       {
-        "en": "Add lines: from a PV, click Tambah beside a rejected line; from stock, search an item by code or name and click it. Then set Lot, Qty Retur and, for stock items, the price.",
-        "id": "Tambah baris: dari PV, klik Tambah di samping baris reject; dari stok, cari item dengan kode atau nama lalu klik. Lalu isi Lot, Qty Retur dan, untuk item stok, harganya."
+        "en": "Add lines: from a PV, click + Add beside a rejected line; from stock, search an item by code or name and click it. Then set Lot, Return Qty and, for stock items, the price.",
+        "id": "Add baris: dari PV, klik + Add di samping baris reject; dari stok, cari item dengan kode atau nama lalu klik. Lalu isi Lot, Return Qty dan, untuk item stok, harganya."
       },
       {
-        "en": "Fill the return date, Disposisi (Credit Note or Ganti Barang) and Alasan Utama, then the follow-up details if known.",
-        "id": "Isi tanggal retur, Disposisi (Credit Note atau Ganti Barang) dan Alasan Utama, lalu rincian follow-up bila sudah ada."
+        "en": "Fill the return date, Disposition (Credit Note or Replace Goods) and Main Reason, then the follow-up details if known.",
+        "id": "Isi tanggal retur, Disposition (Credit Note atau Replace Goods) dan Main Reason, lalu rincian follow-up bila sudah ada."
       },
       {
-        "en": "Click Ajukan Persetujuan. The return number is issued and the return goes to approval. It needs at least one line, a reason and a disposition. A Draft can be cancelled with a reason of at least 10 characters.",
-        "id": "Klik Ajukan Persetujuan. Nomor retur terbit dan retur masuk approval. Wajib ada minimal satu baris, alasan dan disposisi. Draft bisa dibatalkan dengan alasan minimal 10 karakter."
+        "en": "Click Submit for Approval. The return number is issued and the return goes to approval. It needs at least one line, a reason and a disposition. A Draft can be cancelled with a reason of at least 10 characters.",
+        "id": "Klik Submit for Approval. Nomor retur terbit dan retur masuk approval. Wajib ada minimal satu baris, alasan dan disposisi. Draft bisa dibatalkan dengan alasan minimal 10 karakter."
       },
       {
-        "en": "The approver decides on this form or in Purchase Return Approval Center. When the status is CONFIRMED, click Tandai Selesai once the replacement goods or credit note have been received.",
-        "id": "Approver memutuskan di form ini atau di Purchase Return Approval Center. Saat status CONFIRMED, klik Tandai Selesai setelah barang pengganti atau credit note diterima."
+        "en": "The approver decides on this form or in Purchase Return Approval Center. When the status is CONFIRMED, click Mark Complete once the replacement goods or credit note have been received.",
+        "id": "Approver memutuskan di form ini atau di Purchase Return Approval Center. Saat status CONFIRMED, klik Mark Complete setelah barang pengganti atau credit note diterima."
       }
     ],
     "fields": [
@@ -991,12 +992,12 @@
         "id": "Supplier penerima retur. Diambil dari PV atau supplier yang dipilih. Hanya dibaca."
       },
       {
-        "label": "Tanggal Retur",
+        "label": "Return Date",
         "en": "Date of the return. Defaults to today and can be changed while Draft.",
         "id": "Tanggal retur. Default hari ini dan bisa diubah selama Draft."
       },
       {
-        "label": "Ref. PV",
+        "label": "Ref. Receipt",
         "en": "The goods receipt (PV) the rejected items come from. Only for returns made from a PV. Read only.",
         "id": "Penerimaan barang (PV) asal barang yang ditolak. Hanya untuk retur dari PV. Hanya dibaca."
       },
@@ -1006,17 +1007,17 @@
         "id": "Nama inspektur QC yang menolak barang. Hanya untuk retur dari PV."
       },
       {
-        "label": "Disposisi *",
-        "en": "How the return is settled: Credit Note (value credited by the supplier) or Ganti Barang (replacement goods). Required.",
-        "id": "Cara penyelesaian retur: Credit Note (nilai dikreditkan supplier) atau Ganti Barang (barang pengganti). Wajib."
+        "label": "Disposition *",
+        "en": "How the return is settled: Credit Note (value credited by the supplier) or Replace Goods (replacement goods). Required.",
+        "id": "Cara penyelesaian retur: Credit Note (nilai dikreditkan supplier) atau Replace Goods (barang pengganti). Wajib."
       },
       {
-        "label": "Batas Waktu Pengganti",
-        "en": "Deadline for the supplier to deliver the replacement. Shown only when Disposisi is Ganti Barang.",
-        "id": "Batas waktu supplier mengirim barang pengganti. Tampil hanya bila Disposisi adalah Ganti Barang."
+        "label": "Replacement Due Date",
+        "en": "Deadline for the supplier to deliver the replacement. Shown only when Disposition is Replace Goods.",
+        "id": "Batas waktu supplier mengirim barang pengganti. Tampil hanya bila Disposition adalah Replace Goods."
       },
       {
-        "label": "Alasan Utama *",
+        "label": "Main Reason *",
         "en": "Main reason for the return. Required before submitting.",
         "id": "Alasan utama retur. Wajib sebelum diajukan."
       },
@@ -1026,64 +1027,64 @@
         "id": "Nomor lot barang yang diretur pada baris."
       },
       {
-        "label": "Qty Retur",
+        "label": "Return Qty",
         "en": "Quantity returned. For lines from a PV it starts at the quantity rejected and not yet returned.",
         "id": "Jumlah yang diretur. Untuk baris dari PV, dimulai dari qty reject yang belum diretur."
       },
       {
-        "label": "Harga",
+        "label": "Price",
         "en": "Unit price. Taken from the receipt for PV lines; editable for items taken from stock (starts from the last unit price).",
         "id": "Harga satuan. Diambil dari penerimaan untuk baris dari PV; bisa diubah untuk item dari stok (mulai dari harga satuan terakhir)."
       },
       {
-        "label": "Nilai Retur",
-        "en": "Qty Retur x Harga per line; the total is the credit value. Calculated automatically.",
-        "id": "Qty Retur x Harga per baris; totalnya adalah nilai kredit. Dihitung otomatis."
+        "label": "Return Value",
+        "en": "Return Qty x Price per line; the total is the credit value. Calculated automatically.",
+        "id": "Return Qty x Price per baris; totalnya adalah nilai kredit. Dihitung otomatis."
       },
       {
-        "label": "Metode Komunikasi",
+        "label": "Communication Method",
         "en": "How the supplier was informed, for example Email, Telp or WA.",
         "id": "Cara supplier diberi tahu, misalnya Email, Telp atau WA."
       },
       {
-        "label": "PIC Supplier",
+        "label": "Supplier PIC",
         "en": "Contact person at the supplier handling the return.",
         "id": "Penanggung jawab di supplier yang menangani retur."
       },
       {
-        "label": "Tgl Kirim Fisik",
+        "label": "Physical Ship Date",
         "en": "Date the goods were physically sent back to the supplier.",
         "id": "Tanggal barang dikirim fisik kembali ke supplier."
       },
       {
-        "label": "Ekspedisi",
+        "label": "Expedition",
         "en": "Courier or transport used to send the goods back.",
         "id": "Ekspedisi atau pengangkut yang dipakai mengirim barang kembali."
       },
       {
-        "label": "No. CN Supplier",
-        "en": "Credit note number issued by the supplier. Shown only when Disposisi is Credit Note.",
-        "id": "Nomor credit note dari supplier. Tampil hanya bila Disposisi adalah Credit Note."
+        "label": "Supplier CN No.",
+        "en": "Credit note number issued by the supplier. Shown only when Disposition is Credit Note.",
+        "id": "Nomor credit note dari supplier. Tampil hanya bila Disposition adalah Credit Note."
       },
       {
-        "label": "Tgl CN Diterima",
-        "en": "Date the credit note was received. Shown only when Disposisi is Credit Note.",
-        "id": "Tanggal credit note diterima. Tampil hanya bila Disposisi adalah Credit Note."
+        "label": "CN Received Date",
+        "en": "Date the credit note was received. Shown only when Disposition is Credit Note.",
+        "id": "Tanggal credit note diterima. Tampil hanya bila Disposition adalah Credit Note."
       },
       {
-        "label": "Catatan / Kronologi",
+        "label": "Notes / Chronology",
         "en": "Free notes or the chronology of the problem and follow-up.",
         "id": "Catatan bebas atau kronologi masalah dan tindak lanjutnya."
       },
       {
-        "label": "Alasan pembatalan",
+        "label": "Cancel reason",
         "en": "Reason typed when cancelling a Draft return. At least 10 characters.",
-        "id": "Alasan yang diketik saat membatalkan retur Draft. Minimal 10 karakter."
+        "id": "Reason yang diketik saat membatalkan retur Draft. Minimal 10 karakter."
       },
       {
-        "label": "Catatan",
-        "en": "Note for the approval decision. Required for Tolak and for Minta Info (hold); Tolak needs at least 10 characters.",
-        "id": "Catatan untuk keputusan approval. Wajib untuk Tolak dan Minta Info (tahan); Tolak minimal 10 karakter."
+        "label": "Notes",
+        "en": "Note for the approval decision. Required for Reject and for Request Info (hold); Reject needs at least 10 characters.",
+        "id": "Catatan untuk keputusan approval. Wajib untuk Reject dan Request Info (tahan); Reject minimal 10 karakter."
       },
       {
         "label": "Status",
@@ -1099,7 +1100,7 @@
     "title": "Purchase Return Approval Center",
     "purpose": {
       "en": "Lists the Purchase Returns waiting for your decision. Open it when you are an approver for returns to suppliers and need to Approve, Reject or Hold them.",
-      "id": "Menampilkan Purchase Return yang menunggu keputusan Anda. Buka saat Anda approver retur ke supplier dan perlu menyetujui (Setujui), menolak (Tolak) atau menahan (Tahan) retur."
+      "id": "Menampilkan Purchase Return yang menunggu keputusan Anda. Buka saat Anda approver retur ke supplier dan perlu menyetujui (Approve), menolak (Reject) atau menahan (Hold) retur."
     },
     "keywords": "approval retur, purchase return approval, setujui retur, persetujuan retur, approve return, retur supplier, tolak, tahan, hold, prt",
     "steps": [
@@ -1112,16 +1113,16 @@
         "id": "Klik sebuah retur untuk membaca ringkasan, baris, alur approval dan riwayatnya. Pakai tautan panah di samping judul untuk membuka form retur lengkap."
       },
       {
-        "en": "Click Setujui to approve. The return moves to the next level or becomes CONFIRMED when yours is the last level.",
-        "id": "Klik Setujui untuk menyetujui. Retur lanjut ke level berikutnya atau menjadi CONFIRMED bila Anda level terakhir."
+        "en": "Click Approve to approve. The return moves to the next level or becomes CONFIRMED when yours is the last level.",
+        "id": "Klik Approve untuk menyetujui. Retur lanjut ke level berikutnya atau menjadi CONFIRMED bila Anda level terakhir."
       },
       {
-        "en": "Click Tolak to reject. A reason is required (at least 10 characters for a return) and asked in a confirmation dialog.",
-        "id": "Klik Tolak untuk menolak. Alasan wajib diisi (minimal 10 karakter untuk retur) dan diminta di dialog konfirmasi."
+        "en": "Click Reject to reject. A reason is required (at least 10 characters for a return) and asked in a confirmation dialog.",
+        "id": "Klik Reject untuk menolak. Alasan wajib diisi (minimal 10 karakter untuk retur) dan diminta di dialog konfirmasi."
       },
       {
-        "en": "Click Tahan to hold the return and ask for more information. A reason is required. The return stays in your list.",
-        "id": "Klik Tahan untuk menahan retur dan meminta informasi tambahan. Alasan wajib diisi. Retur tetap di daftar Anda."
+        "en": "Click Hold to hold the return and ask for more information. A reason is required. The return stays in your list.",
+        "id": "Klik Hold untuk menahan retur dan meminta informasi tambahan. Alasan wajib diisi. Retur tetap di daftar Anda."
       },
       {
         "en": "Check Log Keputusan for your own recent decisions with time, level and reason.",
@@ -1166,8 +1167,8 @@
       },
       {
         "label": "Alasan (Tolak / Tahan)",
-        "en": "Reason typed in the confirmation dialog when you click Tolak or Tahan. Mandatory; saved in the document history and your Log Keputusan.",
-        "id": "Alasan yang diketik di dialog konfirmasi saat klik Tolak atau Tahan. Wajib; tersimpan di riwayat dokumen dan Log Keputusan Anda."
+        "en": "Reason typed in the confirmation dialog when you click Reject or Hold. Mandatory; saved in the document history and your Log Keputusan.",
+        "id": "Alasan yang diketik di dialog konfirmasi saat klik Reject atau Hold. Wajib; tersimpan di riwayat dokumen dan Log Keputusan Anda."
       }
     ]
   },

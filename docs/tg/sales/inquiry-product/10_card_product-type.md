@@ -32,3 +32,4 @@
 
 ## Already exists? Searched where, result
 Searched: column/table `type_code` + `prod_type` in the mockup DB, `inquiry*.blade.php`, `app/Services/Sales`, Sales menu tree. Result: the concept ALREADY EXISTS; no new column is needed in `iqp_part` or `iqp_inquiry`.
+> Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.

@@ -5,7 +5,7 @@
  Input        : Query id (dokumen tersimpan), view (paksa baca-saja); readonly otomatis bila stat_confirm_sales.
  Output       : Objek x-mp::sales.inquiry-form (slot header, part, tier) + x-dl::action-bar; posting ke route v2.inquiry.save, v2.inquiry.end, v2.inquiry.artwork, v2.inquiry.customer; tombol Print lewat PrintDocs inquiry.
  Dipakai oleh : Route v2.screen slug inquiry-new (App\Support\V2\Screens, menu sys_app_menu target v2:inquiry-new); grid InquiryNewGrid dan worklist Inquiry membuka layar ini
- Status       : Aktif
+ Status       : Aktif Teks tampilan English (Jo 2026-10-18).
 --}}
 @php
     use App\Support\V2\Data\Sales;
@@ -60,19 +60,19 @@
             {{-- Wajib diisi sampai Ukuran (user 2026-09-26); produk yang belum ada di daftar lewat pilihan Custom. --}}
             <x-dl::field.select name="product_group" label="Product Category" required placeholder="— choose a category —"
                 :options="collect($markets)->pluck('label', 'code')->all() + ['__CUSTOM__' => t('➕ Custom (not in the list yet)')]"
-                hint="Required — choose Custom if the product is not in the list." :source="Src::of('tm2mst.prod_market (induk), tidak disimpan')" />
+                hint="Required — choose Custom if the product is not in the list." :source="Src::of('tm2mst.prod_market (parent), not saved')" />
             <x-dl::field.select name="product_detail" label="Category Detail" required placeholder="— choose a category first —" :options="[]" disabled
-                :source="Src::of('tm2mst.prod_market (detail) → Tipe Produk, tidak disimpan')" />
+                :source="Src::of('tm2mst.prod_market (detail) → Product Type, not saved')" />
             <x-dl::field.select name="market_size" label="Standard Size" required placeholder="— choose a detail first —" :options="[]" disabled
-                :source="Src::of('tm2mst.prod_type_size (milik detail) → dimensi semua Part')" />
+                :source="Src::of('tm2mst.prod_type_size (owned by the detail) → dimensions of all Parts')" />
             <x-dl::field.select name="type_code" label="Product Type (international dieline)" placeholder="— choose a product type —" :value="$typeCode"
                 :options="collect($types)->map(fn ($t) => $t['label'])->all()" hint="Automatic from Category Detail — this is the name searched on Pacdora. Custom: choose the closest dieline."
                 :source="Src::of('tm2sdi.iqp_part.part_type', 'tm2mst.prod_type.type_code')" />
         </x-dl::form.row>
         <x-dl::box data-inq-custom hidden>
             <x-dl::form.row cols="2">
-                <x-dl::field.text name="product_detail_custom" label="Custom Product Name" required placeholder="e.g. Stand Smartphone / Dus Telur / Dus Pot Tanaman"
-                    :source="'catatan detail custom (belum ada di Master Product Market)'" />
+                <x-dl::field.text name="product_detail_custom" label="Custom Product Name" required placeholder="e.g. Stand Smartphone / Egg Carton / Plant Pot Box"
+                    :source="'custom detail note (not yet in Master Product Market)'" />
                 <x-dl::alert tone="info">{!! t('The product is not in the list yet: choose the closest <b>Product Type</b> (dieline) and fill in the dimensions manually in the part.') !!}
                     {!! t('If it is ordered often, ask the ProDev officer to add it to <b>Master Product Market</b>.') !!}</x-dl::alert>
             </x-dl::form.row>
@@ -124,7 +124,7 @@
                 ['key' => 'tooling_kind', 'label' => t('Type'), 'type' => 'select', 'options' => ['PLATE' => t('Printing plate'), 'PISAU' => t('Die/matrix'), 'MATRAS' => t('Matrix'), 'FILM' => t('Film')], 'default' => 'PLATE', 'width' => '150px', 'src' => Src::of('tm2sdi.iqp_tooling.tooling_kind')],
                 ['key' => 'tooling_status', 'label' => 'Status', 'type' => 'select', 'options' => ['ADA' => t('Available'), 'ADA_WARNING' => t('Available (warning)'), 'AUS' => t('Worn'), 'TIDAK_ADA' => t('Not available')], 'default' => 'ADA', 'width' => '160px', 'src' => Src::of('tm2sdi.iqp_tooling.tooling_status')],
                 ['key' => 'is_new_charge', 'label' => t('New Cost?'), 'type' => 'bool', 'width' => '110px', 'src' => Src::of('tm2sdi.iqp_tooling.is_new_charge')],
-                ['key' => 'cost', 'label' => t('Cost (Rp)'), 'type' => 'money', 'readonlyUnless' => 'is_new_charge', 'width' => '150px', 'src' => Src::of('tm2sdi.iqp_tooling.cost')],
+                ['key' => 'cost', 'label' => t('Cost (IDR)'), 'type' => 'money', 'readonlyUnless' => 'is_new_charge', 'width' => '150px', 'src' => Src::of('tm2sdi.iqp_tooling.cost')],
                 ['key' => 'remark', 'label' => t('Notes'), 'placeholder' => t('optional'), 'src' => Src::of('tm2sdi.iqp_tooling.remark')],
             ]" />
     </x-dl::card>
@@ -135,7 +135,7 @@
             :columns="[
                 ['key' => 'description', 'label' => 'Cost description', 'placeholder' => t('e.g. trucking to the customer\'s warehouse'), 'src' => Src::of('tm2sdi.iqp_external_cost.description')],
                 ['key' => 'cost_kind', 'label' => t('Type'), 'type' => 'select', 'options' => ['TRUCKING' => t('Trucking'), 'EKSPEDISI' => t('Forwarding'), 'JASA_LUAR' => t('Outside Service'), 'LAINNYA' => t('Other')], 'default' => 'TRUCKING', 'width' => '150px', 'src' => Src::of('tm2sdi.iqp_external_cost.cost_kind')],
-                ['key' => 'amount', 'label' => t('Amount (Rp)'), 'type' => 'money', 'width' => '150px', 'src' => Src::of('tm2sdi.iqp_external_cost.amount')],
+                ['key' => 'amount', 'label' => t('Amount (IDR)'), 'type' => 'money', 'width' => '150px', 'src' => Src::of('tm2sdi.iqp_external_cost.amount')],
                 ['key' => 'tax_treatment', 'label' => t('Tax Treatment'), 'type' => 'select', 'options' => ['TAXABLE' => t('Taxable (in the tax base)'), 'REIMBURSEMENT' => t('Reimbursement')], 'default' => 'TAXABLE', 'width' => '180px', 'src' => Src::of('tm2sdi.iqp_external_cost.tax_treatment')],
             ]" />
     </x-dl::card>

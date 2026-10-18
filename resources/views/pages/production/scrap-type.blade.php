@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Komponen v1 untuk layar "Scrap Types" (dibuka dari grid v2 lewat Open / New). Teks tampilan (label, kolom, tab, tombol, pesan) English sesuai keputusan Jo 2026-10-18; nilai tersimpan dan kunci data tidak diubah.
+ * Sumber hulu  : Tabel dan service yang dibaca komponen ini (lihat query di file); tidak ada logika hulu baru.
+ * Input        : Isian form dan filter layar.
+ * Output       : Simpan ke tabel modul terkait lewat service yang sama seperti sebelumnya.
+ * Dipakai oleh : Grid v2 modul terkait (v1Route).
+ * Status       : Aktif; teks tampilan English (Jo 2026-10-18).
+ */
+
+
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Prd\PrdScrapType;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +24,7 @@ use Livewire\Component;
 // di kode -- data awal (migration 2026_08_28_000013) dari kategori umum
 // print-industry MIS (Systrade/PrintVis/eProductivity), user akan susulkan
 // daftar riil PT Telasih Makmur. Pola grid sama Rule Library.
-new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Manage Scrap Types — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 
@@ -109,10 +120,10 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Tipe', 'value' => $this->statTotal, 'tone' => 'total'],
-            'reject' => ['label' => 'Tipe Reject', 'value' => $this->statReject, 'tone' => 'critical',
+            'total' => ['label' => 'Total Types', 'value' => $this->statTotal, 'tone' => 'total'],
+            'reject' => ['label' => 'Reject Types', 'value' => $this->statReject, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->reject()],
-            'waste' => ['label' => 'Tipe Waste', 'value' => $this->statWaste, 'tone' => 'warn',
+            'waste' => ['label' => 'Waste Types', 'value' => $this->statWaste, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->waste()],
         ];
     }
@@ -125,7 +136,7 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
-                <span class="text-[11px] text-muted italic">Dipakai di "Catat Output" (WO Detail) — data awal dari referensi print-industry MIS, sesuaikan dengan istilah PT Telasih Makmur.</span>
+                <span class="text-[11px] text-muted italic">Used in "Record Output" (WO Detail) — seed data from print-industry MIS reference, adapt to PT Telasih Makmur terms.</span>
                 <x-slot:newRecord>
                     <button type="button" wire:click="openNew" class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
                 </x-slot:newRecord>
@@ -137,9 +148,9 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
                         <tr>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Kategori</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Kode</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Nama Tipe</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Type Name</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Aksi</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,15 +162,15 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11px]">{{ $t->type_code }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] font-semibold">{{ $t->type_name }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $t->activate ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $t->activate ? 'Aktif' : 'Nonaktif' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $t->activate ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $t->activate ? 'Active' : 'Inactive' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                     <x-grid.action-icon icon="fa-pen" title="Edit" action="openEdit({{ $t->type_id }})" />
-                                    <button type="button" wire:click="toggleActive({{ $t->type_id }})" class="w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer" title="{{ $t->activate ? 'Nonaktifkan' : 'Aktifkan' }}">⏻</button>
+                                    <button type="button" wire:click="toggleActive({{ $t->type_id }})" class="w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer" title="{{ $t->activate ? 'Deactivate' : 'Activate' }}">⏻</button>
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="5" message="Belum ada tipe scrap." />
+                            <x-grid.empty-row :colspan="5" message="No scrap types yet." />
                         @endforelse
                     </tbody>
                 </table>
@@ -171,22 +182,22 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeModal">
             <div class="bg-white rounded-xl w-[420px] max-w-[95vw] shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>{{ $editingId ? 'Edit Tipe Scrap' : 'Tipe Scrap Baru' }}</span>
+                    <span>{{ $editingId ? 'Edit Scrap Type' : 'New Scrap Type' }}</span>
                     <button type="button" wire:click="closeModal" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
                 <div class="p-4 space-y-3">
                     <div>
                         <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Kategori</label>
                         <select wire:model="category" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                            <option value="REJECT">Reject (barang jadi cacat)</option>
-                            <option value="WASTE">Waste (bahan/proses terbuang)</option>
+                            <option value="REJECT">Reject (defective finished goods)</option>
+                            <option value="WASTE">Waste (material/process lost)</option>
                         </select>
                     </div>
-                    <x-form.input label="Kode" name="type_code" wire:model="type_code" placeholder="mis. COLOR_OFF" class="font-mono" />
-                    <x-form.input label="Nama Tipe" name="type_name" wire:model="type_name" placeholder="mis. Warna Tidak Sesuai" />
+                    <x-form.input label="Kode" name="type_code" wire:model="type_code" placeholder="e.g. COLOR_OFF" class="font-mono" />
+                    <x-form.input label="Type Name" name="type_name" wire:model="type_name" placeholder="e.g. Colour Mismatch" />
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="button" wire:click="save" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Cancel</button>
+                        <button type="button" wire:click="save" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Save</button>
                     </div>
                 </div>
             </div>
