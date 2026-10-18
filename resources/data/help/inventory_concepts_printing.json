@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Labels, Barcodes and Scanning",
+    "title_id": "Label, Barcode, dan Scan",
     "purpose": {
       "en": "Which barcode types to use, what the GS1 standard adds, which labels a printing factory needs, and the scan checks that stop wrong picks and wrong receipts.",
       "id": "Jenis barcode yang dipakai, apa yang ditambahkan standar GS1, label apa saja yang dibutuhkan pabrik percetakan, dan pemeriksaan scan yang mencegah salah ambil dan salah terima."
@@ -11,8 +12,8 @@
     "keywords": "label, barcode, qr code, scan, gs1, sscc, code 128, handheld, label pallet, roll tag, traveler, wip tag, label karton, scanner",
     "steps": [
       {
-        "en": "Use Code 128 for internal labels (bin, item, batch), EAN-13 for retail products, GS1-128 or ITF-14 for cartons and pallets, and QR or Data Matrix when much data must fit in a small space.",
-        "id": "Pakai Code 128 untuk label internal (bin, item, batch), EAN-13 untuk produk retail, GS1-128 atau ITF-14 untuk karton dan pallet, dan QR atau Data Matrix bila banyak data harus muat di tempat kecil."
+        "en": "Use Code 128 for internal labels (bin, item, batch) and EAN-13 for retail products. Use GS1-128 or ITF-14 for cartons and pallets. Use QR or Data Matrix when much data must fit in a small space.",
+        "id": "Pakai Code 128 untuk label internal (bin, item, batch) dan EAN-13 untuk produk retail. Pakai GS1-128 atau ITF-14 untuk karton dan pallet. Pakai QR atau Data Matrix bila banyak data harus muat di tempat kecil."
       },
       {
         "en": "GS1 Application Identifiers put several data items in one barcode: GTIN, batch, expiry date, serial number, count and weight. The SSCC is a unique number for one pallet or carton.",
@@ -87,6 +88,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Paper, Board and Rolls: Rules Only Printers Need",
+    "title_id": "Kertas, Board, dan Roll: Aturan Khusus Percetakan",
     "purpose": {
       "en": "How to keep paper and board stock correctly: units and conversion, grain direction, partial rolls, offcuts, moisture and the weight formula.",
       "id": "Cara mengelola stok kertas dan board dengan benar: satuan dan konversi, arah serat, roll sisa, offcut, kelembapan dan rumus berat."
@@ -170,6 +172,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Dieline and Stock: Three Roles of One Drawing",
+    "title_id": "Dieline dan Stok: Tiga Peran Satu Gambar",
     "purpose": {
       "en": "A dieline is not only a drawing. It decides how much material is needed, it creates physical tools that must be stored, and it limits which materials may be used.",
       "id": "Dieline bukan sekadar gambar. Ia menentukan berapa bahan dibutuhkan, menghasilkan alat fisik yang harus disimpan, dan membatasi bahan apa yang boleh dipakai."
@@ -253,6 +256,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Substitute Materials: Rules, Approval and Effects",
+    "title_id": "Bahan Pengganti: Aturan, Persetujuan, dan Dampaknya",
     "purpose": {
       "en": "When one material may replace another, how big ERP systems model it, how to compare materials, who must approve, and what the substitution changes in quantity, cost and quality.",
       "id": "Kapan satu material boleh menggantikan yang lain, bagaimana ERP besar memodelkannya, cara membandingkan material, siapa yang harus menyetujui, dan apa yang berubah pada qty, biaya dan mutu."
@@ -345,6 +349,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Ink, Plates, Glue and Other Helper Materials",
+    "title_id": "Tinta, Plate, Lem, dan Bahan Pembantu Lain",
     "purpose": {
       "en": "How to keep and consume the materials that are not paper: inks, varnish, plates, glue, foil, film and consumables, and which issue method fits each.",
       "id": "Cara menyimpan dan memakai material selain kertas: tinta, varnish, plat, lem, foil, film dan barang habis pakai, serta metode issue yang cocok untuk masing-masing."
@@ -414,6 +419,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Finished Goods That Belong to a Customer",
+    "title_id": "Barang Jadi Milik Customer",
     "purpose": {
       "en": "Custom printed packaging fits one customer only. This changes how finished goods, over-run, held goods, customer supplied material and dead stock are handled.",
       "id": "Kemasan cetak custom hanya cocok untuk satu customer. Ini mengubah cara menangani barang jadi, over-run, barang tertahan, material titipan customer dan dead stock."
@@ -487,6 +493,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Yield and Waste Across the Process",
+    "title_id": "Hasil Baik dan Waste di Seluruh Proses",
     "purpose": {
       "en": "Why one waste percentage is not enough, how yield multiplies across processes, and where material cost leaks away. Standards belong to the machine and process.",
       "id": "Mengapa satu persen waste tidak cukup, bagaimana yield berlipat di tiap proses, dan di mana biaya material bocor. Standar milik mesin dan proses."
@@ -552,6 +559,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Incoming Quality, Traceability and Certification",
+    "title_id": "Mutu Barang Masuk, Ketertelusuran, dan Sertifikasi",
     "purpose": {
       "en": "What to check when material arrives, how to trace material both ways, and how FSC, PEFC and food grade rules limit choosing and substituting batches.",
       "id": "Apa yang diperiksa saat material datang, cara menelusuri material dua arah, dan bagaimana aturan FSC, PEFC dan food grade membatasi pemilihan dan penggantian batch."
@@ -616,6 +624,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Booking Material From a Customer Order",
+    "title_id": "Booking Bahan dari Customer Order",
     "purpose": {
       "en": "How material is reserved for a customer order, from a soft proposal to a hard lock, how the sources are pegged, and the events a booking must survive.",
       "id": "Bagaimana material dipesan untuk customer order, dari usulan lunak sampai kunci keras, bagaimana sumbernya ditautkan, dan kejadian yang harus bisa dilalui sebuah booking."
@@ -703,6 +712,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Receiving Quality: Sampling, Urgent and Short Delivery",
+    "title_id": "Mutu Penerimaan: Sampling, Urgent, dan Kiriman Kurang",
     "purpose": {
       "en": "How incoming material is checked by sampling, how an URGENT job takes material straight to production, and what happens when output plus waste shows that the quantity was short from the start.",
       "id": "Bagaimana material masuk diperiksa dengan sampling, bagaimana job URGENT membawa material langsung ke produksi, dan apa yang terjadi bila output ditambah waste menunjukkan qty sudah kurang sejak awal."

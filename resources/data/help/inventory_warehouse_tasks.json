@@ -37,6 +37,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Area Rules and Virtual Locations",
+    "title_id": "Aturan Area dan Lokasi Virtual",
     "purpose": {
       "en": "How the rules of a storage area (Mixing, Pick Order, Count Every) and the virtual areas (At Subcontractor, In Transit, Loss) work.",
       "id": "Cara kerja aturan area penyimpanan (Mixing, Pick Order, Count Every) dan area virtual (At Subcontractor, In Transit, Loss)."

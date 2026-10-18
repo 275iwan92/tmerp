@@ -634,10 +634,11 @@
     "key": "petty-cash",
     "type": "INPUT",
     "module": "FINACC",
-    "title": "Kas Kecil (Petty Cash)",
+    "title": "Petty Cash",
+    "title_id": "Kas Kecil",
     "purpose": {
-      "en": "The petty cash fund for small cash purchases. Open it to give a cash advance for an approved Cash PO, settle it with the receipts, reimburse a purchase made first, top up the fund from the bank, or cancel a wrong entry.",
-      "id": "Dana kas kecil untuk belanja tunai kecil. Buka untuk memberi kasbon bagi PO Kontan yang sudah disetujui, mempertanggungjawabkannya dengan nota, mengganti belanja yang dibayar dulu, mengisi ulang dari bank, atau membatalkan input yang salah."
+      "en": "The petty cash fund for small cash purchases. Open it to give a cash advance for an approved Cash PO or settle it with the receipts. You can also reimburse a purchase made first, top up the fund from the bank, or cancel a wrong entry.",
+      "id": "Dana kas kecil untuk belanja tunai kecil. Buka untuk memberi kasbon bagi PO Kontan yang sudah disetujui atau mempertanggungjawabkannya dengan nota. Bisa juga mengganti belanja yang dibayar dulu, mengisi ulang dari bank, atau membatalkan input."
     },
     "keywords": "kas kecil, petty cash, kasbon, cash advance, po kontan, cash po, nota, settlement, pertanggungjawaban, reimburse, isi ulang, top up, imprest, plafon, pemegang kas, custodian, belanja tunai",
     "steps": [
@@ -937,8 +938,8 @@
         "id": "Saat customer membayar invoice, buka invoicenya dan klik Record Payment. Isi tanggal dan rekening, ketik Paid Now pada invoice yang dibayar, lalu Confirm Payment. Invoice yang lunas menjadi Closed."
       },
       {
-        "en": "Tab Delivery shows the proof behind the invoice: every line comes from a delivery note, with what was shipped, what the customer received, the reason for a difference, who received it and when.",
-        "id": "Tab Delivery memuat bukti di balik invoice: tiap baris berasal dari Surat Jalan, dengan yang dikirim, yang diterima customer, alasan selisih, siapa yang menerima dan kapan."
+        "en": "Tab Delivery shows the proof behind the invoice. Every line comes from a delivery note: what was shipped, what the customer received, the reason for a difference, who received it and when.",
+        "id": "Tab Delivery memuat bukti di balik invoice. Tiap baris berasal dari Surat Jalan: yang dikirim, yang diterima customer, alasan selisih, siapa yang menerima dan kapan."
       },
       {
         "en": "On a Down Payment Invoice, tab Down Payment History lists everything that happened to the down payments of that order: invoiced, money received, deducted on which invoice, and the balance.",

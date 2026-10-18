@@ -1,0 +1,172 @@
+[
+  {
+    "key": "md-supplier-corrugated-index",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Supplier Corrugated Index",
+    "purpose": {
+      "en": "The price index of corrugated sheets per supplier and substance, by effective date. Open it when a supplier sends a new price list. The index is used to suggest the price of corrugated sheet lines on a Purchase Order.",
+      "id": "Index harga lembar gelombang per supplier dan substance, menurut tanggal berlaku. Buka saat supplier mengirim daftar harga baru. Index dipakai untuk menyarankan harga baris lembar gelombang di Purchase Order."
+    },
+    "keywords": "index gelombang, corrugated index, lembar gelombang, harga kertas, supplier, substance, sw, dw, single wall, double wall, ppn, pajak, harga per m2, bf, bcf",
+    "steps": [
+      {"en": "Open Supplier Corrugated Index. Each row is one index of one supplier and substance from one effective date; older rows stay as history.", "id": "Buka Supplier Corrugated Index. Tiap baris adalah satu index untuk satu supplier dan substance sejak satu tanggal berlaku; baris lama tetap sebagai riwayat."},
+      {"en": "To enter a new price list, click Row, pick the Supplier and type the Substance and the Index / m2.", "id": "Untuk memasukkan daftar harga baru, klik Row, pilih Supplier lalu ketik Substance dan Index / m2."},
+      {"en": "Choose the Price basis (Incl PPN or Excl PPN) and the Effective date from which the index applies.", "id": "Pilih Price basis (Incl PPN atau Excl PPN) dan tanggal Effective, yaitu tanggal mulai index berlaku."},
+      {"en": "Keep Active ticked so the row can be used. Untick it to stop using a row without deleting it.", "id": "Biarkan Active tercentang supaya baris bisa dipakai. Hilangkan centang untuk berhenti memakai baris tanpa menghapusnya."},
+      {"en": "Click Save. If a row is wrong nothing is saved and the message names the row. The same supplier, substance and date cannot be entered twice.", "id": "Klik Save. Bila ada baris yang salah, tidak ada yang tersimpan dan pesan menyebut barisnya. Supplier, substance dan tanggal yang sama tidak boleh diisi dua kali."},
+      {"en": "Set the sheet rules of the same supplier in Supplier Corrugated Rule. A price is only suggested when the index and the rule both exist.", "id": "Atur ketentuan lembar untuk supplier yang sama di Supplier Corrugated Rule. Harga hanya disarankan bila index dan ketentuannya sama-sama ada."}
+    ],
+    "fields": [
+      {"label": "Supplier", "en": "Supplier picked from the active suppliers and those that already have an index. Required.", "id": "Supplier, dipilih dari supplier aktif dan yang sudah punya index. Wajib."},
+      {"label": "Substance", "en": "Substance name of the sheet, typed in capitals. Required. SW or DW can be used as a general substance when the material name has no substance of its own.", "id": "Nama substance lembar, diketik huruf besar. Wajib. SW atau DW bisa dipakai sebagai substance umum bila nama bahan tidak memuat substance sendiri."},
+      {"label": "Index / m2", "en": "Price index per square metre of the trimmed sheet, zero or more, 2 decimals. Required. Read when a Purchase Order line price is suggested.", "id": "Index harga per meter persegi lembar yang sudah di-trim, nol atau lebih, 2 desimal. Wajib. Dibaca saat harga baris Purchase Order disarankan."},
+      {"label": "Price basis", "en": "Incl PPN if the index already includes PPN, Excl PPN if not. Required. The PPN rate comes from Tax Rate on the document date.", "id": "Incl PPN bila index sudah termasuk PPN, Excl PPN bila belum. Wajib. Tarif PPN diambil dari Tax Rate menurut tanggal dokumen."},
+      {"label": "Effective", "en": "Date from which the index applies. Required. A document uses the latest active row dated on or before its own date.", "id": "Tanggal mulai index berlaku. Wajib. Dokumen memakai baris aktif terbaru yang tanggalnya sama atau sebelum tanggal dokumen itu."},
+      {"label": "Active", "en": "Only Active rows are used for prices. Untick to stop using a row.", "id": "Hanya baris Active yang dipakai untuk harga. Hilangkan centang untuk berhenti memakai baris."}
+    ]
+  },
+  {
+    "key": "md-supplier-corrugated-rule",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Supplier Corrugated Rule",
+    "purpose": {
+      "en": "The corrugated sheet terms of each supplier by effective date: maximum trim width and the discount for each running-meter tier. Open it when a supplier changes its terms. It is used when a Purchase Order line price is suggested.",
+      "id": "Ketentuan lembar gelombang tiap supplier menurut tanggal berlaku: lebar trim maksimum dan diskon tiap tingkat running meter. Buka saat supplier mengubah ketentuan. Dipakai saat harga baris Purchase Order disarankan."
+    },
+    "keywords": "ketentuan gelombang, corrugated rule, aturan lembar, lebar trim, diskon, running meter, rm, harga kertas, supplier, ppn, pajak, single wall, double wall",
+    "steps": [
+      {"en": "Open Supplier Corrugated Rule. Each row is the terms of one supplier from one effective date; older rows stay as history.", "id": "Buka Supplier Corrugated Rule. Tiap baris adalah ketentuan satu supplier sejak satu tanggal berlaku; baris lama tetap sebagai riwayat."},
+      {"en": "To enter new terms, click Row, pick the Supplier and type the Max trim width (cm).", "id": "Untuk memasukkan ketentuan baru, klik Row, pilih Supplier dan ketik Max trim width (cm)."},
+      {"en": "Type the discount percentage of each running-meter tier: Discount from 300, 500, 1000, 2000 and 5000 RM %. A tier may be left empty.", "id": "Ketik persen diskon tiap tingkat running meter: Discount from 300, 500, 1000, 2000 dan 5000 RM %. Tingkat boleh dikosongkan."},
+      {"en": "Pick the Effective date from which the terms apply and keep Active ticked.", "id": "Pilih tanggal Effective, yaitu tanggal mulai ketentuan berlaku, dan biarkan Active tercentang."},
+      {"en": "Click Save. If a row is wrong nothing is saved and the message names the row. One supplier cannot have two rows with the same date.", "id": "Klik Save. Bila ada baris yang salah, tidak ada yang tersimpan dan pesan menyebut barisnya. Satu supplier tidak boleh punya dua baris dengan tanggal sama."},
+      {"en": "Enter the price index of the same supplier in Supplier Corrugated Index. A price is only suggested when both exist.", "id": "Isi index harga supplier yang sama di Supplier Corrugated Index. Harga hanya disarankan bila keduanya ada."}
+    ],
+    "fields": [
+      {"label": "Supplier", "en": "Supplier picked from the active suppliers and those that already have a rule. Required.", "id": "Supplier, dipilih dari supplier aktif dan yang sudah punya ketentuan. Wajib."},
+      {"label": "Max trim width (cm)", "en": "Widest trim the supplier can run, in cm, at least 1, 1 decimal. Required. Used to work out how many sheets fit across.", "id": "Lebar trim terlebar yang bisa dikerjakan supplier, dalam cm, minimal 1, 1 desimal. Wajib. Dipakai untuk menghitung berapa lembar muat ke samping."},
+      {"label": "Discount from 300 RM %", "en": "Discount percent for orders from 300 running metres. A negative value raises the price. Below 300 running metres no price is suggested.", "id": "Persen diskon untuk order mulai 300 running meter. Nilai negatif menaikkan harga. Di bawah 300 running meter tidak ada harga yang disarankan."},
+      {"label": "Discount from 500 RM %", "en": "Discount percent for orders from 500 running metres. A negative value raises the price.", "id": "Persen diskon untuk order mulai 500 running meter. Nilai negatif menaikkan harga."},
+      {"label": "Discount from 1000 RM %", "en": "Discount percent for orders from 1000 running metres. A negative value raises the price.", "id": "Persen diskon untuk order mulai 1000 running meter. Nilai negatif menaikkan harga."},
+      {"label": "Discount from 2000 RM %", "en": "Discount percent for orders from 2000 running metres. A negative value raises the price.", "id": "Persen diskon untuk order mulai 2000 running meter. Nilai negatif menaikkan harga."},
+      {"label": "Discount from 5000 RM %", "en": "Discount percent for orders from 5000 running metres. A negative value raises the price.", "id": "Persen diskon untuk order mulai 5000 running meter. Nilai negatif menaikkan harga."},
+      {"label": "Effective", "en": "Date from which the terms apply. Required. A document uses the latest active row dated on or before its own date.", "id": "Tanggal mulai ketentuan berlaku. Wajib. Dokumen memakai baris aktif terbaru yang tanggalnya sama atau sebelum tanggal dokumen itu."},
+      {"label": "Active", "en": "Only Active rows are used for prices. Untick to stop using a row.", "id": "Hanya baris Active yang dipakai untuk harga. Hilangkan centang untuk berhenti memakai baris."}
+    ]
+  },
+  {
+    "key": "md-supplier-duplex-price",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Supplier Duplex Price",
+    "purpose": {
+      "en": "The duplex board price of each supplier by grade, gsm range and effective date. Open it when a supplier sends a new price list. It is used to suggest the price on Purchase Requisition and Purchase Order lines for duplex materials.",
+      "id": "Harga karton duplex tiap supplier menurut grade, rentang gsm dan tanggal berlaku. Buka saat supplier mengirim daftar harga baru. Dipakai untuk menyarankan harga di baris Purchase Requisition dan Purchase Order bahan duplex."
+    },
+    "keywords": "harga duplex, duplex price, karton duplex, harga kertas, supplier, grade, gsm, index, apkey, ppn, pajak, daftar harga, indokertas",
+    "steps": [
+      {"en": "Open Supplier Duplex Price. Each row is one price of one supplier, grade and gsm range from one effective date; older rows stay as history.", "id": "Buka Supplier Duplex Price. Tiap baris adalah satu harga untuk satu supplier, grade dan rentang gsm sejak satu tanggal berlaku; baris lama tetap sebagai riwayat."},
+      {"en": "To enter a price, click Row, pick the Supplier, type the Grade if the supplier has one, and give the range with Gsm from and Gsm to. Use one row per gsm range.", "id": "Untuk memasukkan harga, klik Row, pilih Supplier, ketik Grade bila supplier punya grade, lalu isi rentang Gsm from dan Gsm to. Pakai satu baris per rentang gsm."},
+      {"en": "Pick the Formula (Reference sheet or Weight) the supplier uses, then type the Index and the APKey %.", "id": "Pilih Formula (Reference sheet atau Weight) yang dipakai supplier, lalu ketik Index dan APKey %."},
+      {"en": "Choose the Price basis (Excl PPN or Incl PPN) and the Effective date. Keep Active ticked.", "id": "Pilih Price basis (Excl PPN atau Incl PPN) dan tanggal Effective. Biarkan Active tercentang."},
+      {"en": "Click Save. If a row is wrong nothing is saved and the message names the row. Gsm to cannot be less than Gsm from.", "id": "Klik Save. Bila ada baris yang salah, tidak ada yang tersimpan dan pesan menyebut barisnya. Gsm to tidak boleh lebih kecil dari Gsm from."},
+      {"en": "Saving only stores the price list. The suggested price appears later on Purchase Requisition and Purchase Order lines, and the buyer can still change it.", "id": "Menyimpan hanya mencatat daftar harga. Harga saran muncul kemudian di baris Purchase Requisition dan Purchase Order, dan pembeli tetap boleh mengubahnya."}
+    ],
+    "fields": [
+      {"label": "Supplier", "en": "Supplier picked from the active suppliers and those that already have a price. Required.", "id": "Supplier, dipilih dari supplier aktif dan yang sudah punya harga. Wajib."},
+      {"label": "Grade", "en": "Duplex grade as the supplier names it, typed in capitals. Optional. Leave empty if the price is not split by grade.", "id": "Grade duplex sesuai sebutan supplier, diketik huruf besar. Boleh kosong. Kosongkan bila harga tidak dibedakan per grade."},
+      {"label": "Gsm from", "en": "Lowest gsm of the range this row covers, whole number, zero or more. Required.", "id": "Gsm terendah dari rentang yang dicakup baris ini, bilangan bulat, nol atau lebih. Wajib."},
+      {"label": "Gsm to", "en": "Highest gsm of the range, whole number. Required. It must not be less than Gsm from.", "id": "Gsm tertinggi dari rentang, bilangan bulat. Wajib. Tidak boleh lebih kecil dari Gsm from."},
+      {"label": "Formula", "en": "Reference sheet or Weight: the way this supplier prices the board. Required. Each row is calculated by its own formula.", "id": "Reference sheet atau Weight: cara supplier ini menghitung harga karton. Wajib. Tiap baris dihitung dengan formulanya sendiri."},
+      {"label": "Index", "en": "The supplier price index for this grade and gsm range, zero or more, 2 decimals. Required.", "id": "Index harga supplier untuk grade dan rentang gsm ini, nol atau lebih, 2 desimal. Wajib."},
+      {"label": "APKey %", "en": "The supplier APKey multiplier, typed in percent, zero or more, 2 decimals. Required.", "id": "Pengali APKey dari supplier, diketik dalam persen, nol atau lebih, 2 desimal. Wajib."},
+      {"label": "Price basis", "en": "Excl PPN or Incl PPN: whether the price already includes PPN. Required. The PPN rate comes from Tax Rate on the document date.", "id": "Excl PPN atau Incl PPN: apakah harga sudah termasuk PPN. Wajib. Tarif PPN diambil dari Tax Rate menurut tanggal dokumen."},
+      {"label": "Effective", "en": "Date from which the price applies. Required. A document uses the latest active row dated on or before its own date.", "id": "Tanggal mulai harga berlaku. Wajib. Dokumen memakai baris aktif terbaru yang tanggalnya sama atau sebelum tanggal dokumen itu."},
+      {"label": "Active", "en": "Only Active rows are used for prices. Untick to stop using a row.", "id": "Hanya baris Active yang dipakai untuk harga. Hilangkan centang untuk berhenti memakai baris."}
+    ]
+  },
+  {
+    "key": "md-supplier-paper-price",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Supplier Paper Price",
+    "purpose": {
+      "en": "The paper price of each supplier by paper kind, with roll price and ream price, versioned by effective date. Open it when a supplier changes its prices. It feeds the suggested price on Purchase Requisition and Purchase Order lines.",
+      "id": "Harga kertas tiap supplier menurut jenis kertas, dengan harga roll dan harga ream, menurut tanggal berlaku. Buka saat supplier mengubah harga. Dipakai untuk harga saran di baris Purchase Requisition dan Purchase Order."
+    },
+    "keywords": "harga kertas, paper price, supplier, harga roll, harga ream, rim, biaya potong, gramasi, ivory, art carton, ppn, pajak, harga per kg, harga per ton, daftar harga",
+    "steps": [
+      {"en": "Open Supplier Paper Price. Each row is one price of one supplier and paper kind from one effective date; older rows stay as history.", "id": "Buka Supplier Paper Price. Tiap baris adalah satu harga untuk satu supplier dan jenis kertas sejak satu tanggal berlaku; baris lama tetap sebagai riwayat."},
+      {"en": "To enter a price, click Row, pick the Supplier and type the Paper kind. Pick a Grammage only if the price is for that gsm; leave it empty to cover all grammages.", "id": "Untuk memasukkan harga, klik Row, pilih Supplier dan ketik Paper kind. Pilih Grammage hanya bila harga khusus gsm itu; kosongkan agar berlaku untuk semua gramasi."},
+      {"en": "Type the Roll price and pick whether it is Per kg or ton, and the Cut cost / kg if any. For standard sheet sizes type the Ream price / kg. Fill the roll price or the ream price.", "id": "Ketik Roll price dan pilih apakah Per kg atau ton, serta Cut cost / kg bila ada. Untuk ukuran lembar standar ketik Ream price / kg. Isi harga roll atau harga ream."},
+      {"en": "Choose the Price basis (Incl PPN or Excl PPN) and the Effective date. Keep Active ticked.", "id": "Pilih Price basis (Incl PPN atau Excl PPN) dan tanggal Effective. Biarkan Active tercentang."},
+      {"en": "Click Save. If a row is wrong, for example no roll price and no ream price, nothing is saved and the message names the row.", "id": "Klik Save. Bila ada baris yang salah, misalnya tidak ada harga roll dan harga ream, tidak ada yang tersimpan dan pesan menyebut barisnya."},
+      {"en": "Saving only stores the price. The suggested price shows later on Purchase Requisition and Purchase Order lines for materials of that paper kind, and the buyer can still change it.", "id": "Menyimpan hanya mencatat harga. Harga saran muncul kemudian di baris Purchase Requisition dan Purchase Order untuk bahan jenis kertas itu, dan pembeli tetap boleh mengubahnya."}
+    ],
+    "fields": [
+      {"label": "Supplier", "en": "Supplier picked from the active suppliers and those that already have a price. Required.", "id": "Supplier, dipilih dari supplier aktif dan yang sudah punya harga. Wajib."},
+      {"label": "Paper kind", "en": "Kind of paper, typed in capitals. Required. The price is used for materials whose name or category contains this text.", "id": "Jenis kertas, diketik huruf besar. Wajib. Harga dipakai untuk bahan yang namanya atau kategorinya memuat teks ini."},
+      {"label": "Grammage", "en": "Gsm picked from the grammage master. Optional. Empty means the price applies to all grammages; a row with the matching gsm is preferred.", "id": "Gsm yang dipilih dari master gramasi. Boleh kosong. Kosong berarti harga berlaku untuk semua gramasi; baris dengan gsm yang cocok didahulukan."},
+      {"label": "Roll price", "en": "Price of the paper bought as a roll, zero or more, 2 decimals. Optional, but fill this or the ream price.", "id": "Harga kertas yang dibeli dalam bentuk roll, nol atau lebih, 2 desimal. Boleh kosong, tetapi isi ini atau harga ream."},
+      {"label": "Per", "en": "Whether the roll price is per kg or per ton. Required.", "id": "Apakah harga roll per kg atau per ton. Wajib."},
+      {"label": "Cut cost / kg", "en": "Cost per kg of cutting a roll into sheets, zero or more. Optional. Only counts when a price is worked out for sheets cut from a roll.", "id": "Biaya potong per kg untuk memotong roll jadi lembar, nol atau lebih. Boleh kosong. Hanya dihitung bila harga dihitung untuk lembar hasil potong roll."},
+      {"label": "Ream price / kg", "en": "Price per kg of paper bought as ready-cut standard sheets, zero or more. Optional, but fill this or the roll price. Used for ream and sheet prices.", "id": "Harga per kg kertas yang dibeli sebagai lembar standar siap pakai, nol atau lebih. Boleh kosong, tetapi isi ini atau harga roll. Dipakai untuk harga ream dan lembar."},
+      {"label": "Price basis", "en": "Incl PPN if the price already includes PPN, Excl PPN if not. Required. The PPN rate comes from Tax Rate on the document date.", "id": "Incl PPN bila harga sudah termasuk PPN, Excl PPN bila belum. Wajib. Tarif PPN diambil dari Tax Rate menurut tanggal dokumen."},
+      {"label": "Effective", "en": "Date from which the price applies. Required. A document uses the latest active row dated on or before its own date.", "id": "Tanggal mulai harga berlaku. Wajib. Dokumen memakai baris aktif terbaru yang tanggalnya sama atau sebelum tanggal dokumen itu."},
+      {"label": "Active", "en": "Only Active rows are used for prices. Untick to stop using a row.", "id": "Hanya baris Active yang dipakai untuk harga. Hilangkan centang untuk berhenti memakai baris."}
+    ]
+  },
+  {
+    "key": "md-supplier-single-face-price",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Supplier Single Face Price",
+    "purpose": {
+      "en": "The Single Face corrugated price of each supplier by substance and flute, versioned by effective date. Open it when a supplier changes its prices. It feeds the suggested price on Purchase Requisition and Purchase Order lines.",
+      "id": "Harga Single Face tiap supplier menurut substance dan flute, menurut tanggal berlaku. Buka saat supplier mengubah harga. Dipakai untuk harga saran di baris Purchase Requisition dan Purchase Order."
+    },
+    "keywords": "single face, sf, harga single face, harga kertas, supplier, substance, flute, index per m2, ppn, pajak, gelombang, daftar harga",
+    "steps": [
+      {"en": "Open Supplier Single Face Price. Each row is one price of one supplier, substance and flute from one effective date; older rows stay as history.", "id": "Buka Supplier Single Face Price. Tiap baris adalah satu harga untuk satu supplier, substance dan flute sejak satu tanggal berlaku; baris lama tetap sebagai riwayat."},
+      {"en": "To enter a price, click Row, pick the Supplier, the Substance and the Flute.", "id": "Untuk memasukkan harga, klik Row, pilih Supplier, Substance dan Flute."},
+      {"en": "Type the Index / m2, choose the Price basis (Incl PPN or Excl PPN) and the Effective date. Keep Active ticked.", "id": "Ketik Index / m2, pilih Price basis (Incl PPN atau Excl PPN) dan tanggal Effective. Biarkan Active tercentang."},
+      {"en": "Click Save. If a row is wrong nothing is saved and the message names the row. The same supplier, substance, flute and date cannot be entered twice.", "id": "Klik Save. Bila ada baris yang salah, tidak ada yang tersimpan dan pesan menyebut barisnya. Supplier, substance, flute dan tanggal yang sama tidak boleh diisi dua kali."},
+      {"en": "Saving only stores the price. The suggested price shows later on Purchase Requisition and Purchase Order lines for Single Face materials, and the buyer can still change it.", "id": "Menyimpan hanya mencatat harga. Harga saran muncul kemudian di baris Purchase Requisition dan Purchase Order bahan Single Face, dan pembeli tetap boleh mengubahnya."}
+    ],
+    "fields": [
+      {"label": "Supplier", "en": "Supplier picked from the active suppliers and those that already have a price. Required.", "id": "Supplier, dipilih dari supplier aktif dan yang sudah punya harga. Wajib."},
+      {"label": "Substance", "en": "Substance picked from the Single Face substances in the sheet rate master. Required. It is matched with the substance in the material name.", "id": "Substance, dipilih dari daftar substance Single Face di master sheet rate. Wajib. Dicocokkan dengan substance di nama bahan."},
+      {"label": "Flute", "en": "Flute type: E/F, B/F, C/F or BC/F. Required. It is matched with the flute in the material name.", "id": "Jenis flute: E/F, B/F, C/F atau BC/F. Wajib. Dicocokkan dengan flute di nama bahan."},
+      {"label": "Index / m2", "en": "Price per square metre, zero or more, 2 decimals. Required. The price of a sheet is worked out from it and the sheet size in the material name.", "id": "Harga per meter persegi, nol atau lebih, 2 desimal. Wajib. Harga satu lembar dihitung dari index ini dan ukuran lembar di nama bahan."},
+      {"label": "Price basis", "en": "Incl PPN if the index already includes PPN, Excl PPN if not. Required. The PPN rate comes from Tax Rate on the document date.", "id": "Incl PPN bila index sudah termasuk PPN, Excl PPN bila belum. Wajib. Tarif PPN diambil dari Tax Rate menurut tanggal dokumen."},
+      {"label": "Effective", "en": "Date from which the price applies. Required. A document uses the latest active row dated on or before its own date.", "id": "Tanggal mulai harga berlaku. Wajib. Dokumen memakai baris aktif terbaru yang tanggalnya sama atau sebelum tanggal dokumen itu."},
+      {"label": "Active", "en": "Only Active rows are used for prices. Untick to stop using a row.", "id": "Hanya baris Active yang dipakai untuk harga. Hilangkan centang untuk berhenti memakai baris."}
+    ]
+  },
+  {
+    "key": "md-tax-rate",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Tax Rate",
+    "purpose": {
+      "en": "The PPN tax rate by effective date. Open it when the government changes the rate: add a new row with the new date and the old row stays as history. Documents use the rate in force on their own date.",
+      "id": "Tarif pajak PPN menurut tanggal berlaku. Buka saat pemerintah mengubah tarif: tambah baris baru dengan tanggal baru dan baris lama tetap sebagai riwayat. Dokumen memakai tarif yang berlaku pada tanggalnya sendiri."
+    },
+    "keywords": "tarif pajak, tax rate, ppn, pajak, pajak pertambahan nilai, persen ppn, tanggal berlaku, riwayat tarif, 11 persen, vat",
+    "steps": [
+      {"en": "Open Tax Rate. Each row is the rate of one tax from one effective date; older rows are history.", "id": "Buka Tax Rate. Tiap baris adalah tarif satu pajak sejak satu tanggal berlaku; baris lama adalah riwayat."},
+      {"en": "To change the rate, click Row, pick the Tax, type the new Rate % and the Effective date. Do not edit the old row.", "id": "Untuk mengubah tarif, klik Row, pilih Tax, ketik Rate % baru dan tanggal Effective. Jangan mengubah baris lama."},
+      {"en": "Keep Active ticked. Only Active rows are used. Untick a row to stop using it.", "id": "Biarkan Active tercentang. Hanya baris Active yang dipakai. Hilangkan centang untuk berhenti memakai baris."},
+      {"en": "Click Save. If a row is wrong nothing is saved and the message names the row. The same tax and date cannot be entered twice.", "id": "Klik Save. Bila ada baris yang salah, tidak ada yang tersimpan dan pesan menyebut barisnya. Pajak dan tanggal yang sama tidak boleh diisi dua kali."},
+      {"en": "After saving, new documents read the new rate at once. A document keeps the rate of its own date, so old documents do not change.", "id": "Setelah disimpan, dokumen baru langsung membaca tarif baru. Dokumen memakai tarif menurut tanggalnya sendiri, jadi dokumen lama tidak berubah."}
+    ],
+    "fields": [
+      {"label": "Tax", "en": "The tax. PPN is the only choice. Required.", "id": "Jenis pajak. Satu-satunya pilihan adalah PPN. Wajib."},
+      {"label": "Rate %", "en": "Tax rate in percent, from 0 to 100, 2 decimals. Required. Used for PPN in Quotation, Customer Order, Purchase Order, invoice, Delivery Order print and paper prices.", "id": "Tarif pajak dalam persen, dari 0 sampai 100, 2 desimal. Wajib. Dipakai untuk PPN di Quotation, Customer Order, Purchase Order, faktur, cetak Delivery Order dan harga kertas."},
+      {"label": "Effective", "en": "Date from which the rate applies. Required. A document uses the latest active row dated on or before its own date.", "id": "Tanggal mulai tarif berlaku. Wajib. Dokumen memakai baris aktif terbaru yang tanggalnya sama atau sebelum tanggal dokumen itu."},
+      {"label": "Active", "en": "Only Active rows are used. Untick to stop using a row.", "id": "Hanya baris Active yang dipakai. Hilangkan centang untuk berhenti memakai baris."}
+    ]
+  }
+]

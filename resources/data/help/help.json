@@ -4,6 +4,7 @@
     "type": "REPORT",
     "module": "GENERAL",
     "title": "Help Center",
+    "title_id": "Pusat Bantuan",
     "purpose": {
       "en": "Read what every screen and report is for, how to use it step by step, and what each field means. Open it when you are not sure how a screen works.",
       "id": "Membaca kegunaan tiap layar dan laporan, cara pakainya langkah demi langkah, dan arti tiap isian. Buka saat Anda ragu cara kerja sebuah layar."
@@ -361,6 +362,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "AI Assistant",
+    "title_id": "Asisten AI",
     "purpose": {
       "en": "Explains the AI assistant: a private chat that finds screens, explains how to use them from the Help, and answers numbers you are allowed to see. It works without internet.",
       "id": "Menjelaskan asisten AI: chat pribadi yang mencarikan layar, menjelaskan cara pakainya dari Help, dan menjawab angka yang boleh Anda lihat. Bekerja tanpa internet."

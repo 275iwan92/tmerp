@@ -4,6 +4,7 @@
     "type": "INPUT",
     "module": "INV",
     "title": "Batch (list and form)",
+    "title_id": "Batch (daftar dan form)",
     "purpose": {
       "en": "The Batch screen is a list of batches; open one to see its form. The form shows the batch data, the stock of the batch per bin, its history and its quality decisions. Use it to add or correct a batch and to release or reject it.",
       "id": "Layar Batch berupa daftar batch; buka satu untuk melihat formnya. Form menampilkan data batch, stok batch per bin, riwayat, dan keputusan mutunya. Pakai untuk menambah atau memperbaiki batch serta merilis atau menolaknya."
@@ -36,6 +37,7 @@
     "type": "INPUT",
     "module": "INV",
     "title": "Warehouse Map: pick allocation",
+    "title_id": "Peta Gudang: Alokasi Pengambilan",
     "purpose": {
       "en": "An optional layer on the Warehouse Map. Choose an open pick list and the map shows the bins it takes material from, numbered in picking order, with a dashed route to the staging bin. Without a pick list the map looks as before.",
       "id": "Lapisan opsional di Warehouse Map. Pilih pick list yang terbuka dan peta menunjukkan bin tempat bahan diambil, bernomor urutan ambil, dengan garis putus-putus ke bin staging. Tanpa pick list peta tampil seperti biasa."

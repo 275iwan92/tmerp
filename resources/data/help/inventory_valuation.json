@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Stock Valuation: Average per Item",
+    "title_id": "Valuasi Stok: Rata-rata per Item",
     "purpose": {
       "en": "Stock is valued at a moving Average. With INV_AVG_SCOPE = ITEM there is one Average per item for the whole company; with BIN each bin keeps its own Average (the old way).",
       "id": "Stok dinilai dengan rata-rata bergerak (Average). Dengan INV_AVG_SCOPE = ITEM ada satu Average per item untuk seluruh perusahaan; dengan BIN tiap bin punya Average sendiri (cara lama)."

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Isi awal Help (topik, judul Indonesia title_id, langkah, isian) dari resources/data/help/*.json ke tabel help + kamus, dan daftar layar menu yang belum punya topik.
+ * Sumber hulu  : resources/data/help/*.json (bentuk: _format.md), sys_app_menu.
+ * Input        : Daftar topik hasil baca JSON; login pelaksana.
+ * Output       : Baris sys_help_topic / sys_help_line dan terjemahan kamus konteks help.
+ * Dipakai oleh : php artisan help:import, HelpMap, ErpKnowledge.
+ * Status       : Aktif.
+ */
+
 namespace App\Services\Help;
 
 use App\Models\Sys\SysAppMenu;
@@ -34,6 +44,9 @@ final class HelpCenter
                 $topic->fill(['topic_type' => $t['type'], 'module_code' => $t['module'], 'title' => $t['title'], 'purpose' => $t['purpose']['en'],
                     'keywords' => $t['keywords'] ?? null, 'sort_order' => ($i + 1) * 10, 'activate' => true, 'updated_by' => $login])->save();
                 $pairs[$t['purpose']['en']] = $t['purpose']['id'];
+                if (! empty($t['title_id'])) {
+                    $pairs[$t['title']] = $t['title_id'];
+                }
 
                 SysHelpLine::query()->where('help_topic_id', $topic->getKey())->delete();
                 $rows = [];

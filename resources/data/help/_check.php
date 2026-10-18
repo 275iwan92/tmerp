@@ -47,6 +47,9 @@ foreach (array_slice($argv, 1) as $file) {
         if (trim((string) ($t['title'] ?? '')) === '' || mb_strlen($t['title']) > 150) {
             $err("$key: title is missing or over 150 characters");
         }
+        if (isset($t['title_id']) && (! is_string($t['title_id']) || trim($t['title_id']) === '' || mb_strlen($t['title_id']) > 150 || preg_match('/[\r\n]/', $t['title_id']))) {
+            $err("$key: title_id must be one line of text, at most 150 characters");
+        }
         if (mb_strlen((string) ($t['keywords'] ?? '')) > 255) {
             $err("$key: keywords over 255 characters");
         }

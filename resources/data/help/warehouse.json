@@ -18,7 +18,7 @@
       {"en": "Edit Layout: drag a storage area to move it, or drag its corner to resize it. The new position is saved at once.", "id": "Edit Layout: seret area penyimpanan untuk memindahkannya, atau seret sudutnya untuk mengubah ukurannya. Posisi baru langsung tersimpan."},
       {"en": "Generate Bins: choose a storage area, the lanes and slots (or racks, columns and levels) and the capacity per bin, then Generate.", "id": "Generate Bins: pilih area penyimpanan, lajur dan slot (atau rak, kolom, dan tingkat) serta kapasitas per bin, lalu Generate."},
       {"en": "A yellow dot on a bin means it holds stock that is expired or expires soon. Click Expired / expires soon above the map to see only those bins.", "id": "Titik kuning di bin berarti berisi stok yang kedaluwarsa atau segera kedaluwarsa. Klik Expired / expires soon di atas peta untuk melihat bin itu saja."},
-      {"en": "Read the Capacity per Floor table under the map: floor area, clear height and room volume of each floor, how much of it is storage area, and how much is in use (m3 and kg).", "id": "Baca tabel Capacity per Floor di bawah peta: luas lantai, tinggi bersih dan volume ruang tiap lantai, berapa yang menjadi area penyimpanan, dan berapa yang terpakai (m3 dan kg)."},
+      {"en": "Read the Capacity per Floor table. It shows the floor area, clear height and room volume of each floor, how much of it is storage area, and how much is in use (m3 and kg).", "id": "Baca tabel Capacity per Floor. Isinya luas lantai, tinggi bersih dan volume ruang tiap lantai, berapa yang menjadi area penyimpanan, dan berapa yang terpakai (m3 dan kg)."},
       {"en": "The small number in a bin is how many labelled pallets and packs are stacked there. A violet dot = it holds a remnant, an orange dot = the unit to use first is buried.", "id": "Angka kecil di bin = jumlah palet dan pak berlabel yang ditumpuk di sana. Titik ungu = berisi sisa, titik oranye = satuan yang harus dipakai dulu tertimbun."},
       {"en": "In the bin panel, Stack shows the units from the top down; number 1 is the bottom. Use the arrows to swap a unit with the one above or below when the pile was rearranged.", "id": "Di panel bin, Stack menampilkan satuan dari atas ke bawah; nomor 1 paling bawah. Pakai panah untuk menukar satuan dengan yang di atas atau di bawahnya bila tumpukan diubah."},
       {"en": "Click Remnant or Buried above the map to see only those bins. Stack Monitor lists every stack in one table.", "id": "Klik Remnant atau Buried di atas peta untuk melihat bin itu saja. Stack Monitor mendaftar semua tumpukan dalam satu tabel."}
@@ -87,11 +87,114 @@
     },
     "keywords": "approval transfer, persetujuan transfer, stock transfer approval, pindah stok, setuju, tolak, hold, setting approval, tf",
     "steps": [
-      {"en": "To switch it on: Setup > Setting Approval, open module TF, set the position that approves, then Activate. Deactivate switches it off again.", "id": "Untuk menyalakan: Setup > Setting Approval, buka modul TF, isi jabatan yang menyetujui, lalu Activate. Deactivate mematikannya lagi."},
-      {"en": "Open a transfer in the list to see its route, lines and the capacity check of the destination bins.", "id": "Buka satu transfer di daftar untuk melihat rute, baris, dan pemeriksaan kapasitas bin tujuannya."},
-      {"en": "Approve moves the stock when you are the last level. Reject stops the transfer; no stock moves. Hold keeps it in your list. Reject and Hold need a reason.", "id": "Approve memindahkan stok bila Anda level terakhir. Reject menghentikan transfer; tidak ada stok yang pindah. Hold menahannya di daftar Anda. Reject dan Hold wajib alasan."}
+      {
+        "en": "To switch it on: Setup > Setting Approval, open module TF, set the position that approves, then Activate. Deactivate switches it off again.",
+        "id": "Untuk menyalakan: Setup > Setting Approval, buka modul TF, isi jabatan yang menyetujui, lalu Activate. Deactivate mematikannya lagi."
+      },
+      {
+        "en": "Open a transfer in the list to see its route, lines and the capacity check of the destination bins.",
+        "id": "Buka satu transfer di daftar untuk melihat rute, baris, dan pemeriksaan kapasitas bin tujuannya."
+      },
+      {
+        "en": "Approve moves the stock when you are the last level. Reject stops the transfer; no stock moves. Hold keeps it in your list. Reject and Hold need a reason.",
+        "id": "Approve memindahkan stok bila Anda level terakhir. Reject menghentikan transfer; tidak ada stok yang pindah. Hold menahannya di daftar Anda. Reject dan Hold wajib alasan."
+      },
+      {
+        "en": "The arrow icon next to the transfer number opens the transfer itself on the Stock Transfer screen. Once you have decided, the Decision Log lists your 20 latest decisions with the level and the reason.",
+        "id": "Ikon panah di samping nomor transfer membuka transfernya di layar Stock Transfer. Setelah Anda memutuskan, Decision Log menampilkan 20 keputusan terakhir Anda beserta level dan alasannya."
+      },
+      {
+        "en": "Approve first checks that the stock can really move. If it cannot, the message is shown and your approval is not saved. After Hold the transfer stays in your list; only Approve or Reject is left.",
+        "id": "Approve lebih dulu memeriksa apakah stok benar-benar bisa dipindah. Bila tidak bisa, pesannya tampil dan persetujuan Anda tidak disimpan. Setelah Hold, transfer tetap di daftar Anda; tinggal Approve atau Reject."
+      }
     ],
-    "fields": []
+    "fields": [
+      {
+        "label": "Stock Transfer Waiting for My Approval",
+        "en": "The transfers waiting at your approval level. Each entry shows the transfer number, the stock value, the route, the date and Level n / N; On hold appears when it was held. The number waiting is shown beside the title.",
+        "id": "Transfer yang menunggu di level approval Anda. Tiap entri menampilkan nomor transfer, nilai stok, rute, tanggal, dan Level n / N; On hold muncul bila ditahan. Jumlah yang menunggu tampil di samping judul."
+      },
+      {
+        "label": "Submitted by",
+        "en": "The login of the person who sent the transfer for approval. It is shown under the transfer number, next to the route.",
+        "id": "Login orang yang mengajukan transfer untuk approval. Tampil di bawah nomor transfer, di samping rute."
+      },
+      {
+        "label": "Approval Level",
+        "en": "The level the transfer waits at now, for example Level 2 of 3, with the role of that level. The small marks beside it show how far the levels have gone.",
+        "id": "Level tempat transfer menunggu sekarang, misalnya Level 2 of 3, beserta peran level itu. Tanda kecil di sampingnya menunjukkan sampai level mana prosesnya."
+      },
+      {
+        "label": "Route",
+        "en": "The warehouse the stock leaves and the warehouse it goes to, as warehouse codes. Taken from the transfer.",
+        "id": "Gudang asal stok dan gudang tujuannya, dalam kode gudang. Diambil dari transfer."
+      },
+      {
+        "label": "Reason",
+        "en": "In the transfer: why the stock is moved, for example Replenish a storage area or Bring to production. In the Reject and Hold box: your reason, required, kept in the Document History and the Decision Log.",
+        "id": "Di transfer: alasan stok dipindah, misalnya Replenish a storage area atau Bring to production. Di kotak Reject dan Hold: alasan Anda, wajib diisi, tersimpan di Document History dan Decision Log."
+      },
+      {
+        "label": "Stock value",
+        "en": "The value of the stock in the transfer, in IDR, worked out by the system. It is not typed.",
+        "id": "Nilai stok dalam transfer, dalam IDR, dihitung sistem. Tidak diketik."
+      },
+      {
+        "label": "Carried By",
+        "en": "Name of the person who moves the goods, typed on the transfer.",
+        "id": "Nama orang yang memindahkan barang, diketik di transfer."
+      },
+      {
+        "label": "Lines",
+        "en": "The number of item lines in the transfer.",
+        "id": "Jumlah baris item dalam transfer."
+      },
+      {
+        "label": "Item",
+        "en": "Item code and name of the line.",
+        "id": "Kode dan nama item pada baris."
+      },
+      {
+        "label": "Qty",
+        "en": "The quantity to move on the line.",
+        "id": "Jumlah yang dipindah pada baris."
+      },
+      {
+        "label": "Unit",
+        "en": "The unit of the quantity.",
+        "id": "Satuan dari jumlah itu."
+      },
+      {
+        "label": "From Bin",
+        "en": "The bin the stock is taken from.",
+        "id": "Bin tempat stok diambil."
+      },
+      {
+        "label": "To Bin",
+        "en": "The bin the stock is put in. A dash means no destination bin was chosen.",
+        "id": "Bin tempat stok diletakkan. Tanda strip berarti bin tujuan belum dipilih."
+      },
+      {
+        "label": "Check",
+        "en": "OK, Dead stock, Over capacity or No destination. Over capacity: the destination bin would hold more than its weight or volume capacity once this line and the earlier lines to the same bin are added. Dead stock shows first if two apply.",
+        "id": "OK, Dead stock, Over capacity, atau No destination. Over capacity: bin tujuan akan melebihi kapasitas berat atau volumenya setelah baris ini dan baris sebelumnya ke bin yang sama ditambahkan. Dead stock tampil lebih dulu bila dua-duanya berlaku."
+      },
+      {
+        "label": "Approval Flow",
+        "en": "The levels the transfer must pass, each with its role and the person who holds it, and who decided and when. PLT marks a decision made by an acting officer.",
+        "id": "Level yang harus dilalui transfer, masing-masing dengan perannya dan pemegangnya, serta siapa yang memutuskan dan kapan. PLT menandai keputusan yang diambil pelaksana tugas."
+      },
+      {
+        "label": "Document History",
+        "en": "What happened to the transfer: submitted, approved, rejected or hold, who did it, when, and the reason that was typed.",
+        "id": "Apa yang terjadi pada transfer: diajukan, disetujui, ditolak, atau hold, siapa yang melakukan, kapan, dan alasan yang diketik."
+      },
+      {
+        "label": "Decision Log",
+        "en": "Your own latest decisions: the transfer number, approved, rejected or hold, the level and the reason. It appears only after you have decided something.",
+        "id": "Keputusan terakhir Anda sendiri: nomor transfer, disetujui, ditolak, atau hold, levelnya, dan alasannya. Baru tampil setelah Anda mengambil keputusan."
+      }
+    ]
   },
   {
     "key": "stack-monitor",
@@ -355,18 +458,69 @@
     },
     "keywords": "label print history, riwayat cetak label, riwayat label, siapa cetak label, qr code, barcode",
     "steps": [
-      {"en": "Type a bin code, an item code or a login in the search box.", "id": "Ketik kode bin, kode item, atau login di kotak cari."},
-      {"en": "Use Filters for Label, Size or Printed By, and Group for a subtotal of copies.", "id": "Pakai Filters untuk Label, Size, atau Printed By, dan Group untuk subtotal jumlah lembar."}
+      {
+        "en": "Type a bin code, an item code or a login in the search box.",
+        "id": "Ketik kode bin, kode item, atau login di kotak cari."
+      },
+      {
+        "en": "Use Filters for Label, Size or Printed By, and Group for a subtotal of copies.",
+        "id": "Pakai Filters untuk Label, Size, atau Printed By, dan Group untuk subtotal jumlah lembar."
+      },
+      {
+        "en": "The label screens fill this report: each Print adds one row per label, with up to 20 copies. Click Print History on those screens to come here.",
+        "id": "Layar cetak label mengisi laporan ini: tiap Print menambah satu baris per label, maksimal 20 lembar. Klik Print History di layar itu untuk datang ke sini."
+      },
+      {
+        "en": "Copies is added up in the Total row at the bottom. Export downloads a CSV file of the visible columns and the filtered rows; choose the columns first with Columns.",
+        "id": "Copies dijumlahkan di baris Total di bawah. Export mengunduh file CSV berisi kolom yang tampil dan baris hasil filter; pilih kolomnya lebih dulu dengan Columns."
+      }
     ],
     "fields": [
-      {"label": "Printed At", "en": "Date and time of the print.", "id": "Tanggal dan jam cetak."},
-      {"label": "Label", "en": "Location = bin label, Item = item label.", "id": "Location = label bin, Item = label item."},
-      {"label": "Code", "en": "The bin code or the item code on the label.", "id": "Kode bin atau kode item di label."},
-      {"label": "Name", "en": "The storage area of the bin, or the item name and its bin.", "id": "Area penyimpanan bin, atau nama item dan bin-nya."},
-      {"label": "Qty on Label", "en": "Item label only: the quantity printed on it.", "id": "Hanya label item: qty yang tercetak di label."},
-      {"label": "Copies", "en": "How many copies were asked for.", "id": "Jumlah lembar yang diminta."},
-      {"label": "Size", "en": "sm = 60 x 35 mm, md = 100 x 50 mm, lg = 100 x 150 mm.", "id": "sm = 60 x 35 mm, md = 100 x 50 mm, lg = 100 x 150 mm."},
-      {"label": "Printed By", "en": "Login of the person who printed.", "id": "Login orang yang mencetak."}
+      {
+        "label": "Printed At",
+        "en": "Date and time of the print.",
+        "id": "Tanggal dan jam cetak."
+      },
+      {
+        "label": "Label",
+        "en": "Kind of label printed: Location = bin label, Item = item label, Pallet = pallet label. A Label filter and a Group choice use the same values.",
+        "id": "Jenis label yang dicetak: Location = label bin, Item = label item, Pallet = label pallet. Filter Label dan pilihan Group memakai nilai yang sama."
+      },
+      {
+        "label": "Code",
+        "en": "The code on the label: the bin code, the item code or the pallet number.",
+        "id": "Kode di label: kode bin, kode item, atau nomor pallet."
+      },
+      {
+        "label": "Name",
+        "en": "Location: the storage area of the bin. Item and Pallet: the item name with its bin (a Pallet label also shows the item code first).",
+        "id": "Location: area penyimpanan bin. Item dan Pallet: nama item beserta bin-nya (label Pallet juga menampilkan kode item di depan)."
+      },
+      {
+        "label": "Qty on Label",
+        "en": "Item and Pallet labels: the quantity printed on the label. Empty for a Location label.",
+        "id": "Label Item dan Pallet: qty yang tercetak di label. Kosong untuk label Location."
+      },
+      {
+        "label": "Copies",
+        "en": "How many copies were asked for.",
+        "id": "Jumlah lembar yang diminta."
+      },
+      {
+        "label": "Size",
+        "en": "sm = 60 x 35 mm, md = 100 x 50 mm, lg = 100 x 150 mm.",
+        "id": "sm = 60 x 35 mm, md = 100 x 50 mm, lg = 100 x 150 mm."
+      },
+      {
+        "label": "Printed By",
+        "en": "Login of the person who printed.",
+        "id": "Login orang yang mencetak."
+      },
+      {
+        "label": "Unit",
+        "en": "Unit of measure of Qty on Label, filled by the system when the label is printed. Empty for a Location label and when the item has no unit.",
+        "id": "Satuan dari Qty on Label, diisi sistem saat label dicetak. Kosong untuk label Location dan bila item tidak punya satuan."
+      }
     ]
   },
   {

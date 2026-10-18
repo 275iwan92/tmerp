@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Cancelling a Posted Stock Document",
+    "title_id": "Membatalkan Dokumen Stok yang Sudah Diposting",
     "purpose": {
       "en": "A posted Stock In, Stock Out or Return is never edited or deleted. To fix a wrong entry, Cancel it: the system posts a reversal document and the Stock Card stays continuous. Duplicate gives a Draft copy to correct.",
       "id": "Dokumen Stock In, Stock Out, atau Return yang sudah posted tidak pernah diedit atau dihapus. Untuk membetulkan salah input, klik Cancel: sistem memposting dokumen pembalik dan Stock Card tetap bersambung. Duplicate membuat salinan Draft untuk dibetulkan."

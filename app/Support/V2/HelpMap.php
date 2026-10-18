@@ -34,7 +34,7 @@ class HelpMap
                 'key' => $key, 'type' => strtoupper($t->topic_type), 'title' => $help($t->title), 'purpose' => $help($t->purpose),
                 'keywords' => (string) $t->keywords,
                 'steps' => $t->lines->where('line_type', SysHelpLine::STEP)->map(fn ($l) => $help($l->body))->values()->all(),
-                'fields' => $t->lines->where('line_type', SysHelpLine::FIELD)->map(fn ($l) => [Dictionary::t($l->field_label), $help($l->body)])->values()->all(),
+                'fields' => $t->lines->where('line_type', SysHelpLine::FIELD)->map(fn ($l) => [(string) $l->field_label, $help($l->body)])->values()->all(),
             ];
 
             return $used[$key];

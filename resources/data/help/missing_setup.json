@@ -1,0 +1,231 @@
+[
+  {
+    "key": "setup-data-origin",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Dummy & Legacy Data",
+    "purpose": {
+      "en": "Controls how demo (DUMMY) and migrated old-system (LEGACY) rows are shown, completed, reset and classified. Open it to hide or show them, make complete legacy rows real (LIVE), reset dummy data after UAT, or set rules that mark rows. Administrator only.",
+      "id": "Mengatur tampilan, kelengkapan, reset dan penggolongan data demo (DUMMY) dan data sistem lama (LEGACY). Buka untuk menyembunyikannya, menjadikan data legacy lengkap sebagai data asli (LIVE), mereset dummy, atau mengatur aturan. Hanya Administrator."
+    },
+    "keywords": "dummy, legacy, data demo, data lama, uat, reset dummy, snapshot, make real, jadikan asli, sembunyikan data, klasifikasi, data origin, kelengkapan data, migrasi, live",
+    "steps": [
+      {"en": "Read the LIVE rows, DUMMY rows and LEGACY rows boxes at the top to see how many rows of each kind exist.", "id": "Baca kotak LIVE rows, DUMMY rows dan LEGACY rows di atas untuk melihat jumlah baris tiap jenis."},
+      {"en": "In Data Display tick or untick the four choices and click Save. Hiding does not delete data; it only applies to screens that read through the application models.", "id": "Di Data Display centang atau hilangkan centang empat pilihan lalu klik Save. Menyembunyikan tidak menghapus data; hanya berlaku untuk layar yang membaca lewat model aplikasi."},
+      {"en": "In Legacy Data Completeness add a requirement (Database, Table, Mandatory Column, Requirement Name) with Add Requirement, then click Recalculate Completeness. Click a listed requirement to switch it on or off.", "id": "Di Legacy Data Completeness tambahkan syarat (Database, Table, Mandatory Column, Requirement Name) dengan Add Requirement, lalu klik Recalculate Completeness. Klik syarat di daftar untuk mengaktifkan atau mematikannya."},
+      {"en": "Click Preview Make Real to see how many complete LEGACY rows per table would become LIVE. Then click Make Real for one table, or Make Real (all tables), and confirm.", "id": "Klik Preview Make Real untuk melihat berapa baris LEGACY lengkap per tabel yang akan jadi LIVE. Lalu klik Make Real untuk satu tabel, atau Make Real (all tables), dan konfirmasi."},
+      {"en": "Make Real cannot be undone here: the rows become LIVE and are marked as an administrator decision, so classification rules no longer pull them back to LEGACY.", "id": "Make Real tidak bisa dibatalkan di layar ini: baris menjadi LIVE dan ditandai sebagai keputusan administrator, sehingga aturan klasifikasi tidak menariknya kembali ke LEGACY."},
+      {"en": "In Reset Dummy Data click Preview Reset to see what would be restored, changed or new. Click Reset Now and confirm to restore the snapshot. Reset overwrites changed DUMMY rows; this cannot be undone.", "id": "Di Reset Dummy Data klik Preview Reset untuk melihat apa yang dipulihkan, berubah atau baru. Klik Reset Now dan konfirmasi untuk memulihkan snapshot. Reset menimpa baris DUMMY yang berubah; tidak bisa dibatalkan."},
+      {"en": "Tick Also delete DUMMY data created after the snapshot before Preview Reset to delete those newer dummy rows at Reset Now. They are removed for good. Retake Snapshot replaces the old snapshot with the current DUMMY data.", "id": "Centang Also delete DUMMY data created after the snapshot sebelum Preview Reset agar baris dummy yang lebih baru dihapus saat Reset Now. Baris itu hilang permanen. Retake Snapshot mengganti snapshot lama dengan data DUMMY saat ini."},
+      {"en": "In Classification Rules click New Record, fill the rule and Save. Click Preview to see which LIVE rows would be marked, then Apply and confirm. Use Edit or Activate / Deactivate on a rule. Tables Holding DUMMY / LEGACY Data lists the result.", "id": "Di Classification Rules klik New Record, isi aturan lalu Save. Klik Preview untuk melihat baris LIVE yang akan ditandai, lalu Apply dan konfirmasi. Pakai Edit atau Activate / Deactivate pada aturan. Tables Holding DUMMY / LEGACY Data menampilkan hasilnya."}
+    ],
+    "fields": [
+      {"label": "LIVE rows", "en": "Total number of real rows over all tables that carry the data origin flag. Read only.", "id": "Jumlah baris asli di semua tabel yang punya penanda asal data. Hanya baca."},
+      {"label": "DUMMY rows", "en": "Total number of demo / UAT rows. Read only.", "id": "Jumlah baris demo / UAT. Hanya baca."},
+      {"label": "LEGACY rows", "en": "Total number of rows migrated from the old system that are not yet made real. Read only.", "id": "Jumlah baris hasil migrasi dari sistem lama yang belum dijadikan asli. Hanya baca."},
+      {"label": "Show DUMMY data (demo / UAT)", "en": "Tick to show DUMMY rows on screens. Untick to hide them. Nothing is deleted. Saved with Save.", "id": "Centang untuk menampilkan baris DUMMY di layar. Hilangkan centang untuk menyembunyikannya. Tidak ada yang dihapus. Disimpan dengan Save."},
+      {"label": "Show LEGACY data (migrated from the old system)", "en": "Tick to show LEGACY rows. When unticked a warning shows how many rows are hidden, including most raw material, customer, supplier, product and employee records.", "id": "Centang untuk menampilkan baris LEGACY. Bila tidak dicentang muncul peringatan jumlah baris yang tersembunyi, termasuk sebagian besar data bahan baku, customer, supplier, produk dan pegawai."},
+      {"label": "Hide LEGACY data that does not meet the mandatory requirement", "en": "Tick to hide only the LEGACY rows that are still incomplete according to the requirements listed below.", "id": "Centang untuk menyembunyikan hanya baris LEGACY yang masih belum lengkap menurut syarat di bawah."},
+      {"label": "UAT mode: new data is marked DUMMY automatically (reset with it)", "en": "Tick so that data created from now on is marked DUMMY and is removed together with the dummy data when you reset.", "id": "Centang agar data yang dibuat mulai sekarang ditandai DUMMY dan ikut hilang saat reset dummy."},
+      {"label": "Table", "en": "Table name shown as database.table in the completeness, preview and result tables.", "id": "Nama tabel dalam bentuk database.table di tabel kelengkapan, pratinjau dan hasil."},
+      {"label": "Mandatory requirement", "en": "The names of the active requirements that apply to that table. Tables without a requirement count as complete.", "id": "Nama syarat aktif yang berlaku untuk tabel itu. Tabel tanpa syarat dianggap lengkap."},
+      {"label": "Complete legacy", "en": "Number of LEGACY rows that meet the requirement and can be made real.", "id": "Jumlah baris LEGACY yang memenuhi syarat dan bisa dijadikan asli."},
+      {"label": "Incomplete legacy", "en": "Number of LEGACY rows that do not meet the requirement yet and stay LEGACY.", "id": "Jumlah baris LEGACY yang belum memenuhi syarat dan tetap LEGACY."},
+      {"label": "Incomplete LIVE", "en": "Number of LIVE rows that do not meet the requirement.", "id": "Jumlah baris LIVE yang tidak memenuhi syarat."},
+      {"label": "Database", "en": "Pick the database of the table. In the requirement form it is required; in the rule form empty means All databases; in the last card it filters the list.", "id": "Pilih database tabelnya. Di form syarat wajib diisi; di form aturan kosong berarti All databases; di kartu terakhir dipakai untuk menyaring daftar."},
+      {"label": "Mandatory Column", "en": "Required. Column that must be filled for a row to count as complete.", "id": "Wajib. Kolom yang harus terisi agar baris dianggap lengkap."},
+      {"label": "Requirement Name", "en": "Required. Short name of the requirement, shown beside the table.", "id": "Wajib. Nama singkat syarat, tampil di samping tabel."},
+      {"label": "Also delete DUMMY data created after the snapshot", "en": "Tick to delete DUMMY rows created after the snapshot when you reset, so the data is exactly as it was at the snapshot.", "id": "Centang untuk menghapus baris DUMMY yang dibuat setelah snapshot saat reset, sehingga data persis seperti saat snapshot."},
+      {"label": "Restored", "en": "In the reset preview: rows deleted or no longer flagged DUMMY that would be brought back from the snapshot.", "id": "Di pratinjau reset: baris yang terhapus atau tidak lagi bertanda DUMMY yang akan dikembalikan dari snapshot."},
+      {"label": "Changed", "en": "In the reset preview: DUMMY rows whose content differs from the snapshot and would be overwritten with the snapshot content.", "id": "Di pratinjau reset: baris DUMMY yang isinya berbeda dari snapshot dan akan ditimpa dengan isi snapshot."},
+      {"label": "New", "en": "In the reset preview: DUMMY rows created after the snapshot. They are deleted only when the checkbox above is ticked.", "id": "Di pratinjau reset: baris DUMMY yang dibuat setelah snapshot. Hanya dihapus bila kotak centang di atas dicentang."},
+      {"label": "Type", "en": "Required. How a rule finds rows: Creator (created_by) matches pattern, Column value matches pattern, or Column is filled.", "id": "Wajib. Cara aturan mencari baris: Creator (created_by) matches pattern, Column value matches pattern, atau Column is filled."},
+      {"label": "Column", "en": "Column to test. Required for the types Column value matches pattern and Column is filled; not used by the type Creator.", "id": "Kolom yang diperiksa. Wajib untuk tipe Column value matches pattern dan Column is filled; tidak dipakai tipe Creator."},
+      {"label": "Pattern (LIKE, % = any)", "en": "Text to match, with % for any characters. Required except for the type Column is filled.", "id": "Teks yang dicocokkan, % berarti karakter apa saja. Wajib kecuali untuk tipe Column is filled."},
+      {"label": "Mark As", "en": "Required. DUMMY or LEGACY. A rule only raises LIVE rows to this origin, and children of a DUMMY row become DUMMY too.", "id": "Wajib. DUMMY atau LEGACY. Aturan hanya menaikkan baris LIVE ke asal ini, dan anak dari baris DUMMY ikut menjadi DUMMY."},
+      {"label": "Priority", "en": "Number from 0 to 9999 that orders the rules. A new rule gets the highest priority plus 10.", "id": "Angka 0 sampai 9999 yang mengurutkan aturan. Aturan baru mendapat prioritas tertinggi ditambah 10."},
+      {"label": "Notes", "en": "Free text up to 255 characters about the rule.", "id": "Teks bebas maksimal 255 karakter tentang aturan."},
+      {"label": "Scope", "en": "In the rule list: database.table.column the rule applies to; * means all.", "id": "Di daftar aturan: database.table.column tempat aturan berlaku; * berarti semua."},
+      {"label": "Status", "en": "In the rule list: Active or Inactive. Use Activate / Deactivate to change it.", "id": "Di daftar aturan: Active atau Inactive. Pakai Activate / Deactivate untuk mengubahnya."},
+      {"label": "LIVE", "en": "In Tables Holding DUMMY / LEGACY Data: number of LIVE rows in that table.", "id": "Di Tables Holding DUMMY / LEGACY Data: jumlah baris LIVE di tabel itu."},
+      {"label": "DUMMY", "en": "Number of DUMMY rows in that table.", "id": "Jumlah baris DUMMY di tabel itu."},
+      {"label": "LEGACY", "en": "Number of LEGACY rows in that table.", "id": "Jumlah baris LEGACY di tabel itu."}
+    ]
+  },
+  {
+    "key": "mgmt-executive",
+    "type": "REPORT",
+    "module": "MGMT",
+    "title": "Executive Summary",
+    "purpose": {
+      "en": "One page for management with sales, purchasing, invoices and accounts payable of the whole company for a chosen year. Open it to see trends, top customers and findings that need attention. It is read only.",
+      "id": "Satu halaman untuk manajemen berisi penjualan, pembelian, invoice dan utang usaha seluruh perusahaan pada tahun yang dipilih. Buka untuk melihat tren, customer terbesar dan temuan yang perlu perhatian. Hanya baca."
+    },
+    "keywords": "ringkasan eksekutif, executive summary, direksi, manajemen, omset, penjualan, pembelian, utang usaha, accounts payable, tren bulanan, top customer, kuartal, laporan manajemen",
+    "steps": [
+      {"en": "Open Executive Summary. The newest available year is shown first.", "id": "Buka Executive Summary. Tahun terbaru yang tersedia tampil lebih dulu."},
+      {"en": "Pick the Year and the Revenue Basis, tick Confirmed COs only if you want only confirmed customer orders, then click Filter.", "id": "Pilih Year dan Revenue Basis, centang Confirmed COs only bila hanya ingin customer order yang sudah Confirmed, lalu klik Filter."},
+      {"en": "Read the five figures at the top, each compared with the previous year where the screen shows a comparison.", "id": "Baca lima angka di atas, masing-masing dibandingkan dengan tahun sebelumnya bila layar menampilkan perbandingannya."},
+      {"en": "Read the charts: monthly revenue against last year, customer composition and achievement per quarter. Use the Top Customers table for the largest customers.", "id": "Baca grafiknya: omset bulanan dibanding tahun lalu, komposisi customer dan capaian per kuartal. Pakai tabel Top Customers untuk customer terbesar."},
+      {"en": "Check Document Chain Health and Management Attention for gaps in purchasing documents and findings that need action.", "id": "Cek Document Chain Health dan Management Attention untuk celah dokumen pembelian dan temuan yang perlu ditindak."},
+      {"en": "Click All customers or Purchase details to open the detailed sales or purchase report for the same year.", "id": "Klik All customers atau Purchase details untuk membuka laporan penjualan atau pembelian yang lebih rinci untuk tahun yang sama."}
+    ],
+    "fields": [
+      {"label": "Year", "en": "Filter. Year to report; the list holds the years that have data.", "id": "Filter. Tahun yang dilaporkan; daftar berisi tahun yang punya data."},
+      {"label": "Revenue Basis", "en": "Filter. Shipment (Delivery Note) counts revenue when goods are delivered; Incoming PO (Customer Order) counts it when the order comes in. Used by the monthly chart.", "id": "Filter. Shipment (Delivery Note) menghitung omset saat barang dikirim; Incoming PO (Customer Order) menghitung saat order masuk. Dipakai grafik bulanan."},
+      {"label": "Confirmed COs only", "en": "Filter. Tick to count only customer orders that are Confirmed.", "id": "Filter. Centang untuk menghitung hanya customer order yang berstatus Confirmed."},
+      {"label": "Revenue by Shipment", "en": "Revenue from delivery notes in the year, with the previous year and the number of delivery notes. For years before mid-2023 it may show 0 because the old system did not record prices on delivery notes.", "id": "Omset dari surat jalan pada tahun itu, dengan tahun sebelumnya dan jumlah surat jalan. Untuk tahun sebelum pertengahan 2023 bisa tampil 0 karena sistem lama tidak mencatat harga di surat jalan."},
+      {"label": "Revenue by Incoming PO", "en": "Revenue from incoming customer orders in the year, with the previous year and the number of COs.", "id": "Omset dari customer order masuk pada tahun itu, dengan tahun sebelumnya dan jumlah CO."},
+      {"label": "Invoices Issued", "en": "Total value and number of invoices issued in the year.", "id": "Total nilai dan jumlah invoice yang terbit pada tahun itu."},
+      {"label": "Purchase Value (PO)", "en": "Total value and number of purchase orders in the year.", "id": "Total nilai dan jumlah purchase order pada tahun itu."},
+      {"label": "Accounts Payable Outstanding", "en": "Unpaid supplier invoices, shown against the total invoiced. Lower is better.", "id": "Invoice supplier yang belum dibayar, dibandingkan dengan total yang ditagihkan. Makin kecil makin baik."},
+      {"label": "Monthly revenue", "en": "Area chart of revenue per month for the chosen year against the year before, on the chosen Revenue Basis.", "id": "Grafik omset per bulan pada tahun terpilih dibanding tahun sebelumnya, menurut Revenue Basis yang dipilih."},
+      {"label": "Customer Composition", "en": "Donut chart of the top 5 customers by revenue in the year.", "id": "Grafik donat 5 customer teratas menurut omset pada tahun itu."},
+      {"label": "Achievement per quarter", "en": "Bar chart of revenue per quarter of the year.", "id": "Grafik batang omset per kuartal dalam tahun itu."},
+      {"label": "Customer", "en": "Top Customers table: customer name.", "id": "Tabel Top Customers: nama customer."},
+      {"label": "Documents", "en": "Top Customers table: number of documents for that customer.", "id": "Tabel Top Customers: jumlah dokumen customer itu."},
+      {"label": "Revenue", "en": "Top Customers table: revenue of that customer in the year. All customers opens the full sales report by customer.", "id": "Tabel Top Customers: omset customer itu pada tahun tersebut. All customers membuka laporan penjualan lengkap per customer."},
+      {"label": "Document Chain Health", "en": "Progress bars with a percentage for purchasing document completeness over all periods.", "id": "Bilah kemajuan berisi persentase kelengkapan dokumen pembelian untuk semua periode."},
+      {"label": "Management Attention", "en": "Findings that need management attention, each with a title and text. It says No open findings right now when there are none.", "id": "Temuan yang perlu perhatian manajemen, masing-masing dengan judul dan teks. Tertulis No open findings right now bila tidak ada."},
+      {"label": "Purchase trend", "en": "Area chart of purchases per month for the year. A note appears when no purchase order exists in the year because the old system stopped recording purchases on a certain date.", "id": "Grafik pembelian per bulan pada tahun itu. Muncul catatan bila tidak ada purchase order pada tahun itu karena sistem lama berhenti mencatat pembelian pada tanggal tertentu."},
+      {"label": "Purchase Requisitions (PR)", "en": "Number of purchase requisitions in the year.", "id": "Jumlah purchase requisition pada tahun itu."},
+      {"label": "Purchase Orders", "en": "Number of purchase orders in the year.", "id": "Jumlah purchase order pada tahun itu."},
+      {"label": "Goods Receipts", "en": "Number of goods receipts in the year. Purchase details opens the full purchase report.", "id": "Jumlah penerimaan barang pada tahun itu. Purchase details membuka laporan pembelian lengkap."}
+    ]
+  },
+  {
+    "key": "security-permissions",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Groups on Modules",
+    "purpose": {
+      "en": "Sets what each user group may do in each module, from no access up to approving. Open it when a group gains or loses a module. Administrators always have full access.",
+      "id": "Mengatur apa yang boleh dilakukan tiap grup user di tiap modul, dari tanpa akses sampai boleh approve. Buka saat sebuah grup mendapat atau kehilangan modul. Administrator selalu punya akses penuh."
+    },
+    "keywords": "hak akses, grup, modul, permission, security, keamanan, akses grup, izin, role, tingkat akses, approve, export, baca saja",
+    "steps": [
+      {"en": "Open Groups on Modules and pick a group in Group.", "id": "Buka Groups on Modules dan pilih grup di Group."},
+      {"en": "Narrow the list with Module or type in Search objects to find a module.", "id": "Persempit daftar dengan Module atau ketik di Search objects untuk mencari modul."},
+      {"en": "Set the Access level of each module row, or choose a level in Set all shown to apply it to every row currently shown.", "id": "Atur tingkat Access tiap baris modul, atau pilih tingkat di Set all shown untuk menerapkannya ke semua baris yang tampil."},
+      {"en": "Click Save. One group is saved per click, and only the rows whose level changed are written.", "id": "Klik Save. Satu grup disimpan tiap klik, dan hanya baris yang tingkatnya berubah yang ditulis."},
+      {"en": "The change takes effect the next time the user opens a screen.", "id": "Perubahan berlaku saat user membuka layar berikutnya."}
+    ],
+    "fields": [
+      {"label": "Group", "en": "The user group to edit, picked from the active groups.", "id": "Grup user yang diedit, dipilih dari grup yang aktif."},
+      {"label": "Module", "en": "Filter that shows only the rows of one module. The default shows all modules.", "id": "Saringan yang hanya menampilkan baris satu modul. Bawaannya menampilkan semua modul."},
+      {"label": "Search objects", "en": "Type part of a name to find a row.", "id": "Ketik sebagian nama untuk mencari baris."},
+      {"label": "Set all shown", "en": "Applies one access level to every row currently shown after filtering.", "id": "Menerapkan satu tingkat akses ke semua baris yang tampil setelah disaring."},
+      {"label": "Object", "en": "Name of the module for that row. Read only.", "id": "Nama modul pada baris itu. Hanya baca."},
+      {"label": "Type", "en": "Code of the module for that row. Read only.", "id": "Kode modul pada baris itu. Hanya baca."},
+      {"label": "Access", "en": "Level for this group: No access, Read only (can open), Read-write (can also enter data), Read-write + Export (can also export), All (can also approve). The default is No access.", "id": "Tingkat untuk grup ini: No access, Read only (boleh membuka), Read-write (boleh juga mengisi data), Read-write + Export (boleh juga export), All (boleh juga approve). Bawaannya No access."}
+    ]
+  },
+  {
+    "key": "setup-identification",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Identification",
+    "purpose": {
+      "en": "Sets the identity of the application (name, tagline, font, logo) and of the company (names, NPWP, address, contacts, logos). Open it to change what shows in the menu, top bar and login page and in the header of printouts. Administrator only.",
+      "id": "Mengatur identitas aplikasi (nama, tagline, font, logo) dan identitas perusahaan (nama, NPWP, alamat, kontak, logo). Buka untuk mengubah tampilan di menu, bilah atas, halaman login dan kop cetakan. Hanya Administrator."
+    },
+    "keywords": "identifikasi, identitas, nama aplikasi, logo, logo perusahaan, kop surat, kop cetakan, npwp, alamat perusahaan, tagline, font, nama legal, company identity, branding",
+    "steps": [
+      {"en": "In Application Identity fill App Name, Tagline and Application Font. These show in the menu, top bar and login page.", "id": "Di Application Identity isi App Name, Tagline dan Application Font. Ini tampil di menu, bilah atas dan halaman login."},
+      {"en": "To change the application logo, choose a PNG or JPG up to 1 MB in Application Logo. A new logo replaces the old file.", "id": "Untuk mengganti logo aplikasi, pilih PNG atau JPG maksimal 1 MB di Application Logo. Logo baru menggantikan berkas lama."},
+      {"en": "Click Save in the card. Remove Logo deletes the application logo file.", "id": "Klik Save di kartu itu. Remove Logo menghapus berkas logo aplikasi."},
+      {"en": "In Company Identity fill Company Name and Registered Name (Legal Entity), both required, then NPWP, Phone, Address and Email.", "id": "Di Company Identity isi Company Name dan Registered Name (Legal Entity), keduanya wajib, lalu NPWP, Phone, Address dan Email."},
+      {"en": "Choose the Company Logo for a light background and for a dark background if needed, then click Save in that card.", "id": "Pilih Company Logo untuk latar terang dan latar gelap bila perlu, lalu klik Save di kartu itu."},
+      {"en": "Use Remove Light Logo or Remove Dark Logo to take a company logo away.", "id": "Pakai Remove Light Logo atau Remove Dark Logo untuk menghapus logo perusahaan."}
+    ],
+    "fields": [
+      {"label": "App Name", "en": "Required, up to 100 characters. Name of the application in the menu, top bar and login page. It is not the company name.", "id": "Wajib, maksimal 100 karakter. Nama aplikasi di menu, bilah atas dan halaman login. Bukan nama perusahaan."},
+      {"label": "Tagline", "en": "Optional short line under the application name, up to 150 characters.", "id": "Opsional, baris pendek di bawah nama aplikasi, maksimal 150 karakter."},
+      {"label": "Application Font", "en": "Required. Pick the font of the application from the list.", "id": "Wajib. Pilih font aplikasi dari daftar."},
+      {"label": "Application Logo", "en": "Upload PNG or JPG, up to 1 MB. Used with the application name. Different from the company logo.", "id": "Unggah PNG atau JPG, maksimal 1 MB. Dipakai bersama nama aplikasi. Berbeda dari logo perusahaan."},
+      {"label": "Company Name", "en": "Required, up to 150 characters. Default name on screens and printouts without PPN.", "id": "Wajib, maksimal 150 karakter. Nama bawaan di layar dan cetakan tanpa PPN."},
+      {"label": "Registered Name (Legal Entity)", "en": "Required, up to 150 characters. Name in the header of PPN documents, printed with the NPWP only when a taxable document is printed with the PPN option.", "id": "Wajib, maksimal 150 karakter. Nama di kop dokumen PPN, dicetak bersama NPWP hanya saat dokumen kena pajak dicetak dengan opsi PPN."},
+      {"label": "NPWP", "en": "Company tax number, up to 30 characters. Saved in the company record.", "id": "Nomor pajak perusahaan, maksimal 30 karakter. Disimpan di data perusahaan."},
+      {"label": "Phone", "en": "Company phone, up to 50 characters. Saved in the company record.", "id": "Telepon perusahaan, maksimal 50 karakter. Disimpan di data perusahaan."},
+      {"label": "Address", "en": "Company address, up to 500 characters. Saved in the company record.", "id": "Alamat perusahaan, maksimal 500 karakter. Disimpan di data perusahaan."},
+      {"label": "Email", "en": "Company email, must be a valid address, up to 100 characters. Saved in the company record.", "id": "Email perusahaan, harus alamat yang valid, maksimal 100 karakter. Disimpan di data perusahaan."},
+      {"label": "Company Logo (light background)", "en": "PNG up to 2 MB. Used in the header of all printouts. A black-and-white version is made automatically.", "id": "PNG maksimal 2 MB. Dipakai di kop semua cetakan. Versi hitam-putih dibuat otomatis."},
+      {"label": "Company Logo (dark background)", "en": "White-text version for dark backgrounds, transparent PNG up to 2 MB.", "id": "Versi teks putih untuk latar gelap, PNG transparan maksimal 2 MB."},
+      {"label": "Remove Logo", "en": "Shown when an application logo exists. Deletes the application logo.", "id": "Tampil bila logo aplikasi ada. Menghapus logo aplikasi."},
+      {"label": "Remove Light Logo", "en": "Shown when a company logo for light background exists. Removes it.", "id": "Tampil bila logo perusahaan untuk latar terang ada. Menghapusnya."},
+      {"label": "Remove Dark Logo", "en": "Shown when a company logo for dark background exists. Removes it.", "id": "Tampil bila logo perusahaan untuk latar gelap ada. Menghapusnya."}
+    ]
+  },
+  {
+    "key": "setup-migration",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Migration",
+    "purpose": {
+      "en": "Copies data from the old system (ScriptCase V1) into the V2 masters and history archives. Open it to run one migration step at a time. Administrator only. A step can be run again safely.",
+      "id": "Menyalin data dari sistem lama (ScriptCase V1) ke master V2 dan arsip riwayat. Buka untuk menjalankan satu langkah migrasi satu per satu. Hanya Administrator. Satu langkah aman dijalankan ulang."
+    },
+    "keywords": "migrasi, migration, data lama, sistem lama, scriptcase, tm2old, tarik data, import, arsip riwayat, legacy, vendor, pegawai, master card",
+    "steps": [
+      {"en": "Open Migration. The steps are grouped in cards: Master, History archive, Supporting master and Employee. Read the note of a step first.", "id": "Buka Migration. Langkah dikelompokkan dalam kartu: Master, History archive, Supporting master dan Employee. Baca dulu catatan tiap langkah."},
+      {"en": "Click Run Migration under the step and confirm. The step runs at once and cannot be undone from this screen.", "id": "Klik Run Migration di bawah langkah itu lalu konfirmasi. Langkah langsung berjalan dan tidak bisa dibatalkan dari layar ini."},
+      {"en": "Existing master data is updated, not duplicated. History archive steps are fully refreshed on every run, so their archive tables are rewritten.", "id": "Data master yang sudah ada diperbarui, tidak digandakan. Langkah History archive diperbarui penuh tiap kali jalan, sehingga tabel arsipnya ditulis ulang."},
+      {"en": "Run Master Card before the step for Master Card images; the image step must run after it.", "id": "Jalankan Master Card sebelum langkah gambar Master Card; langkah gambar harus dijalankan sesudahnya."},
+      {"en": "When it is done, read the Part and Result table. It shows only once; leaving the screen removes it.", "id": "Setelah selesai, baca tabel Part dan Result. Tabel ini hanya tampil sekali; berpindah layar akan menghilangkannya."},
+      {"en": "The login step creates user logins for active migrated employees and lists them once with their first password. Note it down; the user must change it at first login.", "id": "Langkah login membuat akun untuk pegawai hasil migrasi yang aktif dan menampilkannya sekali beserta password awal. Catat; user wajib menggantinya saat login pertama."}
+    ],
+    "fields": [
+      {"label": "tm2old.mst_vendor → cust_customer & sup_supplier", "en": "Master. Old vendors marked as customer go to Master Customer, those marked as supplier go to Master Supplier. A vendor can be both. Existing data is updated.", "id": "Master. Vendor lama yang bertanda customer masuk Master Customer, yang bertanda supplier masuk Master Supplier. Satu vendor bisa keduanya. Data yang ada diperbarui."},
+      {"label": "tm2old.mst_item (raw material) → mat_raw", "en": "Master. Takes old items of class RAW MATERIAL or marked as material. Codes longer than 60 characters are cut and numbered; the original code is kept in the old item code field.", "id": "Master. Mengambil item lama kelas RAW MATERIAL atau bertanda bahan. Kode lebih dari 60 karakter dipotong dan diberi nomor; kode aslinya tetap disimpan di kolom kode item lama."},
+      {"label": "tm2old.mst_item (finished goods) → prod_product", "en": "Master. Takes old items marked as finished goods. Dimensions, customer and category are not migrated; fill them through ProDev when the product is used.", "id": "Master. Mengambil item lama yang bertanda barang jadi. Ukuran, customer dan kategori tidak dimigrasi; isi lewat ProDev saat produk dipakai."},
+      {"label": "tm2old.sdi_co(_detail) → co_order_legacy (archive, NOT co_order)", "en": "History archive. Old customer orders go to a read-only archive for dashboards and reports, not into the live Customer Order. Fully refreshed on every run.", "id": "Arsip riwayat. Customer order lama masuk arsip hanya baca untuk dasbor dan laporan, bukan ke Customer Order aktif. Diperbarui penuh tiap jalan."},
+      {"label": "tm2old.pur_po(_v2)+pur_po_detail → po_order_legacy (archive, NOT po_order)", "en": "History archive. Old purchase orders (header and lines, matched by PO number) go into a read-only archive. Fully refreshed on every run.", "id": "Arsip riwayat. Purchase order lama (header dan baris, dicocokkan lewat nomor PO) masuk ke arsip hanya baca. Diperbarui penuh tiap jalan."},
+      {"label": "tm2old.pur_pr(_detail) → pr_requisition_legacy", "en": "History archive of old purchase requisitions. Read only, fully refreshed on every run.", "id": "Arsip riwayat purchase requisition lama. Hanya baca, diperbarui penuh tiap jalan."},
+      {"label": "tm2old.pur_prcv(_detail) → po_receive_legacy", "en": "History archive of old goods receipts. Read only, fully refreshed on every run.", "id": "Arsip riwayat penerimaan barang lama. Hanya baca, diperbarui penuh tiap jalan."},
+      {"label": "tm2old.pur_ppym(_detail) → po_payment_legacy", "en": "History archive of old purchase payments. Read only, fully refreshed on every run.", "id": "Arsip riwayat pembayaran pembelian lama. Hanya baca, diperbarui penuh tiap jalan."},
+      {"label": "tm2old.sdi_dnote(_detail) → co_delivery_legacy (delivery notes)", "en": "History archive of old delivery notes. Read only, fully refreshed on every run.", "id": "Arsip riwayat surat jalan lama. Hanya baca, diperbarui penuh tiap jalan."},
+      {"label": "tm2old.sdi_cinv(_detail) → co_invoice_legacy (customer invoices, AR basis)", "en": "History archive of old customer invoices. Read only, fully refreshed on every run.", "id": "Arsip riwayat invoice customer lama. Hanya baca, diperbarui penuh tiap jalan."},
+      {"label": "tm2old.mst_uom(_conversion) → uom_unit / uom_conversion", "en": "Supporting master. The existing V2 master wins; legacy only fills unit codes that do not exist yet.", "id": "Master pendukung. Master V2 yang ada diutamakan; legacy hanya mengisi kode satuan yang belum ada."},
+      {"label": "tm2old.mst_* (supporting lookups) → ref_legacy_lookup", "en": "Supporting master. All small lookups are merged into one table. Tables over 300 rows are reported as needing a separate design.", "id": "Master pendukung. Semua daftar bantu kecil digabung ke satu tabel. Tabel di atas 300 baris dilaporkan perlu rancangan tersendiri."},
+      {"label": "tm2old Master Card → prod_card_legacy etc. (product engineering)", "en": "Supporting master. Materials, process sequence with machines, and knives per product. Each product is linked to its card through the old product-to-card table.", "id": "Master pendukung. Bahan, urutan proses beserta mesin, dan pisau per produk. Tiap produk ditautkan ke kartunya lewat tabel penghubung produk-kartu lama."},
+      {"label": "Master Card images → Master Product (prod_product.image_path)", "en": "Supporting master. Must run after Master Card. Copies each card image once with a 480px thumbnail and links it to the products.", "id": "Master pendukung. Harus dijalankan setelah Master Card. Menyalin gambar tiap kartu sekali beserta thumbnail 480px dan menautkannya ke produk."},
+      {"label": "mst_item classification → customer_id / category_id / brand_name", "en": "Supporting master. Fills customer, category and brand left empty by the product step. The dimensions are still not filled.", "id": "Master pendukung. Mengisi customer, kategori dan merek yang dikosongkan langkah produk. Ukuran tetap tidak diisi."},
+      {"label": "tm2old.emp → emp_employee (+ org_department / org_position)", "en": "Employee. Migrates the roster; missing personal data is left empty, not invented. Every employee lands in one temporary department Migrasi Legacy - Belum Dipetakan that must be reassigned manually.", "id": "Pegawai. Memigrasi daftar pegawai; data pribadi yang tidak ada dibiarkan kosong, tidak dikarang. Semua pegawai masuk satu departemen sementara Migrasi Legacy - Belum Dipetakan yang harus dipindahkan manual."},
+      {"label": "emp_employee (active) → sec_user login", "en": "Employee. Creates a login for active migrated employees who have none; people who left get none. The username is the first name and a random first password is made.", "id": "Pegawai. Membuat akun untuk pegawai aktif hasil migrasi yang belum punya; yang sudah keluar tidak dibuatkan. Username dari nama depan dan password awal dibuat acak."},
+      {"label": "Part", "en": "Report table after a run: name of a part of the migration.", "id": "Tabel laporan setelah dijalankan: nama bagian migrasi."},
+      {"label": "Result", "en": "Report table after a run: the outcome for that part, such as counts. Shown once.", "id": "Tabel laporan setelah dijalankan: hasil bagian itu, misalnya jumlah. Tampil sekali."},
+      {"label": "Username", "en": "Login step report only: the new login name.", "id": "Hanya laporan langkah login: nama login baru."},
+      {"label": "Name", "en": "Login step report only: the employee name.", "id": "Hanya laporan langkah login: nama pegawai."},
+      {"label": "Password", "en": "Login step report only: the first password, shown once. The user must change it at first login.", "id": "Hanya laporan langkah login: password awal, tampil sekali. User wajib menggantinya saat login pertama."}
+    ]
+  },
+  {
+    "key": "setup-quotes",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Quotes",
+    "purpose": {
+      "en": "The list of quotes shown to users, by famous people and anonymous. Open it to correct a quote, add one, or switch one off. A second tab keeps an optional quote for each day of the year.",
+      "id": "Daftar kutipan yang ditampilkan ke user, dari tokoh terkenal dan anonim. Buka untuk memperbaiki kutipan, menambah, atau mematikannya. Tab kedua menyimpan kutipan opsional untuk tiap hari dalam setahun."
+    },
+    "keywords": "quote, kutipan, kata mutiara, kata motivasi, quotes, quote of the day, kata hari ini, motivasi, penulis, anonim, famous",
+    "steps": [
+      {"en": "Open Quotes. The All Quotes tab lists every quote; the Per Day tab lists one optional row for each day of the year.", "id": "Buka Quotes. Tab All Quotes memuat semua kutipan; tab Per Day memuat satu baris opsional untuk tiap hari dalam setahun."},
+      {"en": "On All Quotes use the boxes All, Famous, Anonymous and Inactive, or the search box, to find a quote or an author.", "id": "Di All Quotes pakai kotak All, Famous, Anonymous dan Inactive, atau kotak cari, untuk menemukan kutipan atau penulis."},
+      {"en": "Click a cell and type to change an Author or a Quote. Click Row to add a new line.", "id": "Klik sel lalu ketik untuk mengubah Author atau Quote. Klik Row untuk menambah baris baru."},
+      {"en": "Untick Active to stop using a quote. Quotes cannot be deleted here.", "id": "Hilangkan centang Active agar kutipan tidak dipakai lagi. Kutipan tidak bisa dihapus di sini."},
+      {"en": "Click Undo to drop the unsaved changes, or Save to store them. Do this on each tab.", "id": "Klik Undo untuk membuang perubahan yang belum disimpan, atau Save untuk menyimpannya. Lakukan di tiap tab."},
+      {"en": "Each user gets a different random Active quote in the morning, after lunch and in the evening, never repeated within 7 days.", "id": "Tiap user mendapat kutipan Active acak yang berbeda di pagi hari, sesudah makan siang dan malam, tidak diulang dalam 7 hari."}
+    ],
+    "fields": [
+      {"label": "Author", "en": "Required. Who said it, up to 150 characters on All Quotes. The author Anonim counts as Anonymous; any other name counts as Famous. On Per Day it is optional, up to 100 characters.", "id": "Wajib. Siapa yang mengucapkan, maksimal 150 karakter di All Quotes. Penulis Anonim dihitung Anonymous; nama lain dihitung Famous. Di Per Day opsional, maksimal 100 karakter."},
+      {"label": "Active", "en": "Tick to use the quote. Untick to stop using it; it then counts under Inactive.", "id": "Centang untuk memakai kutipan. Hilangkan centang agar tidak dipakai; kutipan itu masuk hitungan Inactive."},
+      {"label": "Quote", "en": "Required. The text of the quote, up to 500 characters.", "id": "Wajib. Teks kutipan, maksimal 500 karakter."},
+      {"label": "Day", "en": "Per Day tab only. Required number from 1 to 366 and each number used once. Day 1 is 1 January, day 60 is 29 February, day 366 is 31 December.", "id": "Hanya tab Per Day. Wajib, angka 1 sampai 366 dan tiap angka dipakai sekali. Hari 1 adalah 1 Januari, hari 60 adalah 29 Februari, hari 366 adalah 31 Desember."},
+      {"label": "All", "en": "Box that shows all quotes.", "id": "Kotak yang menampilkan semua kutipan."},
+      {"label": "Famous", "en": "Box that shows quotes whose author is not Anonim.", "id": "Kotak yang menampilkan kutipan yang penulisnya bukan Anonim."},
+      {"label": "Anonymous", "en": "Box that shows quotes whose author is Anonim.", "id": "Kotak yang menampilkan kutipan yang penulisnya Anonim."},
+      {"label": "Inactive", "en": "Box that shows quotes with Active unticked.", "id": "Kotak yang menampilkan kutipan dengan Active tidak dicentang."}
+    ]
+  }
+]

@@ -1,0 +1,891 @@
+[
+  {
+    "key": "ppic-settings",
+    "type": "REPORT",
+    "module": "PROD",
+    "title": "PPIC Settings",
+    "title_id": "Pengaturan PPIC",
+    "purpose": {
+      "en": "One index of every PPIC setting, in eight categories, each with a link to the screen where it is changed and a status. Open it when you need to change a machine, process, tooling, calendar or rule. The daily work is on the PPIC Workspace.",
+      "id": "Satu daftar semua pengaturan PPIC dalam delapan kategori, tiap baris punya tautan ke layar tempat nilainya diubah dan statusnya. Buka saat perlu mengubah mesin, proses, tooling, kalender atau aturan. Kerja harian ada di PPIC Workspace."
+    },
+    "keywords": "ppic settings, pengaturan ppic, setting ppic, mesin, proses, tooling, kalender, shift, aturan, parameter penjadwalan, planning parameters",
+    "steps": [
+      {
+        "en": "Open PPIC Settings. The cards show the eight categories with their screens.",
+        "id": "Buka PPIC Settings. Kartu-kartunya menampilkan delapan kategori beserta layarnya."
+      },
+      {
+        "en": "To find a setting, type part of a screen name, a category or a note in Search and click Search.",
+        "id": "Untuk mencari pengaturan, ketik sebagian nama layar, kategori atau catatan di Search lalu klik Search."
+      },
+      {
+        "en": "Read the status of the row: Exists, Needs tidying or Not built. Not built rows have no screen to open.",
+        "id": "Baca status barisnya: Exists, Needs tidying atau Not built. Baris Not built belum punya layar untuk dibuka."
+      },
+      {
+        "en": "Click the screen name button of a row to open that screen and change the value there.",
+        "id": "Klik tombol nama layar pada baris untuk membuka layar itu dan mengubah nilainya di sana."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Search",
+        "en": "Part of a screen name, a category name or a note. Only the matching rows stay visible; empty shows all.",
+        "id": "Sebagian nama layar, nama kategori atau catatan. Hanya baris yang cocok yang tampil; kosong menampilkan semua."
+      },
+      {
+        "label": "Screen",
+        "en": "The settings screen of the row. A button opens it; a row without a screen shows only the name because it is not built yet.",
+        "id": "Layar pengaturan pada baris itu. Tombolnya membuka layar; baris tanpa layar hanya menampilkan nama karena belum dibangun."
+      },
+      {
+        "label": "Exists",
+        "en": "Status badge: the screen exists and is in use.",
+        "id": "Badge status: layar sudah ada dan dipakai."
+      },
+      {
+        "label": "Needs tidying",
+        "en": "Status badge: the screen exists but is not fully used by the planner yet, see the note.",
+        "id": "Badge status: layar sudah ada tetapi belum sepenuhnya dipakai penjadwalan, lihat catatannya."
+      },
+      {
+        "label": "Not built",
+        "en": "Status badge: this setting has no screen and no data yet.",
+        "id": "Badge status: pengaturan ini belum punya layar dan data."
+      },
+      {
+        "label": "Note",
+        "en": "Short remark on what the setting does or what is still missing. A dash means no remark.",
+        "id": "Catatan singkat tentang fungsi pengaturan atau yang masih kurang. Tanda strip berarti tanpa catatan."
+      },
+      {
+        "label": "Machines and capacity",
+        "en": "Category: Master Machine (hours per shift, shifts per day) and Machine Model Catalog.",
+        "id": "Kategori: Master Machine (jam per shift, shift per hari) dan Machine Model Catalog."
+      },
+      {
+        "label": "Processes and routing",
+        "en": "Category: Master Process, Routing Template and BOP Rule Setting.",
+        "id": "Kategori: Master Process, Routing Template dan BOP Rule Setting."
+      },
+      {
+        "label": "Tooling and setup",
+        "en": "Category: Tooling Master and Setup and Changeover (wash and change minutes per machine).",
+        "id": "Kategori: Tooling Master dan Setup and Changeover (menit cuci dan ganti per mesin)."
+      },
+      {
+        "label": "Calendar",
+        "en": "Category: Master Shift, Holiday Calendar, Office Hours and Shift Schedule. Preventive maintenance windows are not read by the plan yet.",
+        "id": "Kategori: Master Shift, Holiday Calendar, Office Hours dan Shift Schedule. Jendela perawatan berkala belum dibaca oleh rencana."
+      },
+      {
+        "label": "Rules and priority",
+        "en": "Category: Wait Rules (drying and curing minutes) and Die grouping on the PPIC Workspace.",
+        "id": "Kategori: Wait Rules (menit pengeringan dan curing) dan Die grouping di PPIC Workspace."
+      },
+      {
+        "label": "Engine parameters",
+        "en": "Category: Planning Parameters, the PPIC constants such as shift lock, score weights, windows, grouping tolerance, wash factor and learning limits.",
+        "id": "Kategori: Planning Parameters, yaitu konstanta PPIC seperti kunci shift, bobot skor, jendela waktu, toleransi pengelompokan, faktor cuci dan batas learning."
+      },
+      {
+        "label": "People",
+        "en": "Category: Operator skills per process (not built).",
+        "id": "Kategori: Operator skills per process (belum dibangun)."
+      },
+      {
+        "label": "Materials",
+        "en": "Category: Material Planning, Material Booking, Material Usage Standard and Purchase Lead Time.",
+        "id": "Kategori: Material Planning, Material Booking, Material Usage Standard dan Purchase Lead Time."
+      }
+    ]
+  },
+  {
+    "key": "ppic-color-sequence",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Colour Sequence",
+    "purpose": {
+      "en": "Shows, for each printing machine, the order of its jobs with the inks and the colour wash minutes before each job. Open it to check the print order and to change it, or to ask the officer to change it.",
+      "id": "Menampilkan, untuk tiap mesin cetak, urutan job beserta tinta dan menit cuci warna sebelum tiap job. Buka untuk memeriksa urutan cetak dan mengubahnya, atau meminta officer mengubahnya."
+    },
+    "keywords": "colour sequence, color sequence, urutan warna, urutan cetak, tinta, cuci warna, wash, ink order, mesin cetak, ganti urutan, print order",
+    "steps": [
+      {
+        "en": "Open Colour Sequence. If a Draft plan exists the page shows the Draft order; otherwise it shows the confirmed schedule.",
+        "id": "Buka Colour Sequence. Jika ada rencana Draft, halaman menampilkan urutan Draft; jika tidak, menampilkan jadwal yang sudah confirmed."
+      },
+      {
+        "en": "Find the machine card. The table lists its jobs in print order with Inks (unit order) and Wash before (min).",
+        "id": "Cari kartu mesinnya. Tabel menampilkan job dalam urutan cetak dengan Inks (unit order) dan Wash before (min)."
+      },
+      {
+        "en": "To change the order, choose Job and the job it must Run before.",
+        "id": "Untuk mengubah urutan, pilih Job dan job yang harus Run before-nya."
+      },
+      {
+        "en": "Type the Reason. It is required and is written to the decision log with your name.",
+        "id": "Isi Reason. Wajib diisi dan dicatat di log keputusan bersama nama Anda."
+      },
+      {
+        "en": "Click Change order if you are a PPIC officer. Anyone else sees Ask the officer, which sends a request to the PPIC Workspace.",
+        "id": "Klik Change order jika Anda officer PPIC. Pengguna lain melihat Ask the officer, yang mengirim permintaan ke PPIC Workspace."
+      },
+      {
+        "en": "Use Setup and Changeover to open the wash and change minutes, or Back to return to the PPIC Workspace.",
+        "id": "Pakai Setup and Changeover untuk membuka menit cuci dan ganti, atau Back untuk kembali ke PPIC Workspace."
+      }
+    ],
+    "fields": [
+      {
+        "label": "#",
+        "en": "Position of the job in the print order on this machine.",
+        "id": "Posisi job dalam urutan cetak di mesin ini."
+      },
+      {
+        "label": "Start",
+        "en": "Planned start of the job.",
+        "id": "Rencana mulai job."
+      },
+      {
+        "label": "Work Order",
+        "en": "Work Order number of the job.",
+        "id": "Nomor Work Order job."
+      },
+      {
+        "label": "Product",
+        "en": "Product of the job.",
+        "id": "Produk job."
+      },
+      {
+        "label": "Inks (unit order)",
+        "en": "Inks of the job in press unit order, taken from Product Development. If the inks are not there, only the number of colours is shown.",
+        "id": "Tinta job menurut urutan unit mesin, diambil dari Product Development. Jika tinta belum ada, hanya jumlah warna yang tampil."
+      },
+      {
+        "label": "Wash before (min)",
+        "en": "Minutes of colour wash needed before this job. A dash for the first job or when the inks are unknown.",
+        "id": "Menit cuci warna yang dibutuhkan sebelum job ini. Strip untuk job pertama atau bila tinta belum diketahui."
+      },
+      {
+        "label": "Why",
+        "en": "Reason of the wash time for this job, from the changeover values.",
+        "id": "Alasan waktu cuci untuk job ini, dari nilai changeover."
+      },
+      {
+        "label": "Plan",
+        "en": "Plan the job belongs to: Draft or Confirmed.",
+        "id": "Rencana tempat job ini berada: Draft atau Confirmed."
+      },
+      {
+        "label": "Job",
+        "en": "The job to move, picked from the jobs of this machine. Required.",
+        "id": "Job yang dipindah, dipilih dari job di mesin ini. Wajib."
+      },
+      {
+        "label": "Run before",
+        "en": "The job in front of which the chosen job must run. Required.",
+        "id": "Job yang harus dijalankan setelah job pilihan; job pilihan berjalan lebih dulu. Wajib."
+      },
+      {
+        "label": "Reason",
+        "en": "Why the order is changed. Required; written to the decision log with your name.",
+        "id": "Alasan urutan diubah. Wajib; dicatat di log keputusan bersama nama Anda."
+      }
+    ]
+  },
+  {
+    "key": "production-learning",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Learning Changes",
+    "purpose": {
+      "en": "Shows how the engine corrects Assumed changeover minutes from the setup times operators really needed, with a log of every change. Open it to run the learning, review the values and put a change back.",
+      "id": "Menampilkan cara engine mengoreksi menit changeover Assumed dari waktu setup yang benar-benar dipakai operator, lengkap dengan log tiap perubahan. Buka untuk menjalankan learning, memeriksa nilai dan mengembalikan perubahan."
+    },
+    "keywords": "learning, learning changes, belajar, koreksi, changeover, setup, waktu setup, engine, put back, kembalikan, frozen, beku, assumed, calibrated",
+    "steps": [
+      {
+        "en": "Open Learning Changes. Read the Changeover values table to see each machine, change, minutes, status and number of samples.",
+        "id": "Buka Learning Changes. Baca tabel Changeover values untuk melihat tiap mesin, jenis ganti, menit, status dan jumlah sampel."
+      },
+      {
+        "en": "Click Learn now to let the engine correct the values. It needs a minimum number of finished jobs, moves a value by small steps and skips frozen values.",
+        "id": "Klik Learn now agar engine mengoreksi nilai. Engine butuh jumlah minimum job selesai, menggeser nilai sedikit demi sedikit dan melewati nilai yang frozen."
+      },
+      {
+        "en": "Read the Log to see who changed what, from which value to which, and why.",
+        "id": "Baca Log untuk melihat siapa mengubah apa, dari nilai berapa ke berapa, dan alasannya."
+      },
+      {
+        "en": "To undo a change, choose it in Put a change back and click Put back and freeze. The old value returns and is frozen so the engine leaves it alone.",
+        "id": "Untuk membatalkan perubahan, pilih di Put a change back lalu klik Put back and freeze. Nilai lama kembali dan dibekukan supaya engine tidak menyentuhnya."
+      },
+      {
+        "en": "To type a value yourself, click Setup and Changeover.",
+        "id": "Untuk mengetik nilai sendiri, klik Setup and Changeover."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Put a change back",
+        "en": "A change made by the engine that has not been put back yet. Required to use Put back and freeze.",
+        "id": "Perubahan oleh engine yang belum dikembalikan. Wajib diisi untuk memakai Put back and freeze."
+      },
+      {
+        "label": "Machine",
+        "en": "Machine the changeover value belongs to.",
+        "id": "Mesin pemilik nilai changeover."
+      },
+      {
+        "label": "Change",
+        "en": "Kind of change on this machine.",
+        "id": "Jenis penggantian di mesin ini."
+      },
+      {
+        "label": "Extra Minutes",
+        "en": "Extra minutes added for this change in the plan.",
+        "id": "Menit tambahan untuk ganti ini di dalam rencana."
+      },
+      {
+        "label": "Value Status",
+        "en": "Assumed is a start value. Learning and Calibrated were adjusted from real jobs. Frozen values are left alone.",
+        "id": "Assumed adalah nilai awal. Learning dan Calibrated sudah disesuaikan dari job nyata. Nilai Frozen tidak disentuh."
+      },
+      {
+        "label": "Samples",
+        "en": "Number of real jobs the value is based on.",
+        "id": "Jumlah job nyata yang menjadi dasar nilai."
+      },
+      {
+        "label": "Frozen",
+        "en": "Yes means the engine does not change this value.",
+        "id": "Yes berarti engine tidak mengubah nilai ini."
+      },
+      {
+        "label": "When",
+        "en": "Date and time of the log line.",
+        "id": "Tanggal dan jam baris log."
+      },
+      {
+        "label": "By",
+        "en": "Who made the change.",
+        "id": "Siapa yang membuat perubahan."
+      },
+      {
+        "label": "Event",
+        "en": "Adjusted (the engine changed a value) or Put back (a change was undone).",
+        "id": "Adjusted (engine mengubah nilai) atau Put back (perubahan dibatalkan)."
+      },
+      {
+        "label": "Old",
+        "en": "Value before the change.",
+        "id": "Nilai sebelum perubahan."
+      },
+      {
+        "label": "New",
+        "en": "Value after the change.",
+        "id": "Nilai sesudah perubahan."
+      },
+      {
+        "label": "Reason",
+        "en": "Why the value changed. The log shows the last 60 lines.",
+        "id": "Alasan nilai berubah. Log menampilkan 60 baris terakhir."
+      }
+    ]
+  },
+  {
+    "key": "production-live",
+    "type": "REPORT",
+    "module": "PROD",
+    "title": "Live Schedule",
+    "purpose": {
+      "en": "Read-only view of the schedule in force: confirmed and running operations only, as a Gantt and a table with output, times, operator and gates. Open it to see what is running now and what is late.",
+      "id": "Tampilan baca-saja jadwal yang berlaku: hanya operasi confirmed dan berjalan, berupa Gantt dan tabel dengan hasil, waktu, operator dan gate. Buka untuk melihat apa yang sedang jalan dan apa yang terlambat."
+    },
+    "keywords": "live schedule, jadwal live, jadwal berjalan, monitoring, gantt, running, late, terlambat, operasi, mesin, progres produksi, schedule in force",
+    "steps": [
+      {
+        "en": "Open Live Schedule. The top boxes count Operations, Running, Paused, Late and Scheduled.",
+        "id": "Buka Live Schedule. Kotak di atas menghitung Operations, Running, Paused, Late dan Scheduled."
+      },
+      {
+        "en": "Read the Gantt to see the confirmed operations per machine against the current time. It cannot be edited here.",
+        "id": "Baca Gantt untuk melihat operasi confirmed per mesin terhadap waktu sekarang. Di sini tidak bisa diubah."
+      },
+      {
+        "en": "Read the Operations table for target, good, bad, progress, planned and actual times, status, operator and gates of each operation.",
+        "id": "Baca tabel Operations untuk target, good, bad, progres, waktu rencana dan aktual, status, operator dan gate tiap operasi."
+      },
+      {
+        "en": "Reload the page for fresh data; it does not refresh by itself.",
+        "id": "Muat ulang halaman untuk data terbaru; halaman tidak menyegarkan diri sendiri."
+      },
+      {
+        "en": "To change something, click Back to the Work Order screen and change it there.",
+        "id": "Untuk mengubah sesuatu, klik Back ke layar Work Order lalu ubah di sana."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Operations",
+        "en": "Number of confirmed and running operations.",
+        "id": "Jumlah operasi confirmed dan berjalan."
+      },
+      {
+        "label": "Running",
+        "en": "Operations being worked on now.",
+        "id": "Operasi yang sedang dikerjakan sekarang."
+      },
+      {
+        "label": "Paused",
+        "en": "Operations whose timer is paused.",
+        "id": "Operasi yang timernya sedang pause."
+      },
+      {
+        "label": "Late",
+        "en": "Operations that are behind the plan.",
+        "id": "Operasi yang tertinggal dari rencana."
+      },
+      {
+        "label": "Scheduled",
+        "en": "Operations confirmed but not started yet.",
+        "id": "Operasi yang sudah confirmed tetapi belum mulai."
+      },
+      {
+        "label": "Work Order",
+        "en": "Work Order number of the operation.",
+        "id": "Nomor Work Order operasi."
+      },
+      {
+        "label": "Customer",
+        "en": "Customer of the Work Order.",
+        "id": "Pelanggan pemilik Work Order."
+      },
+      {
+        "label": "Product",
+        "en": "Product of the Work Order.",
+        "id": "Produk Work Order."
+      },
+      {
+        "label": "Process",
+        "en": "Process of the operation.",
+        "id": "Proses operasi."
+      },
+      {
+        "label": "Machine",
+        "en": "Machine that runs the operation.",
+        "id": "Mesin yang menjalankan operasi."
+      },
+      {
+        "label": "Target qty",
+        "en": "Planned quantity with its unit.",
+        "id": "Jumlah rencana beserta satuannya."
+      },
+      {
+        "label": "Good",
+        "en": "Good quantity recorded so far in Production Output.",
+        "id": "Jumlah good yang sudah tercatat di Production Output."
+      },
+      {
+        "label": "Bad",
+        "en": "Bad quantity recorded so far in Production Output.",
+        "id": "Jumlah bad yang sudah tercatat di Production Output."
+      },
+      {
+        "label": "Progress",
+        "en": "Percent done of the operation.",
+        "id": "Persen selesai operasi."
+      },
+      {
+        "label": "Planned start → finish",
+        "en": "Planned start and finish from the schedule.",
+        "id": "Rencana mulai dan selesai dari jadwal."
+      },
+      {
+        "label": "Actual start → finish",
+        "en": "Start and finish taken from the operator timer. Three dots mean not finished yet; a dash means not started.",
+        "id": "Mulai dan selesai dari timer operator. Tiga titik berarti belum selesai; strip berarti belum mulai."
+      },
+      {
+        "label": "Status",
+        "en": "State of the operation, for example Running, Paused, Late, Done, Locked or Scheduled.",
+        "id": "Status operasi, misalnya Running, Paused, Late, Done, Locked atau Scheduled."
+      },
+      {
+        "label": "Operator",
+        "en": "Operator working on the operation.",
+        "id": "Operator yang mengerjakan operasi."
+      },
+      {
+        "label": "Gates",
+        "en": "Readiness checks of the operation, each Ready, Waiting or Blocked.",
+        "id": "Pemeriksaan kesiapan operasi, masing-masing Ready, Waiting atau Blocked."
+      },
+      {
+        "label": "Due",
+        "en": "Due date of the Work Order.",
+        "id": "Tanggal jatuh tempo Work Order."
+      }
+    ]
+  },
+  {
+    "key": "production-scheduling",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "PPIC Workspace",
+    "purpose": {
+      "en": "The daily screen of the PPIC officer. The engines plan automatically and leave a Draft; the officer reviews what needs attention, gives priority if needed, compares and Confirms the plan. It also shows materials, incoming purchases and monitoring.",
+      "id": "Layar harian officer PPIC. Engine menjadwalkan otomatis dan meninggalkan Draft; officer memeriksa yang perlu perhatian, memberi prioritas bila perlu, membandingkan lalu Confirm rencana. Juga menampilkan bahan, pembelian masuk dan monitoring."
+    },
+    "keywords": "ppic workspace, penjadwalan, scheduling, production scheduling, jadwal produksi, gantt, kanban, calendar, re-plan, confirm plan, draft, prioritas, hot job, die group, mall, mps",
+    "steps": [
+      {
+        "en": "Open PPIC Workspace. The top boxes show Operations, Ready not scheduled, Not ready, Needs attention and the Last plan.",
+        "id": "Buka PPIC Workspace. Kotak di atas menampilkan Operations, Ready not scheduled, Not ready, Needs attention dan Last plan."
+      },
+      {
+        "en": "Choose a tab: Schedule, Material Control, Incoming Purchases or Monitoring.",
+        "id": "Pilih tab: Schedule, Material Control, Incoming Purchases atau Monitoring."
+      },
+      {
+        "en": "Click Re-plan to ask the engines for a new Draft. Create Work Order or Create all turns waiting delivery lines into Work Orders and asks for a new Draft too.",
+        "id": "Klik Re-plan untuk meminta Draft baru dari engine. Create Work Order atau Create all mengubah baris pengiriman yang menunggu menjadi Work Order dan juga meminta Draft baru."
+      },
+      {
+        "en": "Work through Needs attention. Use Give priority (Hot job or Move up) with a Reason, or Simulate first to see the effect of each option before applying.",
+        "id": "Kerjakan daftar Needs attention. Pakai Give priority (Hot job atau Move up) dengan Reason, atau Simulate dulu untuk melihat dampak tiap pilihan sebelum dipakai."
+      },
+      {
+        "en": "In Schedule, filter by Process, Machine or Search and switch the view between Gantt, Kanban, Calendar and Grid. In Gantt, a move asks for a reason.",
+        "id": "Di Schedule, saring dengan Process, Machine atau Search dan ganti tampilan antara Gantt, Kanban, Calendar dan Grid. Di Gantt, memindahkan operasi meminta alasan."
+      },
+      {
+        "en": "When a Draft exists, compare it with the plan in force, then click Confirm plan or Undo to discard it.",
+        "id": "Bila ada Draft, bandingkan dengan rencana yang berlaku, lalu klik Confirm plan atau Undo untuk membuangnya."
+      },
+      {
+        "en": "Undo last Confirm puts the schedule back as it was before the last Confirm.",
+        "id": "Undo last Confirm mengembalikan jadwal seperti sebelum Confirm terakhir."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Operations",
+        "en": "Number of operations and how many are planned.",
+        "id": "Jumlah operasi dan berapa yang sudah terjadwal."
+      },
+      {
+        "label": "Ready, not scheduled",
+        "en": "Operations ready to run that have no slot yet.",
+        "id": "Operasi yang siap jalan tetapi belum dapat slot."
+      },
+      {
+        "label": "Not ready",
+        "en": "Operations held by material or tooling.",
+        "id": "Operasi yang tertahan bahan atau tooling."
+      },
+      {
+        "label": "Needs attention",
+        "en": "Exceptions from the last plan that need a person.",
+        "id": "Pengecualian dari rencana terakhir yang perlu ditangani orang."
+      },
+      {
+        "label": "Last plan",
+        "en": "Number, status and time of the last plan run.",
+        "id": "Nomor, status dan waktu proses rencana terakhir."
+      },
+      {
+        "label": "Re-plan",
+        "en": "Button: asks the engines for a new Draft plan.",
+        "id": "Tombol: meminta rencana Draft baru dari engine."
+      },
+      {
+        "label": "Confirm plan",
+        "en": "Button, shown when a Draft exists: confirms it and locks the next shift of every machine. It asks for confirmation first.",
+        "id": "Tombol, tampil bila ada Draft: mengonfirmasi rencana dan mengunci shift berikutnya tiap mesin. Ada konfirmasi dulu."
+      },
+      {
+        "label": "Undo",
+        "en": "Button, shown when a Draft exists: discards the Draft after confirmation. The schedule in force is not changed.",
+        "id": "Tombol, tampil bila ada Draft: membuang Draft setelah konfirmasi. Jadwal yang berlaku tidak berubah."
+      },
+      {
+        "label": "Undo last Confirm",
+        "en": "Button: puts the schedule back as it was before the last Confirm, after confirmation.",
+        "id": "Tombol: mengembalikan jadwal seperti sebelum Confirm terakhir, setelah konfirmasi."
+      },
+      {
+        "label": "Measure",
+        "en": "Draft comparison table: each measure with the Plan in force, This Draft and the Change (Better or Worse).",
+        "id": "Tabel perbandingan Draft: tiap ukuran dengan Plan in force, This Draft dan Change (Better atau Worse)."
+      },
+      {
+        "label": "Schedule",
+        "en": "Tab: shop floor now, work waiting, needs attention, die groups, simulation, placements and the four schedule views.",
+        "id": "Tab: kondisi lantai produksi sekarang, pekerjaan menunggu, perlu perhatian, die group, simulasi, penempatan dan empat tampilan jadwal."
+      },
+      {
+        "label": "Material Control",
+        "en": "Tab: material and tooling readiness of every Work Order (Material, Ready at, Tooling, Note) with buttons to Material Planning and Material Booking.",
+        "id": "Tab: kesiapan bahan dan tooling tiap Work Order (Material, Ready at, Tooling, Note) dengan tombol ke Material Planning dan Material Booking."
+      },
+      {
+        "label": "Incoming Purchases",
+        "en": "Tab: open purchase lines for active Work Orders (Document, Material, Qty, Arrives, Needed by, Work Order, Effect) with buttons to Purchase Requisition and Purchase Order.",
+        "id": "Tab: baris pembelian terbuka untuk Work Order aktif (Document, Material, Qty, Arrives, Needed by, Work Order, Effect) dengan tombol ke Purchase Requisition dan Purchase Order."
+      },
+      {
+        "label": "Monitoring",
+        "en": "Tab: plan against actual for operations started in the last 14 days, with On-time finish, Setup plan / actual and Operations tracked.",
+        "id": "Tab: rencana lawan aktual untuk operasi yang mulai dalam 14 hari terakhir, dengan On-time finish, Setup plan / actual dan Operations tracked."
+      },
+      {
+        "label": "On the shop floor now",
+        "en": "Mirror of the operator screens per machine: Job, State, Time, Made, Should be, Crew and Next jobs. Reload to refresh.",
+        "id": "Cermin layar operator per mesin: Job, State, Time, Made, Should be, Crew dan Next jobs. Muat ulang untuk menyegarkan."
+      },
+      {
+        "label": "Delivery plan line",
+        "en": "A delivery line of a Confirmed Customer Order with no Work Order yet. Pick one and click Create Work Order, or click Create all.",
+        "id": "Baris pengiriman Customer Order yang Confirmed dan belum punya Work Order. Pilih satu lalu klik Create Work Order, atau klik Create all."
+      },
+      {
+        "label": "Work Order",
+        "en": "The Work Order to give priority, simulate, or take out of a die group. Pick it from the list.",
+        "id": "Work Order yang diberi prioritas, disimulasikan, atau dikeluarkan dari die group. Pilih dari daftar."
+      },
+      {
+        "label": "Priority",
+        "en": "Hot job or Move up. Applied together with a Reason by Give priority.",
+        "id": "Hot job atau Move up. Dipakai bersama Reason lewat Give priority."
+      },
+      {
+        "label": "Reason",
+        "en": "Required for every priority, die group change, colour order answer and apply. Written to the decision log.",
+        "id": "Wajib untuk setiap prioritas, perubahan die group, jawaban urutan warna dan Apply. Dicatat di log keputusan."
+      },
+      {
+        "label": "Die groups (mall)",
+        "en": "Work Orders sharing a die are run one after another so the die is mounted once. Choose Take out of the group or Put back in the group, give a Reason and click Save.",
+        "id": "Work Order yang memakai pisau sama dijalankan berurutan supaya pisau dipasang sekali. Pilih Take out of the group atau Put back in the group, isi Reason lalu klik Save."
+      },
+      {
+        "label": "Urgent order: simulate first",
+        "en": "Pick a Work Order and click Simulate to see forecast finish, lateness and moved operations for each option. Nothing is saved until you click Apply with a Reason.",
+        "id": "Pilih Work Order lalu klik Simulate untuk melihat perkiraan selesai, keterlambatan dan operasi yang bergeser tiap opsi. Tidak ada yang tersimpan sampai Anda klik Apply dengan Reason."
+      },
+      {
+        "label": "Colour order requests",
+        "en": "Appears when an operator asked for another print order. Choose Accept or Reject as the Answer, give a Reason and click Save. Accept puts the job in the Draft.",
+        "id": "Muncul bila operator meminta urutan cetak lain. Pilih Accept atau Reject di Answer, isi Reason lalu klik Save. Accept memasukkan job ke Draft."
+      },
+      {
+        "label": "Placements by an officer",
+        "en": "Operations placed by hand stay where put. Choose one in Release placement and click Release to let the engine plan it again.",
+        "id": "Operasi yang ditempatkan manual tetap di tempatnya. Pilih satu di Release placement lalu klik Release agar engine menjadwalkannya lagi."
+      },
+      {
+        "label": "Process",
+        "en": "Filter of the Schedule: one process or All processes.",
+        "id": "Saringan Schedule: satu proses atau All processes."
+      },
+      {
+        "label": "Machine",
+        "en": "Filter of the Schedule: one machine or All machines.",
+        "id": "Saringan Schedule: satu mesin atau All machines."
+      },
+      {
+        "label": "Search",
+        "en": "Filter of the Schedule: WO number, customer or product. Click Filter to apply.",
+        "id": "Saringan Schedule: nomor WO, customer atau produk. Klik Filter untuk memakai."
+      },
+      {
+        "label": "Gantt",
+        "en": "View: operations as bars per machine. A move shows its impact first and asks for a reason.",
+        "id": "Tampilan: operasi sebagai batang per mesin. Pemindahan menampilkan dampaknya dulu dan meminta alasan."
+      },
+      {
+        "label": "Kanban",
+        "en": "View: operations as cards in columns; moving a card saves the change.",
+        "id": "Tampilan: operasi sebagai kartu dalam kolom; memindahkan kartu menyimpan perubahan."
+      },
+      {
+        "label": "Calendar",
+        "en": "View: operations in a week calendar.",
+        "id": "Tampilan: operasi dalam kalender mingguan."
+      },
+      {
+        "label": "Grid",
+        "en": "View: a sheet of operations. Target / hour, Waste qty and Spoilage qty can be typed to override the engine estimate; press Re-plan afterwards.",
+        "id": "Tampilan: lembar operasi. Target / hour, Waste qty dan Spoilage qty bisa diketik untuk menimpa estimasi engine; tekan Re-plan sesudahnya."
+      }
+    ]
+  },
+  {
+    "key": "production-operator",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Production Output",
+    "title_id": "Hasil Produksi",
+    "purpose": {
+      "en": "Machine-side screen where the crew starts and stops the setup and production timers and saves the good and bad quantity of the active job. Jobs come from the confirmed PPIC schedule for the machine and process of the logged-in crew.",
+      "id": "Layar di mesin tempat crew menjalankan dan menghentikan timer setup dan produksi, serta menyimpan jumlah good dan bad job yang aktif. Job berasal dari jadwal PPIC yang sudah confirmed untuk mesin dan proses crew yang login."
+    },
+    "keywords": "hasil produksi, production output, output, operator, timer, setup, play, pause, stop, good, bad, reject, save result, list of jobs, master card, layar mesin",
+    "steps": [
+      {
+        "en": "Open Hasil Produksi. A crew member goes straight to the job screen of their own machine and process.",
+        "id": "Buka Hasil Produksi. Crew langsung masuk ke layar job untuk mesin dan proses sendiri."
+      },
+      {
+        "en": "An administrator without a crew first picks a process and machine on the Enter as page.",
+        "id": "Administrator tanpa crew memilih proses dan mesin dulu di halaman Enter as."
+      },
+      {
+        "en": "Check the job: Master Card picture (click it to zoom), target per hour, target quantity, target duration and size.",
+        "id": "Periksa job: gambar Master Card (klik untuk memperbesar), target per jam, target jumlah, target durasi dan ukuran."
+      },
+      {
+        "en": "Press Play on SETUP TIME while setting up, then Stop when done. Then press Play on PRODUCTION OUTPUT; Pause when the machine waits, Stop when finished. A stopped timer is locked.",
+        "id": "Tekan Play di SETUP TIME saat setup, lalu Stop bila selesai. Lalu tekan Play di PRODUCTION OUTPUT; Pause saat mesin menunggu, Stop saat selesai. Timer yang sudah Stop terkunci."
+      },
+      {
+        "en": "To work on another job, click it in List of Jobs.",
+        "id": "Untuk mengerjakan job lain, klik job itu di List of Jobs."
+      },
+      {
+        "en": "Enter the GOOD quantity and the BAD quantity with the plus and minus buttons or by typing.",
+        "id": "Isi jumlah GOOD dan jumlah BAD dengan tombol plus dan minus atau dengan mengetik."
+      },
+      {
+        "en": "If BAD is above zero, choose a reason and quantity for each BAD row (Add reason row for more). The reasons must add up to BAD.",
+        "id": "Jika BAD lebih dari nol, pilih alasan dan jumlah untuk tiap baris BAD (Add reason row untuk menambah). Jumlah alasan harus sama dengan BAD."
+      },
+      {
+        "en": "Click SAVE RESULT. The saved good, bad, progress and yield are shown under the button.",
+        "id": "Klik SAVE RESULT. Good, bad, progres dan yield yang tersimpan tampil di bawah tombol."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Enter as",
+        "en": "Administrator without a crew only: one button per process and machine that has confirmed jobs.",
+        "id": "Hanya administrator tanpa crew: satu tombol per proses dan mesin yang punya job confirmed."
+      },
+      {
+        "label": "MASTER CARD",
+        "en": "Dieline and artwork picture of the active job. Click it to zoom; Escape or a click closes the zoom.",
+        "id": "Gambar dieline dan artwork job aktif. Klik untuk memperbesar; Escape atau klik menutup zoom."
+      },
+      {
+        "label": "TARGET PER HOUR",
+        "en": "Planned output per hour of the active operation.",
+        "id": "Rencana output per jam operasi aktif."
+      },
+      {
+        "label": "TARGET QTY",
+        "en": "Target quantity of the operation. It comes from the Work Order and may differ from Qty Order because of waste, spill and setup.",
+        "id": "Target jumlah operasi. Berasal dari Work Order dan bisa berbeda dari Qty Order karena waste, spill dan setup."
+      },
+      {
+        "label": "TARGET DURATION",
+        "en": "Target quantity divided by target per hour, shown in hours and minutes.",
+        "id": "Target jumlah dibagi target per jam, ditampilkan dalam jam dan menit."
+      },
+      {
+        "label": "SIZE",
+        "en": "Size of the product from the Master Card, P × L × T in mm, and the flat size.",
+        "id": "Ukuran produk dari Master Card, P × L × T dalam mm, dan ukuran datar."
+      },
+      {
+        "label": "Job",
+        "en": "Work Order number and product of the active job.",
+        "id": "Nomor Work Order dan produk job aktif."
+      },
+      {
+        "label": "Qty Order",
+        "en": "Quantity ordered on the Work Order.",
+        "id": "Jumlah pesanan di Work Order."
+      },
+      {
+        "label": "SETUP TIME",
+        "en": "Timer for the setup with Play, Pause and Stop, its state, first start, stop time and clock. Only one timer runs per machine; Play pauses the other one.",
+        "id": "Timer untuk setup dengan Play, Pause dan Stop, statusnya, mulai pertama, waktu stop dan jam. Hanya satu timer jalan per mesin; Play menjeda timer lain."
+      },
+      {
+        "label": "PRODUCTION OUTPUT",
+        "en": "Timer for the production run with Play, Pause and Stop. It also shows the estimated output, counted from the target per hour and the run time; it is not stored.",
+        "id": "Timer untuk proses produksi dengan Play, Pause dan Stop. Juga menampilkan estimasi output, dihitung dari target per jam dan waktu jalan; tidak disimpan."
+      },
+      {
+        "label": "List of Jobs",
+        "en": "Jobs of this machine and process: No, Job No, Product, Customer, Qty and Status (Waiting, Setup, Production, Paused or Done). Only the 5 most recent Done jobs are kept.",
+        "id": "Job di mesin dan proses ini: No, Job No, Product, Customer, Qty dan Status (Waiting, Setup, Production, Paused atau Done). Hanya 5 job Done terbaru yang ditampilkan."
+      },
+      {
+        "label": "GOOD",
+        "en": "Good quantity to add for the job. Plus and minus change it by 100.",
+        "id": "Jumlah good yang ditambahkan untuk job. Plus dan minus mengubahnya 100."
+      },
+      {
+        "label": "BAD",
+        "en": "Bad quantity to add for the job. Plus and minus change it by 10.",
+        "id": "Jumlah bad yang ditambahkan untuk job. Plus dan minus mengubahnya 10."
+      },
+      {
+        "label": "TOTAL",
+        "en": "GOOD plus BAD, with the GOOD and BAD percentages and a share bar.",
+        "id": "GOOD ditambah BAD, dengan persen GOOD dan BAD serta batang proporsi."
+      },
+      {
+        "label": "Reasons",
+        "en": "Appears when BAD is above zero: one row per reject reason with a quantity. The total of the rows must equal BAD.",
+        "id": "Muncul bila BAD lebih dari nol: satu baris per alasan reject dengan jumlahnya. Total baris harus sama dengan BAD."
+      },
+      {
+        "label": "SAVE RESULT",
+        "en": "Button: saves GOOD and BAD to the operation output. Enter GOOD or BAD first; GOOD alone is saved at once.",
+        "id": "Tombol: menyimpan GOOD dan BAD ke output operasi. Isi GOOD atau BAD dulu; GOOD saja langsung tersimpan."
+      }
+    ]
+  },
+  {
+    "key": "production-wo",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Work Order (PPIC)",
+    "purpose": {
+      "en": "Lists Work Orders and creates new ones from the delivery plan lines of Confirmed Customer Orders. Open one Work Order to check its Master Card, processes, materials and simulation. Then click PROCESS and APPLY TO LIVE SCHEDULE.",
+      "id": "Menampilkan daftar Work Order dan membuat yang baru dari baris rencana pengiriman Customer Order yang Confirmed. Buka satu Work Order untuk memeriksa Master Card, proses, bahan dan simulasi. Lalu klik PROCESS dan APPLY TO LIVE SCHEDULE."
+    },
+    "keywords": "work order ppic, wo, spk, perintah kerja, create work order, buat wo, process, apply to live schedule, bill of process, bill of material, bop, bom, simulation, simulasi, que, antrean, hot job",
+    "steps": [
+      {
+        "en": "Open Work Order (PPIC). The list can be filtered by Status and Hot Job. Click + New Record to create Work Orders.",
+        "id": "Buka Work Order (PPIC). Daftar bisa disaring dengan Status dan Hot Job. Klik + New Record untuk membuat Work Order."
+      },
+      {
+        "en": "In Create Work Order, tick one or more delivery lines and click Create Work Order. The form of the new Work Order opens. Lines whose product has no Master Card are not offered.",
+        "id": "Di Create Work Order, centang satu atau lebih baris pengiriman lalu klik Create Work Order. Form Work Order baru terbuka. Baris yang produknya belum punya Master Card tidak ditawarkan."
+      },
+      {
+        "en": "Open a Work Order from the list. Check the sections Master Card, Bill of Process, Bill of Material, Simulation and QUE every process every machine.",
+        "id": "Buka sebuah Work Order dari daftar. Periksa bagian Master Card, Bill of Process, Bill of Material, Simulation dan QUE every process every machine."
+      },
+      {
+        "en": "While the Work Order is not yet applied, edit the Bill of Process and Bill of Material cells. Priority and Earliest start can be changed in the header.",
+        "id": "Selama Work Order belum di-apply, ubah sel Bill of Process dan Bill of Material. Priority dan Earliest start bisa diubah di bagian atas."
+      },
+      {
+        "en": "Click PROCESS to run the planning chain and put the Work Order in the Draft. The number in brackets is the number of pending changes.",
+        "id": "Klik PROCESS untuk menjalankan rantai perencanaan dan memasukkan Work Order ke Draft. Angka dalam kurung adalah jumlah perubahan tertunda."
+      },
+      {
+        "en": "Check the Simulation. Move or swap operations freely while they are Draft; moves are added to pending changes and a reason is required.",
+        "id": "Periksa Simulation. Pindah atau tukar operasi bebas selama masih Draft; perpindahan masuk ke perubahan tertunda dan alasan wajib diisi."
+      },
+      {
+        "en": "Click APPLY TO LIVE SCHEDULE. It stays off until PROCESS passed and all raw material is ready; the reason is shown on the screen.",
+        "id": "Klik APPLY TO LIVE SCHEDULE. Tombol mati sampai PROCESS lulus dan semua bahan baku siap; alasannya tampil di layar."
+      },
+      {
+        "en": "To remove a Work Order that is not confirmed yet, click Delete, give a Reason and confirm. Its delivery line goes back to the picker.",
+        "id": "Untuk menghapus Work Order yang belum confirmed, klik Delete, isi Reason lalu konfirmasi. Baris pengiriman kembali ke daftar pilihan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Status",
+        "en": "List filter and column: Draft, Simulated, Scheduled, In Progress, On Hold, Completed or Cancelled. The boxes group them as Planning, In Progress, On Hold and Completed.",
+        "id": "Saringan dan kolom daftar: Draft, Simulated, Scheduled, In Progress, On Hold, Completed atau Cancelled. Kotak mengelompokkannya menjadi Planning, In Progress, On Hold dan Completed."
+      },
+      {
+        "label": "Hot Job",
+        "en": "List filter and column: marks a Work Order given Hot job priority.",
+        "id": "Saringan dan kolom daftar: menandai Work Order yang diberi prioritas Hot job."
+      },
+      {
+        "label": "WO No. / Customer",
+        "en": "List column: Work Order number and its customer. The other columns are Product, Part, Customer Order, Qty and Due Date.",
+        "id": "Kolom daftar: nomor Work Order dan pelanggannya. Kolom lainnya Product, Part, Customer Order, Qty dan Due Date."
+      },
+      {
+        "label": "Customer Order",
+        "en": "Create Work Order list: the Confirmed Customer Order of the delivery line, with Product, Quantity, Ship Date and the Product Development state.",
+        "id": "Daftar Create Work Order: Customer Order Confirmed dari baris pengiriman, dengan Product, Quantity, Ship Date dan status Product Development."
+      },
+      {
+        "label": "Product Development",
+        "en": "Shows Complete with the number of parts, or Master Card incomplete with what is missing, or Simple Work Order (no operations).",
+        "id": "Menampilkan Complete beserta jumlah part, atau Master Card incomplete beserta yang kurang, atau Simple Work Order (no operations)."
+      },
+      {
+        "label": "Quantity",
+        "en": "Header fact: Work Order quantity. Other facts shown when known: Due Date, Est. Start, Est. Finish, Against due date, Plan, Ups per sheet, Press sheet (mm) and Dieline.",
+        "id": "Fakta di bagian atas: jumlah Work Order. Fakta lain tampil bila diketahui: Due Date, Est. Start, Est. Finish, Against due date, Plan, Ups per sheet, Press sheet (mm) dan Dieline."
+      },
+      {
+        "label": "Priority",
+        "en": "Normal, Move up or Hot job. Changing it asks for a Reason and Save; the choice is pending until PROCESS.",
+        "id": "Normal, Move up atau Hot job. Mengubahnya meminta Reason dan Save; pilihan tertunda sampai PROCESS."
+      },
+      {
+        "label": "Earliest start",
+        "en": "Date and time before which no operation of this Work Order starts. Empty means as soon as possible. Click Save; PROCESS uses it.",
+        "id": "Tanggal dan jam sebelum itu tidak ada operasi Work Order ini yang mulai. Kosong berarti secepatnya. Klik Save; PROCESS memakainya."
+      },
+      {
+        "label": "PROCESS",
+        "en": "Button: runs material lines, targets and setups, gates and schedule into the Draft. Disabled when nothing changed.",
+        "id": "Tombol: menjalankan baris bahan, target dan setup, gate dan jadwal ke Draft. Mati bila tidak ada yang berubah."
+      },
+      {
+        "label": "APPLY TO LIVE SCHEDULE",
+        "en": "Button: fixes the whole Work Order on the live schedule. Off until PROCESS passed and raw material is ready.",
+        "id": "Tombol: memantapkan seluruh Work Order di jadwal live. Mati sampai PROCESS lulus dan bahan baku siap."
+      },
+      {
+        "label": "Delete",
+        "en": "Button: deletes a Work Order that is not confirmed yet, with a required Reason. A confirmed Work Order cannot be deleted.",
+        "id": "Tombol: menghapus Work Order yang belum confirmed, dengan Reason wajib. Work Order yang sudah confirmed tidak bisa dihapus."
+      },
+      {
+        "label": "Next Work Order",
+        "en": "Button, shown when more Work Orders were created together: opens the next one.",
+        "id": "Tombol, tampil bila beberapa Work Order dibuat bersamaan: membuka yang berikutnya."
+      },
+      {
+        "label": "Master Card",
+        "en": "Read-only section. It shows the dieline and artwork pictures. Below them: Customer, Size L × W × H (mm), Flat size (blank), Knife and ups, Flaps and allowances, Hole (front panel), Material, Colours, Finishing, Print size / pack and Process.",
+        "id": "Bagian baca-saja. Menampilkan gambar dieline dan artwork. Di bawahnya: Customer, Size L × W × H (mm), Flat size (blank), Knife and ups, Flaps and allowances, Hole (front panel), Material, Colours, Finishing, Print size / pack dan Process."
+      },
+      {
+        "label": "Bill of Process",
+        "en": "The steps of the Work Order. Columns: Process, Machine, Qty in, Good out, Target / hour, Crew / Subcon, Setup (min), Run (h), Start and Stop. ADD, DELETE and RESET work on rows; RESET fetches the ProDev values again.",
+        "id": "Urutan proses Work Order. Kolom: Process, Machine, Qty in, Good out, Target / hour, Crew / Subcon, Setup (min), Run (h), Start dan Stop. ADD, DELETE dan RESET bekerja pada baris; RESET mengambil ulang nilai ProDev."
+      },
+      {
+        "label": "Bill of Material",
+        "en": "Material lines. Columns: Process, Material, Role, Required, Waste, Spill, Unit, On hand, Available, Release and Purchase. Waste and Spill come from ProDev and can be overwritten.",
+        "id": "Baris bahan. Kolom: Process, Material, Role, Required, Waste, Spill, Unit, On hand, Available, Release dan Purchase. Waste dan Spill dari ProDev dan bisa ditimpa."
+      },
+      {
+        "label": "Simulation",
+        "en": "Gantt of the operations: LIVE (locked) is already applied, DRAFT can be moved, swapped or simulated freely. Shows a suggested order when the sequence model offers one; Discard pending changes drops pending moves.",
+        "id": "Gantt operasi: LIVE (terkunci) sudah di-apply, DRAFT bebas dipindah, ditukar atau disimulasikan. Menampilkan usulan urutan bila model urutan menawarkannya; Discard pending changes membuang perpindahan tertunda."
+      },
+      {
+        "label": "APPLY ALL WOs to LIVE SCHEDULE",
+        "en": "Button in the Simulation Gantt: applies all Work Orders to the live schedule. Not available while PROCESS is still needed.",
+        "id": "Tombol di Gantt Simulation: meng-apply semua Work Order ke jadwal live. Tidak tersedia selama PROCESS masih diperlukan."
+      },
+      {
+        "label": "QUE every process every machine",
+        "en": "Queue board per process and machine: what is queued, in order, and what is running. A Suggested column shows when the sequence model is active.",
+        "id": "Papan antrean per proses dan mesin: apa yang antre, urutannya, dan apa yang sedang jalan. Kolom Suggested tampil bila model urutan aktif."
+      }
+    ]
+  }
+]

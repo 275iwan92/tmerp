@@ -33,7 +33,8 @@ Check a file before handing it in: `php resources/data/help/_check.php resources
 | `key` | v2 screen slug (`sys_app_menu.target` without `v2:`), or `guide-...` for a general guide. Unique. |
 | `type` | `INPUT` = screen where data is entered (grid + form, master, lookup, approval), `REPORT` = read-only report, `GUIDE` = general how-to that is not one screen. |
 | `module` | `sec_module` code that owns the screen (`SALES`, `COSTING`, `PROC`, `INV`, `PROD`, `MAINT`, `HRM`, `FINACC`, `MDATA`, `SETUP`, `GENERAL`). |
-| `title` | Screen name in English, as the user sees it in the menu. |
+| `title` | Screen name in English, as the user sees it in the menu. One English name only (no "Indonesian / English" pairs). |
+| `title_id` | Optional. The title in Indonesian, shown in the User's Guide and Help Topics when the language is Indonesian (Jo 2026-10-18). Leave it out when the English title is also what Indonesian users read in the menu. The Technical Guide stays English. |
 | `purpose` | What the screen or report is FOR and when someone opens it. One or two sentences. |
 | `keywords` | Words a user may type when looking for this screen: English and Indonesian, abbreviations, old paper-form names. Lowercase, comma separated, at most 255 characters. |
 | `steps` | How to USE the screen, in order, 3 to 8 steps. One action per step. |
@@ -43,8 +44,9 @@ Check a file before handing it in: `php resources/data/help/_check.php resources
 
 1. Every `en` and every `id` text is **at most 255 characters** (the dictionary column is 255). Split a long thought into two steps.
 2. `en` is plain English. `id` is everyday Indonesian a factory staff member understands; it says the same thing as `en`.
-3. Button names, status names and field labels stay as on the screen in both languages (New, Save, Undo, Delete, Confirm,
-   Cancel, Duplicate, Back, Print, Email; Draft, Confirmed, Cancelled, Closed; `+ New Record`).
+3. Button names, status names and field labels stay in English in both languages (Jo 2026-10-18; the Help screen shows field labels
+   untranslated): New, Save, Undo, Delete, Confirm, Cancel, Duplicate, Back, Print, Email; Draft, Confirmed, Cancelled, Closed; `+ New Record`.
+   Never write an Indonesian button name (Simpan, Batal, Hapus ...) in a step.
 4. Describe only what the code really does. Read the screen first. When something is not in the code, leave it out; never guess.
 5. A field explanation says what to enter, where the value comes from (typed, picked from a master, filled by the system),
    and what it is used for later, when the code shows it. Skip audit fields (created by / at, updated by / at).

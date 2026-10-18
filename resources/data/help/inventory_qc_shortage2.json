@@ -4,16 +4,17 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Shortage Detection (automatic)",
+    "title_id": "Deteksi Kekurangan Kiriman (otomatis)",
     "purpose": {
       "en": "How a short delivery is found after production. Shortage = net material issued minus (good output plus standard waste), in the material unit. A gap above the PO tolerance becomes a Draft shortage request.",
       "id": "Cara kurang kirim ditemukan setelah produksi. Kekurangan = bahan keluar bersih dikurangi (output baik ditambah waste standar), dalam satuan bahan. Selisih di atas toleransi PO menjadi permintaan kirim kekurangan Draft."
     },
     "keywords": "kurang kirim otomatis, deteksi kurang kirim, shortage detection, detect shortage, inv:detect-shortage, output produksi, waste standar, toleransi po",
     "steps": [
-      {"en": "Run php artisan inv:detect-shortage, or add --wo=<id> for one work order and --dry-run to only look. Add -v to see why a pair was skipped.", "id": "Jalankan php artisan inv:detect-shortage, atau tambah --wo=<id> untuk satu WO dan --dry-run untuk hanya melihat. Tambah -v untuk melihat alasan pasangan dilewati."},
+      {"en": "Run php artisan inv:detect-shortage, or add --wo=ID for one work order and --dry-run to only look. Add -v to see why a pair was skipped.", "id": "Jalankan php artisan inv:detect-shortage, atau tambah --wo=ID untuk satu WO dan --dry-run untuk hanya melihat. Tambah -v untuk melihat alasan pasangan dilewati."},
       {"en": "Good output in the material unit = the material need of the work order times (good output of the last operation divided by the work order quantity).", "id": "Output baik dalam satuan bahan = kebutuhan bahan WO dikali (output baik operasi terakhir dibagi qty WO)."},
       {"en": "That need already holds the standard waste of all steps, so the check leans to not accusing. Waste above the standard is a usage variance, not a shortage.", "id": "Kebutuhan itu sudah memuat waste standar semua langkah, jadi pemeriksaan condong tidak menuduh. Waste di atas standar adalah varians pemakaian, bukan kurang kirim."},
-      {"en": "A pair is skipped, and stays a typed entry, when the work order is not finished, has no output, has a material need of 0, uses another unit, or the issue has no batch.", "id": "Pasangan dilewati, dan tetap diketik manual, bila WO belum selesai, tanpa output, kebutuhan bahan 0, satuannya lain, atau keluar bahan tanpa batch."},
+      {"en": "A pair is skipped, and stays a typed entry. This happens when the work order is not finished or has no output. It also happens when the material need is 0, the unit is different, or the issue has no batch.", "id": "Pasangan dilewati dan tetap diketik manual. Ini terjadi bila WO belum selesai atau tanpa output. Juga bila kebutuhan bahan 0, satuannya lain, atau keluar bahan tanpa batch."},
       {"en": "A Draft request is made once per work order and material. The head of the warehouse gets a notice to recount.", "id": "Permintaan Draft dibuat sekali per WO dan bahan. Kepala gudang menerima pemberitahuan untuk menghitung ulang."}
     ],
     "fields": []
@@ -23,9 +24,10 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Shortage Follow-up Documents",
+    "title_id": "Dokumen Tindak Lanjut Kekurangan Kiriman",
     "purpose": {
-      "en": "What is made when a shortage request moves on: notices to the roles, an extra purchase request when PPIC confirms, and a draft debit note when the supplier refuses or the window lapses.",
-      "id": "Apa yang dibuat saat permintaan kirim kekurangan berjalan: pemberitahuan ke peran terkait, PR tambahan saat PPIC mengonfirmasi, dan draft debit note saat pemasok menolak atau jendela lewat."
+      "en": "What is made when a shortage request moves on. Notices go to the roles. An extra purchase request is made when PPIC confirms. A draft debit note is made when the supplier refuses or the window lapses.",
+      "id": "Apa yang dibuat saat permintaan kirim kekurangan berjalan. Pemberitahuan dikirim ke peran terkait. PR tambahan dibuat saat PPIC mengonfirmasi. Draft debit note dibuat saat pemasok menolak atau jendela lewat."
     },
     "keywords": "pr tambahan, debit note, potong tagihan, kurang kirim, pemberitahuan, notifikasi, backorder, additional purchase request",
     "steps": [
@@ -42,6 +44,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Quality Decision Escalation",
+    "title_id": "Eskalasi Keputusan Mutu",
     "purpose": {
       "en": "Batches that stay Conditional or in Quarantine without a quality decision are reported. After INV_QC_ESCALATE_HOURS the head of QC and operations managers are notified; after INV_QC_DEADLINE_HOURS a usage decision is required.",
       "id": "Batch yang tetap Conditional atau Quarantine tanpa keputusan mutu dilaporkan. Lewat INV_QC_ESCALATE_HOURS kepala QC dan operations manager diberi tahu; lewat INV_QC_DEADLINE_HOURS usage decision wajib."

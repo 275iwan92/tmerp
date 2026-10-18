@@ -1,0 +1,983 @@
+[
+  {
+    "key": "acc-rpt-balance-sheet",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "Balance Sheet",
+    "purpose": {
+      "en": "Statement of financial position (neraca) as at a chosen date, built from posted journals only. Open it to see assets, liabilities and equity, compare with another date, and export to CSV. Unaudited management accounts.",
+      "id": "Laporan posisi keuangan (neraca) per tanggal pilihan, dibuat hanya dari jurnal yang sudah diposting. Buka untuk melihat aset, kewajiban, dan ekuitas, membandingkan dengan tanggal lain, dan mengunduh CSV. Belum diaudit."
+    },
+    "keywords": "balance sheet, neraca, posisi keuangan, financial position, assets, liabilities, equity, aset, kewajiban, ekuitas, current ratio, laporan keuangan, export, csv",
+    "steps": [
+      {
+        "en": "Open Balance Sheet. It shows today's date in As At.",
+        "id": "Buka Balance Sheet. Kolom As At langsung berisi tanggal hari ini."
+      },
+      {
+        "en": "Change As At to the date you want the balance as of, then click Filter.",
+        "id": "Ubah As At ke tanggal posisi yang diinginkan, lalu klik Filter."
+      },
+      {
+        "en": "Read the four cards at the top, then the Statement of Financial Position below them.",
+        "id": "Baca empat kartu di bagian atas, lalu tabel Statement of Financial Position di bawahnya."
+      },
+      {
+        "en": "To compare, tick Compare with another date, set Compare With and click Filter. A Comparative View table appears with both dates and the Change.",
+        "id": "Untuk membandingkan, centang Compare with another date, isi Compare With, lalu klik Filter. Tabel Comparative View muncul dengan kedua tanggal dan kolom Change."
+      },
+      {
+        "en": "If a red message says the balance sheet is out of balance, check the Trial Balance.",
+        "id": "Bila muncul pesan merah bahwa neraca tidak seimbang, periksa Trial Balance."
+      },
+      {
+        "en": "Click Export to download the report as a CSV file.",
+        "id": "Klik Export untuk mengunduh laporan sebagai file CSV."
+      }
+    ],
+    "fields": [
+      {
+        "label": "As At",
+        "en": "The date the balance sheet is as of. Defaults to today. Only journals that are posted up to this date are included.",
+        "id": "Tanggal posisi neraca. Bawaannya hari ini. Hanya jurnal yang sudah diposting sampai tanggal ini yang dihitung."
+      },
+      {
+        "label": "Compare with another date",
+        "en": "Tick to add the Comparative View table next to the main statement.",
+        "id": "Centang untuk menampilkan tabel Comparative View di bawah laporan utama."
+      },
+      {
+        "label": "Compare With",
+        "en": "The second date used in the comparison. Defaults to the end of last year. The main balance sheet itself does not change.",
+        "id": "Tanggal kedua untuk perbandingan. Bawaannya akhir tahun lalu. Neraca utama tidak berubah."
+      },
+      {
+        "label": "Total Assets",
+        "en": "Card with the total assets at the As At date, shown against the Compare With date.",
+        "id": "Kartu total aset pada tanggal As At, dibandingkan dengan tanggal Compare With."
+      },
+      {
+        "label": "Total Liabilities",
+        "en": "Card with the total liabilities. The note shows the debt-to-equity ratio when equity is not zero.",
+        "id": "Kartu total kewajiban. Catatannya menampilkan rasio utang terhadap ekuitas bila ekuitas tidak nol."
+      },
+      {
+        "label": "Total Equity",
+        "en": "Card with the total equity, shown against the Compare With date.",
+        "id": "Kartu total ekuitas, dibandingkan dengan tanggal Compare With."
+      },
+      {
+        "label": "Current Ratio",
+        "en": "Card with current assets divided by current liabilities. Shows a note when there are no current liabilities.",
+        "id": "Kartu rasio lancar: aset lancar dibagi kewajiban lancar. Ada catatan bila tidak ada kewajiban lancar."
+      },
+      {
+        "label": "Statement of Financial Position",
+        "en": "The balance sheet table as at the chosen date: assets, then liabilities and equity, with totals, in IDR.",
+        "id": "Tabel neraca per tanggal pilihan: aset, lalu kewajiban dan ekuitas, lengkap dengan total, dalam IDR."
+      },
+      {
+        "label": "Comparative View",
+        "en": "Only when comparing. Columns are the As At date, the Compare With date and Change for cash, receivables, inventory, fixed assets, payables, loans, capital and retained earnings.",
+        "id": "Hanya saat membandingkan. Kolomnya tanggal As At, tanggal Compare With, dan Change untuk kas, piutang, persediaan, aset tetap, utang, pinjaman, modal, dan laba ditahan."
+      }
+    ]
+  },
+  {
+    "key": "acc-bank",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Bank & Reconciliation",
+    "purpose": {
+      "en": "Reconcile a bank account with the books. Import the bank statement, run Auto-Match, investigate unmatched lines (match to a voucher or create a draft adjustment journal), then click Reconcile Now.",
+      "id": "Mencocokkan rekening bank dengan pembukuan. Impor mutasi bank, jalankan Auto-Match, periksa baris yang belum cocok (cocokkan ke voucher atau buat jurnal penyesuaian draft), lalu klik Reconcile Now."
+    },
+    "keywords": "bank, reconciliation, rekonsiliasi, rekonsiliasi bank, statement, mutasi, rekening koran, auto match, import csv, selisih bank, bank charge, biaya bank, cash bank, kas bank",
+    "steps": [
+      {
+        "en": "Open Bank & Reconciliation and choose the Bank Account, then click Filter.",
+        "id": "Buka Bank & Reconciliation, pilih Bank Account, lalu klik Filter."
+      },
+      {
+        "en": "In Import Bank Statement, pick the CSV file and click Import. The file needs the header columns shown on screen.",
+        "id": "Di Import Bank Statement, pilih file CSV lalu klik Import. File harus memakai kolom header seperti yang tertulis di layar."
+      },
+      {
+        "en": "Click Auto-Match so the system matches statement lines to posted bank entries.",
+        "id": "Klik Auto-Match agar sistem mencocokkan baris mutasi dengan jurnal bank yang sudah diposting."
+      },
+      {
+        "en": "In Bank Statement, click Investigate / match on a line that is still unmatched. Pick a voucher and click Match.",
+        "id": "Di Bank Statement, klik Investigate / match pada baris yang belum cocok. Pilih voucher lalu klik Match."
+      },
+      {
+        "en": "If there is no voucher (bank charge, interest), choose the account and click Create Adjustment Journal. It is created as a DRAFT and must be approved in Journal Entries.",
+        "id": "Bila tidak ada voucher (biaya bank, bunga), pilih akunnya lalu klik Create Adjustment Journal. Jurnal dibuat sebagai DRAFT dan harus disetujui di Journal Entries."
+      },
+      {
+        "en": "Click Ignore on a line that should not be reconciled, then confirm.",
+        "id": "Klik Ignore pada baris yang tidak perlu direkonsiliasi, lalu konfirmasi."
+      },
+      {
+        "en": "When the statement balance and the book balance agree, click Reconcile Now and confirm to record the reconciliation.",
+        "id": "Bila saldo mutasi dan saldo buku sudah sama, klik Reconcile Now lalu konfirmasi untuk mencatat rekonsiliasi."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Bank Account",
+        "en": "Pick the cash or bank account to work on. Everything on the screen follows this account.",
+        "id": "Pilih akun kas atau bank yang dikerjakan. Seluruh isi layar mengikuti akun ini."
+      },
+      {
+        "label": "Bank Transaction",
+        "en": "Button that opens the Cashier screen to record a bank receipt or payment.",
+        "id": "Tombol yang membuka layar Cashier untuk mencatat penerimaan atau pembayaran bank."
+      },
+      {
+        "label": "Statement Balance",
+        "en": "Card with the balance from the imported statement. Shows No statement imported when nothing has been imported.",
+        "id": "Kartu saldo dari mutasi bank yang diimpor. Tampil No statement imported bila belum ada yang diimpor."
+      },
+      {
+        "label": "GL Book Balance",
+        "en": "Card with the account balance in the books. The note says whether it agrees with the statement or shows the difference.",
+        "id": "Kartu saldo akun di pembukuan. Catatannya menunjukkan apakah sama dengan mutasi bank atau berapa selisihnya."
+      },
+      {
+        "label": "Unmatched Items",
+        "en": "Card with the number and total amount of statement lines not matched yet.",
+        "id": "Kartu jumlah dan total nominal baris mutasi yang belum cocok."
+      },
+      {
+        "label": "Last Reconciled",
+        "en": "Card with the statement date of the last reconciliation and whether it was completed or had a difference.",
+        "id": "Kartu tanggal mutasi pada rekonsiliasi terakhir dan apakah selesai atau masih ada selisih."
+      },
+      {
+        "label": "CSV file",
+        "en": "The bank statement file (.csv or .txt) to import. Separator is comma or semicolon. Required columns: date, description, reference, debit, credit, balance.",
+        "id": "File mutasi bank (.csv atau .txt) yang diimpor. Pemisah koma atau titik koma. Kolom wajib: date/tanggal, description/keterangan, reference, debit/keluar, credit/masuk, balance/saldo."
+      },
+      {
+        "label": "Match to book entry (±30 days, closest amount first)",
+        "en": "Pick the voucher that the statement line belongs to. The list shows vouchers within 30 days, closest amount first.",
+        "id": "Pilih voucher yang sesuai dengan baris mutasi. Daftar menampilkan voucher dalam 30 hari, nominal terdekat lebih dulu."
+      },
+      {
+        "label": "…or create adjustment journal against",
+        "en": "The counter account for an adjustment journal, for bank charges, interest or interest tax. The journal is created as a DRAFT.",
+        "id": "Akun lawan untuk jurnal penyesuaian, misalnya biaya bank, bunga, atau pajak bunga. Jurnal dibuat sebagai DRAFT."
+      },
+      {
+        "label": "Bank Statement",
+        "en": "Table of imported lines with Date, Reference / Description, In, Out and Status (Unmatched, Matched, Adjusted, Ignored).",
+        "id": "Tabel baris mutasi yang diimpor dengan kolom Date, Reference / Description, In, Out, dan Status (Unmatched, Matched, Adjusted, Ignored)."
+      },
+      {
+        "label": "Search",
+        "en": "Type part of a reference or description to narrow the Bank Journal table below.",
+        "id": "Ketik sebagian referensi atau keterangan untuk mempersempit tabel Bank Journal di bawah."
+      },
+      {
+        "label": "Transaction Type",
+        "en": "Filter the Bank Journal by Receipt or Payment. Leave on All transaction types to see both.",
+        "id": "Saring Bank Journal menurut Receipt atau Payment. Biarkan All transaction types untuk melihat keduanya."
+      },
+      {
+        "label": "Bank Journal",
+        "en": "Read-only table of recent posted cash and bank movements: Date, Reference, Description, Money In, Money Out and Match Status (Matched or Unmatched).",
+        "id": "Tabel baca-saja mutasi kas dan bank terbaru yang sudah diposting: Date, Reference, Description, Money In, Money Out, dan Match Status (Matched atau Unmatched)."
+      }
+    ]
+  },
+  {
+    "key": "acc-rpt-cash-flow",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "Cash Flow Statement",
+    "title_id": "Laporan Arus Kas",
+    "purpose": {
+      "en": "Cash flow statement (indirect method) for a period, built from posted journals. Open it to see cash from operating, investing and financing activities, the monthly operating cash trend, and to export to CSV.",
+      "id": "Laporan arus kas (metode tidak langsung) untuk satu periode, dibuat dari jurnal yang sudah diposting. Buka untuk melihat kas dari kegiatan operasi, investasi, dan pendanaan, tren kas operasi bulanan, dan mengunduh CSV."
+    },
+    "keywords": "cash flow, arus kas, laporan arus kas, indirect method, operating cash, kas operasi, investing, financing, opening cash, closing cash, kas awal, kas akhir, export, csv",
+    "steps": [
+      {
+        "en": "Open Cash Flow Statement. From and To start as the beginning of this year and today.",
+        "id": "Buka Cash Flow Statement. From dan To awalnya berisi awal tahun ini dan hari ini."
+      },
+      {
+        "en": "Change From and To to the period you want, then click Filter.",
+        "id": "Ubah From dan To ke periode yang diinginkan, lalu klik Filter."
+      },
+      {
+        "en": "Read the four cards at the top, then the Cash Flow Detail table.",
+        "id": "Baca empat kartu di atas, lalu tabel Cash Flow Detail."
+      },
+      {
+        "en": "If an amber message shows a cash reconciliation difference, some accounts have no cash flow classification and need to be classified.",
+        "id": "Bila muncul pesan kuning tentang selisih rekonsiliasi kas, berarti ada akun yang belum diberi klasifikasi arus kas dan perlu dilengkapi."
+      },
+      {
+        "en": "Look at the Operating Cash Trend chart for the monthly operating cash movement.",
+        "id": "Lihat grafik Operating Cash Trend untuk pergerakan kas operasi per bulan."
+      },
+      {
+        "en": "Click Export to download the report as a CSV file.",
+        "id": "Klik Export untuk mengunduh laporan sebagai file CSV."
+      }
+    ],
+    "fields": [
+      {
+        "label": "From",
+        "en": "First date of the period. Defaults to the start of the current year.",
+        "id": "Tanggal awal periode. Bawaannya awal tahun berjalan."
+      },
+      {
+        "label": "To",
+        "en": "Last date of the period. Defaults to today.",
+        "id": "Tanggal akhir periode. Bawaannya hari ini."
+      },
+      {
+        "label": "Opening Cash",
+        "en": "Card with the cash balance at the From date.",
+        "id": "Kartu saldo kas pada tanggal From."
+      },
+      {
+        "label": "Net Operating Cash",
+        "en": "Card with the net cash from operations. The note says Positive or Negative.",
+        "id": "Kartu kas bersih dari operasi. Catatannya Positive atau Negative."
+      },
+      {
+        "label": "Net Investing Cash",
+        "en": "Card with the net cash used in investing, mainly equipment and intangible purchases.",
+        "id": "Kartu kas bersih untuk investasi, terutama pembelian peralatan dan aset tak berwujud."
+      },
+      {
+        "label": "Closing Cash",
+        "en": "Card with the cash balance at the end of the period. The note shows the change during the period.",
+        "id": "Kartu saldo kas akhir periode. Catatannya menunjukkan perubahan selama periode."
+      },
+      {
+        "label": "Cash Flow Detail",
+        "en": "Table in IDR: operating activities (profit before tax, depreciation, working capital changes, tax paid), investing, financing, net change, opening and closing cash.",
+        "id": "Tabel dalam IDR: kegiatan operasi (laba sebelum pajak, penyusutan, perubahan modal kerja, pajak dibayar), investasi, pendanaan, perubahan bersih, kas awal, dan kas akhir."
+      },
+      {
+        "label": "Operating Cash Trend",
+        "en": "Line chart of the monthly operating cash movement in IDR. If there is no operating cash flow in the period, a message is shown instead.",
+        "id": "Grafik garis pergerakan kas operasi per bulan dalam IDR. Bila tidak ada arus kas operasi pada periode, muncul pesan sebagai gantinya."
+      }
+    ]
+  },
+  {
+    "key": "acc-dashboard",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "Accounting Dashboard",
+    "title_id": "Dashboard Akuntansi",
+    "purpose": {
+      "en": "Read-only overview of finance: cash, receivables, payables, year-to-date profit, 12-month cash trend, closing and tax deadlines, and prioritized tasks. Open it first to see what needs attention, then jump to the right screen.",
+      "id": "Ringkasan keuangan baca-saja: kas, piutang, utang, laba tahun berjalan, tren kas 12 bulan, tenggat tutup buku dan pajak, serta tugas prioritas. Buka lebih dulu untuk melihat apa yang perlu ditangani, lalu lompat ke layar yang tepat."
+    },
+    "keywords": "dashboard, accounting dashboard, dashboard akuntansi, keuangan, finance, cash, kas, piutang, receivable, utang, payable, laba, profit, compliance, action center, shortcut, tugas",
+    "steps": [
+      {
+        "en": "Open Accounting Dashboard. As At starts as today.",
+        "id": "Buka Accounting Dashboard. As At awalnya hari ini."
+      },
+      {
+        "en": "Change As At and click Filter to see the figures as of another date.",
+        "id": "Ubah As At lalu klik Filter untuk melihat angka pada tanggal lain."
+      },
+      {
+        "en": "Read the four cards, then the Cash Flow Overview chart. Click View report to open the full Cash Flow report.",
+        "id": "Baca empat kartu, lalu grafik Cash Flow Overview. Klik View report untuk membuka laporan Cash Flow lengkap."
+      },
+      {
+        "en": "Check Compliance Center for closing and tax deadlines. Click Open tax to go to Indonesian Tax.",
+        "id": "Cek Compliance Center untuk tenggat tutup buku dan pajak. Klik Open tax untuk ke Indonesian Tax."
+      },
+      {
+        "en": "Work through Finance Action Center from the top; it lists the prioritized tasks.",
+        "id": "Kerjakan Finance Action Center dari atas; isinya daftar tugas prioritas."
+      },
+      {
+        "en": "Click New Journal to start a journal entry, Financial Statements for the statements, or use Shortcuts to open other finance screens.",
+        "id": "Klik New Journal untuk membuat jurnal, Financial Statements untuk laporan keuangan, atau pakai Shortcuts untuk membuka layar keuangan lain."
+      }
+    ],
+    "fields": [
+      {
+        "label": "As At",
+        "en": "The date the figures are as of. Defaults to today.",
+        "id": "Tanggal acuan angka. Bawaannya hari ini."
+      },
+      {
+        "label": "Cash & Bank",
+        "en": "Card with the total cash and bank balance, compared with the previous period when available.",
+        "id": "Kartu total saldo kas dan bank, dibandingkan dengan periode sebelumnya bila ada."
+      },
+      {
+        "label": "Accounts Receivable",
+        "en": "Card with the open receivables. The note shows the number of invoices and how much is overdue.",
+        "id": "Kartu piutang yang masih terbuka. Catatannya menunjukkan jumlah invoice dan nominal yang lewat jatuh tempo."
+      },
+      {
+        "label": "Accounts Payable",
+        "en": "Card with the open payables. The note shows the number of bills and how much is due this week.",
+        "id": "Kartu utang yang masih terbuka. Catatannya menunjukkan jumlah tagihan dan nominal yang jatuh tempo minggu ini."
+      },
+      {
+        "label": "Net Profit YTD",
+        "en": "Card with the net profit from the start of the year, compared with last year when available.",
+        "id": "Kartu laba bersih sejak awal tahun, dibandingkan dengan tahun lalu bila ada."
+      },
+      {
+        "label": "Cash Flow Overview",
+        "en": "Area chart of the monthly operating cash movement for the last 12 months, in IDR. A message shows instead when there is no cash flow yet.",
+        "id": "Grafik area pergerakan kas operasi per bulan selama 12 bulan terakhir, dalam IDR. Bila belum ada arus kas, muncul pesan."
+      },
+      {
+        "label": "Compliance Center",
+        "en": "Cards for closing and tax deadlines, each with a status. Shows a message when there is no active deadline.",
+        "id": "Kartu tenggat tutup buku dan pajak, masing-masing dengan status. Muncul pesan bila tidak ada tenggat aktif."
+      },
+      {
+        "label": "Finance Action Center",
+        "en": "Prioritized finance tasks as cards with a status.",
+        "id": "Tugas keuangan prioritas dalam bentuk kartu dengan status."
+      },
+      {
+        "label": "Shortcuts",
+        "en": "Buttons to Journal Entries, Cashier, Master of Accounts, Trial Balance and Process Engine.",
+        "id": "Tombol menuju Journal Entries, Cashier, Master of Accounts, Trial Balance, dan Process Engine."
+      }
+    ]
+  },
+  {
+    "key": "acc-statements",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "Financial Statements",
+    "purpose": {
+      "en": "One-page summary of the balance sheet, income statement (year to date) and cash flow statement from posted journals. Open it for a quick view, then follow Open report for the full report.",
+      "id": "Ringkasan satu halaman dari neraca, laba rugi (tahun berjalan), dan arus kas dari jurnal yang sudah diposting. Buka untuk gambaran cepat, lalu pakai Open report untuk laporan lengkapnya."
+    },
+    "keywords": "financial statements, laporan keuangan, neraca, laba rugi, arus kas, balance sheet, income statement, cash flow, ringkasan, summary, psak, trial balance, neraca saldo, year to date",
+    "steps": [
+      {
+        "en": "Open Financial Statements. As At starts as today.",
+        "id": "Buka Financial Statements. As At awalnya hari ini."
+      },
+      {
+        "en": "Change As At and click Filter. Income and cash flow cover the start of that year up to this date.",
+        "id": "Ubah As At lalu klik Filter. Laba rugi dan arus kas mencakup awal tahun tersebut sampai tanggal ini."
+      },
+      {
+        "en": "Read the four cards, then the three summary tables: Balance Sheet, Income Statement and Cash Flow Statement.",
+        "id": "Baca empat kartu, lalu tiga tabel ringkasan: Balance Sheet, Income Statement, dan Cash Flow Statement."
+      },
+      {
+        "en": "Click Open report under a table to open the full report for the same dates.",
+        "id": "Klik Open report di bawah tabel untuk membuka laporan lengkap dengan tanggal yang sama."
+      },
+      {
+        "en": "Click Trial Balance to open the trial balance report.",
+        "id": "Klik Trial Balance untuk membuka laporan neraca saldo."
+      }
+    ],
+    "fields": [
+      {
+        "label": "As At",
+        "en": "The date the statements are as of. Defaults to today. The year-to-date start is the beginning of that year.",
+        "id": "Tanggal acuan laporan. Bawaannya hari ini. Awal tahun berjalan mengikuti tahun dari tanggal ini."
+      },
+      {
+        "label": "Total Assets",
+        "en": "Card with total assets at the As At date.",
+        "id": "Kartu total aset pada tanggal As At."
+      },
+      {
+        "label": "Total Liabilities",
+        "en": "Card with total liabilities. The note shows the debt-to-equity ratio when equity is not zero.",
+        "id": "Kartu total kewajiban. Catatannya menunjukkan rasio utang terhadap ekuitas bila ekuitas tidak nol."
+      },
+      {
+        "label": "Revenue YTD",
+        "en": "Card with revenue from the start of the year, compared with the same period last year.",
+        "id": "Kartu pendapatan sejak awal tahun, dibandingkan dengan periode yang sama tahun lalu."
+      },
+      {
+        "label": "Net Profit YTD",
+        "en": "Card with net profit from the start of the year, compared with the same period last year.",
+        "id": "Kartu laba bersih sejak awal tahun, dibandingkan dengan periode yang sama tahun lalu."
+      },
+      {
+        "label": "Balance Sheet",
+        "en": "Summary table: cash, receivables, inventories and other current assets, fixed assets, total assets, total liabilities and total equity.",
+        "id": "Tabel ringkasan: kas, piutang, persediaan dan aset lancar lain, aset tetap, total aset, total kewajiban, dan total ekuitas."
+      },
+      {
+        "label": "Income Statement",
+        "en": "Summary table of the year to date: revenue, cost of goods sold, gross profit, operating expenses, operating profit, income tax and net profit.",
+        "id": "Tabel ringkasan tahun berjalan: pendapatan, harga pokok penjualan, laba kotor, biaya operasi, laba operasi, pajak penghasilan, dan laba bersih."
+      },
+      {
+        "label": "Cash Flow Statement",
+        "en": "Summary table of the year to date: operating, investing and financing cash, and the net increase in cash.",
+        "id": "Tabel ringkasan tahun berjalan: kas operasi, investasi, dan pendanaan, serta kenaikan bersih kas."
+      }
+    ]
+  },
+  {
+    "key": "acc-rpt-income-statement",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "Income Statement",
+    "purpose": {
+      "en": "Profit and loss statement for a period, built from posted journals. Open it to see revenue, gross profit, operating profit and net profit, optionally month by month, and to export to CSV. Unaudited management accounts.",
+      "id": "Laporan laba rugi untuk satu periode, dibuat dari jurnal yang sudah diposting. Buka untuk melihat pendapatan, laba kotor, laba operasi, dan laba bersih, bila perlu per bulan, dan mengunduh CSV. Belum diaudit."
+    },
+    "keywords": "income statement, laba rugi, profit and loss, p&l, revenue, pendapatan, gross profit, laba kotor, operating profit, laba operasi, net profit, laba bersih, monthly, bulanan, export, csv",
+    "steps": [
+      {
+        "en": "Open Income Statement. From and To start as the beginning of this year and today.",
+        "id": "Buka Income Statement. From dan To awalnya berisi awal tahun ini dan hari ini."
+      },
+      {
+        "en": "Change From and To to the period you want, then click Filter.",
+        "id": "Ubah From dan To ke periode yang diinginkan, lalu klik Filter."
+      },
+      {
+        "en": "Read the four cards at the top, then the Statement of Profit or Loss table.",
+        "id": "Baca empat kartu di atas, lalu tabel Statement of Profit or Loss."
+      },
+      {
+        "en": "Tick Compare monthly and click Filter to add a Monthly Comparison table, one row per month.",
+        "id": "Centang Compare monthly lalu klik Filter untuk menambah tabel Monthly Comparison, satu baris per bulan."
+      },
+      {
+        "en": "Click Export to download the report as a CSV file.",
+        "id": "Klik Export untuk mengunduh laporan sebagai file CSV."
+      }
+    ],
+    "fields": [
+      {
+        "label": "From",
+        "en": "First date of the period. Defaults to the start of the current year.",
+        "id": "Tanggal awal periode. Bawaannya awal tahun berjalan."
+      },
+      {
+        "label": "To",
+        "en": "Last date of the period. Defaults to today.",
+        "id": "Tanggal akhir periode. Bawaannya hari ini."
+      },
+      {
+        "label": "Compare monthly",
+        "en": "Tick to add the Monthly Comparison table below the statement.",
+        "id": "Centang untuk menambah tabel Monthly Comparison di bawah laporan."
+      },
+      {
+        "label": "Revenue",
+        "en": "Card with revenue for the period.",
+        "id": "Kartu pendapatan untuk periode."
+      },
+      {
+        "label": "Gross Profit",
+        "en": "Card with gross profit. The note shows the gross margin as a percentage of revenue.",
+        "id": "Kartu laba kotor. Catatannya menunjukkan margin kotor sebagai persen dari pendapatan."
+      },
+      {
+        "label": "Operating Profit",
+        "en": "Card with operating profit. The note shows the margin as a percentage of revenue.",
+        "id": "Kartu laba operasi. Catatannya menunjukkan margin sebagai persen dari pendapatan."
+      },
+      {
+        "label": "Net Profit",
+        "en": "Card with net profit for the period. The note says Profit or Loss.",
+        "id": "Kartu laba bersih untuk periode. Catatannya Profit atau Loss."
+      },
+      {
+        "label": "Statement of Profit or Loss",
+        "en": "Table in IDR: revenue, cost of goods sold, gross profit, employee, sales and administrative expenses, operating profit, other income, tax and net profit.",
+        "id": "Tabel dalam IDR: pendapatan, harga pokok penjualan, laba kotor, biaya karyawan, penjualan, dan administrasi, laba operasi, pendapatan lain, pajak, dan laba bersih."
+      },
+      {
+        "label": "Monthly Comparison",
+        "en": "Only when ticked. Columns: Month, Revenue, Cost of Goods Sold, Gross Profit, Operating Expenses and Net Profit.",
+        "id": "Hanya saat dicentang. Kolom: Month, Revenue, Cost of Goods Sold, Gross Profit, Operating Expenses, dan Net Profit."
+      }
+    ]
+  },
+  {
+    "key": "acc-tax",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Indonesian Tax",
+    "purpose": {
+      "en": "Tax desk for PPN, PPh withholding and the corporate income tax (PPh Badan) provision. Values come from GL movements of the chosen period. Create a workpaper, record the payment with NTPN, then mark the SPT as filed.",
+      "id": "Meja pajak untuk PPN, PPh potong, dan provisi PPh Badan. Angka berasal dari mutasi buku besar pada periode yang dipilih. Buat workpaper, catat pembayaran dengan NTPN, lalu tandai SPT sudah dilaporkan."
+    },
+    "keywords": "pajak, tax, ppn, vat, pph, pph 21, pph 23, pph badan, cit, ntpn, spt, e-bupot, bpe, workpaper, kertas kerja, pelaporan pajak, setor pajak, rekonsiliasi pajak, tax register",
+    "steps": [
+      {
+        "en": "Open Indonesian Tax and choose the Tax Period, then click Filter.",
+        "id": "Buka Indonesian Tax, pilih Tax Period, lalu klik Filter."
+      },
+      {
+        "en": "Click New Workpaper to generate the tax register rows for that period from the GL movements.",
+        "id": "Klik New Workpaper untuk membuat baris register pajak periode itu dari mutasi buku besar."
+      },
+      {
+        "en": "Click Update CIT Provision and confirm to book or adjust the corporate income tax provision.",
+        "id": "Klik Update CIT Provision lalu konfirmasi untuk mencatat atau menyesuaikan provisi PPh Badan."
+      },
+      {
+        "en": "Check Tax Reconciliation Status and the Tax Compliance Calendar. Use Search and Tax Type to find rows in the Tax Register.",
+        "id": "Cek Tax Reconciliation Status dan Tax Compliance Calendar. Pakai Search dan Tax Type untuk mencari baris di Tax Register."
+      },
+      {
+        "en": "Under the register, pick a row in Register Actions and click Open. To pay, fill Payment date, NTPN and Pay from, then click Post Payment and confirm.",
+        "id": "Di bawah register, pilih baris di Register Actions lalu klik Open. Untuk membayar, isi Payment date, NTPN, dan Pay from, lalu klik Post Payment dan konfirmasi."
+      },
+      {
+        "en": "Click Mark under review if the row needs checking first.",
+        "id": "Klik Mark under review bila baris perlu diperiksa dulu."
+      },
+      {
+        "en": "Once paid, type the Filing reference (BPE / e-Bupot) and click Mark SPT filed.",
+        "id": "Setelah dibayar, ketik Filing reference (BPE / e-Bupot) lalu klik Mark SPT filed."
+      },
+      {
+        "en": "Click Export Summary to download the register as CSV.",
+        "id": "Klik Export Summary untuk mengunduh register sebagai CSV."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Tax Period",
+        "en": "The month the workpaper and cards refer to. Picked from the list of periods.",
+        "id": "Bulan yang menjadi acuan workpaper dan kartu. Dipilih dari daftar periode."
+      },
+      {
+        "label": "PPN Net Payable",
+        "en": "Card with the net PPN payable for the period, with the status of its workpaper.",
+        "id": "Kartu PPN bersih yang harus dibayar pada periode, beserta status workpaper-nya."
+      },
+      {
+        "label": "PPh 21 Payable",
+        "en": "Card with the PPh 21 payable. Says Not generated when no workpaper exists yet.",
+        "id": "Kartu PPh 21 yang harus dibayar. Tertulis Not generated bila workpaper belum dibuat."
+      },
+      {
+        "label": "PPh 23 Withheld",
+        "en": "Card with the PPh 23 withheld in the period.",
+        "id": "Kartu PPh 23 yang dipotong pada periode."
+      },
+      {
+        "label": "PPh Badan Provision",
+        "en": "Card with the corporate income tax provision estimate for the fiscal year.",
+        "id": "Kartu estimasi provisi PPh Badan untuk tahun fiskal."
+      },
+      {
+        "label": "Tax Compliance Calendar",
+        "en": "Open filing and payment obligations with their payment and filing dates and a due tag.",
+        "id": "Kewajiban pelaporan dan pembayaran yang masih terbuka, lengkap dengan tanggal bayar, tanggal lapor, dan tanda jatuh tempo."
+      },
+      {
+        "label": "Tax Reconciliation Status",
+        "en": "Book-to-tax controls for the period, each marked Matched or needing review.",
+        "id": "Kontrol pembukuan terhadap pajak pada periode, masing-masing bertanda Matched atau perlu ditinjau."
+      },
+      {
+        "label": "Payment date",
+        "en": "Date the tax was paid. Defaults to today. Required to post the payment.",
+        "id": "Tanggal pajak dibayar. Bawaannya hari ini. Wajib untuk memposting pembayaran."
+      },
+      {
+        "label": "NTPN",
+        "en": "Number from the payment slip (16 characters). Required. Stored on the register row.",
+        "id": "Nomor dari bukti pembayaran (16 karakter). Wajib. Disimpan pada baris register."
+      },
+      {
+        "label": "Pay from",
+        "en": "The bank account the payment comes out of. Required.",
+        "id": "Rekening bank asal pembayaran. Wajib."
+      },
+      {
+        "label": "Filing reference (BPE / e-Bupot)",
+        "en": "The filing proof number, for example BPE-1234567890. Required to mark the SPT as filed.",
+        "id": "Nomor bukti pelaporan, misalnya BPE-1234567890. Wajib untuk menandai SPT sudah dilaporkan."
+      },
+      {
+        "label": "Search",
+        "en": "Type part of a tax period, type or reference to narrow the Tax Register.",
+        "id": "Ketik sebagian periode pajak, jenis, atau referensi untuk mempersempit Tax Register."
+      },
+      {
+        "label": "Tax Type",
+        "en": "Filter the Tax Register by tax type. Leave on All tax types to see all.",
+        "id": "Saring Tax Register menurut jenis pajak. Biarkan All tax types untuk melihat semua."
+      },
+      {
+        "label": "Tax Register",
+        "en": "Table with Tax Type / Period, Description, Output / Base, Input / Credit, Payable, Payment Due, Filing Due and Workpaper Status (Draft return, Review, Payment pending, Paid, Filed, Accrued).",
+        "id": "Tabel dengan kolom Tax Type / Period, Description, Output / Base, Input / Credit, Payable, Payment Due, Filing Due, dan Workpaper Status (Draft return, Review, Payment pending, Paid, Filed, Accrued)."
+      },
+      {
+        "label": "Register Actions",
+        "en": "Pick a register row, then click Open to show its payment, review and filing actions.",
+        "id": "Pilih satu baris register, lalu klik Open untuk menampilkan aksi pembayaran, tinjau, dan pelaporannya."
+      }
+    ]
+  },
+  {
+    "key": "acc-closing",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Period Closing",
+    "purpose": {
+      "en": "Month-end close: start the checklist, mark each control complete, review the automatic close controls, then approve and lock the period. Locking is permanent. Also creates the year-end closing voucher as a DRAFT.",
+      "id": "Tutup buku akhir bulan: mulai checklist, tandai tiap kontrol selesai, tinjau kontrol otomatis, lalu setujui dan kunci periode. Penguncian bersifat permanen. Juga membuat voucher penutup tahun sebagai DRAFT."
+    },
+    "keywords": "closing, period closing, tutup periode, tutup buku, month end, akhir bulan, lock period, kunci periode, checklist, year end, akhir tahun, period manager, on hold, closed, voucher penutup",
+    "steps": [
+      {
+        "en": "Open Period Closing and choose the Fiscal Year, then click Filter. In Period Manager click Select for closing on the period to close.",
+        "id": "Buka Period Closing dan pilih Fiscal Year, lalu klik Filter. Di Period Manager klik Select for closing pada periode yang akan ditutup."
+      },
+      {
+        "en": "Click Start Closing to create the checklist for that period.",
+        "id": "Klik Start Closing untuk membuat checklist periode tersebut."
+      },
+      {
+        "en": "Do each checklist step, then click Mark complete on it. Use Reopen to undo a step.",
+        "id": "Kerjakan tiap langkah checklist, lalu klik Mark complete. Pakai Reopen untuk membatalkan langkah."
+      },
+      {
+        "en": "Check Close Controls. Anything marked as an exception must be fixed. Lock Blockers lists what stops the lock.",
+        "id": "Cek Close Controls. Semua yang bertanda exception harus diperbaiki. Lock Blockers menampilkan hal yang menghalangi penguncian."
+      },
+      {
+        "en": "To hold a period, click Set On hold. To open it again click Reopen (to Open). Type a Reason, then click Change Status.",
+        "id": "Untuk menahan periode, klik Set On hold. Untuk membukanya lagi klik Reopen (to Open). Ketik Reason, lalu klik Change Status."
+      },
+      {
+        "en": "When everything is clear, click Approve & Lock (or Lock permanently), type the Reason and click Lock Permanently. CLOSED cannot be undone.",
+        "id": "Bila semua beres, klik Approve & Lock (atau Lock permanently), ketik Reason, lalu klik Lock Permanently. Status CLOSED tidak bisa dibatalkan."
+      },
+      {
+        "en": "For period 12, click Create Year-End Closing Voucher and confirm. It is created as a DRAFT.",
+        "id": "Untuk periode 12, klik Create Year-End Closing Voucher lalu konfirmasi. Voucher dibuat sebagai DRAFT."
+      },
+      {
+        "en": "Click Checklist to download the closing checklist as CSV.",
+        "id": "Klik Checklist untuk mengunduh checklist penutupan sebagai CSV."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Fiscal Year",
+        "en": "The fiscal year whose periods are shown. Picked from the list of years.",
+        "id": "Tahun fiskal yang periodenya ditampilkan. Dipilih dari daftar tahun."
+      },
+      {
+        "label": "Closing Period",
+        "en": "Card with the selected period and its status (Open, On hold or Closed).",
+        "id": "Kartu periode terpilih beserta statusnya (Open, On hold, atau Closed)."
+      },
+      {
+        "label": "Completion",
+        "en": "Card with the percentage of checklist steps and controls that are done.",
+        "id": "Kartu persentase langkah checklist dan kontrol yang sudah selesai."
+      },
+      {
+        "label": "Open Exceptions",
+        "en": "Card with the number of control exceptions that still need to be resolved.",
+        "id": "Kartu jumlah pengecualian kontrol yang masih harus diselesaikan."
+      },
+      {
+        "label": "Previous Period",
+        "en": "Card with the last period that was locked, or that nothing is closed yet.",
+        "id": "Kartu periode terakhir yang sudah dikunci, atau keterangan bahwa belum ada yang ditutup."
+      },
+      {
+        "label": "Reason (required, recorded in the audit trail)",
+        "en": "Why the status is changed or the period is locked, for example who approved the close. Required and kept in the audit trail.",
+        "id": "Alasan perubahan status atau penguncian periode, misalnya siapa yang menyetujui penutupan. Wajib dan disimpan di jejak audit."
+      },
+      {
+        "label": "Closing Checklist",
+        "en": "The steps for the selected period, numbered, each with a status (Pending, In progress, Complete) and a Mark complete or Reopen button.",
+        "id": "Langkah-langkah untuk periode terpilih, bernomor, masing-masing dengan status (Pending, In progress, Complete) dan tombol Mark complete atau Reopen."
+      },
+      {
+        "label": "Close Controls",
+        "en": "Automatic checks for the period, each with a result such as Passed or Exception. Read only.",
+        "id": "Pemeriksaan otomatis untuk periode, masing-masing dengan hasil seperti Passed atau Exception. Hanya baca."
+      },
+      {
+        "label": "Period Manager",
+        "en": "Table with Period, Range and Status for the 13 periods of the year (12 months plus the adjustment period). Rows not yet Closed have action buttons.",
+        "id": "Tabel Period, Range, dan Status untuk 13 periode dalam setahun (12 bulan ditambah periode penyesuaian). Baris yang belum Closed punya tombol aksi."
+      },
+      {
+        "label": "Lock Blockers",
+        "en": "Red messages listing what must be cleared before the period can be locked permanently. Shown only when there are blockers.",
+        "id": "Pesan merah berisi hal yang harus dibereskan sebelum periode bisa dikunci permanen. Tampil hanya bila ada penghalang."
+      }
+    ]
+  },
+  {
+    "key": "acc-engine",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Process Engine",
+    "purpose": {
+      "en": "Control center for the accounting process. It shows document volume, the approval queue and close readiness, the standard posting flow, and where each module feeds accounting. You can also create approval rules and switch them on or off.",
+      "id": "Pusat kendali proses akuntansi. Menampilkan jumlah dokumen, antrean persetujuan, kesiapan tutup buku, alur posting baku, dan dari mana tiap modul masuk ke akuntansi. Di sini juga Anda bisa membuat aturan persetujuan dan menyalakan atau mematikannya."
+    },
+    "keywords": "process engine, engine akuntansi, workflow rule, aturan persetujuan, approval, approver group, segregation of duties, sod, posting flow, alur posting, integration map, close readiness, kontrol, export rules, jurnal manual",
+    "steps": [
+      {
+        "en": "Open Process Engine and read the four cards and the Canonical Accounting Posting Flow.",
+        "id": "Buka Process Engine, lalu baca empat kartu dan Canonical Accounting Posting Flow."
+      },
+      {
+        "en": "In Module Integration Map, click Open next to a business flow to go to its screen.",
+        "id": "Di Module Integration Map, klik Open di samping alur bisnis untuk menuju layarnya."
+      },
+      {
+        "en": "Check Controls Requiring Attention. Click Closing tasks to go to Period Closing.",
+        "id": "Cek Controls Requiring Attention. Klik Closing tasks untuk ke Period Closing."
+      },
+      {
+        "en": "In Workflow Rules, fill Rule name, Process, Minimum amount (IDR) and Approver group, and tick The creator may not approve if needed.",
+        "id": "Di Workflow Rules, isi Rule name, Process, Minimum amount (IDR), dan Approver group, lalu centang The creator may not approve bila perlu."
+      },
+      {
+        "en": "Click Create Workflow Rule to save the rule.",
+        "id": "Klik Create Workflow Rule untuk menyimpan aturan."
+      },
+      {
+        "en": "To switch a rule off or on, click its Disable or Enable button.",
+        "id": "Untuk mematikan atau mengaktifkan aturan, klik tombol Disable atau Enable-nya."
+      },
+      {
+        "en": "Click Export Rules to download the rules as a file.",
+        "id": "Klik Export Rules untuk mengunduh daftar aturan sebagai file."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Source Documents",
+        "en": "Card with the number of accounting source documents this month.",
+        "id": "Kartu jumlah dokumen sumber akuntansi bulan ini."
+      },
+      {
+        "label": "Pending Approval",
+        "en": "Card with the number of documents waiting for approval, with the amount at stake. Says Queue empty when none.",
+        "id": "Kartu jumlah dokumen yang menunggu persetujuan beserta nominalnya. Tertulis Queue empty bila tidak ada."
+      },
+      {
+        "label": "Posted to GL",
+        "en": "Card with the number of vouchers posted to the general ledger. The note says Balanced or Out of balance.",
+        "id": "Kartu jumlah voucher yang sudah diposting ke buku besar. Catatannya Balanced atau Out of balance."
+      },
+      {
+        "label": "Close Readiness",
+        "en": "Card with the percentage ready to close. The note shows how many control exceptions remain.",
+        "id": "Kartu persentase kesiapan tutup buku. Catatannya menunjukkan sisa pengecualian kontrol."
+      },
+      {
+        "label": "Canonical Accounting Posting Flow",
+        "en": "Six steps from Source Event, Validation, Approval, Subledger and GL Posting to Reporting & Close, with counts where available.",
+        "id": "Enam langkah dari Source Event, Validation, Approval, Subledger, dan GL Posting sampai Reporting & Close, dengan jumlah bila tersedia."
+      },
+      {
+        "label": "Module Integration Map",
+        "en": "Rows for Order to Cash, Procure to Pay, Bank & Cash, Assets & Amortization, Tax Compliance and Inventory & Production, each with an Open button.",
+        "id": "Baris Order to Cash, Procure to Pay, Bank & Cash, Assets & Amortization, Tax Compliance, dan Inventory & Production, masing-masing dengan tombol Open."
+      },
+      {
+        "label": "Controls Requiring Attention",
+        "en": "Cards for exceptions that block or qualify the close.",
+        "id": "Kartu pengecualian yang menghalangi atau mempengaruhi tutup buku."
+      },
+      {
+        "label": "Workflow Rules",
+        "en": "Table with Rule, Process, Minimum amount, Approver Group, Segregation of Duties (Enforced or Not enforced) and Status (Active or Inactive).",
+        "id": "Tabel dengan kolom Rule, Process, Minimum amount, Approver Group, Segregation of Duties (Enforced atau Not enforced), dan Status (Active atau Inactive)."
+      },
+      {
+        "label": "Rule name",
+        "en": "A name for the rule, for example Manual journal above 500 million. Required, up to 120 characters.",
+        "id": "Nama aturan, misalnya Manual journal above 500 million. Wajib, maksimal 120 karakter."
+      },
+      {
+        "label": "Process",
+        "en": "The process the rule applies to: Manual journal, Customer invoice, Vendor bill, Bank adjustment or Asset capitalization. Required.",
+        "id": "Proses yang diatur: Manual journal, Customer invoice, Vendor bill, Bank adjustment, atau Asset capitalization. Wajib."
+      },
+      {
+        "label": "Minimum amount (IDR)",
+        "en": "The amount from which the rule applies. 0 means it applies to every amount.",
+        "id": "Nominal mulai berlakunya aturan. 0 berarti berlaku untuk semua nominal."
+      },
+      {
+        "label": "Approver group",
+        "en": "The user group that must approve, picked from the active groups. Required.",
+        "id": "Grup pengguna yang harus menyetujui, dipilih dari grup yang aktif. Wajib."
+      },
+      {
+        "label": "The creator may not approve",
+        "en": "Ticked by default. When ticked, the person who made the document cannot approve it (segregation of duties).",
+        "id": "Tercentang secara bawaan. Bila dicentang, pembuat dokumen tidak boleh menyetujuinya sendiri (pemisahan tugas)."
+      }
+    ]
+  },
+  {
+    "key": "supplier-invoice-receipt",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Supplier Invoice Receipt",
+    "purpose": {
+      "en": "Records the supplier invoices that a supplier hands over (tanda terima tagihan). It is a receipt of documents only: not a proof of payment and it creates no journal. Draft, then Confirm. A Confirmed receipt can be Cancelled with a reason.",
+      "id": "Mencatat invoice supplier yang diserahkan supplier (tanda terima tagihan). Hanya tanda terima dokumen: bukan bukti bayar dan tidak membuat jurnal. Draft, lalu Confirm. Receipt yang Confirmed bisa di-Cancel dengan alasan."
+    },
+    "keywords": "supplier invoice receipt, tanda terima tagihan, tanda terima invoice, tukar faktur, terima tagihan, invoice supplier, faktur pajak, tax invoice, kuitansi, supplier, tagihan, jadwal bayar",
+    "steps": [
+      {
+        "en": "Open Supplier Invoice Receipt. The list shows all receipts. Use the search box and the Supplier and Status filters to find one.",
+        "id": "Buka Supplier Invoice Receipt. Daftar menampilkan semua tanda terima. Pakai kotak cari serta filter Supplier dan Status untuk menemukannya."
+      },
+      {
+        "en": "Click + New Record, choose the Supplier and click Create. A Draft receipt opens.",
+        "id": "Klik + New Record, pilih Supplier lalu klik Create. Tanda terima Draft terbuka."
+      },
+      {
+        "en": "On the General tab fill Date, Handed Over By, Payment Term, Planned Payment and Payment Method.",
+        "id": "Di tab General isi Date, Handed Over By, Payment Term, Planned Payment, dan Payment Method."
+      },
+      {
+        "en": "In Details click + Invoice for each invoice. Pick a Recorded Bill, or leave it empty and type the Supplier Invoice No., Invoice Date, PO No., Tax Invoice No. and Amount.",
+        "id": "Di Details klik + Invoice untuk tiap invoice. Pilih Recorded Bill, atau kosongkan dan ketik Supplier Invoice No., Invoice Date, PO No., Tax Invoice No., dan Amount."
+      },
+      {
+        "en": "On the Attachments tab tick the documents that came with the invoices. Add remarks on the Notes tab if needed.",
+        "id": "Di tab Attachments centang dokumen yang diterima bersama invoice. Tambahkan catatan di tab Notes bila perlu."
+      },
+      {
+        "en": "Click Save. When a recorded bill is picked, Save fills in its number, date, tax invoice and amount.",
+        "id": "Klik Save. Bila Recorded Bill dipilih, Save mengisi nomor, tanggal, faktur pajak, dan nominalnya."
+      },
+      {
+        "en": "Click Confirm. It needs at least one invoice, every amount filled, no repeated invoice number, and no invoice already on another receipt. The Receipt No. is given now.",
+        "id": "Klik Confirm. Perlu minimal satu invoice, semua nominal terisi, tidak ada nomor invoice ganda, dan tidak ada invoice yang sudah ada di tanda terima lain. Receipt No. diberikan saat ini."
+      },
+      {
+        "en": "To undo a Confirmed receipt click Cancel and fill the reason. Print gives the printout.",
+        "id": "Untuk membatalkan receipt yang Confirmed klik Cancel dan isi alasannya. Print menghasilkan cetakan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Supplier",
+        "en": "The supplier who hands over the invoices. Picked from the supplier master when creating the receipt, and cannot be changed afterwards.",
+        "id": "Supplier yang menyerahkan invoice. Dipilih dari master supplier saat membuat tanda terima, dan tidak bisa diubah sesudahnya."
+      },
+      {
+        "label": "Receipt No.",
+        "en": "Shown as (on Confirm) while Draft. The system gives the number when you click Confirm.",
+        "id": "Tertulis (on Confirm) saat Draft. Sistem memberi nomor ketika Confirm diklik."
+      },
+      {
+        "label": "Date",
+        "en": "The date the invoices were received. Editable while Draft.",
+        "id": "Tanggal invoice diterima. Bisa diubah selama Draft."
+      },
+      {
+        "label": "Handed Over By",
+        "en": "Name of the supplier's person who brought the invoices.",
+        "id": "Nama orang dari supplier yang mengantar invoice."
+      },
+      {
+        "label": "Payment Term",
+        "en": "The payment term, typed as text.",
+        "id": "Termin pembayaran, diketik sebagai teks."
+      },
+      {
+        "label": "Planned Payment",
+        "en": "The date payment is planned.",
+        "id": "Tanggal pembayaran direncanakan."
+      },
+      {
+        "label": "Payment Method",
+        "en": "Pick Bank Transfer, Cash or Giro / Cheque.",
+        "id": "Pilih Bank Transfer, Cash, atau Giro / Cheque."
+      },
+      {
+        "label": "Cancel Reason",
+        "en": "Shown only on a Cancelled receipt: the reason given when it was cancelled.",
+        "id": "Tampil hanya pada receipt yang Cancelled: alasan yang diisi saat dibatalkan."
+      },
+      {
+        "label": "Original invoice",
+        "en": "Tick if the original invoice was received.",
+        "id": "Centang bila invoice asli diterima."
+      },
+      {
+        "label": "Tax invoice",
+        "en": "Tick if the tax invoice (faktur pajak) was received.",
+        "id": "Centang bila faktur pajak diterima."
+      },
+      {
+        "label": "Delivery note / goods receipt",
+        "en": "Tick if the delivery note or goods receipt was received.",
+        "id": "Centang bila surat jalan atau bukti terima barang diterima."
+      },
+      {
+        "label": "Payment receipt (kuitansi)",
+        "en": "Tick if the payment receipt (kuitansi) was received.",
+        "id": "Centang bila kuitansi diterima."
+      },
+      {
+        "label": "Notes",
+        "en": "Free text notes for this receipt.",
+        "id": "Catatan bebas untuk tanda terima ini."
+      },
+      {
+        "label": "Recorded Bill (optional)",
+        "en": "Pick a supplier bill already recorded for this supplier and not on another active receipt. Leave the other columns empty and Save fills them in.",
+        "id": "Pilih tagihan supplier yang sudah tercatat untuk supplier ini dan belum ada di tanda terima aktif lain. Kosongkan kolom lain, Save akan mengisinya."
+      },
+      {
+        "label": "Supplier Invoice No.",
+        "en": "The invoice number printed by the supplier. Type it when the invoice is not recorded yet. It must not repeat on the receipt.",
+        "id": "Nomor invoice dari supplier. Ketik bila invoice belum tercatat. Tidak boleh sama di dalam satu tanda terima."
+      },
+      {
+        "label": "Invoice Date",
+        "en": "The date on the supplier invoice.",
+        "id": "Tanggal pada invoice supplier."
+      },
+      {
+        "label": "PO No.",
+        "en": "Pick the purchase order of this supplier that the invoice refers to.",
+        "id": "Pilih purchase order supplier ini yang menjadi acuan invoice."
+      },
+      {
+        "label": "Tax Invoice No.",
+        "en": "The tax invoice (faktur pajak) number.",
+        "id": "Nomor faktur pajak."
+      },
+      {
+        "label": "Amount",
+        "en": "The invoice amount. It must be above zero to Confirm. The total of all lines is summed.",
+        "id": "Nominal invoice. Harus lebih dari nol agar bisa Confirm. Total semua baris dijumlahkan."
+      }
+    ]
+  }
+]

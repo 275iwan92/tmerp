@@ -1,0 +1,226 @@
+[
+  {
+    "key": "hrm-attendance-upload",
+    "type": "INPUT",
+    "module": "HRM",
+    "title": "Attendance Upload",
+    "purpose": {
+      "en": "Loads the fingerprint machine attendance file into the system. Open it when a new export from the finger machine must be read, checked in a preview, saved and turned into daily attendance.",
+      "id": "Memasukkan file presensi dari mesin finger ke sistem. Buka bila ada hasil ekspor baru dari mesin finger yang perlu dibaca, dicek di pratinjau, disimpan dan dihitung menjadi presensi harian."
+    },
+    "keywords": "upload presensi, absensi, finger, fingerprint, mesin finger, device pin, csv, xlsx, impor absen, attendance upload, matching shift",
+    "steps": [
+      {"en": "In Attendance File, choose a .csv, .txt or .xlsx file of up to 5 MB. The first row must hold the headers device_pin, tanggal, jam_masuk and, optionally, jam_keluar.", "id": "Di Attendance File, pilih file .csv, .txt atau .xlsx maksimal 5 MB. Baris pertama harus berisi judul kolom device_pin, tanggal, jam_masuk dan, bila ada, jam_keluar."},
+      {"en": "Click Read File. The system matches each device_pin to the Employee Master and shows a preview.", "id": "Klik Read File. Sistem mencocokkan setiap device_pin dengan Master Karyawan dan menampilkan pratinjau."},
+      {"en": "Read the message above the preview: it tells how many rows were read and how many device_pin are unknown. Unknown rows show Unknown in the Employee column.", "id": "Baca pesan di atas pratinjau: isinya jumlah baris yang terbaca dan jumlah device_pin yang tidak dikenal. Baris tidak dikenal ditulis Unknown di kolom Employee."},
+      {"en": "The preview lists only the first 500 rows, but all rows are processed.", "id": "Pratinjau hanya menampilkan 500 baris pertama, tetapi semua baris tetap diproses."},
+      {"en": "Click Save & Run Shift Matching and confirm. Only matched rows are saved, then attendance is calculated for each employee and date in the file.", "id": "Klik Save & Run Shift Matching lalu konfirmasi. Hanya baris yang cocok yang disimpan, lalu presensi dihitung untuk setiap karyawan dan tanggal di file."},
+      {"en": "To drop the preview without saving, click Discard.", "id": "Untuk membuang pratinjau tanpa menyimpan, klik Discard."},
+      {"en": "After saving, click Open Attendance Log to see the result, or Upload Another File to load the next file.", "id": "Setelah disimpan, klik Open Attendance Log untuk melihat hasilnya, atau Upload Another File untuk memuat file berikutnya."}
+    ],
+    "fields": [
+      {"label": "Attendance File", "en": "The file to upload: .csv, .txt or .xlsx, up to 5 MB, with the columns device_pin, tanggal, jam_masuk and optional jam_keluar. Required.", "id": "File yang diunggah: .csv, .txt atau .xlsx, maksimal 5 MB, dengan kolom device_pin, tanggal, jam_masuk dan jam_keluar (opsional). Wajib diisi."},
+      {"label": "Device PIN", "en": "Preview column. The PIN from the finger machine, read from the file. It is matched to the device PIN in the Employee Master.", "id": "Kolom pratinjau. PIN dari mesin finger, dibaca dari file. Dicocokkan dengan PIN mesin di Master Karyawan."},
+      {"label": "Employee", "en": "Preview column. The employee name found for that PIN, or Unknown when the PIN is not in the Employee Master. Unknown rows are not saved.", "id": "Kolom pratinjau. Nama karyawan untuk PIN itu, atau Unknown bila PIN tidak ada di Master Karyawan. Baris Unknown tidak disimpan."},
+      {"label": "Date", "en": "Preview column. The attendance date from the tanggal column of the file.", "id": "Kolom pratinjau. Tanggal presensi dari kolom tanggal di file."},
+      {"label": "Time In", "en": "Preview column. The clock-in time from jam_masuk. It is saved as an IN scan.", "id": "Kolom pratinjau. Jam masuk dari jam_masuk. Disimpan sebagai scan IN."},
+      {"label": "Time Out", "en": "Preview column. The clock-out time from jam_keluar, or a dash when empty. When filled it is saved as an OUT scan.", "id": "Kolom pratinjau. Jam pulang dari jam_keluar, atau tanda strip bila kosong. Bila terisi disimpan sebagai scan OUT."}
+    ]
+  },
+  {
+    "key": "hrm-bank-transfer",
+    "type": "REPORT",
+    "module": "HRM",
+    "title": "Bank Transfer Generator",
+    "purpose": {
+      "en": "Lists the employees who are paid by bank transfer for a payroll period and downloads the batch as a CSV file. Open it after payroll is confirmed to prepare the salary transfer.",
+      "id": "Menampilkan karyawan yang gajinya dibayar lewat transfer bank untuk satu periode payroll dan mengunduh batchnya sebagai file CSV. Buka setelah payroll dikonfirmasi untuk menyiapkan transfer gaji."
+    },
+    "keywords": "transfer bank, generator transfer bank, transfer gaji, bank transfer, payroll, rekening, csv, batch transfer, gaji, bayar gaji",
+    "steps": [
+      {"en": "Choose the period in Payroll Period and click Filter. Only payroll periods that are Confirmed, Paid or Closed are listed.", "id": "Pilih periode di Payroll Period lalu klik Filter. Hanya periode payroll yang Confirmed, Paid atau Closed yang tersedia."},
+      {"en": "Check the list: it shows employees who have an active primary bank account. Employees without one are paid in cash and appear in the cash roster instead.", "id": "Periksa daftarnya: berisi karyawan yang punya rekening bank utama aktif. Karyawan tanpa rekening dibayar tunai dan muncul di roster cash."},
+      {"en": "Read the total transfer value of the batch above the table.", "id": "Baca total nilai transfer batch di atas tabel."},
+      {"en": "Click Download CSV Batch to get the transfer file. The button appears only when the period has employees to pay, and needs the payroll processing permission.", "id": "Klik Download CSV Batch untuk mengambil file transfer. Tombol hanya muncul bila periode itu punya karyawan yang dibayar, dan butuh izin memproses payroll."}
+    ],
+    "fields": [
+      {"label": "Payroll Period", "en": "Filter. Pick the payroll period, shown as start date and end date. The latest confirmed period is chosen first.", "id": "Filter. Pilih periode payroll, tampil sebagai tanggal awal dan tanggal akhir. Periode terkonfirmasi terbaru terpilih lebih dulu."},
+      {"label": "Employee No.", "en": "Column. Employee code from the Employee Master.", "id": "Kolom. Kode karyawan dari Master Karyawan."},
+      {"label": "Name", "en": "Column. Full name of the employee.", "id": "Kolom. Nama lengkap karyawan."},
+      {"label": "Bank", "en": "Column. Bank name of the employee's primary bank account.", "id": "Kolom. Nama bank dari rekening utama karyawan."},
+      {"label": "Account No.", "en": "Column. Account number of the primary bank account, taken from the employee's bank data.", "id": "Kolom. Nomor rekening utama, diambil dari data bank karyawan."},
+      {"label": "Account Holder", "en": "Column. Name of the account holder as registered for that bank account.", "id": "Kolom. Nama pemilik rekening sesuai data rekening tersebut."},
+      {"label": "Net Salary", "en": "Column. The net salary from the payslip of that period. Payroll values are stored encrypted and are shown only to users allowed to open payroll.", "id": "Kolom. Gaji bersih dari slip periode itu. Nilai payroll disimpan terenkripsi dan hanya tampil untuk pengguna yang berhak membuka payroll."}
+    ]
+  },
+  {
+    "key": "hrm-cash-roster",
+    "type": "REPORT",
+    "module": "HRM",
+    "title": "Cash Roster & Denominations",
+    "purpose": {
+      "en": "Lists the employees paid in cash for a payroll period, with the notes to put in each envelope and the total notes per denomination. Open it to prepare and hand over the cash salary.",
+      "id": "Menampilkan karyawan yang gajinya dibayar tunai untuk satu periode payroll, beserta pecahan uang untuk tiap amplop dan total lembar per pecahan. Buka untuk menyiapkan dan menyerahkan gaji tunai."
+    },
+    "keywords": "roster cash, pecahan uang, gaji tunai, amplop gaji, cash roster, denominations, serah terima gaji, payroll tunai, lembar uang",
+    "steps": [
+      {"en": "Choose the period in Payroll Period and click Filter. Only payroll periods that are Confirmed, Paid or Closed are listed.", "id": "Pilih periode di Payroll Period lalu klik Filter. Hanya periode payroll yang Confirmed, Paid atau Closed yang tersedia."},
+      {"en": "The list holds employees without an active primary bank account. Those with a bank account are paid by transfer.", "id": "Daftar berisi karyawan tanpa rekening bank utama aktif. Yang punya rekening dibayar lewat transfer."},
+      {"en": "Read the total cash above the tables, and the first table with the number of notes needed for each denomination.", "id": "Baca total tunai di atas tabel, dan tabel pertama yang berisi jumlah lembar yang dibutuhkan untuk tiap pecahan."},
+      {"en": "In the second table, use Envelope Breakdown to fill each employee's envelope.", "id": "Di tabel kedua, pakai Envelope Breakdown untuk mengisi amplop tiap karyawan."},
+      {"en": "Click Print Handover to print the hand-over sheet. The button appears only when the period has cash employees.", "id": "Klik Print Handover untuk mencetak lembar serah terima. Tombol hanya muncul bila periode itu punya karyawan tunai."}
+    ],
+    "fields": [
+      {"label": "Payroll Period", "en": "Filter. Pick the payroll period, shown as start date and end date. The latest confirmed period is chosen first.", "id": "Filter. Pilih periode payroll, tampil sebagai tanggal awal dan tanggal akhir. Periode terkonfirmasi terbaru terpilih lebih dulu."},
+      {"label": "Rp 100.000", "en": "Denomination totals table. Number of notes of this denomination needed for all envelopes. The other denominations are 50.000, 20.000, 10.000, 5.000, 2.000 and 1.000.", "id": "Tabel total pecahan. Jumlah lembar pecahan ini untuk semua amplop. Pecahan lainnya 50.000, 20.000, 10.000, 5.000, 2.000 dan 1.000."},
+      {"label": "Employee No.", "en": "Column. Employee code from the Employee Master.", "id": "Kolom. Kode karyawan dari Master Karyawan."},
+      {"label": "Name", "en": "Column. Full name of the employee.", "id": "Kolom. Nama lengkap karyawan."},
+      {"label": "Department", "en": "Column. Department of the employee's position, or a dash when none.", "id": "Kolom. Departemen dari jabatan karyawan, atau tanda strip bila tidak ada."},
+      {"label": "Net Salary", "en": "Column. The net salary from the payslip of that period. Payroll values are stored encrypted and are shown only to users allowed to open payroll.", "id": "Kolom. Gaji bersih dari slip periode itu. Nilai payroll disimpan terenkripsi dan hanya tampil untuk pengguna yang berhak membuka payroll."},
+      {"label": "Envelope Breakdown", "en": "Column. The notes to put in the envelope, calculated by the system from the net salary starting with the largest denomination.", "id": "Kolom. Lembar uang yang dimasukkan ke amplop, dihitung sistem dari gaji bersih mulai dari pecahan terbesar."}
+    ]
+  },
+  {
+    "key": "hrm-clockin",
+    "type": "INPUT",
+    "module": "GENERAL",
+    "title": "GPS Clock-In (Mobile)",
+    "purpose": {
+      "en": "Lets an employee clock in or out from a phone using GPS. Open it at the work location: the server checks your distance to the work location and decides whether the attendance is recorded.",
+      "id": "Memungkinkan karyawan absen masuk atau pulang dari ponsel memakai GPS. Buka di lokasi kerja: server memeriksa jarak Anda ke lokasi kerja dan menentukan apakah presensi langsung tercatat."
+    },
+    "keywords": "absen gps, clock in, clock out, absen mobile, presensi ponsel, geofencing, lokasi kerja, absen masuk, absen pulang, gps clock-in",
+    "steps": [
+      {"en": "Open the screen on your phone and allow the browser to read your location. The screen needs a login account that is linked to an employee record.", "id": "Buka layar di ponsel dan izinkan browser membaca lokasi Anda. Layar ini butuh akun login yang terhubung ke data karyawan."},
+      {"en": "Read the distance to the work location and the badge that says whether you are inside or outside the work location radius. Click Check location again to refresh it.", "id": "Baca jarak ke lokasi kerja dan lencana yang menunjukkan Anda di dalam atau di luar radius lokasi kerja. Klik Check location again untuk memperbarui."},
+      {"en": "Click Clock In when you arrive, or Clock Out when you leave. The buttons work after your location has been read.", "id": "Klik Clock In saat tiba, atau Clock Out saat pulang. Tombol aktif setelah lokasi Anda terbaca."},
+      {"en": "Inside the radius, the attendance is saved at once and counted in your daily attendance.", "id": "Di dalam radius, presensi langsung tersimpan dan masuk perhitungan presensi harian Anda."},
+      {"en": "Outside the radius, the request goes to HR for approval and the attendance is not recorded until HR approves it.", "id": "Di luar radius, permintaan dikirim ke HR untuk disetujui dan presensi belum tercatat sampai HR menyetujuinya."},
+      {"en": "Check the Today list for your clock records of the day and their status.", "id": "Lihat daftar Today untuk catatan absen Anda hari ini beserta statusnya."}
+    ],
+    "fields": [
+      {"label": "Distance to the work location", "en": "Shown by the system. Your distance in meters to the nearest registered work location, calculated by the server from the position of your phone.", "id": "Diisi sistem. Jarak Anda dalam meter ke lokasi kerja terdekat yang terdaftar, dihitung server dari posisi ponsel Anda."},
+      {"label": "Clock In", "en": "Button. Sends your arrival with your current position.", "id": "Tombol. Mengirim absen masuk Anda beserta posisi saat ini."},
+      {"label": "Clock Out", "en": "Button. Sends your departure with your current position.", "id": "Tombol. Mengirim absen pulang Anda beserta posisi saat ini."},
+      {"label": "Today", "en": "List of your clock records of today: type (IN or OUT), time and status. Waiting for HR approval shows as pending.", "id": "Daftar catatan absen Anda hari ini: jenis (IN atau OUT), jam dan status. Yang menunggu persetujuan HR berstatus pending."}
+    ]
+  },
+  {
+    "key": "hrm-org-chart",
+    "type": "REPORT",
+    "module": "HRM",
+    "title": "Organization Chart",
+    "purpose": {
+      "en": "Shows the organization structure as a tree of positions and the people who hold them. It is read-only. Open it to see who reports to whom and which positions are vacant.",
+      "id": "Menampilkan struktur organisasi sebagai bagan jabatan beserta pemegangnya. Hanya untuk dibaca. Buka untuk melihat siapa melapor ke siapa dan jabatan mana yang masih lowong."
+    },
+    "keywords": "struktur organisasi, bagan organisasi, org chart, organigram, jabatan, atasan, bawahan, departemen, lowong, organization structure",
+    "steps": [
+      {"en": "Open the screen. Each card is a position with its department and the employees who hold it. A position without a holder is shown as vacant.", "id": "Buka layar. Setiap kartu adalah satu jabatan beserta departemennya dan karyawan pemegangnya. Jabatan tanpa pemegang ditandai lowong."},
+      {"en": "Type in Search employee / position... to highlight a person or a position. The matching branch opens and the screen scrolls to it.", "id": "Ketik di Search employee / position... untuk menyorot seseorang atau jabatan. Cabang yang cocok terbuka dan layar menggulir ke sana."},
+      {"en": "Pick a department in the department box to highlight its cards. The tree lines do not change.", "id": "Pilih departemen di kotak departemen untuk menyorot kartu departemen itu. Garis struktur tidak berubah."},
+      {"en": "Collapse or open a branch to hide or show its subordinates, and use the zoom buttons or Fit to resize the chart.", "id": "Lipat atau buka cabang untuk menyembunyikan atau menampilkan bawahan, dan pakai tombol zoom atau Fit untuk mengubah ukuran bagan."},
+      {"en": "Click Download HTML to save the chart as a file.", "id": "Klik Download HTML untuk menyimpan bagan sebagai file."},
+      {"en": "To change who reports to whom, click Master Position and set the superior of each position there. If nobody has a superior set, the screen tells you.", "id": "Untuk mengubah siapa melapor ke siapa, klik Master Position dan atur atasan tiap jabatan di sana. Bila belum ada atasan yang diatur, layar memberi tahu."}
+    ],
+    "fields": [
+      {"label": "Search employee / position...", "en": "Search box. Type a name or a position to highlight it in the chart.", "id": "Kotak cari. Ketik nama atau jabatan untuk menyorotnya di bagan."},
+      {"label": "Department", "en": "Choice. All departments, or one department whose position cards are highlighted. It comes from the department master.", "id": "Pilihan. Semua departemen, atau satu departemen yang kartu jabatannya disorot. Berasal dari master departemen."},
+      {"label": "Download HTML", "en": "Button. Saves the chart as an HTML file.", "id": "Tombol. Menyimpan bagan sebagai file HTML."},
+      {"label": "Fit", "en": "Button. Resets the zoom so the chart fits the screen. The zoom in and zoom out buttons next to it change the size step by step.", "id": "Tombol. Mengembalikan zoom agar bagan pas di layar. Tombol zoom in dan zoom out di sebelahnya mengubah ukuran bertahap."},
+      {"label": "Master Position", "en": "Button. Opens the Master Position screen where the superior of each position is set.", "id": "Tombol. Membuka layar Master Position tempat atasan tiap jabatan diatur."}
+    ]
+  },
+  {
+    "key": "hrm-overtime",
+    "type": "INPUT",
+    "module": "HRM",
+    "title": "Overtime",
+    "purpose": {
+      "en": "Records and decides overtime requests per employee per date. Only approved overtime is counted when the attendance of that day is calculated.",
+      "id": "Mencatat dan memutuskan pengajuan lembur per karyawan per tanggal. Hanya lembur yang disetujui yang dihitung saat presensi hari itu dihitung."
+    },
+    "keywords": "lembur, overtime, ot, pengajuan lembur, jam lembur, approve lembur, persetujuan lembur, durasi lembur, presensi",
+    "steps": [
+      {"en": "In the grid, search by employee, code or type, or click a status box (All, Draft, Submitted, Approved, Rejected) to narrow the list. Submitted is shown first.", "id": "Di grid, cari berdasarkan karyawan, kode atau jenis, atau klik kotak status (All, Draft, Submitted, Approved, Rejected) untuk menyaring daftar. Submitted tampil lebih dulu."},
+      {"en": "Click + New Record to create a request, or open a row to see it.", "id": "Klik + New Record untuk membuat pengajuan, atau buka satu baris untuk melihatnya."},
+      {"en": "Fill Employee, Date, Overtime Type and Duration (minutes), then click Save. The request is saved as Draft. An employee can have only one request per date.", "id": "Isi Employee, Date, Overtime Type dan Duration (minutes), lalu klik Save. Pengajuan tersimpan sebagai Draft. Satu karyawan hanya boleh punya satu pengajuan per tanggal."},
+      {"en": "Click Submit to send a Draft for a decision. Only a Draft can be changed or deleted.", "id": "Klik Submit untuk mengirim Draft agar diputuskan. Hanya Draft yang bisa diubah atau dihapus."},
+      {"en": "A user with HRM access opens a Submitted request and clicks Approve or Reject. You cannot decide your own request unless you are an administrator.", "id": "Pengguna dengan akses HRM membuka pengajuan Submitted lalu klik Approve atau Reject. Anda tidak bisa memutuskan pengajuan sendiri kecuali administrator."},
+      {"en": "A Rejected request can be sent back to Draft with Reopen, edited and submitted again.", "id": "Pengajuan Rejected bisa dikembalikan ke Draft dengan Reopen, diubah dan diajukan lagi."}
+    ],
+    "fields": [
+      {"label": "Employee", "en": "Pick the employee from the list of employees. Required.", "id": "Pilih karyawan dari daftar karyawan. Wajib diisi."},
+      {"label": "Date", "en": "The date of the overtime. Required. The same employee cannot have two requests on one date.", "id": "Tanggal lembur. Wajib diisi. Karyawan yang sama tidak boleh punya dua pengajuan di tanggal yang sama."},
+      {"label": "Overtime Type", "en": "Before shift, After shift, or Before and after shift. Required.", "id": "Before shift, After shift, atau Before and after shift. Wajib diisi."},
+      {"label": "Duration (minutes)", "en": "Total overtime of that day in minutes, from 1 to 960. Required.", "id": "Total lembur hari itu dalam menit, dari 1 sampai 960. Wajib diisi."},
+      {"label": "Status", "en": "Shown by the system after the first save: Draft, Submitted, Approved or Rejected.", "id": "Diisi sistem setelah disimpan pertama kali: Draft, Submitted, Approved atau Rejected."},
+      {"label": "Decided By", "en": "Shown by the system. The user who approved or rejected the request.", "id": "Diisi sistem. Pengguna yang menyetujui atau menolak pengajuan."},
+      {"label": "Decided On", "en": "Shown by the system. The date of the decision.", "id": "Diisi sistem. Tanggal keputusan."}
+    ]
+  },
+  {
+    "key": "hrm-pipeline-board",
+    "type": "INPUT",
+    "module": "HRM",
+    "title": "Pipeline Board",
+    "purpose": {
+      "en": "Board of the recruitment pipeline for one vacancy: each column is a stage and each card is an active application. Open it to move candidates forward, reject them with a reason or mark them withdrawn.",
+      "id": "Papan pipeline rekrutmen untuk satu lowongan: tiap kolom adalah tahap dan tiap kartu adalah lamaran aktif. Buka untuk memajukan kandidat, menolaknya dengan alasan, atau menandainya mundur."
+    },
+    "keywords": "pipeline, papan rekrutmen, kanban, lowongan, kandidat, pelamar, lamaran, tahap seleksi, reject, withdraw, rekrutmen, recruitment",
+    "steps": [
+      {"en": "Choose the vacancy in Vacancy and click Filter. The first open vacancy is shown by default.", "id": "Pilih lowongan di Vacancy lalu klik Filter. Lowongan terbuka pertama tampil secara bawaan."},
+      {"en": "Drag a card to the next column, or use the card menu. A card can only move forward one stage at a time.", "id": "Seret kartu ke kolom berikutnya, atau pakai menu kartu. Kartu hanya boleh maju satu tahap setiap kali."},
+      {"en": "A stage that needs an assessment (such as Psikotes or Interview) cannot be left until its result is filled in on the Assessment Result screen.", "id": "Tahap yang butuh asesmen (seperti Psikotes atau Interview) tidak bisa ditinggalkan sebelum hasilnya diisi di layar Assessment Result."},
+      {"en": "Or in Candidate Actions pick the Candidate and click Continue to move that candidate to the next stage.", "id": "Atau di Candidate Actions pilih Candidate lalu klik Continue untuk memajukan kandidat itu ke tahap berikutnya."},
+      {"en": "To reject, pick the Candidate, type the Reject Reason and click Reject, then confirm. A reason is required.", "id": "Untuk menolak, pilih Candidate, ketik Reject Reason lalu klik Reject dan konfirmasi. Alasan wajib diisi."},
+      {"en": "If the candidate quits, pick the Candidate and click Withdraw, then confirm.", "id": "Bila kandidat mundur, pilih Candidate lalu klik Withdraw dan konfirmasi."},
+      {"en": "The server decides every move. If a move is not allowed, the card goes back and a message explains why.", "id": "Server yang memutuskan setiap perpindahan. Bila tidak diizinkan, kartu kembali ke tempat semula dan muncul pesan alasannya."}
+    ],
+    "fields": [
+      {"label": "Vacancy", "en": "Filter. Pick the vacancy, shown as title and vacancy code. The board shows its stages and its active applications.", "id": "Filter. Pilih lowongan, tampil sebagai judul dan kode lowongan. Papan menampilkan tahap dan lamaran aktifnya."},
+      {"label": "Candidate", "en": "Pick one active application, shown as the candidate name and the current stage. Required for Continue, Reject and Withdraw.", "id": "Pilih satu lamaran aktif, tampil sebagai nama kandidat dan tahap saat ini. Wajib untuk Continue, Reject dan Withdraw."},
+      {"label": "Reject Reason", "en": "Type why the candidate is rejected. Required only when rejecting, and saved with the application.", "id": "Ketik alasan kandidat ditolak. Wajib hanya saat menolak, dan disimpan bersama lamaran."},
+      {"label": "Continue", "en": "Button. Moves the candidate exactly one stage forward.", "id": "Tombol. Memajukan kandidat tepat satu tahap."},
+      {"label": "Reject", "en": "Button. Marks the application as Rejected with the reason typed. It leaves the board.", "id": "Tombol. Menandai lamaran sebagai Rejected dengan alasan yang diketik. Kartu hilang dari papan."},
+      {"label": "Withdraw", "en": "Button. Marks the application as Withdrawn because the candidate quit. It leaves the board.", "id": "Tombol. Menandai lamaran sebagai Withdrawn karena kandidat mundur. Kartu hilang dari papan."}
+    ]
+  },
+  {
+    "key": "hrm-roster",
+    "type": "INPUT",
+    "module": "HRM",
+    "title": "Shift Roster",
+    "title_id": "Jadwal Shift",
+    "purpose": {
+      "en": "Plans the weekly shift roster per schedule, department and work unit. Open it to place employees into shifts for a week, publish and lock the week, or copy and rotate placements to another week.",
+      "id": "Menyusun roster shift mingguan per jadwal, departemen dan unit kerja. Buka untuk menempatkan karyawan ke shift untuk satu minggu, menerbitkan dan mengunci minggu itu, atau menyalin dan merotasi penempatan ke minggu lain."
+    },
+    "keywords": "roster, shift roster, jadwal shift, jadwal kerja, shift mingguan, penempatan shift, rotasi shift, tukar shift, publish, kunci roster, unit kerja",
+    "steps": [
+      {"en": "In Roster Scope choose Schedule, Department (empty means all) and Work Unit, then click Filter. A person can hold only one shift per week in a schedule.", "id": "Di Roster Scope pilih Schedule, Department (kosong berarti semua) dan Work Unit, lalu klik Filter. Satu orang hanya boleh punya satu shift per minggu dalam satu jadwal."},
+      {"en": "Use the week arrows on the board to go to the previous or next week.", "id": "Pakai tanda panah minggu di papan untuk pindah ke minggu sebelumnya atau berikutnya."},
+      {"en": "Place employees: drag a person onto a shift row, or tick people in the pool and click the row. Remove a placement with x.", "id": "Tempatkan karyawan: seret orang ke baris shift, atau centang orang di pool lalu klik barisnya. Hapus penempatan dengan x."},
+      {"en": "Click Save on the board. The screen then tells how many were placed and removed, which shifts are still under quota, and how many placed employees are not certified for the work unit.", "id": "Klik Save di papan. Layar lalu memberi tahu berapa yang ditempatkan dan dihapus, shift mana yang masih di bawah kuota, dan berapa karyawan yang belum bersertifikat untuk unit kerja itu."},
+      {"en": "Click Publish & Lock and confirm to publish the week. The status changes from Draft to Confirmed and the board becomes read-only. Click Unlock to change it again.", "id": "Klik Publish & Lock dan konfirmasi untuk menerbitkan minggu itu. Status berubah dari Draft menjadi Confirmed dan papan hanya bisa dibaca. Klik Unlock untuk mengubahnya lagi."},
+      {"en": "Click Rotate / Swap Weeks to copy a week to another week: choose the weeks, the Mode and the Scope, check the preview message, then click Run.", "id": "Klik Rotate / Swap Weeks untuk menyalin satu minggu ke minggu lain: pilih minggunya, Mode dan Scope, cek pesan pratinjau, lalu klik Run."},
+      {"en": "Use New Schedule, Edit Schedule or Delete Schedule to manage schedules, and Master Shift to maintain the shifts. Deleting a schedule releases its roster rows.", "id": "Pakai New Schedule, Edit Schedule atau Delete Schedule untuk mengelola jadwal, dan Master Shift untuk merawat daftar shift. Menghapus jadwal melepaskan baris rosternya."}
+    ],
+    "fields": [
+      {"label": "Schedule", "en": "Filter. A roster schedule, which groups the departments that share one weekly roster.", "id": "Filter. Satu jadwal roster, yang mengelompokkan departemen yang memakai satu roster mingguan."},
+      {"label": "Department", "en": "Filter. One department, or All departments.", "id": "Filter. Satu departemen, atau All departments."},
+      {"label": "Work Unit", "en": "Filter. The work unit whose board is shown. You must choose one before the board appears.", "id": "Filter. Unit kerja yang papannya ditampilkan. Harus dipilih dulu sebelum papan muncul."},
+      {"label": "Schedule Name", "en": "New Schedule and Edit Schedule. The name of the schedule. Required.", "id": "New Schedule dan Edit Schedule. Nama jadwal. Wajib diisi."},
+      {"label": "Departments", "en": "New Schedule and Edit Schedule. The active departments that belong to this schedule. Required.", "id": "New Schedule dan Edit Schedule. Departemen aktif yang termasuk dalam jadwal ini. Wajib diisi."},
+      {"label": "From week (any date in it)", "en": "Rotate / Swap Weeks. Any date inside the week to copy from. Required.", "id": "Rotate / Swap Weeks. Tanggal mana saja di minggu sumber yang disalin. Wajib diisi."},
+      {"label": "To week (any date in it)", "en": "Rotate / Swap Weeks. Any date inside the target week. Required.", "id": "Rotate / Swap Weeks. Tanggal mana saja di minggu tujuan. Wajib diisi."},
+      {"label": "Mode", "en": "Rotate / Swap Weeks. Swap two shifts, Cycle to the next shift, or Copy as is. Required.", "id": "Rotate / Swap Weeks. Swap two shifts, Cycle to the next shift, atau Copy as is. Wajib diisi."},
+      {"label": "Scope", "en": "Rotate / Swap Weeks. All work units, or This work unit only. Required.", "id": "Rotate / Swap Weeks. All work units, atau This work unit only. Wajib diisi."},
+      {"label": "Shift A (swap only)", "en": "Rotate / Swap Weeks. First shift to swap. Used only in Swap mode.", "id": "Rotate / Swap Weeks. Shift pertama yang ditukar. Hanya dipakai pada mode Swap."},
+      {"label": "Shift B (swap only)", "en": "Rotate / Swap Weeks. Second shift to swap. Used only in Swap mode.", "id": "Rotate / Swap Weeks. Shift kedua yang ditukar. Hanya dipakai pada mode Swap."},
+      {"label": "Replace what is already in the target week", "en": "Rotate / Swap Weeks. Tick it to replace placements already in the target week. Without it, employees who already have a shift there are skipped.", "id": "Rotate / Swap Weeks. Centang untuk mengganti penempatan yang sudah ada di minggu tujuan. Tanpa centang, karyawan yang sudah punya shift di sana dilewati."},
+      {"label": "Shifts Shown on the Board", "en": "One button per shift. Click to hide or show that shift on your board. It changes only your view; placements in a hidden shift stay saved.", "id": "Satu tombol per shift. Klik untuk menyembunyikan atau menampilkan shift itu di papan Anda. Hanya mengubah tampilan Anda; penempatan di shift tersembunyi tetap tersimpan."}
+    ]
+  }
+]

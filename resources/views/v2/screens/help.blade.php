@@ -31,7 +31,7 @@
     $statusTone = ['OPEN' => 'warn', 'IN_PROGRESS' => 'info', 'DONE' => 'success', 'CLOSED' => 'neutral'];
 @endphp
 
-<x-dl::side-screen.layout :sections="['topics' => ['Help Topics', 'fa-life-ring'], 'guide' => ['User\'s Guide', 'fa-book-open'], 'flow' => ['Application\'s Flow', 'fa-diagram-project'], 'tg' => ['Technical Guide', 'fa-code-branch'], 'tickets' => ['Tickets', 'fa-ticket', $tickets->whereIn('status', ['OPEN', 'IN_PROGRESS'])->count() ?: null]]" :active="$tab" :hints="['topics' => 'Pick a screen in the menu tree to read its guide: purpose, steps and each field. Filter by module or type; F1 opens the guide of the screen you are on.', 'guide' => 'Read the guides from top to bottom the first time; later, open the one you need. Each guide = numbered steps plus an explanation of the parts of the screen.', 'tg' => 'How each module works today, in English: concept cards, engine cards, relations. Pick a card in the tree on the left.', 'flow' => 'Point the mouse at a block to see its short rule; click a block to open its screen.', 'tickets' => 'Send a ticket to the developer team with screenshots; the reply appears here.']" :crumbs="$crumbs">
+<x-dl::side-screen.layout :sections="['topics' => ['Help Topics', 'fa-life-ring'], 'guide' => ['User\'s Guide', 'fa-book-open'], 'flow' => ['Application\'s Flow', 'fa-diagram-project'], 'tg' => [raw('Technical Guide'), 'fa-code-branch'], 'tickets' => ['Tickets', 'fa-ticket', $tickets->whereIn('status', ['OPEN', 'IN_PROGRESS'])->count() ?: null]]" :active="$tab" :hints="['topics' => 'Pick a screen in the menu tree to read its guide: purpose, steps and each field. Filter by module or type; F1 opens the guide of the screen you are on.', 'guide' => 'Read the guides from top to bottom the first time; later, open the one you need. Each guide = numbered steps plus an explanation of the parts of the screen.', 'tg' => raw('How each module works today, in English: concept cards, engine cards, relations. Pick a card in the tree on the left.'), 'flow' => 'Point the mouse at a block to see its short rule; click a block to open its screen.', 'tickets' => 'Send a ticket to the developer team with screenshots; the reply appears here.']" :crumbs="$crumbs">
     <x-slot:top>
         @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
         @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
@@ -58,7 +58,7 @@
                         <x-dl::table :columns="['n' => 'Step', 'text' => 'What to do']" :rows="$steps->map(fn ($l, $k) => ['n' => $k + 1, 'text' => $help($l->body)])->all()" />
                     @endif
                     @if ($fields->isNotEmpty())
-                        <x-dl::table :columns="['field' => 'Part of the screen', 'text' => 'Explanation']" :rows="$fields->map(fn ($l) => ['field' => Dictionary::t($l->field_label), 'text' => $help($l->body)])->all()" />
+                        <x-dl::table :columns="['field' => 'Part of the screen', 'text' => 'Explanation']" :rows="$fields->map(fn ($l) => ['field' => raw($l->field_label), 'text' => $help($l->body)])->all()" />
                     @endif
                 </x-dl::card>
             @endforeach

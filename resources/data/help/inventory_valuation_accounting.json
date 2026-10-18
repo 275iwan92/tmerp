@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Inventory Journals: What Is Posted and When",
+    "title_id": "Jurnal Persediaan: Apa yang Diposting dan Kapan",
     "purpose": {
       "en": "Every journal that the inventory valuation screens post, with the accounts and the moment. Accounts named in Settings > Constants can be changed there. A posted journal is never edited; a correction is a new journal (see Repost).",
       "id": "Semua jurnal yang diposting layar valuasi persediaan, lengkap dengan akun dan saatnya. Akun yang disebut di Settings > Constants bisa diganti di sana. Jurnal yang sudah posting tidak diubah; koreksi adalah jurnal baru (lihat Repost)."
@@ -34,8 +35,8 @@
     "module": "INV",
     "title": "Valuation & Period",
     "purpose": {
-      "en": "The control screen of inventory value: stock value per class with the latest reconciliation, the inventory periods with Close and Open, the month-end closing of landed cost variance, and shortcuts to the valuation reports.",
-      "id": "Layar kendali nilai persediaan: nilai stok per kelas beserta rekonsiliasi terakhir, periode inventory dengan Close dan Open, penutupan selisih landed cost di akhir bulan, dan jalan pintas ke laporan valuasi."
+      "en": "The control screen of inventory value. It shows stock value per class with the latest reconciliation and the inventory periods with Close and Open. It also has the month-end closing of landed cost variance and shortcuts to the valuation reports.",
+      "id": "Layar kendali nilai persediaan. Menampilkan nilai stok per kelas beserta rekonsiliasi terakhir, dan periode inventory dengan Close dan Open. Juga penutupan selisih landed cost di akhir bulan dan jalan pintas ke laporan valuasi."
     },
     "keywords": "valuation, period, periode, tutup periode, buka periode, close period, nilai persediaan, rekonsiliasi, landed cost variance, selisih landed cost, inv_period",
     "steps": [

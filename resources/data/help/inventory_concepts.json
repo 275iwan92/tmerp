@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Inventory in One Page: Master, Ledger, Balance",
+    "title_id": "Persediaan dalam Satu Halaman: Master, Ledger, Saldo",
     "purpose": {
       "en": "The big picture of inventory and warehousing for a printing and packaging factory: what is kept, how every movement is recorded, and why a balance is always a result and never typed.",
       "id": "Gambaran besar inventory dan gudang untuk pabrik percetakan dan packaging: apa yang disimpan, bagaimana tiap pergerakan dicatat, dan mengapa saldo selalu hasil hitung, tidak pernah diketik."
@@ -53,6 +54,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "One Item, Many Quantities",
+    "title_id": "Satu Item, Banyak Kuantitas",
     "purpose": {
       "en": "Why a single stock number misleads, and the quantities that large ERP systems keep apart so you can tell what you can really promise today.",
       "id": "Mengapa satu angka stok menyesatkan, dan angka-angka yang dipisahkan sistem ERP besar supaya Anda tahu apa yang benar-benar bisa dijanjikan hari ini."
@@ -99,6 +101,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Item Types and the Attributes That Matter",
+    "title_id": "Jenis Item dan Atribut yang Penting",
     "purpose": {
       "en": "The kinds of item a printing and packaging factory keeps, and the item attributes that big ERP systems hold and small ones often forget.",
       "id": "Jenis item yang disimpan pabrik percetakan dan packaging, serta atribut item yang dimiliki ERP besar tetapi sering terlupa di sistem kecil."
@@ -144,6 +147,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Every Way Stock Moves",
+    "title_id": "Semua Cara Stok Bergerak",
     "purpose": {
       "en": "The complete list of stock movement types, so no real event is left without a document. Check each one against your own screens.",
       "id": "Daftar lengkap jenis pergerakan stok, supaya tidak ada kejadian nyata yang tanpa dokumen. Cocokkan satu per satu dengan layar Anda."
@@ -189,6 +193,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Stock Value: Average, FIFO and the Rest",
+    "title_id": "Nilai Stok: Rata-rata, FIFO, dan Lainnya",
     "purpose": {
       "en": "How the cost of stock is calculated, which methods are allowed in Indonesia, and the formulas behind each one. The method decides the cost of every issue.",
       "id": "Cara menghitung nilai stok, metode mana yang diperbolehkan di Indonesia, dan rumus di balik masing-masing. Metode menentukan nilai setiap pengeluaran."
@@ -243,6 +248,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Inventory and Accounting: Which Journal Each Movement Creates",
+    "title_id": "Persediaan dan Akuntansi: Jurnal untuk Tiap Pergerakan",
     "purpose": {
       "en": "How stock movements become accounting entries, and the controls that keep the stock ledger equal to the general ledger. Plan this together with the ledger, not afterwards.",
       "id": "Bagaimana pergerakan stok menjadi jurnal akuntansi, dan kontrol yang menjaga ledger stok sama dengan buku besar. Rencanakan bersama ledger, bukan belakangan."
@@ -297,6 +303,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Warehouse Map: Locations, Bins, Putaway and Picking",
+    "title_id": "Peta Gudang: Lokasi, Bin, Putaway, dan Picking",
     "purpose": {
       "en": "How to model a warehouse: the location levels, the location types, bin rules, and the strategies that decide where goods are stored and from where they are picked.",
       "id": "Cara memodelkan gudang: tingkat lokasi, jenis lokasi, aturan bin, dan strategi yang menentukan di mana barang disimpan dan dari mana diambil."
@@ -344,6 +351,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Transfers Between Locations",
+    "title_id": "Transfer Antar Lokasi",
     "purpose": {
       "en": "When a transfer is one step and when it is two steps through In Transit, how to treat differences on receipt, and what changes when a transfer crosses legal entities.",
       "id": "Kapan transfer cukup satu langkah dan kapan dua langkah lewat In Transit, bagaimana memperlakukan selisih saat terima, dan apa yang berubah bila transfer melintasi badan hukum."
@@ -388,6 +396,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Batch, Serial Number and Expiry",
+    "title_id": "Batch, Nomor Seri, dan Kedaluwarsa",
     "purpose": {
       "en": "How to track goods by batch or serial number, handle expiry with FEFO, and the formulas for remaining shelf life. Important for inks, glue, varnish and film.",
       "id": "Cara melacak barang per batch atau nomor seri, menangani kedaluwarsa dengan FEFO, dan rumus sisa umur. Penting untuk tinta, lem, varnish dan film."
@@ -439,6 +448,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Stock Health: Dead Stock, Turnover, ABC and Reorder",
+    "title_id": "Kesehatan Stok: Stok Mati, Perputaran, ABC, dan Reorder",
     "purpose": {
       "en": "Formulas and classes to judge whether stock is healthy: aging, dead stock, turnover, ABC and XYZ, reorder point, safety stock and provisions. Every limit should be a setting.",
       "id": "Rumus dan kelas untuk menilai apakah stok sehat: aging, dead stock, perputaran, ABC dan XYZ, reorder point, stok pengaman dan penyisihan. Setiap batas sebaiknya pengaturan."

@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "SETUP",
     "title": "Dummy data from Master Card PDF",
+    "title_id": "Data Dummy dari PDF Master Card",
     "purpose": {
       "en": "Builds dummy data in levels (Inquiry, ProDev, ProCost, CO) from new Master Card PDFs, each set with dieline, artwork and clear size. Developer tool, dummy site only.",
       "id": "Membuat data dummy berlevel (Inquiry, ProDev, ProCost, CO) dari PDF Master Card baru, tiap set punya dieline, artwork, dan ukuran yang jelas. Alat developer, hanya situs dummy."

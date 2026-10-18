@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Scheduling and Capacity Control for Offset Packaging",
+    "title_id": "PPIC: Penjadwalan dan Kendali Kapasitas untuk Kemasan Offset",
     "purpose": {
       "en": "PPIC focuses on scheduling and on monitoring results, and while scheduling it also controls inventory. After Inquiry and ProDev lock the product and routing, PPIC decides what runs next, where, when and with how much material.",
       "id": "PPIC berfokus pada penjadwalan dan pemantauan hasil, dan saat menjadwal juga mengendalikan inventori. Setelah Inquiry dan ProDev mengunci produk dan routing, PPIC menentukan job berikutnya, di mana, kapan dan dengan bahan berapa."
@@ -15,19 +16,19 @@
         "id": "Hulu sudah terkunci: struktur produk, gang run, imposisi dan routing (BOP) datang dari Inquiry dan ProDev. PPIC tidak mengubahnya; PPIC memutuskan urutan, waktu, kapasitas dan pelepasan job."
       },
       {
-        "en": "Five questions every day: is the job ready (material, tooling, artwork), how urgent is it, which jobs fit together to save setup, can the machines carry the load, and how much extra material must be issued.",
-        "id": "Lima pertanyaan tiap hari: apakah job siap (bahan, tooling, artwork), seberapa mendesak, job mana yang cocok digabung untuk hemat setup, apakah mesin kuat menanggung beban, dan berapa tambahan bahan yang harus dikeluarkan."
+        "en": "Five questions every day. Is the job ready (material, tooling, artwork)? How urgent is it? Which jobs fit together to save setup? Can the machines carry the load? How much extra material must be issued?",
+        "id": "Lima pertanyaan tiap hari. Apakah job siap (bahan, tooling, artwork)? Seberapa mendesak? Job mana yang cocok digabung untuk hemat setup? Apakah mesin kuat menanggung beban? Berapa tambahan bahan yang harus dikeluarkan?"
       },
       {
-        "en": "Flow, mostly automatic: Work Orders from ProDev data, material readiness and estimates by engines, a draft schedule by the engine, the officer confirms, then the next shifts are locked (the officer sets how many).",
-        "id": "Alur, sebagian besar otomatis: Work Order dari data ProDev, kesiapan bahan dan perkiraan oleh engine, draf jadwal oleh engine, officer mengonfirmasi, lalu shift berikutnya dikunci (officer mengatur jumlahnya)."
+        "en": "The flow is mostly automatic. Work Orders come from ProDev data. Engines work out material readiness and estimates, and make a draft schedule. The officer confirms, then the next shifts are locked (the officer sets how many).",
+        "id": "Alurnya sebagian besar otomatis. Work Order berasal dari data ProDev. Engine menghitung kesiapan bahan dan perkiraan, lalu membuat draf jadwal. Officer mengonfirmasi, lalu shift berikutnya dikunci (officer mengatur jumlahnya)."
       },
       {
         "en": "The officer confirms the plan, gives a job priority or clears an exception. The engine never reorders a hot or late-risk job to save setup time, and never moves a locked task.",
         "id": "Officer mengonfirmasi rencana, memberi prioritas pada job atau menyelesaikan pengecualian. Engine tidak pernah menggeser job hot atau berisiko telat demi hemat setup, dan tidak pernah memindahkan task yang terkunci."
       },
       {
-        "en": "Already in the system: Work Order generation, backward scheduling, priority ranking (hot job, critical ratio, due date), Scheduling Board, rule library, changeover table per machine, Material Planning and Material Booking.",
+        "en": "Already in the system: Work Order generation, backward scheduling, priority ranking (hot job, critical ratio, due date), changeover table per machine, Material Planning and Material Booking.",
         "id": "Sudah ada di sistem: pembuatan Work Order, penjadwalan mundur, peringkat prioritas (hot job, critical ratio, due date), Scheduling Board, rule library, tabel changeover per mesin, Material Planning dan Material Booking."
       },
       {
@@ -42,6 +43,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Readiness Gates Before a Job Enters a Machine Queue",
+    "title_id": "PPIC: Syarat Siap Sebelum Job Masuk Antrean Mesin",
     "purpose": {
       "en": "A Work Order enters a machine queue only when everything it needs is ready. The gate shows what is missing instead of hiding the job, so PPIC can chase it.",
       "id": "Work Order masuk antrean mesin hanya bila semua kebutuhannya siap. Gerbang menunjukkan apa yang kurang, bukan menyembunyikan job, sehingga PPIC bisa mengejarnya."
@@ -84,6 +86,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: How Job Urgency Is Ranked",
+    "title_id": "PPIC: Cara Urgensi Job Diurutkan",
     "purpose": {
       "en": "How the system decides which ready job is most urgent: hot job first, then critical ratio, then due date, with setup savings and customer class only as refinements among similar jobs.",
       "id": "Cara sistem menentukan job siap mana yang paling mendesak: hot job dulu, lalu critical ratio, lalu due date; penghematan setup dan kelas pelanggan hanya penyempurna di antara job yang mirip."
@@ -107,8 +110,8 @@
         "id": "Lapis 2: job normal diurutkan menurut due date, lalu kecocokan crew, lalu urutan konfirmasi. Kelas pelanggan (Tier 1 sampai 3, disimpan di master Customer oleh Sales) hanya penentu seri dengan ageing, agar job Tier 3 tidak terus ditunda."
       },
       {
-        "en": "Among jobs of similar urgency (slack within one shift of each other) setup counts: Score = 0.50 x urgency + 0.35 x (1 - setup / longest setup) + 0.15 x customer class, each scaled 0 to 1. Weights are starting values.",
-        "id": "Di antara job yang urgensinya mirip (selisih slack dalam satu shift) setup ikut dihitung: Skor = 0,50 x urgensi + 0,35 x (1 - setup / setup terpanjang) + 0,15 x kelas pelanggan, tiap nilai 0 sampai 1. Bobot ini nilai awal."
+        "en": "Among jobs of similar urgency (slack within one shift of each other), setup counts. Score = 0.50 x urgency + 0.35 x (1 - setup / longest setup) + 0.15 x customer class, each scaled 0 to 1. Weights are starting values.",
+        "id": "Di antara job yang urgensinya mirip (selisih slack dalam satu shift), setup ikut dihitung. Skor = 0,50 x urgensi + 0,35 x (1 - setup / setup terpanjang) + 0,15 x kelas pelanggan, tiap nilai 0 sampai 1. Bobot ini nilai awal."
       },
       {
         "en": "The source formula 1 / max(slack, 0.1) mixes hours with setup minutes and gives every late job the same value. Scaling each part to 0 to 1 fixes both and keeps the existing hot, critical-ratio and due-date layers.",
@@ -126,6 +129,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Setup Matrix and Sequencing Rules",
+    "title_id": "PPIC: Matriks Setup dan Aturan Urutan",
     "purpose": {
       "en": "Estimates changeover time and extra waste when one job follows another on the same machine, and uses it to choose the next job among equally urgent ones.",
       "id": "Memperkirakan waktu changeover dan waste tambahan saat satu job menyusul job lain di mesin yang sama, lalu memakainya untuk memilih job berikutnya di antara job yang sama mendesak."
@@ -172,6 +176,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Finite Capacity and Bottleneck Control",
+    "title_id": "PPIC: Kapasitas Terbatas dan Pengendalian Bottleneck",
     "purpose": {
       "en": "Loads each machine group against its real available hours, finds where the constraint is, and keeps work flowing to it without piling up half-finished sheets.",
       "id": "Membandingkan beban tiap grup mesin dengan jam tersedia yang nyata, mencari di mana kendala berada, dan menjaga aliran kerja ke sana tanpa menumpuk lembaran setengah jadi."
@@ -218,6 +223,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Waste Allowance and Spoilage per Process",
+    "title_id": "PPIC: Toleransi Waste dan Spoilage per Proses",
     "purpose": {
       "en": "How much extra material to issue so enough good pieces remain after each process: a fixed setup waste plus a variable percentage, calculated backwards from the order quantity.",
       "id": "Berapa bahan tambahan yang dikeluarkan agar cukup barang baik tersisa setelah tiap proses: waste setup tetap ditambah persentase variabel, dihitung mundur dari jumlah pesanan."
@@ -229,20 +235,20 @@
         "id": "Toleransi per proses = waste setup tetap (hilang saat persiapan, per run) + persentase variabel dari jumlah (hilang saat berjalan). Dua angka per proses, bukan satu persen."
       },
       {
-        "en": "Start ranges: guillotine 2 to 5 sheets + 0.2 to 0.5 %; press 50 to 150 sheets + 1.0 to 2.0 %; coating or lamination 15 to 30 sheets + 0.5 to 1.0 %.",
-        "id": "Rentang awal: potong awal 2 sampai 5 lembar + 0,2 sampai 0,5 %; cetak 50 sampai 150 lembar + 1,0 sampai 2,0 %; coating atau laminasi 15 sampai 30 lembar + 0,5 sampai 1,0 %."
+        "en": "Start ranges. Guillotine: 2 to 5 sheets + 0.2 to 0.5 %. Press: 50 to 150 sheets + 1.0 to 2.0 %. Coating or lamination: 15 to 30 sheets + 0.5 to 1.0 %.",
+        "id": "Rentang awal. Potong awal: 2 sampai 5 lembar + 0,2 sampai 0,5 %. Cetak: 50 sampai 150 lembar + 1,0 sampai 2,0 %. Coating atau laminasi: 15 sampai 30 lembar + 0,5 sampai 1,0 %."
       },
       {
-        "en": "Start ranges: foil or emboss 20 to 40 sheets + 1.0 to 1.5 %; die-cutting 15 to 30 sheets + 0.5 to 1.0 %; gluing and folding 20 to 50 units + 0.5 to 1.5 %.",
-        "id": "Rentang awal: foil atau emboss 20 sampai 40 lembar + 1,0 sampai 1,5 %; die-cutting 15 sampai 30 lembar + 0,5 sampai 1,0 %; gluing dan lipat 20 sampai 50 unit + 0,5 sampai 1,5 %."
+        "en": "Start ranges. Foil or emboss: 20 to 40 sheets + 1.0 to 1.5 %. Die-cutting: 15 to 30 sheets + 0.5 to 1.0 %. Gluing and folding: 20 to 50 units + 0.5 to 1.5 %.",
+        "id": "Rentang awal. Foil atau emboss: 20 sampai 40 lembar + 1,0 sampai 1,5 %. Die-cutting: 15 sampai 30 lembar + 0,5 sampai 1,0 %. Gluing dan lipat: 20 sampai 50 unit + 0,5 sampai 1,5 %."
       },
       {
         "en": "Calculate backwards from the finished quantity: input of a process = output / (1 - variable %) + fixed. The result of one process is the required output of the process before it.",
         "id": "Hitung mundur dari jumlah jadi: input sebuah proses = output / (1 - variabel %) + tetap. Hasil satu proses adalah output yang dibutuhkan proses sebelumnya."
       },
       {
-        "en": "Example, 5,000 boxes, one per sheet: gluing 5,081 (1.0 % + 30); die-cut 5,140 (0.75 % + 20); coating 5,199 (0.75 % + 20); press 5,379 (1.5 % + 100); guillotine 5,401 (0.35 % + 3). Issue 5,401 sheets, 8.0 % above the order.",
-        "id": "Contoh, 5.000 box, satu per lembar: gluing 5.081 (1,0 % + 30); die-cut 5.140 (0,75 % + 20); coating 5.199 (0,75 % + 20); cetak 5.379 (1,5 % + 100); potong awal 5.401 (0,35 % + 3). Keluarkan 5.401 lembar, 8,0 % di atas pesanan."
+        "en": "Example: 5,000 boxes, one per sheet. Gluing 5,081 (1.0 % + 30). Die-cut 5,140 (0.75 % + 20). Coating 5,199 (0.75 % + 20). Press 5,379 (1.5 % + 100). Guillotine 5,401 (0.35 % + 3). Issue 5,401 sheets, 8.0 % above the order.",
+        "id": "Contoh: 5.000 box, satu per lembar. Gluing 5.081 (1,0 % + 30). Die-cut 5.140 (0,75 % + 20). Coating 5.199 (0,75 % + 20). Cetak 5.379 (1,5 % + 100). Potong awal 5.401 (0,35 % + 3). Keluarkan 5.401 lembar, 8,0 % di atas pesanan."
       },
       {
         "en": "Complexity moves the numbers: more colours, spot colour, foil, difficult board and the extra waste of a changeover from the previous job (Changeover table) are added on top of the base allowance.",
@@ -260,6 +266,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Schedule Lock and Rescheduling",
+    "title_id": "PPIC: Kunci Jadwal dan Penjadwalan Ulang",
     "purpose": {
       "en": "Keeps the plan stable on the shop floor: the near part of each queue is locked, the far part is re-planned when things change, and breaking the lock needs a reason.",
       "id": "Menjaga rencana tetap stabil di lantai produksi: bagian antrean yang dekat dikunci, bagian yang jauh direncanakan ulang bila ada perubahan, dan membuka kunci butuh alasan."
@@ -267,8 +274,8 @@
     "keywords": "lock, kunci jadwal, reschedule, jadwal ulang, frozen, stabilitas, interupsi, breakdown, hot job, shift, penjadwalan ulang",
     "steps": [
       {
-        "en": "Lock the next running shifts of every queue (default one shift; the officer sets the number, since it depends on how many shifts the machine runs), so operators and material handlers work to a stable plan.",
-        "id": "Kunci shift berjalan berikutnya di setiap antrean (default satu shift; officer mengatur jumlahnya, karena tergantung berapa shift yang dijalankan mesin), agar operator dan petugas bahan bekerja dengan rencana stabil."
+        "en": "Lock the next running shifts of every queue, so operators and material handlers work to a stable plan. The default is one shift. The officer sets the number, since it depends on how many shifts the machine runs.",
+        "id": "Kunci shift berjalan berikutnya di setiap antrean, agar operator dan petugas bahan bekerja dengan rencana stabil. Defaultnya satu shift. Officer mengatur jumlahnya, karena tergantung berapa shift yang dijalankan mesin."
       },
       {
         "en": "Beyond the lock the engine re-plans by itself when something changes (new order, late material, breakdown) and makes a new Draft. The officer confirms it; nothing changes on the shop floor before that.",
@@ -298,6 +305,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Key Measures to Watch",
+    "title_id": "PPIC: Ukuran Utama yang Dipantau",
     "purpose": {
       "en": "The few numbers that tell whether scheduling is working: delivery, plan keeping, setup, waste and flow at the bottleneck.",
       "id": "Beberapa angka yang menunjukkan apakah penjadwalan berhasil: pengiriman, ketepatan rencana, setup, waste dan aliran di bottleneck."
@@ -332,6 +340,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Learning from Actual Results",
+    "title_id": "PPIC: Belajar dari Hasil Aktual",
     "purpose": {
       "en": "Starts from assumed numbers and corrects them from what really happened on the machines: setup minutes, waste and run speed. Same idea as the existing speed target suggestions.",
       "id": "Mulai dari angka asumsi lalu mengoreksinya dari kejadian nyata di mesin: menit setup, waste dan kecepatan jalan. Gagasannya sama dengan usulan target kecepatan yang sudah ada."
@@ -374,6 +383,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Tooling Master and Setup Time",
+    "title_id": "PPIC: Master Tooling dan Waktu Setup",
     "purpose": {
       "en": "The master list of plates, cutting dies, emboss and foil dies with their status, use count and setup time, so the tooling gate and the setup calculation use real data.",
       "id": "Daftar master plat, pisau pond, matras emboss dan foil dengan status, jumlah pemakaian dan waktu setup, agar gerbang tooling dan perhitungan setup memakai data nyata."
@@ -412,6 +422,7 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "PPIC: Roles, Hand-offs and Monitoring of Results",
+    "title_id": "PPIC: Peran, Serah Terima, dan Pemantauan Hasil",
     "purpose": {
       "en": "PPIC has two working focuses, scheduling and inventory control, plus monitoring of results. They can be done by different officers or by one person who holds both rights.",
       "id": "PPIC punya dua fokus kerja, penjadwalan dan pengendalian inventori, ditambah pemantauan hasil. Bisa dikerjakan officer berbeda atau satu orang yang memegang kedua hak akses."
@@ -458,15 +469,16 @@
     "type": "GUIDE",
     "module": "PROD",
     "title": "Production Planning: Live and Draft Jobs, Problem Jobs and the Officer's Order",
+    "title_id": "Perencanaan Produksi: Job Live dan Draft, Job Bermasalah, dan Urutan Officer",
     "purpose": {
-      "en": "How the officer arranges jobs in Simulation, what LIVE and DRAFT mean, what the engine does when a job or a machine has a problem, and the planned machine learning that will suggest the right order from the officer's arrangement.",
-      "id": "Cara officer menyusun job di Simulation, arti LIVE dan DRAFT, apa yang dilakukan engine bila job atau mesin bermasalah, dan machine learning yang direncanakan untuk menyodorkan urutan yang benar dari susunan officer."
+      "en": "How the officer arranges jobs in Simulation and what LIVE and DRAFT mean. Also what the engine does when a job or a machine has a problem, and the planned machine learning that will suggest the right order from the officer's arrangement.",
+      "id": "Cara officer menyusun job di Simulation dan arti LIVE dan DRAFT. Juga apa yang dilakukan engine bila job atau mesin bermasalah, dan machine learning yang direncanakan untuk menyodorkan urutan yang benar dari susunan officer."
     },
     "keywords": "planning produksi, production planning, simulation, simulasi, live schedule, apply, draft, live, job bermasalah, mesin rusak, mesin macet, laminasi, tukar urutan, machine learning, urutan job, held job, officer",
     "steps": [
       {
-        "en": "The whole flow, with the table where each step is stored, is drawn in Help > Application's Flow > Production Planning flow: arrange in Simulation, PROCESS, APPLY to Live, then the machine learning learns and suggests the order.",
-        "id": "Seluruh alur beserta tabel penyimpanan tiap langkah digambar di Help > Application's Flow > Production Planning flow: susun di Simulation, PROCESS, APPLY ke Live, lalu machine learning belajar dan menyodorkan urutan."
+        "en": "The whole flow is drawn in Help > Application's Flow > Production Planning flow, with the table where each step is stored. The steps: arrange in Simulation, PROCESS, APPLY to Live. Then the machine learning learns and suggests the order.",
+        "id": "Seluruh alur digambar di Help > Application's Flow > Production Planning flow, beserta tabel penyimpanan tiap langkah. Langkahnya: susun di Simulation, PROCESS, APPLY ke Live. Lalu machine learning belajar dan menyodorkan urutan."
       },
       {
         "en": "The APPLY TO LIVE SCHEDULE button sits beside PROCESS and turns on only after PROCESS passed, with all raw material ready. Otherwise it stays off and shows why; APPLY ALL skips the Work Orders that are not ready and lists them.",
@@ -477,8 +489,8 @@
         "id": "Simulation menampilkan seluruh jadwal. Bar bertanda LIVE sudah di-APPLY ke Live Schedule dan terkunci. Bar bertanda DRAFT belum di-APPLY dan bebas disimulasikan."
       },
       {
-        "en": "The officer may swap the order of every DRAFT Work Order freely and simulate as often as wanted: drag a bar, read the impact, add it to the pending changes with a reason. Nothing becomes real before PROCESS and APPLY TO LIVE SCHEDULE.",
-        "id": "Officer bebas menukar urutan semua Work Order DRAFT dan boleh mensimulasikan sesuka hati: geser bar, baca dampaknya, tambahkan ke perubahan tertunda dengan alasan. Tidak ada yang menjadi nyata sebelum PROCESS dan APPLY TO LIVE SCHEDULE."
+        "en": "The officer may swap the order of every DRAFT Work Order freely and simulate as often as wanted. Drag a bar, read the impact, and add it to the pending changes with a reason. Nothing becomes real before PROCESS and APPLY TO LIVE SCHEDULE.",
+        "id": "Officer bebas menukar urutan semua Work Order DRAFT dan boleh mensimulasikan sesuka hati. Geser bar, baca dampaknya, lalu tambahkan ke perubahan tertunda dengan alasan. Tidak ada yang menjadi nyata sebelum PROCESS dan APPLY TO LIVE SCHEDULE."
       },
       {
         "en": "APPLY TO LIVE SCHEDULE fixes the open Work Order and locks all its operations. APPLY ALL WOs does it for every Work Order on the chosen process and machine. An applied Work Order is not dragged any more; use Undo Confirm first.",

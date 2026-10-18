@@ -158,15 +158,99 @@
     },
     "keywords": "urgent, mendesak, penerimaan urgent, pemakaian urgent, pemohon, supplier, hasil sampling, conditional, release",
     "steps": [
-      {"en": "Use the boxes on top to see only batches still Awaiting (Conditional), Released or Rejected.", "id": "Pakai kotak di atas untuk melihat batch yang masih Awaiting (Conditional), Released atau Rejected."},
-      {"en": "Group by Supplier, Requested By or Batch Status to see where URGENT is used most.", "id": "Kelompokkan menurut Supplier, Requested By atau Batch Status untuk melihat di mana URGENT paling sering dipakai."}
+      {
+        "en": "Use the boxes on top to see only batches still Awaiting (Conditional), Released or Rejected.",
+        "id": "Pakai kotak di atas untuk melihat batch yang masih Awaiting (Conditional), Released atau Rejected."
+      },
+      {
+        "en": "Group by Supplier, Requested By or Batch Status to see where URGENT is used most.",
+        "id": "Kelompokkan menurut Supplier, Requested By atau Batch Status untuk melihat di mana URGENT paling sering dipakai."
+      },
+      {
+        "en": "A row whose Batch Status is Not posted has no batch yet, so it has no Sampling Result. The rows come with the newest URGENT mark first.",
+        "id": "Baris dengan Batch Status Not posted belum punya batch, jadi belum ada Sampling Result. Baris diurutkan dari tanda URGENT yang paling baru."
+      },
+      {
+        "en": "Marked At is hidden at first; switch it on with Columns. Export downloads a CSV file of the visible columns and the filtered rows. Qty is totalled at the bottom.",
+        "id": "Marked At awalnya tersembunyi; tampilkan dengan Columns. Export mengunduh file CSV berisi kolom yang tampil dan baris hasil filter. Qty dijumlahkan di bawah."
+      }
     ],
     "fields": [
-      {"label": "Requested By", "en": "The person who marked the line URGENT.", "id": "Orang yang menandai baris sebagai URGENT."},
-      {"label": "Work Order", "en": "The work order that needed the material.", "id": "WO yang membutuhkan bahan."},
-      {"label": "Approved By", "en": "Head of QC or operations manager who approved FSC or food grade material.", "id": "Kepala QC atau operations manager yang menyetujui bahan FSC atau food grade."},
-      {"label": "Batch Status", "en": "The status of the batch now: Conditional until the sampling decision.", "id": "Status batch sekarang: Conditional sampai ada keputusan sampling."},
-      {"label": "Sampling Result", "en": "The test result of the last decision on the batch.", "id": "Hasil uji dari keputusan terakhir atas batch."}
+      {
+        "label": "Requested By",
+        "en": "The person who marked the line URGENT.",
+        "id": "Orang yang menandai baris sebagai URGENT."
+      },
+      {
+        "label": "Work Order",
+        "en": "The work order that needed the material.",
+        "id": "WO yang membutuhkan bahan."
+      },
+      {
+        "label": "Approved By",
+        "en": "Head of QC or operations manager who approved FSC or food grade material.",
+        "id": "Kepala QC atau operations manager yang menyetujui bahan FSC atau food grade."
+      },
+      {
+        "label": "Batch Status",
+        "en": "The status of the batch now: Conditional until the sampling decision.",
+        "id": "Status batch sekarang: Conditional sampai ada keputusan sampling."
+      },
+      {
+        "label": "Sampling Result",
+        "en": "The test result of the last decision on the batch.",
+        "id": "Hasil uji dari keputusan terakhir atas batch."
+      },
+      {
+        "label": "Receipt",
+        "en": "Goods receipt number of the URGENT line. A receipt still in Draft shows Draft # and its internal number.",
+        "id": "Nomor goods receipt dari baris URGENT. Penerimaan yang masih Draft tampil sebagai Draft # dan nomor internalnya."
+      },
+      {
+        "label": "Received",
+        "en": "Document date of the goods receipt.",
+        "id": "Tanggal dokumen goods receipt."
+      },
+      {
+        "label": "Supplier",
+        "en": "Supplier of the goods receipt. You can also group the rows by Supplier.",
+        "id": "Supplier pada goods receipt. Baris juga bisa dikelompokkan menurut Supplier."
+      },
+      {
+        "label": "Item",
+        "en": "Item description of the receipt line, with the item code under it.",
+        "id": "Deskripsi item pada baris penerimaan, dengan kode item di bawahnya."
+      },
+      {
+        "label": "Qty",
+        "en": "Quantity of the line in the stock unit. It is added up in the Total row at the bottom.",
+        "id": "Jumlah baris dalam satuan stok. Dijumlahkan di baris Total di bawah."
+      },
+      {
+        "label": "UoM",
+        "en": "The stock unit of Qty.",
+        "id": "Satuan stok dari Qty."
+      },
+      {
+        "label": "Reason",
+        "en": "The URGENT Reason typed on the receipt when the line was marked URGENT.",
+        "id": "URGENT Reason yang diketik di penerimaan saat baris ditandai URGENT."
+      },
+      {
+        "label": "Batch",
+        "en": "Number of the batch made from the line when the receipt is confirmed. Empty while the line has no batch yet.",
+        "id": "Nomor batch yang dibuat dari baris saat penerimaan dikonfirmasi. Kosong selama baris belum punya batch."
+      },
+      {
+        "label": "Decided By",
+        "en": "Login and date and time of the last sampling decision on the batch. Empty until a decision is recorded.",
+        "id": "Login serta tanggal dan jam keputusan sampling terakhir atas batch. Kosong sampai ada keputusan yang dicatat."
+      },
+      {
+        "label": "Marked At",
+        "en": "Date and time the line was marked URGENT. Hidden at first; switch it on with Columns.",
+        "id": "Tanggal dan jam baris ditandai URGENT. Awalnya tersembunyi; tampilkan dengan Columns."
+      }
     ]
   },
   {
@@ -180,16 +264,64 @@
     },
     "keywords": "kurang kirim per supplier, shortage by supplier, skor supplier, debit note, ditolak, dikirim, terbuka",
     "steps": [
-      {"en": "Read one row per supplier, with the largest shortage first.", "id": "Baca satu baris per supplier, kekurangan terbesar di atas."},
-      {"en": "Requests closed as a usage variance are not counted.", "id": "Permintaan yang ditutup sebagai varians pemakaian tidak dihitung."}
+      {
+        "en": "Read one row per supplier, with the largest shortage first.",
+        "id": "Baca satu baris per supplier, kekurangan terbesar di atas."
+      },
+      {
+        "en": "Requests closed as a usage variance are not counted.",
+        "id": "Permintaan yang ditutup sebagai varians pemakaian tidak dihitung."
+      },
+      {
+        "en": "Draft requests and requests from customers are not counted; the report covers suppliers and subcontractors. Last Confirmed shows the latest confirmation of that supplier's requests.",
+        "id": "Permintaan Draft dan permintaan dari customer tidak dihitung; laporan ini untuk supplier dan subkon. Last Confirmed menunjukkan konfirmasi terakhir atas permintaan supplier itu."
+      },
+      {
+        "en": "The Total row adds up every number column. Export downloads a CSV file of the visible columns; choose the columns first with Columns.",
+        "id": "Baris Total menjumlahkan semua kolom angka. Export mengunduh file CSV berisi kolom yang tampil; pilih kolomnya lebih dulu dengan Columns."
+      }
     ],
     "fields": [
-      {"label": "Requests", "en": "Number of confirmed shortage requests.", "id": "Jumlah permintaan kirim kekurangan yang dikonfirmasi."},
-      {"label": "Qty Proven Short", "en": "Total quantity proven short after the recount.", "id": "Total jumlah yang terbukti kurang setelah hitung ulang."},
-      {"label": "Delivered After", "en": "Requests where the shortfall was delivered.", "id": "Permintaan yang kekurangannya sudah dikirim."},
-      {"label": "Refused / Lapsed", "en": "Requests refused or past the sending window.", "id": "Permintaan yang ditolak atau lewat jendela kirim."},
-      {"label": "Still Open", "en": "Requests confirmed or sent and not answered yet.", "id": "Permintaan Confirmed atau Sent yang belum dijawab."},
-      {"label": "Debit Notes Needed", "en": "Requests closed at the received quantity that need a debit note or an invoice deduction.", "id": "Permintaan yang ditutup di qty terima dan butuh debit note atau potongan tagihan."}
+      {
+        "label": "Requests",
+        "en": "Number of confirmed shortage requests.",
+        "id": "Jumlah permintaan kirim kekurangan yang dikonfirmasi."
+      },
+      {
+        "label": "Qty Proven Short",
+        "en": "Total quantity proven short after the recount.",
+        "id": "Total jumlah yang terbukti kurang setelah hitung ulang."
+      },
+      {
+        "label": "Delivered After",
+        "en": "Requests where the shortfall was delivered.",
+        "id": "Permintaan yang kekurangannya sudah dikirim."
+      },
+      {
+        "label": "Refused / Lapsed",
+        "en": "Requests refused or past the sending window.",
+        "id": "Permintaan yang ditolak atau lewat jendela kirim."
+      },
+      {
+        "label": "Still Open",
+        "en": "Requests confirmed or sent and not answered yet.",
+        "id": "Permintaan Confirmed atau Sent yang belum dijawab."
+      },
+      {
+        "label": "Debit Notes Needed",
+        "en": "Requests closed at the received quantity that need a debit note or an invoice deduction.",
+        "id": "Permintaan yang ditutup di qty terima dan butuh debit note atau potongan tagihan."
+      },
+      {
+        "label": "Supplier",
+        "en": "Name of the supplier or subcontractor. All shortage requests of that name are counted on one row.",
+        "id": "Nama supplier atau subkon. Semua permintaan kirim kekurangan atas nama itu dihitung dalam satu baris."
+      },
+      {
+        "label": "Last Confirmed",
+        "en": "Date and time of the most recent confirmation among the requests counted on the row. Empty when none has a confirmation time.",
+        "id": "Tanggal dan jam konfirmasi terbaru di antara permintaan yang dihitung pada baris itu. Kosong bila tidak ada yang punya waktu konfirmasi."
+      }
     ]
   },
   {
@@ -203,13 +335,69 @@
     },
     "keywords": "klaim supplier, supplier claim, batch ditolak, reject, retur, klaim, pemasok, mutu",
     "steps": [
-      {"en": "Use the boxes on top to see Open, Sent or Settled claims.", "id": "Pakai kotak di atas untuk melihat klaim Open, Sent atau Settled."},
-      {"en": "Click a row to open the batch. The Supplier Claim block there changes the status and the notes.", "id": "Klik satu baris untuk membuka batch. Blok Supplier Claim di sana mengubah status dan catatan."}
+      {
+        "en": "Use the boxes on top to see Open, Sent or Settled claims.",
+        "id": "Pakai kotak di atas untuk melihat klaim Open, Sent atau Settled."
+      },
+      {
+        "en": "Click a row to open the batch. The Supplier Claim block there changes the status and the notes.",
+        "id": "Klik satu baris untuk membuka batch. Blok Supplier Claim di sana mengubah status dan catatan."
+      },
+      {
+        "en": "Dropped claims have no box but are in All. The newest claim is first; Opened At is the day and time the claim was opened.",
+        "id": "Klaim Dropped tidak punya kotak tetapi ada di All. Klaim terbaru ada di atas; Opened At adalah tanggal dan jam klaim dibuka."
+      },
+      {
+        "en": "Click a row to open the batch on the Conditional Stock screen. Export downloads a CSV file of the visible columns; Qty Claimed is totalled at the bottom.",
+        "id": "Klik sebuah baris untuk membuka batch di layar Conditional Stock. Export mengunduh file CSV berisi kolom yang tampil; Qty Claimed dijumlahkan di bawah."
+      }
     ],
     "fields": [
-      {"label": "Claim No.", "en": "Number given by the system when the claim opens.", "id": "Nomor yang diberikan sistem saat klaim dibuka."},
-      {"label": "Qty Claimed", "en": "Quantity received for the batch on the goods receipt.", "id": "Jumlah yang diterima untuk batch pada penerimaan barang."},
-      {"label": "Reason", "en": "The reason typed when the batch was rejected.", "id": "Alasan yang diketik saat batch ditolak."}
+      {
+        "label": "Claim No.",
+        "en": "Number given by the system when the claim opens.",
+        "id": "Nomor yang diberikan sistem saat klaim dibuka."
+      },
+      {
+        "label": "Qty Claimed",
+        "en": "Quantity received for the batch on the goods receipt.",
+        "id": "Jumlah yang diterima untuk batch pada penerimaan barang."
+      },
+      {
+        "label": "Reason",
+        "en": "The reason typed when the batch was rejected.",
+        "id": "Alasan yang diketik saat batch ditolak."
+      },
+      {
+        "label": "Status",
+        "en": "Open when the claim starts, then Sent, Settled or Dropped. You change it on the batch page, in the Supplier Claim block.",
+        "id": "Open saat klaim dimulai, lalu Sent, Settled, atau Dropped. Diubah di halaman batch, pada blok Supplier Claim."
+      },
+      {
+        "label": "Supplier",
+        "en": "The supplier the claim is made to.",
+        "id": "Supplier tujuan klaim."
+      },
+      {
+        "label": "Batch",
+        "en": "Number of the rejected batch the claim belongs to.",
+        "id": "Nomor batch yang ditolak, tempat klaim ini berasal."
+      },
+      {
+        "label": "Item",
+        "en": "Item name of the rejected batch, with the item code under it.",
+        "id": "Nama item dari batch yang ditolak, dengan kode item di bawahnya."
+      },
+      {
+        "label": "UoM",
+        "en": "The unit of measure of Qty Claimed.",
+        "id": "Satuan dari Qty Claimed."
+      },
+      {
+        "label": "Opened At",
+        "en": "Date and time the claim was created by the system when the batch was rejected.",
+        "id": "Tanggal dan jam klaim dibuat oleh sistem saat batch ditolak."
+      }
     ]
   },
   {
@@ -217,6 +405,7 @@
     "type": "GUIDE",
     "module": "INV",
     "title": "Marking a Receipt URGENT",
+    "title_id": "Menandai Penerimaan sebagai URGENT",
     "purpose": {
       "en": "How to receive material that production needs now, before the quality sampling is finished. The line is posted and goes straight to production; its batch stays Conditional until the sampling decision.",
       "id": "Cara menerima bahan yang dibutuhkan produksi sekarang, sebelum sampling mutu selesai. Baris diposting dan langsung ke produksi; batchnya tetap Conditional sampai ada keputusan sampling."

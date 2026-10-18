@@ -50,6 +50,7 @@
     "type": "INPUT",
     "module": "PROD",
     "title": "Assign Crew Form",
+    "title_id": "Form Penugasan Kru",
     "purpose": {
       "en": "Sets up the crews of one machine for all its shifts on one screen: a box per shift with the shift, and up to 10 people with their roles. Open it from the Assign Crew grid.",
       "id": "Menyusun crew satu mesin untuk semua shiftnya dalam satu layar: satu kotak per shift berisi shift dan sampai 10 orang beserta perannya. Buka dari grid Assign Crew."

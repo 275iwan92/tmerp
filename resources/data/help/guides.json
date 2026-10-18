@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Finding and Opening a Screen",
+    "title_id": "Mencari dan Membuka Layar",
     "purpose": {
       "en": "Explains how to find a screen with the left menu, the search icon or Ctrl+K, and how every opened screen stays available as a tab.",
       "id": "Menjelaskan cara menemukan layar lewat menu kiri, ikon cari atau Ctrl+K, dan bagaimana setiap layar yang dibuka tetap tersedia sebagai tab."
@@ -47,8 +48,8 @@
         "id": "Ikon Minimize menu mengecilkan menu menjadi satu lajur ikon. Mengklik cabang, Back atau nama Anda lalu menampilkan menu lengkap di atas layar sampai Anda memilih layar atau klik di luar. Pilihan ini diingat di browser ini."
       },
       {
-        "en": "A small badge after a menu name: A means approved screen, R means built and waiting for review, v1 means it still opens the old screen, Belum means there is no screen yet.",
-        "id": "Lencana kecil di belakang nama menu: A berarti layar sudah disetujui, R berarti sudah dibangun dan menunggu review, v1 berarti masih membuka layar lama, Belum berarti belum ada layarnya."
+        "en": "A small badge follows a menu name. A means an approved screen and R means built and waiting for review. v1 means it still opens the old screen. Belum means there is no screen yet.",
+        "id": "Lencana kecil mengikuti nama menu. A berarti layar sudah disetujui dan R berarti sudah dibangun dan menunggu review. v1 berarti masih membuka layar lama. Belum berarti belum ada layarnya."
       }
     ],
     "fields": [
@@ -84,6 +85,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "How an Input Screen Works",
+    "title_id": "Cara Kerja Layar Input",
     "purpose": {
       "en": "Every screen where data is entered starts with a grid of existing records. You create or open a record in a form, fill it, Save it, and Confirm it when it is final.",
       "id": "Setiap layar tempat data diinput diawali grid berisi data yang sudah ada. Anda membuat atau membuka data di form, mengisi, Save, lalu Confirm bila sudah final."
@@ -160,6 +162,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Document Buttons and Statuses",
+    "title_id": "Tombol dan Status Dokumen",
     "purpose": {
       "en": "Explains what each button of a document form does, when it is available, and what the statuses Draft, Confirmed, Cancelled and Closed mean.",
       "id": "Menjelaskan fungsi tiap tombol form dokumen, kapan tombol itu tersedia, dan arti status Draft, Confirmed, Cancelled dan Closed."
@@ -272,6 +275,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Using a Grid",
+    "title_id": "Memakai Grid",
     "purpose": {
       "en": "Explains how to search, filter, sort, choose columns, expand rows, open a record and page through a grid list.",
       "id": "Menjelaskan cara mencari, memfilter, mengurutkan, memilih kolom, membuka baris detail, membuka data, dan berpindah halaman di daftar grid."
@@ -372,6 +376,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Master Data Grids",
+    "title_id": "Grid Master Data",
     "purpose": {
       "en": "Explains master data lists such as customers, items or machines: how to edit a record and how to deactivate or activate it instead of deleting it.",
       "id": "Menjelaskan daftar data master seperti customer, item atau mesin: cara mengubah data dan cara menonaktifkan atau mengaktifkannya, bukan menghapus."
@@ -441,6 +446,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Small Lookup Lists Typed in Cells",
+    "title_id": "Daftar Bantu Kecil yang Diketik di Sel",
     "purpose": {
       "en": "Explains short helper lists (for example reasons or codes) that you edit directly in the cells like a spreadsheet and save in one go.",
       "id": "Menjelaskan daftar bantu pendek (misalnya alasan atau kode) yang diubah langsung di sel seperti spreadsheet dan disimpan sekaligus."
@@ -522,6 +528,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Using a Report",
+    "title_id": "Memakai Laporan",
     "purpose": {
       "en": "Explains report grids: filtering, grouping with subtotals, choosing columns, the totals row and exporting the result.",
       "id": "Menjelaskan grid laporan: memfilter, mengelompokkan dengan subtotal, memilih kolom, baris total dan mengekspor hasilnya."
@@ -607,6 +614,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Printing and E-mailing a Document",
+    "title_id": "Mencetak dan Mengirim Dokumen lewat E-mail",
     "purpose": {
       "en": "Explains how to print a document, save it as PDF or JPEG, share it by online link and QR code, and send it by e-mail.",
       "id": "Menjelaskan cara mencetak dokumen, menyimpannya sebagai PDF atau JPEG, membagikannya lewat link online dan kode QR, serta mengirimnya lewat e-mail."
@@ -626,8 +634,8 @@
         "id": "Customer Order bisa dicetak With Price atau Without Price. Pengguna yang tidak boleh melihat harga hanya mendapat versi tanpa harga."
       },
       {
-        "en": "On the print page open the Print menu (the button with the small arrow) and choose PDF or JPEG to download the file with a QR code, or Printer to open the browser print dialog.",
-        "id": "Di halaman cetak buka menu Print (tombol dengan panah kecil) lalu pilih PDF atau JPEG untuk mengunduh file dengan kode QR, atau Printer untuk membuka dialog cetak browser."
+        "en": "On the print page open the Print menu (the button with the small arrow). Choose PDF or JPEG to download the file with a QR code, or Printer to open the browser print dialog.",
+        "id": "Di halaman cetak buka menu Print (tombol dengan panah kecil). Pilih PDF atau JPEG untuk mengunduh file dengan kode QR, atau Printer untuk membuka dialog cetak browser."
       },
       {
         "en": "Choose HTML online to get a link and a QR code of a copy of the document as it is now. Anyone with the link can open it without logging in. Use Copy link or Open.",
@@ -702,6 +710,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Approval Screens",
+    "title_id": "Layar Persetujuan",
     "purpose": {
       "en": "Explains how an approver reviews documents waiting for approval and decides with Approve, Reject or Hold.",
       "id": "Menjelaskan cara approver memeriksa dokumen yang menunggu approval dan memutuskan dengan Approve, Reject atau Hold."
@@ -713,12 +722,12 @@
         "id": "Buka layar approval. Di kiri ada daftar dokumen yang menunggu Anda, beserta jumlahnya. Klik sebuah dokumen untuk melihatnya."
       },
       {
-        "en": "The document is read-only: a summary, the item lines, the Approval Flow with Level 1, 2 and so on and who is next (an acting officer is marked PLT), and the Document History. Use the open link to see the full document.",
-        "id": "Dokumen hanya bisa dibaca: ringkasan, baris item, Approval Flow dengan Level 1, 2 dan seterusnya serta siapa berikutnya (officer pengganti ditandai PLT), dan Document History. Pakai tautan buka untuk melihat dokumen lengkap."
+        "en": "The document is read-only. It shows a summary and the item lines. The Approval Flow lists Level 1, 2 and so on and who is next (an acting officer is marked PLT). The Document History is shown too. Use the open link to see the full document.",
+        "id": "Dokumen hanya bisa dibaca. Isinya ringkasan dan baris item. Approval Flow memuat Level 1, 2 dan seterusnya serta siapa berikutnya (officer pengganti ditandai PLT). Document History juga ditampilkan. Pakai tautan buka untuk melihat dokumen lengkap."
       },
       {
-        "en": "Decide with Reject, Hold or Approve. In Indonesian they are called Tolak, Tahan and Setujui. A window asks you to confirm.",
-        "id": "Putuskan dengan Reject, Hold atau Approve. Dalam bahasa Indonesia namanya Tolak, Tahan dan Setujui. Sebuah jendela meminta Anda menyetujui."
+        "en": "Decide with Reject, Hold or Approve. A window asks you to confirm.",
+        "id": "Putuskan dengan Reject, Hold atau Approve. Sebuah jendela meminta Anda mengonfirmasi."
       },
       {
         "en": "Approve passes the document to the next level, or approves it when you are the last level. It is final and cannot be undone. No reason is needed.",
@@ -744,18 +753,18 @@
     "fields": [
       {
         "label": "Approve",
-        "en": "Final approval at your level. Shown as Setujui in Indonesian. No reason needed.",
-        "id": "Persetujuan final di level Anda. Pada bahasa Indonesia tampil sebagai Setujui. Alasan tidak diperlukan."
+        "en": "Final approval at your level. No reason needed.",
+        "id": "Persetujuan final di level Anda. Alasan tidak diperlukan."
       },
       {
         "label": "Reject",
-        "en": "Final refusal, back to the creator. Shown as Tolak in Indonesian. Reason required.",
-        "id": "Penolakan final, kembali ke pembuat. Pada bahasa Indonesia tampil sebagai Tolak. Alasan wajib."
+        "en": "Final refusal, back to the creator. Reason required.",
+        "id": "Penolakan final, kembali ke pembuat. Alasan wajib."
       },
       {
         "label": "Hold",
-        "en": "Temporary hold. Shown as Tahan in Indonesian. Reason required. Decide Approve or Reject later.",
-        "id": "Penahanan sementara. Pada bahasa Indonesia tampil sebagai Tahan. Alasan wajib. Putuskan Approve atau Reject nanti."
+        "en": "Temporary hold. Reason required. Decide Approve or Reject later.",
+        "id": "Penahanan sementara. Alasan wajib. Putuskan Approve atau Reject nanti."
       },
       {
         "label": "Waiting Approval 1",
@@ -779,6 +788,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Typing in Fields: Text, Numbers and Dates",
+    "title_id": "Mengetik di Isian: Teks, Angka, dan Tanggal",
     "purpose": {
       "en": "Explains the aa / Aa / AA case button, picking values from lookups instead of typing, the number format of your language, and the date format and date picker.",
       "id": "Menjelaskan tombol huruf aa / Aa / AA, memilih nilai dari lookup alih-alih mengetik, format angka sesuai bahasa, serta format tanggal dan pemilih tanggal."
@@ -846,6 +856,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Changing Language and Theme",
+    "title_id": "Mengganti Bahasa dan Tema",
     "purpose": {
       "en": "Explains how to change the screen language and the colour theme from your account menu, and that only the display changes, not the stored data.",
       "id": "Menjelaskan cara mengganti bahasa layar dan tema warna dari menu akun, dan bahwa yang berubah hanya tampilan, bukan data yang tersimpan."
@@ -909,6 +920,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Chat Between Users",
+    "title_id": "Chat Antar Pengguna",
     "purpose": {
       "en": "Explains how to chat one-to-one with other users of the system, send files, and read the delivery marks.",
       "id": "Menjelaskan cara chat satu lawan satu dengan pengguna lain di sistem, mengirim file, dan membaca tanda terkirim."
@@ -990,6 +1002,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Help and Support Tickets",
+    "title_id": "Bantuan dan Tiket Dukungan",
     "purpose": {
       "en": "Explains the F1 Help and Support page, the rule book and flow pages, and how to send a Support Ticket and read the reply.",
       "id": "Menjelaskan halaman Bantuan dan dukungan (F1), pedoman aturan dan halaman alur, serta cara mengirim Tiket Bantuan dan membaca balasannya."
@@ -1062,6 +1075,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Your Account Menu",
+    "title_id": "Menu Akun Anda",
     "purpose": {
       "en": "Explains the account menu behind the gear icon: profile pages, e-mail verification, password help and signing out.",
       "id": "Menjelaskan menu akun di balik ikon roda gigi: halaman profil, verifikasi e-mail, bantuan password dan keluar dari aplikasi."
@@ -1134,6 +1148,7 @@
     "type": "GUIDE",
     "module": "GENERAL",
     "title": "Opening Dashboards and Widgets",
+    "title_id": "Membuka Dashboard dan Widget",
     "purpose": {
       "en": "Explains the opening screen of top management: the Overall dashboard that its owner fills with widgets, and the area dashboards that come as templates.",
       "id": "Menjelaskan layar pembuka top management: dashboard Overall yang diisi pemiliknya dengan widget, dan dashboard bidang yang berupa template."

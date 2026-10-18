@@ -86,12 +86,74 @@
     },
     "keywords": "stock at vendor, bahan di vendor, subkon, umur, overdue, jatuh tempo, subcontractor stock",
     "steps": [
-      {"en": "Open the report. Each row is one material of one send that is not used up or returned yet.", "id": "Buka laporan. Tiap baris adalah satu bahan dari satu kiriman yang belum habis terpakai atau kembali."},
-      {"en": "Filter by Subcontractor. Overdue means the Due Back date has passed.", "id": "Saring per Subcontractor. Overdue berarti tanggal Due Back sudah lewat."}
+      {
+        "en": "Open the report. Each row is one material of one send that is not used up or returned yet.",
+        "id": "Buka laporan. Tiap baris adalah satu bahan dari satu kiriman yang belum habis terpakai atau kembali."
+      },
+      {
+        "en": "Filter by Subcontractor. Overdue means the Due Back date has passed.",
+        "id": "Saring per Subcontractor. Overdue berarti tanggal Due Back sudah lewat."
+      },
+      {
+        "en": "Only sends with status Sent are shown. A material leaves the list when all of it has been used or returned. Rows are sorted by Subcontractor, then the oldest Sent date first.",
+        "id": "Hanya kiriman berstatus Sent yang tampil. Bahan keluar dari daftar bila seluruhnya sudah terpakai atau kembali. Baris diurutkan menurut Subcontractor, lalu tanggal Sent yang paling lama."
+      },
+      {
+        "en": "Send No. and Subcon PO show which send and which subcontract PO the material belongs to. At Vendor is totalled at the bottom. Export downloads a CSV file of the visible columns.",
+        "id": "Send No. dan Subcon PO menunjukkan bahan itu bagian dari kiriman dan PO subkon yang mana. At Vendor dijumlahkan di bawah. Export mengunduh file CSV berisi kolom yang tampil."
+      }
     ],
     "fields": [
-      {"label": "At Vendor", "en": "Quantity sent minus used minus returned.", "id": "Jumlah dikirim dikurangi terpakai dan dikembalikan."},
-      {"label": "Age (days)", "en": "Days since the material was sent.", "id": "Hari sejak bahan dikirim."}
+      {
+        "label": "At Vendor",
+        "en": "Quantity sent minus used minus returned.",
+        "id": "Jumlah dikirim dikurangi terpakai dan dikembalikan."
+      },
+      {
+        "label": "Age (days)",
+        "en": "Days since the material was sent.",
+        "id": "Hari sejak bahan dikirim."
+      },
+      {
+        "label": "Subcontractor",
+        "en": "The subcontractor the material was sent to, taken from the send. The same field is a filter.",
+        "id": "Subkon tujuan pengiriman bahan, diambil dari kiriman. Isian yang sama menjadi filter."
+      },
+      {
+        "label": "Item",
+        "en": "Name of the material on the send line, with its item code under it.",
+        "id": "Nama bahan pada baris kiriman, dengan kode item di bawahnya."
+      },
+      {
+        "label": "Unit",
+        "en": "The unit of measure of the send line, also the unit of At Vendor.",
+        "id": "Satuan pada baris kiriman, sekaligus satuan At Vendor."
+      },
+      {
+        "label": "Send No.",
+        "en": "Number of the material send document the line belongs to.",
+        "id": "Nomor dokumen kirim bahan tempat baris ini berada."
+      },
+      {
+        "label": "Subcon PO",
+        "en": "Number of the subcontract PO written on that send. Empty when the send has none.",
+        "id": "Nomor PO subkon yang tercatat pada kiriman itu. Kosong bila kiriman tidak punya."
+      },
+      {
+        "label": "Sent",
+        "en": "The date of the send. Age (days) counts from this date.",
+        "id": "Tanggal kiriman. Age (days) dihitung dari tanggal ini."
+      },
+      {
+        "label": "Due Back",
+        "en": "The date the subcontractor should return the material, as written on the send. Empty when none was set.",
+        "id": "Tanggal subkon harus mengembalikan bahan, sesuai yang tertulis pada kiriman. Kosong bila tidak diisi."
+      },
+      {
+        "label": "Check",
+        "en": "Shows Overdue (red) when the Due Back date is before today. Empty otherwise.",
+        "id": "Menampilkan Overdue (merah) bila tanggal Due Back sebelum hari ini. Kosong bila tidak."
+      }
     ]
   },
   {

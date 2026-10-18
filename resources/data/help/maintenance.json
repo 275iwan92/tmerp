@@ -4,6 +4,7 @@
     "type": "GUIDE",
     "module": "MAINT",
     "title": "Three Kinds of Maintenance",
+    "title_id": "Tiga Jenis Maintenance",
     "purpose": {
       "en": "Explains the three kinds of maintenance work (Preventive, Breakdown, Improvement) so you know which one a job belongs to.",
       "id": "Menjelaskan tiga jenis pekerjaan maintenance (Preventive, Breakdown, Improvement) supaya Anda tahu sebuah pekerjaan masuk jenis yang mana."
@@ -33,6 +34,7 @@
     "type": "GUIDE",
     "module": "MAINT",
     "title": "Rules for Recording Maintenance Data",
+    "title_id": "Aturan Mencatat Data Maintenance",
     "purpose": {
       "en": "Four recording habits that keep maintenance reports correct: pick from lists, record downtime and labour separately, never delete history, keep reports apart from jobs.",
       "id": "Empat kebiasaan pencatatan agar laporan maintenance benar: pilih dari daftar, catat downtime dan jam kerja terpisah, jangan hapus riwayat, pisahkan laporan dari pekerjaan."
@@ -62,6 +64,7 @@
     "type": "GUIDE",
     "module": "MAINT",
     "title": "Operator Daily Checks (TPM)",
+    "title_id": "Pengecekan Harian Operator (TPM)",
     "purpose": {
       "en": "Explains why operators look after their own machine every day (Total Productive Maintenance) and what a daily check usually covers.",
       "id": "Menjelaskan mengapa operator merawat mesinnya sendiri setiap hari (Total Productive Maintenance) dan apa yang biasanya dicek tiap hari."
@@ -87,6 +90,7 @@
     "type": "GUIDE",
     "module": "MAINT",
     "title": "Maintenance Indicators (MTBF, MTTR, PM Compliance, OEE)",
+    "title_id": "Indikator Maintenance (MTBF, MTTR, PM Compliance, OEE)",
     "purpose": {
       "en": "Defines the four numbers used to judge maintenance: how often machines fail, how fast they recover, how well the schedule is followed and how effective the machine is.",
       "id": "Menjelaskan empat angka untuk menilai maintenance: seberapa sering mesin rusak, seberapa cepat pulih, seberapa disiplin jadwal dijalankan dan seberapa efektif mesin."
@@ -120,6 +124,7 @@
     "type": "GUIDE",
     "module": "MAINT",
     "title": "What to Watch on Printing and Packaging Machines",
+    "title_id": "Yang Perlu Diawasi pada Mesin Cetak dan Kemasan",
     "purpose": {
       "en": "Lists the points commonly watched on offset, lamination and finishing machines. Intervals and limits always follow the machine maker's manual.",
       "id": "Daftar titik yang lazim dipantau pada mesin offset, laminasi dan finishing. Interval dan batas normal selalu mengikuti manual pabrikan mesin."
@@ -1053,6 +1058,281 @@
       {
         "en": "Unassigned orders are assigned by the head of maintenance in the order itself.",
         "id": "Order Unassigned ditugaskan kepala maintenance di dalam order itu sendiri."
+      },
+      {
+        "en": "In an order that is In Progress, click Hold when you wait for a part: it becomes Waiting Part. Click Resume to carry on. Done is refused while a required checklist task has no Result.",
+        "id": "Di order yang In Progress, klik Hold bila menunggu part: statusnya menjadi Waiting Part. Klik Resume untuk melanjutkan. Done ditolak selama ada tugas wajib di checklist yang belum diberi Result."
+      },
+      {
+        "en": "After Done, the head of maintenance clicks Close. Orders that are Closed or Cancelled leave this list.",
+        "id": "Setelah Done, kepala maintenance mengklik Close. Order yang Closed atau Cancelled keluar dari daftar ini."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Search",
+        "en": "Type part of an order number or an asset to narrow the list.",
+        "id": "Ketik sebagian nomor order atau aset untuk mempersempit daftar."
+      },
+      {
+        "label": "Order / Asset",
+        "en": "The order number with the asset below it. Open the row to go to the order on the PMO or BMO screen that fits its type.",
+        "id": "Nomor order dengan aset di bawahnya. Buka barisnya untuk masuk ke order di layar PMO atau BMO sesuai jenisnya."
+      },
+      {
+        "label": "Description",
+        "en": "What the job is, as typed on the order.",
+        "id": "Apa pekerjaannya, seperti yang diketik di order."
+      },
+      {
+        "label": "Type",
+        "en": "Preventive, Inspection, Breakdown, Corrective or Improvement.",
+        "id": "Preventive, Inspection, Breakdown, Corrective, atau Improvement."
+      },
+      {
+        "label": "Priority",
+        "en": "P1 Emergency, P2 High, P3 Normal or P4 Low. The list shows P1 to P4 and puts the most urgent first.",
+        "id": "P1 Emergency, P2 High, P3 Normal, atau P4 Low. Daftar menampilkan P1 sampai P4 dan menaruh yang paling mendesak di atas."
+      },
+      {
+        "label": "Status",
+        "en": "Scheduled (confirmed, not started), In Progress, Waiting Part or Done. Draft, Closed and Cancelled orders are not in this list.",
+        "id": "Scheduled (sudah Confirmed, belum mulai), In Progress, Waiting Part, atau Done. Order Draft, Closed, dan Cancelled tidak ada di daftar ini."
+      },
+      {
+        "label": "Planned",
+        "en": "The planned start date of the order.",
+        "id": "Tanggal rencana mulai order."
+      },
+      {
+        "label": "Assigned",
+        "en": "Mine = the order is assigned to you. Unassigned = nobody has the job yet. Orders of other technicians are not in the list.",
+        "id": "Mine = order ditugaskan kepada Anda. Unassigned = belum ada yang memegang pekerjaan. Order teknisi lain tidak ada di daftar."
+      },
+      {
+        "label": "Mine",
+        "en": "Box that counts and shows only the orders assigned to you.",
+        "id": "Kotak yang menghitung dan menampilkan hanya order yang ditugaskan kepada Anda."
+      },
+      {
+        "label": "Unassigned",
+        "en": "Box that counts and shows only the orders nobody has taken yet.",
+        "id": "Kotak yang menghitung dan menampilkan hanya order yang belum diambil siapa pun."
+      },
+      {
+        "label": "In Progress",
+        "en": "Box that counts and shows only the orders being worked on.",
+        "id": "Kotak yang menghitung dan menampilkan hanya order yang sedang dikerjakan."
+      },
+      {
+        "label": "Waiting Part",
+        "en": "Box that counts and shows only the orders on hold because they wait for a part.",
+        "id": "Kotak yang menghitung dan menampilkan hanya order yang ditahan karena menunggu part."
+      },
+      {
+        "label": "Filters",
+        "en": "Narrow the list by Asset, Type, Priority or Status.",
+        "id": "Persempit daftar menurut Asset, Type, Priority, atau Status."
+      },
+      {
+        "label": "Order No.",
+        "en": "In the opened order: the order number, given when the head of maintenance confirms the order.",
+        "id": "Di order yang dibuka: nomor order, diberikan saat kepala maintenance meng-Confirm order."
+      },
+      {
+        "label": "From",
+        "en": "Where the order came from: a Request, a Preventive Plan, or Manual for a one-off job.",
+        "id": "Asal order: Request, Preventive Plan, atau Manual untuk pekerjaan sekali jalan."
+      },
+      {
+        "label": "Cost (live)",
+        "en": "The running total cost of the order: spare parts, labor and vendor service. It changes as you add parts and labor.",
+        "id": "Total biaya order yang berjalan: spare part, tenaga kerja, dan servis vendor. Berubah saat Anda menambah part dan tenaga kerja."
+      },
+      {
+        "label": "Order Type",
+        "en": "The type of the order. Fixed once the order is confirmed.",
+        "id": "Jenis order. Terkunci setelah order di-Confirm."
+      },
+      {
+        "label": "Component",
+        "en": "The part of the asset the work is about, picked from the maintenance code list. You can fill it while the order is In Progress or Waiting Part.",
+        "id": "Bagian aset yang dikerjakan, dipilih dari daftar kode maintenance. Bisa diisi saat order In Progress atau Waiting Part."
+      },
+      {
+        "label": "Technician",
+        "en": "The technician who does the order, picked from the employees. The head of maintenance sets it on the Draft order; it can also be changed while the order is In Progress or Waiting Part.",
+        "id": "Teknisi yang mengerjakan order, dipilih dari pegawai. Kepala maintenance mengisinya di order Draft; bisa juga diubah saat order In Progress atau Waiting Part."
+      },
+      {
+        "label": "Asset Stop",
+        "en": "Yes: when you click Start on a machine, a downtime is opened and the machine status changes; Done closes it. No: the asset keeps running.",
+        "id": "Yes: saat Start diklik pada mesin, downtime dibuka dan status mesin berubah; Done menutupnya. No: aset tetap jalan."
+      },
+      {
+        "label": "Machine Status",
+        "en": "The current status of the machine behind the asset, or Not a machine. It is read from Master Machine and not typed here.",
+        "id": "Status mesin di balik aset saat ini, atau Not a machine. Dibaca dari Master Mesin, tidak diketik di sini."
+      },
+      {
+        "label": "Problem",
+        "en": "What went wrong, picked from the maintenance code list. Fill it while you work.",
+        "id": "Apa yang bermasalah, dipilih dari daftar kode maintenance. Isi saat bekerja."
+      },
+      {
+        "label": "Cause",
+        "en": "Why it went wrong, picked from the maintenance code list.",
+        "id": "Penyebab masalahnya, dipilih dari daftar kode maintenance."
+      },
+      {
+        "label": "Action Taken",
+        "en": "What you did to fix it, picked from the maintenance code list.",
+        "id": "Tindakan yang Anda lakukan, dipilih dari daftar kode maintenance."
+      },
+      {
+        "label": "Findings",
+        "en": "Free text for what you found and did. When the order is Done and it has a machine downtime, the text is written into that downtime.",
+        "id": "Teks bebas tentang yang Anda temukan dan kerjakan. Saat order Done dan punya downtime mesin, teks ini ditulis ke downtime itu."
+      },
+      {
+        "label": "Vendor Service Cost (IDR)",
+        "en": "The cost of outside service for this order, typed. It is part of the total cost.",
+        "id": "Biaya servis pihak luar untuk order ini, diketik. Menjadi bagian dari total biaya."
+      },
+      {
+        "label": "Meter at Done (counter)",
+        "en": "The meter or counter reading of the asset when the job is done, typed while the order is In Progress or Waiting Part.",
+        "id": "Angka meter atau counter aset saat pekerjaan selesai, diketik saat order In Progress atau Waiting Part."
+      },
+      {
+        "label": "Planned Start",
+        "en": "The planned start date and time of the order. Set on the Draft order.",
+        "id": "Tanggal dan jam rencana mulai order. Diisi di order Draft."
+      },
+      {
+        "label": "Planned End",
+        "en": "The planned end date and time of the order. Set on the Draft order.",
+        "id": "Tanggal dan jam rencana selesai order. Diisi di order Draft."
+      },
+      {
+        "label": "Est. Duration (minutes)",
+        "en": "The estimated working time in minutes. Set on the Draft order.",
+        "id": "Perkiraan lama kerja dalam menit. Diisi di order Draft."
+      },
+      {
+        "label": "Actual Start → End",
+        "en": "The real start and end time. The start is filled when you click Start and the end when you click Done.",
+        "id": "Jam mulai dan selesai sebenarnya. Mulai terisi saat Start diklik dan selesai saat Done diklik."
+      },
+      {
+        "label": "Task",
+        "en": "A checklist task. Tasks of an order made from a Preventive Plan are copied from the plan; use + Task to add an extra one while the order is In Progress or Waiting Part.",
+        "id": "Satu tugas checklist. Tugas order dari Preventive Plan disalin dari plan itu; pakai + Task untuk menambah tugas lain saat order In Progress atau Waiting Part."
+      },
+      {
+        "label": "Kind",
+        "en": "The kind of task: Inspect, Clean, Lubricate, Adjust, Replace or Measure. An extra task you add is Inspect.",
+        "id": "Jenis tugas: Inspect, Clean, Lubricate, Adjust, Replace, atau Measure. Tugas tambahan yang Anda buat berjenis Inspect."
+      },
+      {
+        "label": "Min – Max",
+        "en": "The allowed range with its unit for a measured task. A dash means there is no range.",
+        "id": "Rentang yang diizinkan beserta satuannya untuk tugas ukur. Tanda strip berarti tidak ada rentang."
+      },
+      {
+        "label": "Result",
+        "en": "Pick OK, Not OK or N/A for the task. A required task must have a Result before Done is accepted.",
+        "id": "Pilih OK, Not OK, atau N/A untuk tugas itu. Tugas wajib harus punya Result sebelum Done diterima."
+      },
+      {
+        "label": "Measured",
+        "en": "The value you measured, typed as a number.",
+        "id": "Nilai hasil ukur, diketik sebagai angka."
+      },
+      {
+        "label": "Note",
+        "en": "A short note on the task or, in Labor, on the work done.",
+        "id": "Catatan singkat tentang tugas atau, di Labor, tentang pekerjaan yang dilakukan."
+      },
+      {
+        "label": "Plan",
+        "en": "Spare Parts: the quantity you expect to use. Typed, or set when the part is added with + Part.",
+        "id": "Spare Parts: jumlah yang diperkirakan akan dipakai. Diketik, atau terisi saat part ditambah dengan + Part."
+      },
+      {
+        "label": "Used",
+        "en": "Spare Parts: the quantity really used, typed after the work. The cost and Issue Parts use it; when empty they use Plan.",
+        "id": "Spare Parts: jumlah yang benar-benar dipakai, diketik setelah pekerjaan. Biaya dan Issue Parts memakainya; bila kosong dipakai Plan."
+      },
+      {
+        "label": "Issued",
+        "en": "Spare Parts: the quantity already taken out of the warehouse by Issue Parts. Filled by the system.",
+        "id": "Spare Parts: jumlah yang sudah dikeluarkan dari gudang lewat Issue Parts. Diisi sistem."
+      },
+      {
+        "label": "In Stock",
+        "en": "Spare Parts: the usable stock of the part in all warehouses now. Read from Inventory.",
+        "id": "Spare Parts: stok part yang bisa dipakai di semua gudang saat ini. Dibaca dari Inventory."
+      },
+      {
+        "label": "Unit Cost",
+        "en": "Spare Parts: the cost per unit taken from the material master when the part was added.",
+        "id": "Spare Parts: biaya per satuan yang diambil dari master material saat part ditambahkan."
+      },
+      {
+        "label": "PR",
+        "en": "Spare Parts: the number of the Purchase Requisition made for this part by Create PR. Empty when none exists.",
+        "id": "Spare Parts: nomor Purchase Requisition yang dibuat untuk part ini lewat Create PR. Kosong bila belum ada."
+      },
+      {
+        "label": "+ Spare part",
+        "en": "Type 2 or more letters of the material code or name, pick the part, give the Qty and click + Part. Only while the order is In Progress or Waiting Part.",
+        "id": "Ketik 2 huruf atau lebih dari kode atau nama material, pilih part, isi Qty, lalu klik + Part. Hanya saat order In Progress atau Waiting Part."
+      },
+      {
+        "label": "Issue Parts",
+        "en": "Button that takes the parts out of the warehouse for the quantity not yet issued. Parts short in stock are listed in the message. It shows while the order is In Progress or Waiting Part.",
+        "id": "Tombol yang mengeluarkan part dari gudang sebesar jumlah yang belum dikeluarkan. Part yang stoknya kurang disebut di pesan. Tampil saat order In Progress atau Waiting Part."
+      },
+      {
+        "label": "Create PR",
+        "en": "Button that makes a Draft Purchase Requisition for the parts short in stock. Submit it in Procurement. It shows when the order has spare parts.",
+        "id": "Tombol yang membuat Purchase Requisition Draft untuk part yang stoknya kurang. Ajukan di Procurement. Tampil bila order punya spare part."
+      },
+      {
+        "label": "Date",
+        "en": "Labor: the day the work was done. It starts as today.",
+        "id": "Labor: tanggal pekerjaan dilakukan. Awalnya hari ini."
+      },
+      {
+        "label": "Minutes",
+        "en": "Labor: the working minutes of the technician on this order. Totalled at the bottom. The labor cost uses the hourly labor rate kept in the system constants.",
+        "id": "Labor: menit kerja teknisi pada order ini. Dijumlahkan di bawah. Biaya tenaga kerja memakai tarif per jam yang disimpan di konstanta sistem."
+      },
+      {
+        "label": "+ Technician",
+        "en": "Labor: pick the technician (starts as the technician of the order), give Minutes and Date, then click + Labor.",
+        "id": "Labor: pilih teknisi (awalnya teknisi order), isi Minutes dan Date, lalu klik + Labor."
+      },
+      {
+        "label": "Spare parts",
+        "en": "Total cost of the spare parts of the order, worked out by the system.",
+        "id": "Total biaya spare part order, dihitung sistem."
+      },
+      {
+        "label": "Labor",
+        "en": "Total cost of the labor of the order, worked out by the system.",
+        "id": "Total biaya tenaga kerja order, dihitung sistem."
+      },
+      {
+        "label": "Vendor service",
+        "en": "The Vendor Service Cost (IDR) typed on the Failure tab.",
+        "id": "Vendor Service Cost (IDR) yang diketik di tab Failure."
+      },
+      {
+        "label": "Total",
+        "en": "Spare parts plus Labor plus Vendor service.",
+        "id": "Spare parts ditambah Labor ditambah Vendor service."
       }
     ]
   },
@@ -1178,9 +1458,10 @@
     "type": "GUIDE",
     "module": "MAINT",
     "title": "Breakdown Flow, Spare Parts and the Scheduling Hold",
+    "title_id": "Alur Breakdown, Spare Part, dan Penahanan Jadwal",
     "purpose": {
-      "en": "Explains what happens, step by step and in which data, from a machine breakdown to a closed order: the request, the order, the spare parts, the purchase requisition and the hold on the Scheduling Board.",
-      "id": "Menjelaskan apa yang terjadi, langkah demi langkah dan di data mana, dari mesin rusak sampai order ditutup: request, order, spare part, purchase requisition dan penahanan mesin di Scheduling Board."
+      "en": "Explains what happens, step by step and in which data, from a machine breakdown to a closed order. It covers the request, the order, the spare parts, the purchase requisition and the hold on the machine in scheduling.",
+      "id": "Menjelaskan apa yang terjadi, langkah demi langkah dan di data mana, dari mesin rusak sampai order ditutup. Mencakup request, order, spare part, purchase requisition dan penahanan mesin di penjadwalan."
     },
     "keywords": "breakdown flow, alur kerusakan, data flow, spare part, stock out, purchase requisition, scheduling, mtn, p1, downtime",
     "steps": [
