@@ -1,3 +1,11 @@
+/* REMARK
+ * Tujuan       : Inti DevLib: kelas induk komponen, registry, helper bersama, dan perilaku global (dirty-guard, breadcrumb mode menu, data-dl-open-item).
+ * Sumber hulu  : Markup objek x-dl::* (atribut data-dl-*).
+ * Input        : Klik, input, pesan postMessage; atribut data-dl-guard, data-dl-crumb-menu, data-dl-crumb-url, data-dl-open-item.
+ * Output       : Dialog Save / Don't Save / Cancel, perpindahan menu kiri + halaman kanan, pesan ke Shell.
+ * Dipakai oleh : Semua halaman yang memuat devlib.js.
+ * Status       : Aktif.
+ */
 /* DevLib core — kelas induk DlComponent, registry, helper bersama & perilaku global.
  * Komponen = kelas turunan DlComponent (satu file per komponen di js/components). Override:
  *   class KanbanProduksi extends Devlib.classes.Kanban { ... }  lalu  Devlib.define('Kanban', KanbanProduksi)
@@ -553,13 +561,32 @@ window.Devlib = window.Devlib || {};
   }, true);
 
   // Breadcrumb mode menu: Modul/Grup diklik -> Layer Menu dibuka di cabang itu (di Shell induk bila layar ada di dalam tab).
+  // Bila breadcrumb punya data-dl-crumb-url, halaman ini ikut pindah ke halaman cabang itu; isian yang belum disimpan ditanya dulu
+  // (Save / Discard / Cancel), dan menu kiri baru berpindah setelah user memutuskan.
   document.addEventListener('click', e => {
     const c = e.target.closest('[data-dl-crumb-menu]'); if (!c) return;
     e.preventDefault();
     const msg = {dl: 'menu', path: JSON.parse(c.dataset.dlCrumbMenu || '[]'), leaf: c.dataset.leaf || null};
-    const lm = document.querySelector('[data-dl-layer-menu]');
-    if (window.parent !== window) window.parent.postMessage(msg, location.origin);
-    else if (lm?.dlComponent) lm.dlComponent.goTo(msg.path, msg.leaf);
+    const go = () => {
+      const lm = document.querySelector('[data-dl-layer-menu]');
+      if (window.parent !== window) window.parent.postMessage(msg, location.origin);
+      else if (lm?.dlComponent) lm.dlComponent.goTo(msg.path, msg.leaf);
+      if (c.dataset.dlCrumbUrl) location.href = c.dataset.dlCrumbUrl;
+    };
+    const live = [...dirtyForms].filter(f => document.contains(f));
+    if (!c.dataset.dlCrumbUrl || !live.length) { go(); return; }
+    askDirty().then(v => {
+      if (v === 'save') submitForm(live[0]);
+      else if (v === 'discard') { live.forEach(f => { dirtyForms.delete(f); f.classList.remove('is-dirty'); }); go(); }
+    });
+  });
+
+  // Tombol / tautan ber-data-dl-open-item="kode menu" (+ data-label, data-url): di dalam Shell dibuka sebagai tab kerja
+  // (menu kiri ikut menyorot layarnya); di luar Shell tautan biasa.
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-dl-open-item]'); if (!b || window.parent === window) return;
+    e.preventDefault();
+    window.parent.postMessage({dl: 'open-tab', code: b.dataset.dlOpenItem, label: b.dataset.label || b.textContent.trim(), url: b.dataset.url || b.getAttribute('href')}, location.origin);
   });
 
   // Form berpenanda data-dl-autosubmit: mengubah satu isian langsung mengirim form (mis. pilihan pola pada panel mesin).

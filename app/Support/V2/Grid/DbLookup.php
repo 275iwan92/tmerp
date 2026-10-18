@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Induk grid Lookup (daftar bantu kecil diisi langsung di sel): baris dari model, validasi dan simpan satu transaksi.
+ * Sumber hulu  : query() dan columns() turunan.
+ * Input        : Model dari query(); baris yang berubah dari layar.
+ * Output       : props grid (rows, columns, saveUrl) dan hasil simpan.
+ * Dipakai oleh : Semua kelas turunan DbLookup di App\Support\V2\Grid\*.
+ * Status       : Aktif.
+ */
+
 namespace App\Support\V2\Grid;
 
 use Illuminate\Database\Eloquent\Model;
@@ -60,10 +70,13 @@ abstract class DbLookup extends DbGrid
         return [];
     }
 
+    // Kolom dibaca sekali per layar: columns() turunan boleh memuat pilihan dari database, dan row() dipanggil per baris.
+    private ?array $rowColumns = null;
+
     protected function row(Model $m): array
     {
         $row = [];
-        foreach ($this->columns() as $c) {
+        foreach ($this->rowColumns ??= $this->columns() as $c) {
             $v = $m->getAttribute($c['key']);
             $row[$c['key']] = match ($c['type'] ?? 'text') {
                 'check' => (bool) $v,

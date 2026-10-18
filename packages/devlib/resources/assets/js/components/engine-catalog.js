@@ -1,4 +1,11 @@
-/* DevLib · EngineCatalog */
+/* REMARK
+ * Tujuan       : Daftar engine di layar: kotak cari, saringan grup, buka / tutup semua, tautan langsung #engine-kunci.
+ * Sumber hulu  : Markup x-dl::engine-catalog (data-eng-*).
+ * Input        : Teks cari, klik saringan, location.hash.
+ * Output       : Kartu engine disaring / dibuka.
+ * Dipakai oleh : Layar Engine Catalog dan tab Technical Guide di Help.
+ * Status       : Aktif.
+ */
 (function (Devlib) {
   'use strict';
   const {$, $$} = Devlib.h;
@@ -21,7 +28,7 @@
         shown.forEach(i => { i.open = open; });
       });
       // Tautan langsung ke satu engine (#engine-kunci) membukanya.
-      const target = location.hash && this.el.querySelector(location.hash);
+      const target = /^#[\w-]+$/.test(location.hash) ? this.el.querySelector(location.hash) : null;
       if (target?.matches('[data-eng-item]')) { target.open = true; target.scrollIntoView({block: 'start'}); }
     }
 

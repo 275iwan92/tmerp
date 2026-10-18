@@ -1,3 +1,11 @@
+/* REMARK
+ * Tujuan       : Kerangka Shell: tab kerja (iframe) per layar, palet, laci Help / Chat; menerima pesan dari layar di dalam tab (help, open-item, open-tab).
+ * Sumber hulu  : Data menu x-dl::shell / x-dl::layer-shell; pesan postMessage dari layar (core.js, help-map.js).
+ * Input        : Klik menu, tombol data-dl-tab-url, pesan {dl: 'help' | 'open-item' | 'open-tab' | 'menu'}.
+ * Output       : Tab terbuka / aktif, menu kiri menyorot layar.
+ * Dipakai oleh : LayerShell (layer-shell.js) dan layar v2.
+ * Status       : Aktif.
+ */
 /* DevLib · Shell */
 (function (Devlib) {
   'use strict';
@@ -33,6 +41,11 @@
         else if (e.data?.dl === 'open-item') {
           const w = this.wideDrawer('help')?.dlComponent, d = e.data;
           if (w && w.state.mode !== 'float') w.toggleFloat();
+          this.findItem(d.code) ? this.openTab(d.code) : this.openUrlTab(d.code || d.url, d.label, d.url);
+        }
+        // Halaman cabang menu (data-dl-open-item): layar dibuka sebagai tab kerja tanpa menyentuh jendela Help.
+        else if (e.data?.dl === 'open-tab') {
+          const d = e.data;
           this.findItem(d.code) ? this.openTab(d.code) : this.openUrlTab(d.code || d.url, d.label, d.url);
         }
       });

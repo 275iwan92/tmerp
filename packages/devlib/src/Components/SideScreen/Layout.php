@@ -61,7 +61,7 @@ class Layout extends Tabs
                     <div class="dl-ssl__sec">
                         <i class="fa-solid {{ ($sections[$cur][1] ?? null) ? \Devlib\Icon::fa($sections[$cur][1]) : 'fa-circle' }}" data-dl-ss-sec-icon></i>
                         <div class="dl-ssl__sec-text"><h2 data-dl-ss-sec-title>{{ $sections[$cur][0] ?? $cur }}</h2><p data-dl-ss-sec-hint>{{ $hints[$cur] ?? '' }}</p></div>
-                        @if ($crumbs)<div class="dl-ssl__crumb"><x-dl::breadcrumb :items="$crumbs" /></div>@endif
+                        @if ($crumbs)<div class="dl-ssl__crumb"><x-dl::breadcrumb menu :items="$crumbs" /></div>@endif
                     </div>
                     {{-- Slot top: pesan flash / error yang berlaku untuk semua bagian. --}}
                     @isset($top)<div class="dl-ssl__top">{{ $top }}</div>@endisset

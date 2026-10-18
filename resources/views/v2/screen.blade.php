@@ -1,6 +1,6 @@
 {{-- REMARK
 Tujuan       : Kerangka halaman layar v2: breadcrumb, flash, isi layar, panel tinjau.
-Sumber hulu  : Layar yang dipilih (resources/views/v2/screens/*), Crumb.
+Sumber hulu  : Layar yang dipilih (resources/views/v2/screens/*), Crumb, AppMenu::crumbTrail (jejak Modul › Grup sama dengan label Layer Menu).
 Input        : Slug layar dan data dari controller.
 Output       : Halaman HTML lengkap; tombol aksi breadcrumb dari Crumb::actionsHtml.
 Dipakai oleh : routes/v2.php (v2.screen).
@@ -8,9 +8,17 @@ Status       : Aktif.
 --}}
 @extends('v2.layout', ['title' => t($screen['label']), 'bodyClass' => 'dl-page-body'])
 @section('body')
+    @php
+        // Jejak = Modul › Grup persis seperti Layer Menu; list pasangan [label, url] karena grup dan layar boleh bernama sama.
+        $mi = request('mi');
+        $trail = \App\Support\V2\AppMenu::crumbTrail($screen['slug'], $mi) ?? [[\App\Support\V2\AppMenu::moduleLabel($screen['module_code'] ?? '') ?? t($screen['module']), null], [t($screen['group']), null]];
+        $gridUrl = $mi ? $screen['url'].(str_contains($screen['url'], '?') ? '&' : '?').'mi='.urlencode($mi) : $screen['url'];
+        // Modul / Grup: [label, null, alamat halaman cabang]; klik = panel kiri pindah ke cabang itu dan panel kanan membuka halaman cabangnya.
+        $crumbItems = [...array_map(fn ($t) => [$t[0], null, $t[1] ? route('v2.branch', $t[1]) : null], $trail), [t($screen['label']), $gridUrl]];
+    @endphp
     @if ($screen['side'] ?? false)
         {{-- Side Screen (user 2026-10-04): layar mengisi jendela penuh, breadcrumb ada di judul bagian (x-dl::side-screen.layout). --}}
-        @include($screen['view'], ['screen' => $screen, 'crumbs' => [t($screen['module']) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]])
+        @include($screen['view'], ['screen' => $screen, 'crumbs' => array_map(fn ($c) => [$c[0], $c[1]], $crumbItems)])
         <x-dl::code-button :code="$code" :file="'resources/views/'.str_replace('.', '/', $screen['view']).'.blade.php'" />
     @else
     @php
@@ -23,7 +31,7 @@ Status       : Aktif.
     <x-dl::box class="dl-cat">
         <x-dl::box @class(['dl-cat__nav', 'has-actions' => \App\Support\V2\Crumb::actionsHtml() !== null])>
             {{-- Modul/Grup = buka Layer Menu di cabang itu; nama layar = kembali ke grid (DevLib Breadcrumb menu + current). --}}
-            <x-dl::breadcrumb menu :items="[(\App\Support\V2\AppMenu::moduleLabel($screen['module_code'] ?? '') ?? t($screen['module'])) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]"
+            <x-dl::breadcrumb menu :items="$crumbItems"
                 :current="\App\Support\V2\Crumb::current()" />
             @if (\App\Support\V2\Crumb::statusHtml() !== null)<x-dl::box class="dl-cat__status">{!! \App\Support\V2\Crumb::statusHtml() !!}</x-dl::box>@endif
             @if (\App\Support\V2\Crumb::actionsHtml() !== null)<x-dl::box class="dl-cat__actions">{!! \App\Support\V2\Crumb::actionsHtml() !!}</x-dl::box>@endif

@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\V2\AppMenu;
 use App\Support\V2\Data\Account;
 use App\Support\V2\Data\SelfService;
 use Illuminate\Http\Request;
@@ -34,6 +35,13 @@ Route::prefix('v2')->name('v2.')->middleware(['auth', 'locale', 'force.password'
 
         return view('v2.screen', ['screen' => $screen, 'built' => true, 'code' => file_get_contents(resource_path('views/v2/screens/help.blade.php'))]);
     })->name('help');
+
+    // Halaman cabang menu (klik Modul / Grup di breadcrumb): daftar layar di dalam cabang itu; 404 bila bukan modul / grup atau tidak ada hak.
+    Route::get('/branch/{code}', function (string $code) {
+        $b = AppMenu::branch(Auth::user(), $code) ?? abort(404);
+
+        return view('v2.branch', $b);
+    })->name('branch');
 });
 
 Route::prefix('v2/profile')->name('v2.profile')->middleware(['auth', 'locale', 'force.password'])->group(function () {

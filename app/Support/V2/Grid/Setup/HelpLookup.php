@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Induk layar input Help: satu baris tabel help + satu kolom per bahasa aktif yang membaca dan menulis kamus konteks help.
+ * Sumber hulu  : sys_help_topic / sys_help_line, sys_languages, sys_dictionary (konteks help).
+ * Input        : Baris model dari query() turunan; kiriman sel dari layar.
+ * Output       : Baris grid lookup dan simpan ke tabel help + kamus.
+ * Dipakai oleh : HelpTopicLookup, HelpLineLookup (Setup > Help and Support).
+ * Status       : Aktif.
+ */
+
 namespace App\Support\V2\Grid\Setup;
 
 use App\Services\Help\HelpCenter;
@@ -14,6 +24,9 @@ abstract class HelpLookup extends DbLookup
 {
     // Kiriman baris yang sedang disimpan (prepare() -> saved() berurutan per baris di DbLookup::save).
     private array $current = [];
+
+    // Daftar bahasa dibaca sekali per layar (row() memanggil langs() per baris).
+    private ?array $langList = null;
 
     // Kolom tabel yang berisi teks English yang diterjemahkan.
     abstract protected function textColumn(): string;
@@ -36,7 +49,7 @@ abstract class HelpLookup extends DbLookup
     // Bahasa terjemahan = bahasa aktif selain English (bahasa dasar database).
     protected function langs(): array
     {
-        return DB::connection('tm2sys')->table('sys_languages')->where('code', '<>', 'en')->where('activate', 1)->orderBy('sort_order')->pluck('name', 'code')->all();
+        return $this->langList ??= DB::connection('tm2sys')->table('sys_languages')->where('code', '<>', 'en')->where('activate', 1)->orderBy('sort_order')->pluck('name', 'code')->all();
     }
 
     protected function langColumns(string $width = '420px'): array

@@ -6,7 +6,7 @@
  * Sumber hulu  : sys_app_menu (kolom activate, hide_in_menu, target).
  * Input        : Pengguna aktif dan hak modul.
  * Output       : Pohon menu untuk x-dl::layer-shell; baris menu_type=heading menjadi judul kelompok (prop group) bagi baris sesudahnya.
- * Dipakai oleh : Layout v2 (resources/views/v2/layout.blade.php).
+ * Dipakai oleh : Layout v2 (resources/views/v2/layout.blade.php); crumbTrail() dipakai breadcrumb di v2/screen.blade.php; branch() dipakai halaman cabang v2/branch.blade.php.
  * Status       : Aktif.
  */
 
@@ -57,7 +57,7 @@ final class AppMenu
                 if ($c->menu_type === 'group') {
                     $items = self::nodes($c, $children, $pass, $routes);
                     if ($items) {
-                        $out[] = ['label' => self::label($c), 'icon' => $c->icon ?: 'fa-solid fa-folder', 'items' => $items];
+                        $out[] = ['code' => $c->code, 'label' => self::label($c), 'icon' => $c->icon ?: 'fa-solid fa-folder', 'items' => $items];
                     }
                 } else {
                     $out[] = self::item($c, $routes);
@@ -90,6 +90,45 @@ final class AppMenu
         $m = SysAppMenu::query()->where('menu_type', 'module')->where('code', $code)->first();
 
         return $m ? self::label($m) : null;
+    }
+
+    // Jejak induk layar di menu (Modul › Grup › ...) persis seperti label Layer Menu, supaya klik breadcrumb menemukan cabangnya.
+    // Layar yang ada di beberapa tempat menu: baris yang dibuka user ($code = ?mi), selain itu yang pertama.
+    // null = layar tidak ada di menu (pakai katalog layar). Isi: [[label, kode baris menu], ...] dari modul ke grup terdalam.
+    public static function crumbTrail(string $slug, ?string $code = null): ?array
+    {
+        $rows = SysAppMenu::query()->where('activate', true)->where('target', 'v2:'.(self::PART_OF[$slug] ?? $slug))->orderBy('sort_order')->orderBy('id')->get();
+        $row = ($code ? SysAppMenu::query()->where('activate', true)->where('code', $code)->first() : null) ?? $rows->first();
+        $trail = [];
+        for ($p = $row?->parent_id ? SysAppMenu::find($row->parent_id) : null; $p; $p = $p->parent_id ? SysAppMenu::find($p->parent_id) : null) {
+            array_unshift($trail, [self::label($p), $p->code]);
+        }
+
+        return $trail ?: null;
+    }
+
+    // Halaman cabang (klik Modul / Grup di breadcrumb): simpul menu berkode $code yang boleh dilihat user, beserta jejak induknya.
+    // null = kode bukan modul / grup, atau tidak ada hak. node: ['code','label','icon','items' => [grup (punya 'items') atau layar]].
+    public static function branch(SecUser $user, string $code): ?array
+    {
+        $find = function (array $nodes, array $trail) use (&$find, $code): ?array {
+            foreach ($nodes as $n) {
+                if (! isset($n['items'])) {
+                    continue;
+                }
+                if (($n['code'] ?? null) === $code) {
+                    return ['node' => $n, 'trail' => $trail];
+                }
+                if ($hit = $find($n['items'], [...$trail, [$n['label'], $n['code'] ?? null]])) {
+                    return $hit;
+                }
+            }
+
+            return null;
+        };
+        $modules = array_map(fn ($m) => ['code' => $m['code'], 'label' => $m['label'], 'icon' => $m['icon'], 'items' => $m['children']], self::modules($user));
+
+        return $find($modules, []);
     }
 
     // Column arrives with a migration; the live site (tm2sys) may not have it yet.

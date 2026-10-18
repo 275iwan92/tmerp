@@ -2,6 +2,8 @@
 
 > Written 2026-10-18 (group B, read/write and relation sections). This page only summarizes and links; table/column facts are in the cards. FACT = seen directly (menu `sys_app_menu` mockup; code with lines).
 
+> Re-checked 2026-10-18 after `app/Support/V2/Grid/DbLookup.php` changed (rows read the sheet columns once per screen; a REMARK header was added): the cited save() lines 98-131 and 104-131 still match. Verified: 2026-10-18.
+
 - **Module**: Sales > Inquiry & Quotation > Master Data (menu group id 1142). Menu (FACT, `sys_app_menu` mockup, active): Master Customer (`v2:md-customer`), Master Product (`v2:master-product`), Master Raw Material (`v2:md-raw`), Master Raw Material Category (`v2:md-matcat`), Master Process (`v2:prod-process`), Master Machine (`v2:prod-machine`). The Sales Person master (`v2:md-sales-person`) is NOT in this group: it sits in Sales > CRM > Master Data (id 1192) and in the module Master Data (id 1182); it is mapped on this page because the folder holds its card.
 - **Purpose**: the master data that Sales picks from while it builds Inquiry, Quotation and Customer Order: who the customer is, which product exists, which raw material and category build the item code, and which process and machine the plant has.
 - **Real masters**: Master Process and Master Machine are REAL plant data (`prod_process`, `prod_machine`, `prod_process_machine`); only a user changes them and this page only describes what the code can do. Nothing here was run against them.
