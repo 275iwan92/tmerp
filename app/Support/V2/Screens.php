@@ -65,6 +65,9 @@ final class Screens
                     $it('quotation-followup', ['Quotation Follow-up', 'fa-solid fa-phone', 'v2 baru: quo_activity', null]),
                 ]],
                 ['label' => t('Flow'), 'items' => [self::flowItem('SALES', 'Sales Flow: Inquiry → CPDEL')]],
+                ['label' => 'Product Market', 'items' => [
+                    $it('sales-market-form', ['Master Product Market Form', 'fa-solid fa-tags', 'v2 baru: Product Market (kategori, detail kategori, default Inquiry New, bahan, ukuran standar) di atas tm2mst.prod_market dan prod_type_size; dibuka dari grid sales-product-market', null]),
+                ]],
             ]],
             ['code' => 'PROC', 'short' => 'PRC', 'label' => 'Procurement', 'icon' => 'fa-solid fa-cart-flatbed', 'groups' => [
                 ['label' => 'Requisition', 'items' => [

@@ -330,9 +330,9 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // Grid depan dulu (griduistandard.md), klik 2x baru buka layar kerja.
             Route::livewire('/production/prodev-list', 'pages::production.prodev-list')->name('production.prodev.list');
             // Lookup Product Market (officer ProDev): sumber "Kategori Produk" di Inquiry New.
-            Route::livewire('/lookup/product-market', 'pages::lookup.product-market')->name('lookup.product-market');
-            Route::livewire('/lookup/product-market/new', 'pages::lookup.product-market-entry')->name('lookup.product-market.create');
-            Route::livewire('/lookup/product-market/{market}/edit', 'pages::lookup.product-market-entry')->name('lookup.product-market.edit');
+            Route::redirect('/lookup/product-market', '/v2/s/sales-product-market');
+            Route::redirect('/lookup/product-market/new', '/v2/s/sales-market-form?new=1');
+            Route::get('/lookup/product-market/{market}/edit', fn (int $market) => redirect('/v2/s/sales-market-form?id='.$market));
             Route::livewire('/production/prodev/{part?}', 'pages::production.prodev')->name('production.prodev')->where('part', '[0-9]+');
             Route::livewire('/production/old-prodev-list', 'pages::production.old_prodev_list')->name('production.old-prodev.list');
             Route::livewire('/production/old-prodev/{part?}', 'pages::production.old_prodev')->name('production.old-prodev')->where('part', '[0-9]+');

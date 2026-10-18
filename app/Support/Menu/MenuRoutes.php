@@ -40,7 +40,6 @@ final class MenuRoutes
             // diarahkan langsung ke form 2026-09-14 dan user menegaskan grid
             // tidak boleh hilang; dari grid klik 2x baru masuk layar kerja.
             'SALES_IMPO' => route('production.prodev.list'),
-            'SALES_PMKT' => route('lookup.product-market'),
             'SALES_COST' => route('inquiry.costing.list'),
             // Menu PREORDER (Inquiry & Quotation): layar v1 yang sama dibuka juga dari modul ini (migration
             // 2026_10_02_000008). Pro-Cost Instant = Mode #2 standalone, di v1 hanya lewat link di grid Pro-Cost.

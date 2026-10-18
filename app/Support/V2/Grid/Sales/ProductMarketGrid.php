@@ -7,7 +7,15 @@ use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Product Market (v1: pages::lookup.product-market + entry) = Kategori Produk di Inquiry.
+/*
+ * REMARK
+ * Tujuan       : Grid Master Product Market (Kategori Produk di Inquiry New): kategori dan detail kategori dengan foto, induk, Tipe Produk, warna awal dan jumlah ukuran standar; Open dan + New Record membuka form v2 sales-market-form.
+ * Sumber hulu  : tm2mst.prod_market (+ prod_type, prod_type_size untuk jumlah ukuran).
+ * Input        : Pencarian, filter Product Type / Parent.
+ * Output       : Baris grid.
+ * Dipakai oleh : Menu SALES_PMKT (v2:sales-product-market), layar sales-market-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::lookup.product-market* sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class ProductMarketGrid extends DbGrid
 {
     public function slug(): string
@@ -35,24 +43,19 @@ class ProductMarketGrid extends DbGrid
         return self::MASTER;
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'lookup.product-market';
-    }
-
-    protected function v1Component(): ?string
-    {
-        return 'pages::lookup.product-market';
+        return true;
     }
 
     public function openUrl(): ?string
     {
-        return $this->routeUrl('lookup.product-market.edit', 'market');
+        return route('v2.screen', 'sales-market-form').'?id={id}';
     }
 
     public function newUrl(): ?string
     {
-        return route('lookup.product-market.create');
+        return route('v2.screen', 'sales-market-form').'?new=1';
     }
 
     public function search(): string

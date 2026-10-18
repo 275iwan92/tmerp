@@ -3,8 +3,10 @@
 use App\Models\Master\CustCustomer;
 use App\Models\Master\EmpShift;
 use App\Models\Master\MatRaw;
+use App\Models\Master\ProdMarket;
 use App\Models\Master\SupSupplier;
 use App\Services\Master\CustomerMasterService;
+use App\Services\Master\MarketMasterService;
 use App\Services\Master\MaterialMasterService;
 use App\Services\Master\ShiftMasterService;
 use App\Services\Master\SupplierMasterService;
@@ -198,4 +200,41 @@ Route::prefix('v2/md/shift')->name('v2.md.shift.')->middleware('module:MDATA')->
 
         return $form($s)->with('v2_flash', tf(':name saved.', ['name' => $s->shift_name]));
     })->name('save');
+});
+
+// Master Product Market (layar sales-market-form, modul SALES): save / activate / deactivate / remove_photo, dan ukuran standar (dialog per baris).
+// Aturan = App\Services\Master\MarketMasterService (dipindah dari v1 pages::lookup.product-market-entry).
+Route::prefix('v2/sales/market')->name('v2.sales.market.')->middleware('module:SALES')->group(function () {
+    $form = fn (ProdMarket $m, string $tab = 'identity') => redirect(route('v2.screen', 'sales-market-form').'?id='.$m->id_market.'&tab='.$tab);
+
+    Route::post('/save', function (Request $r, MarketMasterService $svc) use ($form) {
+        $m = $r->filled('id') ? ProdMarket::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+
+        if ($m && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($m, $action === 'activate', $user);
+
+            return $form($m)->with('v2_flash', tf($action === 'activate' ? ':name activated.' : ':name deactivated.', ['name' => $m->market_label]));
+        }
+        if ($m && $action === 'remove_photo') {
+            $svc->removePhoto($m, $user);
+
+            return $form($m)->with('v2_flash', tf('Photo of :name removed.', ['name' => $m->market_label]));
+        }
+        $m = $svc->save($m, $r->except(['id', 'action', 'photo']), $user, $r->file('photo'));
+
+        return $form($m)->with('v2_flash', tf(':name saved.', ['name' => $m->market_label]));
+    })->name('save');
+
+    Route::post('/{id}/size/{size?}', function (Request $r, int $id, MarketMasterService $svc, ?int $size = null) use ($form) {
+        $svc->saveSize($m = ProdMarket::findOrFail($id), $size, $r->all(), Auth::user());
+
+        return $form($m, 'sizes')->with('v2_flash', t('Size saved.'));
+    })->whereNumber(['id', 'size'])->name('size');
+    Route::post('/{id}/size/{size}/delete', function (int $id, int $size, MarketMasterService $svc) use ($form) {
+        $svc->deleteSize($m = ProdMarket::findOrFail($id), $size);
+
+        return $form($m, 'sizes')->with('v2_flash', t('Size removed.'));
+    })->whereNumber(['id', 'size'])->name('size.delete');
 });
