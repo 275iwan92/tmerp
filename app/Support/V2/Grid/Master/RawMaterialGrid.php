@@ -6,10 +6,17 @@ use App\Models\Master\MatRaw;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Bahan Baku (v1: pages::master.raw-material.index + entry).
+/*
+ * REMARK
+ * Tujuan       : Grid Master Raw Material: semua item bahan baku dengan kategori, tipe, merek, satuan stok, reorder point, stok dan grammage; Open dan + New Record membuka form v2 md-raw-form.
+ * Sumber hulu  : tm2mst.mat_raw (11 ribu+ baris, semua dikirim; kolom dibuat ramping).
+ * Input        : Pencarian, filter Category / Item Type / Unit.
+ * Output       : Baris grid.
+ * Dipakai oleh : Menu MD_RAW / PRE_MD_RAW / INV_REF_RAW (v2:md-raw), layar md-raw-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::master.raw-material.* sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class RawMaterialGrid extends MasterDataGrid
 {
-    // 11 ribu+ baris: semua dikirim (tanpa potong diam-diam); kolom dibuat ramping.
     protected int $limit = 50000;
 
     public function slug(): string
@@ -22,24 +29,19 @@ class RawMaterialGrid extends MasterDataGrid
         return t('Master Raw Material');
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'master.raw-material.list';
-    }
-
-    protected function v1Component(): ?string
-    {
-        return 'pages::master.raw-material.index';
+        return true;
     }
 
     public function openUrl(): ?string
     {
-        return $this->routeUrl('master.raw-material.edit', 'material');
+        return route('v2.screen', 'md-raw-form').'?id={id}';
     }
 
     public function newUrl(): ?string
     {
-        return route('master.raw-material.create');
+        return route('v2.screen', 'md-raw-form').'?new=1';
     }
 
     protected function models(): array

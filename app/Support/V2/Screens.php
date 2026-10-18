@@ -13,7 +13,7 @@ final class Screens
         return [
             'master-product' => ['Master Product', 'fa-solid fa-box', 'docs/flow_product_master.md (baru, v2)', null],
             'product-acc' => ['ACC Digital / Proof Digital', 'fa-solid fa-stamp', 'docs/flow_product_master.md §5', null],
-            'master-raw' => ['Master Raw Material', 'fa-solid fa-layer-group', 'master/raw-material/index.blade.php', 'mockup_master_rawmaterial.html'],
+            'master-raw' => ['Master Raw Material', 'fa-solid fa-layer-group', 'v2: md-raw (RawMaterialGrid) + md-raw-form', 'mockup_master_rawmaterial.html'],
             'master-customer' => ['Master Customer', 'fa-solid fa-building', 'v2: md-customer (CustomerGrid) + md-customer-form', 'mockup_master_customer.html'],
             'master-matcat' => ['Raw Material Categories', 'fa-solid fa-sitemap', 'v2: md-matcat (App\Support\V2\Grid\Master\MatCategoryGrid)', null],
             'master-uom' => ['Units of Measure', 'fa-solid fa-ruler', 'master/uom.blade.php', 'mockup_master_uom_v4.html'],
@@ -237,6 +237,9 @@ final class Screens
                 ]],
                 ['label' => 'Supplier', 'items' => [
                     $it('md-supplier-form', ['Master Supplier Form', 'fa-solid fa-truck-field', 'v2 baru: supplier (identitas, alamat + cabang, PIC + kontak, termin dan pajak) di atas tm2mst.sup_supplier; dibuka dari grid md-supplier', null]),
+                ]],
+                ['label' => 'Raw Material', 'items' => [
+                    $it('md-raw-form', ['Master Raw Material Form', 'fa-solid fa-layer-group', 'v2 baru: item bahan baku (kategori penyusun kode item, spesifikasi dan QC, UoM dan pengadaan, stok dan lokasi, akun GL, Confirm) di atas tm2mst.mat_raw; dibuka dari grid md-raw', null]),
                 ]],
             ]],
             // Khusus developer: tidak tampil untuk akun biasa.

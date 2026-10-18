@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\Master\CustCustomer;
+use App\Models\Master\MatRaw;
 use App\Models\Master\SupSupplier;
 use App\Services\Master\CustomerMasterService;
+use App\Services\Master\MaterialMasterService;
 use App\Services\Master\SupplierMasterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -141,4 +143,38 @@ Route::prefix('v2/md/supplier')->name('v2.md.supplier.')->middleware('module:MDA
 
         return $form($s, 'contact')->with('v2_flash', t('Contact removed.'));
     })->whereNumber(['id', 'contact'])->name('contact.delete');
+});
+
+// Master Raw Material (layar md-raw-form): save / confirm / activate / deactivate / delete (hapus, atau nonaktif bila masih dipakai).
+// Aturan = App\Services\Master\MaterialMasterService + MaterialGuardService (dipindah dari v1 pages::master.raw-material.entry).
+Route::prefix('v2/md/raw')->name('v2.md.raw.')->middleware('module:MDATA')->group(function () {
+    $form = fn (MatRaw $m, string $tab = 'category') => redirect(route('v2.screen', 'md-raw-form').'?id='.$m->material_id.'&tab='.$tab);
+
+    Route::post('/save', function (Request $r, MaterialMasterService $svc) use ($form) {
+        $m = $r->filled('id') ? MatRaw::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+
+        if ($m && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($m, $action === 'activate', $user);
+
+            return $form($m)->with('v2_flash', tf($action === 'activate' ? ':name activated.' : ':name deactivated.', ['name' => $m->material_name]));
+        }
+        if ($m && $action === 'delete') {
+            $reasons = $svc->delete($m, $user);
+            if ($reasons === []) {
+                return redirect(route('v2.screen', 'md-raw'))->with('v2_flash', t('Item permanently deleted.'));
+            }
+
+            return $form($m)->with('v2_flash', tf('Cannot be deleted: still used by :reasons. The item has been deactivated instead.', ['reasons' => implode(' and ', $reasons)]));
+        }
+        if ($m && $action === 'confirm') {
+            $m = $svc->confirm($m, $r->except(['id', 'action']), $user);
+
+            return $form($m)->with('v2_flash', tf(':name confirmed. Category and item code are now locked.', ['name' => $m->material_name]));
+        }
+        $m = $svc->save($m, $r->except(['id', 'action']), $user);
+
+        return $form($m)->with('v2_flash', tf(':name saved.', ['name' => $m->material_name]));
+    })->name('save');
 });

@@ -55,7 +55,6 @@ final class MenuRoutes
             'PRE_COST_RECALC' => route('v2.screen', 'sales-procost-recalc'),
             // Pintasan master: dipakai selama baris asalnya belum ber-target v2 (tm2sys); di ddtsys target v2 yang menang.
             'PRE_MD_PROD' => route('v2.screen', 'master-product'),
-            'PRE_MD_RAW' => route('master.raw-material.list'),
             'PRE_MD_MATCAT' => route('v2.screen', 'md-matcat'),
             'PRE_MD_PROCESS' => route('production.master-process'),
             'PRE_MD_MACHINE' => route('master.machine'),
@@ -103,7 +102,6 @@ final class MenuRoutes
             'PROC_MON_PV' => route('v2.screen', 'pur-rpt-outstanding-pv'),
             'MD_PROD' => route('v2.screen', 'master-product'),
             'MD_SUPCAT' => route('v2.screen', 'md-supplier-category'),
-            'MD_RAW' => route('master.raw-material.list'),
             // Material Category = pembentuk kode item: satu layar di kedua situs (v2, dropdown saling terkait).
             'MD_MATCAT' => route('v2.screen', 'md-matcat'),
             'MD_WH' => route('master.warehouse.list'),
@@ -124,7 +122,6 @@ final class MenuRoutes
             'INV_WH_RPT_OPN' => route('v2.screen', 'inv-rpt-opname'),
             'INV_WH_RPT_LG' => route('v2.screen', 'inv-rpt-loss-gain'),
             'INV_WH_RPT_QC' => route('v2.screen', 'inv-rpt-inspection'),
-            'INV_REF_RAW' => route('master.raw-material.list'),
             'INV_REF_MATCAT' => route('v2.screen', 'md-matcat'),
             'INV_REF_PROD' => route('v2.screen', 'master-product'),
             'INV_REF_WH' => route('master.warehouse.list'),
