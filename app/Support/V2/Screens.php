@@ -241,6 +241,9 @@ final class Screens
                 ['label' => 'Raw Material', 'items' => [
                     $it('md-raw-form', ['Master Raw Material Form', 'fa-solid fa-layer-group', 'v2 baru: item bahan baku (kategori penyusun kode item, spesifikasi dan QC, UoM dan pengadaan, stok dan lokasi, akun GL, Confirm) di atas tm2mst.mat_raw; dibuka dari grid md-raw', null]),
                 ]],
+                ['label' => 'Shift', 'items' => [
+                    $it('md-shift-form', ['Master Shift Form', 'fa-solid fa-clock', 'v2 baru: shift (nama, departemen, kode, jam kerja tujuh hari dengan istirahat) di atas tm2mst.emp_shift dan emp_shift_detail; dibuka dari grid md-shift', null]),
+                ]],
             ]],
             // Khusus developer: tidak tampil untuk akun biasa.
             ...(auth()->user()?->is_admin ? [['code' => 'DEV', 'short' => 'DEV', 'label' => 'Developer', 'icon' => 'fa-solid fa-code', 'groups' => [

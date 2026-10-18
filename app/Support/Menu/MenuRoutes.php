@@ -124,7 +124,6 @@ final class MenuRoutes
             'INV_REF_MATCAT' => route('v2.screen', 'md-matcat'),
             'INV_REF_PROD' => route('v2.screen', 'master-product'),
             'MD_MACHINE' => route('master.machine'),
-            'MD_SHIFT' => route('master.shift'),
             // MD_CURRENCY ternyata belum pernah dipetakan sejak dibuat
             // 2026-08-30 (link mati) -- ditemukan & diperbaiki 2026-09-02
             // sekalian nambah MD_EXCHRATE (Master Kurs, baru).

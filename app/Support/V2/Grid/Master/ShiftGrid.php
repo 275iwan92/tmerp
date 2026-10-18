@@ -8,7 +8,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Shift (v1: pages::master.shift).
+/*
+ * REMARK
+ * Tujuan       : Grid Master Shift: semua shift dengan departemen dan jumlah pegawai aktif yang memakainya sebagai shift bawaan; Open dan + New Record membuka form v2 md-shift-form.
+ * Sumber hulu  : tm2mst.emp_shift + org_department; jumlah pegawai dari tm2mst.emp_employee.default_shift_id (query terpisah).
+ * Input        : Pencarian, filter Department.
+ * Output       : Baris grid; tombol aktif / nonaktif membalik emp_shift.activate.
+ * Dipakai oleh : Menu MD_SHIFT (v2:md-shift), layar md-shift-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::master.shift sudah dipindah ke tmerp_unused (aturan D.25). Kolom Active employees saat ini 0 untuk semua shift karena default_shift_id kosong di data pegawai.
+ */
 class ShiftGrid extends MasterDataGrid
 {
     private array $employees = [];
@@ -23,14 +31,19 @@ class ShiftGrid extends MasterDataGrid
         return 'Master Shift';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'master.shift';
+        return true;
     }
 
-    protected function v1Component(): ?string
+    public function openUrl(): ?string
     {
-        return 'pages::master.shift';
+        return route('v2.screen', 'md-shift-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'md-shift-form').'?new=1';
     }
 
     protected function models(): array

@@ -210,7 +210,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::redirect('/master/customer', '/v2/s/md-customer');
             Route::redirect('/master/supplier', '/v2/s/md-supplier');
             Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
-            Route::livewire('/master/shift', 'pages::master.shift')->name('master.shift');
+            Route::redirect('/master/shift', '/v2/s/md-shift');
 
             Route::redirect('/master/raw-material', '/v2/s/md-raw')->name('master.raw-material.list');
             Route::redirect('/master/raw-material/create', '/v2/s/md-raw-form?new=1')->name('master.raw-material.create');

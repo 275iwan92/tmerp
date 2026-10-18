@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\Master\CustCustomer;
+use App\Models\Master\EmpShift;
 use App\Models\Master\MatRaw;
 use App\Models\Master\SupSupplier;
 use App\Services\Master\CustomerMasterService;
 use App\Services\Master\MaterialMasterService;
+use App\Services\Master\ShiftMasterService;
 use App\Services\Master\SupplierMasterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -176,5 +178,24 @@ Route::prefix('v2/md/raw')->name('v2.md.raw.')->middleware('module:MDATA')->grou
         $m = $svc->save($m, $r->except(['id', 'action']), $user);
 
         return $form($m)->with('v2_flash', tf(':name saved.', ['name' => $m->material_name]));
+    })->name('save');
+});
+
+// Master Shift (layar md-shift-form): save / activate / deactivate. Aturan = App\Services\Master\ShiftMasterService (dipindah dari v1 pages::master.shift).
+Route::prefix('v2/md/shift')->name('v2.md.shift.')->middleware('module:MDATA')->group(function () {
+    Route::post('/save', function (Request $r, ShiftMasterService $svc) {
+        $s = $r->filled('id') ? EmpShift::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+        $form = fn (EmpShift $x) => redirect(route('v2.screen', 'md-shift-form').'?id='.$x->shift_id);
+
+        if ($s && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($s, $action === 'activate', $user);
+
+            return $form($s)->with('v2_flash', tf($action === 'activate' ? ':name activated.' : ':name deactivated.', ['name' => $s->shift_name]));
+        }
+        $s = $svc->save($s, $r->except(['id', 'action']), $user);
+
+        return $form($s)->with('v2_flash', tf(':name saved.', ['name' => $s->shift_name]));
     })->name('save');
 });
