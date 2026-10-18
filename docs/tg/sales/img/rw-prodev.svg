@@ -752,7 +752,7 @@
     <rect x="0" y="1006" width="1736" height="26" fill="none"/>
     <rect x="1606" y="1008" width="26" height="22" fill="#fdba74"/>
     <text x="1619" y="1023" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+U</text>
-    <text x="8" y="1049" stroke="none" fill="#000">33. Open the Product Market form (v1 entry)</text>
+    <text x="8" y="1049" stroke="none" fill="#000">33. Open the Product Market form</text>
     <rect x="0" y="1032" width="1736" height="26" fill="none"/>
     <rect x="904" y="1034" width="26" height="22" fill="#bfdbfe"/>
     <text x="917" y="1049" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
@@ -766,28 +766,24 @@
     <text x="1073" y="1049" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="1606" y="1034" width="26" height="22" fill="#bfdbfe"/>
     <text x="1619" y="1049" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <text x="8" y="1075" stroke="none" fill="#000">34. Save Product Market (with standard size...</text>
+    <text x="8" y="1075" stroke="none" fill="#000">34. Save Product Market (identity, defaults...</text>
     <rect x="0" y="1058" width="1736" height="26" fill="none"/>
+    <rect x="904" y="1060" width="26" height="22" fill="#bfdbfe"/>
+    <text x="917" y="1075" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="982" y="1060" width="26" height="22" fill="#bfdbfe"/>
     <text x="995" y="1075" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <rect x="1008" y="1060" width="26" height="22" fill="#bfdbfe"/>
-    <text x="1021" y="1075" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <rect x="1034" y="1060" width="26" height="22" fill="#fdba74"/>
-    <text x="1047" y="1075" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+CUD</text>
-    <rect x="1060" y="1060" width="26" height="22" fill="#fdba74"/>
-    <text x="1073" y="1075" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+CD</text>
     <rect x="1320" y="1060" width="26" height="22" fill="#fde68a"/>
     <text x="1333" y="1075" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">W</text>
     <rect x="1606" y="1060" width="26" height="22" fill="#fdba74"/>
     <text x="1619" y="1075" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+CU</text>
-    <text x="8" y="1101" stroke="none" fill="#000">35. Product Market list (v1)</text>
+    <text x="8" y="1101" stroke="none" fill="#000">35. Add, change or remove a standard size</text>
     <rect x="0" y="1084" width="1736" height="26" fill="none"/>
-    <rect x="904" y="1086" width="26" height="22" fill="#bfdbfe"/>
-    <text x="917" y="1101" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <rect x="982" y="1086" width="26" height="22" fill="#bfdbfe"/>
-    <text x="995" y="1101" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <rect x="1034" y="1086" width="26" height="22" fill="#bfdbfe"/>
-    <text x="1047" y="1101" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
+    <rect x="1008" y="1086" width="26" height="22" fill="#bfdbfe"/>
+    <text x="1021" y="1101" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
+    <rect x="1034" y="1086" width="26" height="22" fill="#fdba74"/>
+    <text x="1047" y="1101" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+CUD</text>
+    <rect x="1060" y="1086" width="26" height="22" fill="#fdba74"/>
+    <text x="1073" y="1101" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+CD</text>
     <rect x="1606" y="1086" width="26" height="22" fill="#bfdbfe"/>
     <text x="1619" y="1101" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <text x="8" y="1127" stroke="none" fill="#000">36. Open Master Card Collection list</text>
