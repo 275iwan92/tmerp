@@ -13,7 +13,7 @@
 | Column | `iqp_inquiry.source` varchar(50), may be NULL, no FK and no master table. | FACT, `show columns` |
 | Choices on the screen | Required select, fixed values `EMAIL, WA, PHONE, VISIT, MARKETPLACE`, default `EMAIL`. The list is written directly in Blade. | FACT, `inquiry-new.blade.php:48` |
 | Server validation | `in:EMAIL,WA,PHONE,VISIT,MARKETPLACE`, required. | FACT, `InquiryPayload.php:17` |
-| How it is saved | `InquiryPayload::from` -> `InquiryWriter::headerAttributes` -> `iqp_inquiry.source`. | FACT, `InquiryPayload.php:38`, `InquiryWriter.php:205` |
+| How it is saved | `InquiryPayload::from` -> `InquiryWriter::headerAttributes` -> `iqp_inquiry.source`. | FACT, `InquiryPayload.php:38`, `InquiryWriter.php:225` |
 | Other values written by code | `MASTER CARD` by `MasterCardService` when a collection card is turned into an Inquiry; `REVERSE` by `ReverseCostingService` when INSTANT costing is reversed into an Inquiry (0 rows in the data). Revise/Recalc/Duplicate copy the value of the source inquiry. | FACT, `MasterCardService.php:329`, `ReverseCostingService.php:88`, `InquiryDerivedWriter.php:125`, `InquiryDuplicator.php` (`'source' => $source->source`) |
 | Data distribution (mockup) | EMAIL 15 (LIVE 5, DUMMY 10), MASTER CARD 8 (DUMMY). | FACT, query 2026-10-16 |
 | Readers | Inquiry print (label "Source"), loading the document into the form. NOT found: any report, grid filter, or widget that groups by `source`. | FACT that `grep` of `app/Support/V2`, `app/Services`, `packages` only finds `InquiryPrint.php:24,61` and `Sales.php:165`; reports outside those folders NOT checked |

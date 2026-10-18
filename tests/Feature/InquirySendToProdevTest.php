@@ -8,6 +8,7 @@ use App\Models\Master\ProdProduct;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SecUser;
+use App\Services\Sales\InquiryWriter;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -86,6 +87,41 @@ class InquirySendToProdevTest extends TestCase
         $prodevHtml = $prodevTest->html();
         $this->assertStringContainsString('Referensi Inquiry Asal', $prodevHtml);
         $this->assertStringContainsString('Test Part SendToProDev', $prodevHtml);
+    }
+
+    // Jo 2026-10-18: part_type, join_type_id, dieline_spec ikut ke prod_part hanya bila masih kosong (hasil edit officer tidak ditimpa).
+    public function test_writer_copies_type_join_and_spec_only_when_prod_part_is_empty(): void
+    {
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
+
+        $test = Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
+            ->set('inquiry_date', now()->toDateString())
+            ->set('customer_id', CustCustomer::firstOrFail()->id_customer)
+            ->set('product_draft_name', 'Test SendToProDev Copy')
+            ->set('parts.0.part_name', 'Test Part Copy')
+            ->set('tiers.0.qty', 1000)
+            ->call('save');
+        $this->inquiryId = $test->get('inquiry')->id_inquiry;
+        $test->call('confirm');
+
+        $part = IqpPart::findOrFail($test->get('parts.0')['id']);
+        $spec = ['type_code' => 'RTE_BOX', 'dims' => ['product_length' => 230], 'elements' => [['t' => 'cut']]];
+        $part->update(['part_type' => 'DC', 'join_type_id' => 3, 'dieline_spec' => $spec]);
+        $inquiry = IqpInquiry::findOrFail($this->inquiryId);
+        $writer = new InquiryWriter('test');
+
+        $prodPartId = $writer->sendToProDev($inquiry, $part->fresh());
+        $prodPart = ProdPart::findOrFail($prodPartId);
+        $this->assertSame('DC', $prodPart->part_type);
+        $this->assertSame(3, (int) $prodPart->join_type_id);
+        $this->assertEqualsCanonicalizing($spec, $prodPart->dieline_spec);
+
+        // Officer mengubah di ProDev, lalu Inquiry dibuka ulang: nilai officer tetap.
+        $prodPart->update(['part_type' => 'DC+SF', 'join_type_id' => 4]);
+        $writer->sendToProDev($inquiry, $part->fresh());
+        $prodPart->refresh();
+        $this->assertSame('DC+SF', $prodPart->part_type);
+        $this->assertSame(4, (int) $prodPart->join_type_id);
     }
 
     public function test_prodev_reference_panel_hides_draft_and_cancelled_inquiries(): void

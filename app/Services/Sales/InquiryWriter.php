@@ -16,6 +16,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
+/* REMARK
+   Tujuan      : menyimpan Inquiry Product BARU (layar v2) dan menyerahkan part ke ProDev (sendToProDev).
+   Sumber hulu : state form Inquiry (header, tiers, parts, toolings, external_costs).
+   Input       : array state v1; IqpInquiry + IqpPart untuk sendToProDev.
+   Output      : iqp_*; prod_product draf + prod_part (ukuran, pack, warna, finishing, artwork; sejak 2026-10-18 juga part_type, join_type_id, dieline_spec bila kolom prod_part masih kosong).
+   Dipakai oleh: InquiryStage::openInProdev, layar Inquiry v2.
+   Status      : aktif. */
+
 // Simpan Inquiry Product BARU. Isi = salinan baris-per-baris persist*() di
 // pages/inquiry/form.blade.php (v1, zona beku) supaya layar v2 menulis data yang
 // sama persis. v1 sendiri belum memakai kelas ini -- ubah keduanya bersamaan.
@@ -125,6 +133,18 @@ final class InquiryWriter
             'cfg_color' => $part->cfg_color,
             'updated_by' => $this->login,
         ], fn ($v) => $v !== null));
+
+        // Dibaca SpecEngine (aturan BOP, MULTI_LAYER, Lem) dan panel Part & Dieline; hanya mengisi yang masih kosong
+        // supaya hasil edit officer di ProDev (PartDieline::save) tidak ditimpa.
+        $prodPart = ProdPart::find($part->prod_part_id);
+        $fill = array_filter(
+            ['part_type' => $part->part_type, 'join_type_id' => $part->join_type_id, 'dieline_spec' => $part->dieline_spec],
+            fn ($v, $k) => ! blank($v) && blank($prodPart->{$k}),
+            ARRAY_FILTER_USE_BOTH,
+        );
+        if ($fill) {
+            $prodPart->update($fill);
+        }
 
         ProdPartFinishing::where('part_id', $part->prod_part_id)->delete();
         foreach ($part->finishings as $fin) {

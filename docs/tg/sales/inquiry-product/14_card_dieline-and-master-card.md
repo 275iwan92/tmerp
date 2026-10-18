@@ -10,8 +10,8 @@
 ## Facts
 | Item | Content | Evidence |
 |---|---|---|
-| Dieline snapshot in Inquiry | `InquiryWriter::persistParts` copies the DSL `prod_type.dieline_spec` + the user-entered `dims` + `type_code` into `iqp_part.dieline_spec`. Keys present: `dims, flat, vars, canvas, elements, type_code` (+ `gen` on certain types). | FACT, `InquiryWriter.php:252-258`; `json_keys` on `iqp_part` 1 and 2 |
-| Dimensions | `dims.product_length/width/height` in **mm** (L x W x H); `flat_w/flat_h/flat_area` are separate columns, **mm** (A.19). Converted to cm only when creating `prod_part` (`/10`). | FACT, `InquiryWriter.php:106-108` (`/ 10`); example `iqp_part` 1: 200 x 50 x 120, flat 515 x 190 |
+| Dieline snapshot in Inquiry | `InquiryWriter::persistParts` copies the DSL `prod_type.dieline_spec` + the user-entered `dims` + `type_code` into `iqp_part.dieline_spec`. Keys present: `dims, flat, vars, canvas, elements, type_code` (+ `gen` on certain types). | FACT, `InquiryWriter.php:272-278`; `json_keys` on `iqp_part` 1 and 2 |
+| Dimensions | `dims.product_length/width/height` in **mm** (L x W x H); `flat_w/flat_h/flat_area` are separate columns, **mm** (A.19). Converted to cm only when creating `prod_part` (`/10`). | FACT, `InquiryWriter.php:114-116` (`/ 10`); example `iqp_part` 1: 200 x 50 x 120, flat 515 x 190 |
 | Completeness of dimensions (mockup) | 33 of 36 component parts have L, W, H; 34 of 36 have flat W and H; 31 have artwork. The three parts without height are non-box types (example BUKU uses `page_count`). | FACT, query 2026-10-16 |
 | Types Sales may choose | Only ACTIVE types that have `dieline_spec.elements`: 27 of 28 active (1 active without spec). | FACT, `Sales.php:116-119`; `prod_type` query |
 | Render | The live dieline preview uses `resources/js/tmdieline.js` (DSL TMDieline). | FACT that the file exists (`Test-Path`); "not changed" FROM DOCUMENT (`claude_vital_flows.md`) |
@@ -24,13 +24,13 @@
 ## Relations
 - **source**: dieline = `prod_type` (master) + Sales input; Master Card (a) = Master Product + master parts resulting from ProDev/WIN; (b) = Jo's old files.
 - **used_by**: ProDev (imposition reads `dieline_spec`/flat), ProCost (geometry), Master Card print, PPIC (inherits), Master Card Collection (Pro-Dev menu).
-- **flows**: Inquiry (dieline snapshot) -> `prod_part` (sendToProDev copies the size in cm, not `dieline_spec`; the full copy happens in `ProductMasterSync::part`, lines 61-78, at WIN) -> Master Card (a).
+- **flows**: Inquiry (dieline snapshot) -> `prod_part` (sendToProDev copies the size in cm and, since 2026-10-18, `dieline_spec` when the column is empty; the full copy also happens in `ProductMasterSync::part`, lines 61-78, at WIN) -> Master Card (a).
 - **frozen_zone**: Inquiry dieline and Master Card. Jo's original files are used as they are; the dieline is not redrawn.
 
 ## Findings (recorded, not fixed)
 1. **"Master Card" has two shapes in code, but ONE form by decision (Jo 2026-10-16)**: Master Card is the combination of the Master Product and the layout from Inquiry Product + ProDev + ProCost. Today (a) the view `vw_master_card` (from product/part) and (b) the collection of imported cards (`prod_master_card`) both exist. Merging them into one is a flow/data change in the frozen zone: not done; needs narrative, preview and Jo's permission first.
-2. **Column `prod_part.dieline_spec` is only filled at WIN.** `sendToProDev` only copies L/W/H (cm), `pack_qty`, `cfg_color`, finishing, artwork (`InquiryWriter.php:109-119`); it does not copy `part_type`, `dieline_spec`, flat. In the mockup, 2 of 35 master parts linked to an inquiry have `part_type` NULL although their `iqp_part.part_type` is `DC`. Impact on the engine not proven.
-3. **Artwork attachments are always given `file_type='JPEG'`** even though the upload may be PNG (`InquiryWriter.php:144-146`; validation `mimes:jpg,jpeg,png`, `routes/v2.php:276`).
+2. **Column `prod_part.dieline_spec` (FIXED 2026-10-18, Jo):** `sendToProDev` copies L/W/H (cm), `pack_qty`, `cfg_color`, finishing, artwork (`InquiryWriter.php:117-127`) and now also `part_type`, `join_type_id`, `dieline_spec` when the `prod_part` column is empty (`InquiryWriter.php:136-150`); flat size is still not copied. Before the fix, parts opened earlier had `part_type` NULL although `iqp_part.part_type` was `DC`; mockup rows were back-filled.
+3. **Artwork attachments are always given `file_type='JPEG'`** even though the upload may be PNG (`InquiryWriter.php:164-166`; validation `mimes:jpg,jpeg,png`, `routes/v2.php:276`).
 4. **Mixed types in JSON**: `dims` stores numbers as text with varying decimals (`"200"` vs `"40.0000"`); harmless, but a text comparison would be wrong.
 5. **One active type without `dieline_spec`** does not appear in the Sales choices (see also the product type card, finding 2 there).
 6. **Jo's original files are not yet in git** (new Master Card PDFs were untracked at the start of the session); do not assume they are safe in history.

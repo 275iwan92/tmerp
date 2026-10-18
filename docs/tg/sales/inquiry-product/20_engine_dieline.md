@@ -28,7 +28,7 @@ Not in `routes/console.php`, Jobs, Observers. Everything is triggered by the dis
 4. `svg`: evaluate `spec.canvas.w/h`; if not > 0, nothing is drawn. Each element of `spec.elements` is drawn in order (line, rect, circle, tuck, dust, glue, bleed, foldlines, holes, text). Elements that fail are skipped silently.
 5. `render` puts the SVG in the element, or the message "Tipe ini belum punya spesifikasi dieline" / "Pilih ukuran / isi dimensi untuk melihat dieline".
 6. The flat w/h/area is used by the screen to fill the flat size boxes; the officer may fill them manually (tick `manual`, `dieline-x.js:51,116`).
-7. When the Inquiry is saved, `InquiryWriter::persistParts` freezes recipe + dims + `type_code` into `iqp_part.dieline_spec` (`InquiryWriter.php:249-258`, snapshot A.13); the engine does not save.
+7. When the Inquiry is saved, `InquiryWriter::persistParts` freezes recipe + dims + `type_code` into `iqp_part.dieline_spec` (`InquiryWriter.php:269-278`, snapshot A.13); the engine does not save.
 
 ## Input / Output
 - **Input**: `prod_type.dieline_spec` (JSON, 27 of 28 active types have `elements`; FACT, query), the valid choices are read by `Sales::dielineTypes()` (`app/Support/V2/Data/Sales.php:112`, only active types with `elements`); parameters `prod_type_param`, market sizes `prod_type_size`. Does not read `sys_constant`.
