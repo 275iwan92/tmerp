@@ -95,7 +95,8 @@ final class Screens
             ['code' => 'FINACC', 'short' => 'FIN', 'label' => 'Finance', 'icon' => 'fa-solid fa-coins', 'groups' => [
                 ['label' => 'Master', 'items' => [
                     $it('acc-coa-form', ['Master of Accounts Form', 'fa-solid fa-book', 'v2 baru: akun GL di atas tm2acc.fin_account; dibuka dari grid acc-coa', null]),
-                    $it('acc-cash-bank-form', ['Cash and Bank Voucher Form', 'fa-solid fa-money-check-dollar', 'v2 baru: voucher kas & bank (BKM / BKK / BBM / BBK) di atas tm2acc.fin_voucher + fin_voucher_line; dibuka dari grid acc-cash-bank', null]),
+                    $it('acc-payables-form', ['Vendor Bill Form', 'fa-solid fa-file-invoice-dollar', 'v2 baru: tagihan vendor (SUPPLIER_BILL) di atas tm2acc.fin_invoice + jurnal PUR + fin_payment_alloc; dibuka dari grid acc-payables', null]),
+                    $it('acc-cash-bank-form',['Cash and Bank Voucher Form', 'fa-solid fa-money-check-dollar', 'v2 baru: voucher kas & bank (BKM / BKK / BBM / BBK) di atas tm2acc.fin_voucher + fin_voucher_line; dibuka dari grid acc-cash-bank', null]),
                     $it('acc-journal-form',['Journal Entry Form', 'fa-solid fa-file-pen', 'v2 baru: jurnal umum manual (header + baris debit / kredit) di atas tm2acc.fin_voucher + fin_voucher_line; dibuka dari grid acc-journal', null]),
                 ]],
                 ['label' => t('Cash & Bank'), 'items' => [

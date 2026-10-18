@@ -150,7 +150,6 @@ final class MenuRoutes
             // Accounting Process Engine (mockup blueprint, 2026-09-19)
             'FIN_ENGINE' => route('v2.screen', 'acc-engine'),
             'FIN_DASH' => route('v2.screen', 'acc-dashboard'),
-            'FIN_AP' => route('finance.payables'),
             'FIN_BANK' => route('v2.screen', 'acc-bank'),
             'ACC_GL' => route('v2.screen', 'acc-rpt-ledger'),
             'ACC_FIXEDASSET' => route('finance.assets'),

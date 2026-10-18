@@ -5,7 +5,15 @@ namespace App\Support\V2\Grid\Acc;
 use App\Models\Acc\FinInvoice;
 use App\Models\Master\SupSupplier;
 
-// Procure to Pay (v1: pages::finance.payables): tagihan supplier (dari SPB) + persetujuan + pembayarannya. Buka / New = layar v1.
+/*
+ * REMARK
+ * Tujuan       : Grid Procure to Pay: tagihan supplier (dari penerimaan barang / jasa) dengan status, jatuh tempo dan pembayarannya; Open dan + New Record membuka form v2 acc-payables-form (New = kartu Start).
+ * Sumber hulu  : tm2acc.fin_invoice (SUPPLIER_BILL), nama supplier dari tm2mst.sup_supplier (query terpisah, tanpa saringan data dummy / legacy).
+ * Input        : Pencarian, statistik status, filter.
+ * Output       : Baris grid.
+ * Dipakai oleh : Menu FIN_AP (v2:acc-payables), layar acc-payables-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::finance.payables sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class PayableGrid extends InvoiceGrid
 {
     public function slug(): string
@@ -23,9 +31,19 @@ class PayableGrid extends InvoiceGrid
         return 'fa-solid fa-file-invoice-dollar';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'finance.payables';
+        return true;
+    }
+
+    public function openUrl(): ?string
+    {
+        return route('v2.screen', 'acc-payables-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'acc-payables-form').'?new=1';
     }
 
     protected function invoiceType(): string

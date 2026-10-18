@@ -227,7 +227,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::redirect('/finance/cash-bank', '/v2/s/acc-cash-bank');
 
             // Accounting Process Engine (mockup MODULE_accounting-*-blueprint.html, 2026-09-19)
-            Route::livewire('/finance/payables', 'pages::finance.payables')->name('finance.payables');
+            Route::redirect('/finance/payables', '/v2/s/acc-payables');
             Route::redirect('/finance/journals', '/v2/s/acc-journal');
             Route::livewire('/finance/assets', 'pages::finance.assets')->name('finance.assets');
             Route::livewire('/finance/amortization', 'pages::finance.amortization')->name('finance.amortization');

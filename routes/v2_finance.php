@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\Acc\FinAccount;
+use App\Models\Acc\FinInvoice;
 use App\Models\Acc\FinVoucher;
 use App\Services\Acc\CashBankVoucherService;
 use App\Services\Acc\ChartOfAccountService;
 use App\Services\Acc\ManualJournalService;
+use App\Services\Acc\VendorBillService;
 use App\Support\V2\Data\CustomerInvoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -195,4 +197,55 @@ Route::prefix('v2/acc/cash-bank')->name('v2.acc.cashbank.')->middleware('module:
             return ($v?->voucher_id ? $open($v) : back()->withInput())->withErrors(['voucher' => $e->getMessage()]);
         }
     })->name('save');
+});
+
+// Payables v2 (layar acc-payables-form, form dokumen): save (catat draft) / confirm (Approve and Post, atau Pending approval) / approve / cancel / validate_tax / duplicate, dan pay (dialog Payment Run).
+// Aturan = App\Services\Acc\VendorBillService (dipindah dari v1 pages::finance.payables); rumus dan jurnal = ArApService.
+Route::prefix('v2/acc/payables')->name('v2.acc.payables.')->middleware('module:FINACC')->group(function () {
+    $open = fn (FinInvoice $b) => redirect(route('v2.screen', 'acc-payables-form').'?id='.$b->invoice_id);
+    $guard = function (callable $run, ?FinInvoice $b = null) use ($open) {
+        try {
+            return $run();
+        } catch (HttpException $e) {
+            if ($e->getStatusCode() !== 422) {
+                throw $e;
+            }
+
+            return ($b ? $open($b) : back()->withInput())->withErrors(['bill' => $e->getMessage()]);
+        }
+    };
+
+    Route::post('/save', function (Request $r, VendorBillService $svc) use ($open, $guard) {
+        $b = $r->filled('id') ? FinInvoice::where('invoice_type', 'SUPPLIER_BILL')->findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+
+        return $guard(function () use ($r, $svc, $open, $b, $action, $user) {
+            if (! $b) {
+                $b = $svc->create($r->only(['supplier_id', 'partner_ref', 'bill_date', 'due_date', 'description', 'expense_account_id', 'subtotal', 'pph_code', 'tax_invoice_no', 'pv_id']) + ['ppn' => $r->boolean('ppn')], $user);
+
+                return $open($b)->with('v2_flash', tf('Draft bill :no saved. Check it, then Confirm.', ['no' => $b->partner_ref]));
+            }
+            $msg = match ($action) {
+                'confirm' => $svc->confirm($b, $user) === 'posted' ? t('Bill approved and posted: Dr expense / GR-IR + input VAT, Cr accounts payable.') : t('The bill is above the approval limit: it is waiting for approval before it is posted.'),
+                'approve' => $svc->approve($b, $user) ?? t('Bill approved and posted to the General Ledger.'),
+                'cancel' => $svc->cancel($b, $user) ?? t('Bill cancelled.'),
+                'validate_tax' => $svc->validateTax($b, $user) ?? t('Input tax invoice marked as validated.'),
+                'duplicate' => ($b = $svc->duplicate($b, $user)) ? t('Copied into a new Draft.') : '',
+                default => abort(422, 'Unknown action.'),
+            };
+
+            return $open($b->fresh())->with('v2_flash', $msg);
+        }, $b);
+    })->name('save');
+
+    Route::post('/{id}/pay', function (Request $r, int $id, VendorBillService $svc) use ($open, $guard) {
+        $b = FinInvoice::where('invoice_type', 'SUPPLIER_BILL')->findOrFail($id);
+
+        return $guard(function () use ($r, $svc, $open, $b) {
+            $v = $svc->pay($b, $r->only(['pay_date', 'pay_bank', 'pay_note']), (array) $r->input('alloc', []), Auth::user());
+
+            return $open($b->fresh())->with('v2_flash', tf('Payment :no posted: Dr accounts payable, Cr bank.', ['no' => $v->voucher_number]));
+        }, $b);
+    })->whereNumber('id')->name('pay');
 });

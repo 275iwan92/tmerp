@@ -111,3 +111,5 @@ Unit: mm, except `up` (pieces per sheet) and percent. No rounding unless stated.
 - Re-checked 2026-10-18 after `app/Support/Menu/MenuRoutes.php` lost the `ACC_JRN` entry (Journal Entries is v2 only, rule D.25); content of this card is not affected.
 - Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/finance/cash-bank` route replaced by a one-line redirect to `/v2/s/acc-cash-bank`, rule D.25); the block keeps its line count so every cited line number is unchanged, content still true.
 - Re-checked 2026-10-18 after `app/Support/Menu/MenuRoutes.php` lost the `FIN_CASH` entry (Cash & Bank is v2 only, rule D.25); content of this card is not affected.
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/finance/payables` route replaced by a one-line redirect to `/v2/s/acc-payables`, rule D.25); the block keeps its line count so every cited line number is unchanged, content still true.
+- Re-checked 2026-10-18 after `app/Support/Menu/MenuRoutes.php` lost the `FIN_AP` entry (Procure to Pay is v2 only, rule D.25); content of this card is not affected.
