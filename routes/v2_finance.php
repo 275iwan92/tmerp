@@ -1,11 +1,14 @@
 <?php
 
 use App\Models\Acc\FinAccount;
+use App\Models\Acc\FinVoucher;
 use App\Services\Acc\ChartOfAccountService;
+use App\Services\Acc\ManualJournalService;
 use App\Support\V2\Data\CustomerInvoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 // Customer Invoice v2 (App\Support\V2\Data\CustomerInvoice -> App\Services\Acc\CustomerInvoiceService).
 // File route sendiri (dimuat routes/web.php sesudah v2.php) supaya tidak bercampur dengan pekerjaan modul lain di v2.php.
@@ -92,4 +95,67 @@ Route::prefix('v2/acc/coa')->name('v2.acc.coa.')->middleware('module:FINACC')->g
 
         return redirect(route('v2.screen', 'acc-coa-form').'?id='.$a->account_id)->with('v2_flash', tf($msg, ['name' => $a->account_name]));
     })->name('save');
+});
+
+// Journal Entries v2 (layar acc-journal-form, form dokumen): save / confirm (= ajukan) / delete / approve / return / post, dan reverse (dialog). Aturan = App\Services\Acc\ManualJournalService (dipindah dari v1 pages::finance.journals).
+Route::prefix('v2/acc/journal')->name('v2.acc.journal.')->middleware('module:FINACC')->group(function () {
+    $form = fn (int $id) => redirect(route('v2.screen', 'acc-journal-form').'?id='.$id);
+    // Pelanggaran aturan bisnis (DomainException / abort 422) tampil sebagai pesan di form, bukan halaman error.
+    $guard = function (callable $run) {
+        try {
+            return $run();
+        } catch (DomainException $e) {
+            return back()->withInput()->withErrors(['journal' => $e->getMessage()]);
+        } catch (HttpException $e) {
+            if ($e->getStatusCode() !== 422) {
+                throw $e;
+            }
+
+            return back()->withInput()->withErrors(['journal' => $e->getMessage()]);
+        }
+    };
+
+    Route::post('/save', function (Request $r, ManualJournalService $svc) use ($form, $guard) {
+        $v = $r->filled('id') ? FinVoucher::with('lines')->findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+
+        return $guard(function () use ($r, $svc, $form, $v, $action, $user) {
+            if ($v && $action === 'delete') {
+                $svc->delete($v);
+
+                return redirect(route('v2.screen', 'acc-journal'))->with('v2_flash', t('Draft deleted.'));
+            }
+            if (in_array($action, ['save', 'confirm'], true)) {
+                $v = $svc->save($v, $r->only(['entry_date', 'description', 'journal_kind', 'reference_no', 'auto_reverse_date']), (array) $r->input('lines', []), $user);
+                if ($action === 'confirm') {
+                    $svc->submit($v->fresh('lines'), $user);
+                    $msg = $v->fresh()->status === 'APPROVED' ? t('Journal submitted. No approval rule applies, so it is Approved: post it to the GL.') : t('Journal submitted for approval.');
+                } else {
+                    $msg = t('Draft journal saved.');
+                }
+
+                return $form($v->voucher_id)->with('v2_flash', $msg);
+            }
+            abort_unless($v, 404);
+            match ($action) {
+                'approve' => $svc->approve($v, $user),
+                'reject', 'return' => $svc->returnToDraft($v, $user),
+                'post' => $svc->post($v, $user),
+                default => abort(422, 'Unknown action.'),
+            };
+
+            return $form($v->voucher_id)->with('v2_flash', ['approve' => t('Journal approved.'), 'reject' => t('Journal returned to Draft.'), 'return' => t('Journal returned to Draft.'), 'post' => t('Journal posted to the General Ledger.')][$action]);
+        });
+    })->name('save');
+
+    Route::post('/{id}/reverse', function (Request $r, int $id, ManualJournalService $svc) use ($form, $guard) {
+        $v = FinVoucher::with('lines')->findOrFail($id);
+
+        return $guard(function () use ($r, $svc, $form, $v) {
+            $rev = $svc->reverse($v, (string) $r->input('reverse_date'), (string) $r->input('reverse_reason'), Auth::user());
+
+            return $form($v->voucher_id)->with('v2_flash', tf('Reversing journal :no posted.', ['no' => $rev->voucher_number]));
+        });
+    })->whereNumber('id')->name('reverse');
 });

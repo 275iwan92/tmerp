@@ -56,3 +56,4 @@ Searched: tables `quo_*` and `%quotation%` in all `ddt*`; `grep` `Quotation` in 
 - Re-checked 2026-10-18 after the SOP register merge (sop_document folded into mnt_document): citations of `app/Models/Sys/SecUser.php` (comment only, lines unchanged) still correct.
 
 - Re-checked 2026-10-18 after `app/Support/V2/Screens.php` gained a `Master` group in module FINACC (screen `acc-coa-form`, inserted after line 95); every line cited by this card is before line 96 and unchanged, content still true.
+- Re-checked 2026-10-18 after `app/Support/V2/Screens.php` gained the screen `acc-journal-form` in the FINACC `Master` group (inserted after line 95); every line cited by this card is before line 96 and unchanged, content still true.

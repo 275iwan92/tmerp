@@ -228,7 +228,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
             // Accounting Process Engine (mockup MODULE_accounting-*-blueprint.html, 2026-09-19)
             Route::livewire('/finance/payables', 'pages::finance.payables')->name('finance.payables');
-            Route::livewire('/finance/journals', 'pages::finance.journals')->name('finance.journals');
+            Route::redirect('/finance/journals', '/v2/s/acc-journal');
             Route::livewire('/finance/assets', 'pages::finance.assets')->name('finance.assets');
             Route::livewire('/finance/amortization', 'pages::finance.amortization')->name('finance.amortization');
         });

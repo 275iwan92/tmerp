@@ -179,3 +179,4 @@ Relations of the tables this sub-module uses. Solid line = real foreign key (ver
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): `Grids.php` line numbers moved up by 1 (one class line removed above) and corrected (75, 76, 77, 78-80); the `routes/web.php` lines cited here (156-162) are before the removed routes and unchanged.
 
 - Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/finance/coa` route replaced by a one-line redirect to `/v2/s/acc-coa`, rule D.25); the block keeps its line count so every cited line number is unchanged, content still true.
+- Re-checked 2026-10-18 after the `routes/web.php` edit (v1 `/finance/journals` route replaced by a one-line redirect to `/v2/s/acc-journal`, rule D.25); the block keeps its line count so every cited line number is unchanged, content still true.

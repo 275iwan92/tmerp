@@ -10,8 +10,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Journal Entries (v1: pages::finance.journals): jurnal umum yang dibuat bagian Accounting (manual, accrual, recurring,
-// adjustment, reversing, opening, closing). Jurnal otomatis dari modul lain dibaca di General Ledger. Buka / New = layar v1.
+/*
+ * REMARK
+ * Tujuan       : Grid Journal Entries: jurnal umum yang dibuat bagian Accounting (manual, accrual, recurring, adjustment, reversing, opening, closing); Open dan + New Record membuka form v2 acc-journal-form.
+ * Sumber hulu  : tm2acc.fin_voucher + fin_voucher_line + fin_account; nama pembuat dari sec_user (query terpisah).
+ * Input        : Pencarian, statistik status, filter Kind / Prepared By / Status.
+ * Output       : Baris grid dengan detail baris jurnal. Jurnal otomatis dari modul lain dibaca di General Ledger.
+ * Dipakai oleh : Menu ACC_JRN (v2:acc-journal), layar acc-journal-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::finance.journals sudah dipindah ke tmerp_unused (aturan D.25).
+ */
 class JournalGrid extends AccGrid
 {
     private const KINDS = ['MANUAL' => 'Manual Journal', 'ACCRUAL' => 'Accrual Journal', 'RECURRING' => 'Recurring Journal', 'ADJUSTMENT' => 'Adjustment Journal',
@@ -48,9 +55,19 @@ class JournalGrid extends AccGrid
         return 'fa-solid fa-book';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'finance.journals';
+        return true;
+    }
+
+    public function openUrl(): ?string
+    {
+        return route('v2.screen', 'acc-journal-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'acc-journal-form').'?new=1';
     }
 
     protected function models(): array
