@@ -7,7 +7,15 @@ use App\Models\Hrr\VacVacancy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Posting Lowongan & Monitoring Channel (v1: recruitment.vacancy). v1 hanya punya form Baru (tanpa edit per baris).
+/*
+ * REMARK
+ * Tujuan       : Grid Job Vacancy (lowongan kerja dan monitoring channel); Open membuka form v2 hrm-rcr-vacancy-form (baca-saja, Close vacancy), + New Record menerbitkan lowongan dari requisition APPROVED.
+ * Sumber hulu  : tm2hrr.vac_vacancy + rcr_requisition + app_application.
+ * Input        : Pencarian, filter Channel / Status, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu HRM > Recruitment (v2:hrm-rcr-vacancy), layar hrm-rcr-vacancy-form (kembali ke daftar), widget Recruitment Pipeline.
+ * Status       : Aktif. Halaman v1 pages::recruitment.vacancy sudah dipindah ke tmerp_unused (aturan D.25, T7g HRM).
+ */
 class VacancyGrid extends RcrGrid
 {
     public function slug(): string
@@ -20,14 +28,14 @@ class VacancyGrid extends RcrGrid
         return 'Job Vacancy';
     }
 
-    protected function v1Route(): ?string
-    {
-        return 'hrm.recruitment.vacancy';
-    }
-
     public function openUrl(): ?string
     {
-        return null;
+        return route('v2.screen', 'hrm-rcr-vacancy-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'hrm-rcr-vacancy-form').'?new=1';
     }
 
     protected function models(): array

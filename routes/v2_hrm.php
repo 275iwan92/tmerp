@@ -2,14 +2,15 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) dan register SOP / WI perusahaan (hrm-sop-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) dan lowongan kerja (hrm-rcr-vacancy-form).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload dan hrm-sop-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily dan sop-documents.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form dan hrm-rcr-vacancy-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents dan recruitment.vacancy.
  */
 
+use App\Models\Hrr\VacVacancy;
 use App\Models\Master\AttDailyStatus;
 use App\Models\Master\AttMobileGpsLog;
 use App\Models\Master\EmpCorrectionRequest;
@@ -20,6 +21,7 @@ use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\GpsApprovalService;
 use App\Services\Hrm\LeaveRequestService;
 use App\Services\Maintenance\MntDocumentService;
+use App\Services\Recruitment\RecruitmentVacancyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -132,5 +134,22 @@ Route::prefix('v2/hrm/sop')->name('v2.hrm.sop.')->middleware('module:HRM')->grou
         }
 
         return redirect(route('v2.screen', 'hrm-sop-form').'?id='.$m->id_document)->with('v2_flash', $msg);
+    })->name('save');
+});
+
+// Lowongan kerja: Save = terbitkan dari requisition APPROVED, action close = tutup lowongan. Aturan = RecruitmentVacancyService (dipindah dari v1 pages::recruitment.vacancy).
+Route::prefix('v2/hrm/vacancy')->name('v2.hrm.vacancy.')->middleware('module:HRM')->group(function () {
+    Route::post('/save', function (Request $r, RecruitmentVacancyService $svc) {
+        if ($r->filled('id')) {
+            $v = VacVacancy::findOrFail((int) $r->input('id'));
+            abort_unless((string) $r->input('action') === 'close', 422);
+            $svc->close($v);
+            $msg = t('Vacancy closed.');
+        } else {
+            $v = $svc->publish($r->only(['id_requisition', 'channel', 'title', 'description']));
+            $msg = tf(':code published.', ['code' => $v->vacancy_code]);
+        }
+
+        return redirect(route('v2.screen', 'hrm-rcr-vacancy-form').'?id='.$v->id_vacancy)->with('v2_flash', $msg);
     })->name('save');
 });

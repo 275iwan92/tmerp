@@ -298,7 +298,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // lihat docs/recruitmentportal_web_tier1.md kenapa dipertahankan.
             Route::livewire('/hrm/recruitment/requisition', 'pages::recruitment.requisition.list')->name('hrm.recruitment.requisition.list');
             Route::livewire('/hrm/recruitment/requisition/{requisition}', 'pages::recruitment.requisition.entry')->name('hrm.recruitment.requisition.entry')->where('requisition', '[0-9]+');
-            Route::livewire('/hrm/recruitment/vacancy', 'pages::recruitment.vacancy')->name('hrm.recruitment.vacancy');
+            Route::get('/hrm/recruitment/vacancy', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/hrm-rcr-vacancy-form?new=1' : '/v2/s/hrm-rcr-vacancy'))->name('hrm.recruitment.vacancy');
             Route::livewire('/hrm/recruitment/talent-pool', 'pages::recruitment.talent-pool')->name('hrm.recruitment.talent-pool');
             Route::livewire('/hrm/recruitment/candidate-review', 'pages::recruitment.candidate-review.list')->name('hrm.recruitment.candidate-review.list');
             Route::livewire('/hrm/recruitment/candidate-review/{application}', 'pages::recruitment.candidate-review.detail')->name('hrm.recruitment.candidate-review.detail')->where('application', '[0-9]+');
