@@ -6,7 +6,7 @@
  * Sumber hulu  : Aturan sama dengan layar v1 pages::master.employee (zona beku: validasi, kode pegawai TM-nnnnn, login otomatis pegawai baru, hak ubah Staff / Payroll tidak diubah; rekening gaji hanya bagi yang berhak payroll atas pegawai itu, T7b).
  * Input        : Array isian form, file foto opsional, user yang menyimpan.
  * Output       : EmpEmployee tersimpan (+ kredensial login bila pegawai baru dan belum punya login); ValidationException bila isian salah.
- * Dipakai oleh : routes/v2.php (hrm.employee.save), tes EmployeeProfileScreenTest, EmployeeAccountServiceTest, EmployeeBankSupplierTest, PayrollAccessTest.
+ * Dipakai oleh : routes/v2.php (hrm.employee.save), HireProvisionService (nextCode), tes EmployeeProfileScreenTest, EmployeeAccountServiceTest, EmployeeBankSupplierTest, PayrollAccessTest.
  * Status       : Aktif (layar v1 sudah dipensiunkan; catatan anak ada di EmployeeRecordService, akun di EmployeeAccountService).
  */
 
@@ -201,7 +201,7 @@ final class EmployeeProfileService
         return $out;
     }
 
-    private function nextCode(OrgCompany $company): string
+    public function nextCode(OrgCompany $company): string
     {
         $max = EmpEmployee::where('company_id', $company->company_id)->where('employee_code', 'like', $company->company_code.'-%')->pluck('employee_code')
             ->map(fn ($c) => (int) substr($c, strlen($company->company_code) + 1))->max() ?? 0;

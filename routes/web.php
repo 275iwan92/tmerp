@@ -307,7 +307,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::get('/hrm/recruitment/assessment-result', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/hrm-rcr-assessment-form?new=1' : '/v2/s/hrm-rcr-assessment'))->name('hrm.recruitment.assessment-result');
             Route::livewire('/hrm/recruitment/offer', 'pages::recruitment.offer.list')->name('hrm.recruitment.offer.list');
             Route::livewire('/hrm/recruitment/offer/{application}', 'pages::recruitment.offer.entry')->name('hrm.recruitment.offer.entry')->where('application', '[0-9]+');
-            Route::livewire('/hrm/recruitment/hire-provision', 'pages::recruitment.hire-provision')->name('hrm.recruitment.hire-provision');
+            Route::get('/hrm/recruitment/hire-provision', fn (Illuminate\Http\Request $r) => redirect($r->filled('open') ? '/v2/s/hrm-rcr-provision-form?id='.(int) $r->query('open') : '/v2/s/hrm-rcr-provision'))->name('hrm.recruitment.hire-provision');
         });
 
         Route::middleware('module:PROD')->group(function () {

@@ -2,14 +2,15 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) dan hasil Psikotes / Interview (hrm-rcr-assessment-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) dan provisioning pegawai baru (hrm-rcr-provision-form).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form dan hrm-rcr-assessment-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool dan recruitment.assessment-result.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form dan hrm-rcr-provision-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result dan recruitment.hire-provision.
  */
 
+use App\Models\Hrr\AppApplication;
 use App\Models\Hrr\CndCandidate;
 use App\Models\Hrr\VacVacancy;
 use App\Models\Master\AttDailyStatus;
@@ -22,7 +23,9 @@ use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\GpsApprovalService;
 use App\Services\Hrm\LeaveRequestService;
 use App\Services\Maintenance\MntDocumentService;
+use App\Services\Payroll\PayrollAccess;
 use App\Services\Recruitment\AssessmentResultService;
+use App\Services\Recruitment\HireProvisionService;
 use App\Services\Recruitment\RecruitmentInviteService;
 use App\Services\Recruitment\RecruitmentVacancyService;
 use Devlib\Locale;
@@ -175,5 +178,17 @@ Route::prefix('v2/hrm/assessment')->name('v2.hrm.assessment.')->middleware('modu
         $res = $svc->record($in, (int) Auth::id());
 
         return redirect(route('v2.screen', 'hrm-rcr-assessment-form').'?id='.$res->id_result)->with('v2_flash', t('Assessment result saved.'));
+    })->name('save');
+});
+
+// Provisioning pegawai baru dari lamaran dengan penawaran ACCEPTED: pegawai + kontrak + dokumen + login dalam satu transaksi, hanya user berhak payroll. Aturan = HireProvisionService (dipindah dari v1 pages::recruitment.hire-provision).
+Route::prefix('v2/hrm/provision')->name('v2.hrm.provision.')->middleware('module:HRM')->group(function () {
+    Route::post('/save', function (Request $r, HireProvisionService $svc) {
+        $a = AppApplication::findOrFail((int) $r->input('id'));
+        abort_unless(PayrollAccess::canProcess(Auth::user()), 403, t('Only users with payroll rights can provision a new employee.'));
+        [$e, $cred] = $svc->provision($a, (int) $r->input('position_id'), Auth::user());
+
+        return redirect(route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id)->with('v2_flash', t('Employee provisioned. Complete the missing data below.'))
+            ->with('v2_login_card', $cred ? $cred + ['code' => $e->employee_code] : null);
     })->name('save');
 });

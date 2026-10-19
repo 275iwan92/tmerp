@@ -510,16 +510,16 @@
     },
     "keywords": "provisioning, provision, karyawan baru, hire, diterima, buat karyawan, akun login, kandidat jadi karyawan, onboarding",
     "steps": [
-      {"en": "The grid lists applications whose offer was accepted (status Waiting) and those already done. Open a Waiting row.", "id": "Grid menampilkan lamaran yang penawarannya diterima (status Waiting) dan yang sudah selesai. Buka baris Waiting."},
-      {"en": "In the dialog, pick the Position of the new employee. Positions of the requisition's department are listed first.", "id": "Di dialog, pilih Position karyawan baru. Posisi dari departemen pada permohonan ditampilkan lebih dulu."},
-      {"en": "Click Provision to ERP and confirm. This cannot be undone.", "id": "Klik Provision to ERP lalu konfirmasi. Ini tidak bisa dibatalkan."},
-      {"en": "The system creates the employee from the candidate data, a contract from the offer, copies the candidate documents and creates a login. The application becomes Hired.", "id": "Sistem membuat karyawan dari data kandidat, kontrak dari penawaran, menyalin dokumen kandidat dan membuat akun login. Lamaran menjadi Hired."},
-      {"en": "The login and password are shown once. Give them to the new employee by hand, then click Close.", "id": "Login dan password ditampilkan satu kali. Berikan ke karyawan baru secara langsung, lalu klik Close."},
-      {"en": "Afterwards complete the missing data in Master Employee, such as family, bank account and salary settings.", "id": "Setelah itu lengkapi data yang kurang di Master Employee, seperti keluarga, rekening bank dan pengaturan gaji."}
+      {"en": "The grid lists applications whose offer was accepted (status Waiting) and those already done. Open a Waiting row to see the Hire Provisioning Form.", "id": "Grid menampilkan lamaran yang penawarannya diterima (status Waiting) dan yang sudah selesai. Buka baris Waiting untuk melihat Hire Provisioning Form."},
+      {"en": "Pick the Position of the new employee. Positions of the requisition's department are listed first. The salary from the offer is copied by the system and not shown.", "id": "Pilih Position karyawan baru. Posisi dari departemen pada permohonan ditampilkan lebih dulu. Gaji dari penawaran disalin sistem dan tidak ditampilkan."},
+      {"en": "Click Provision to ERP and confirm. This cannot be undone. Only users with payroll rights can do it.", "id": "Klik Provision to ERP lalu konfirmasi. Ini tidak bisa dibatalkan. Hanya user yang berhak payroll yang bisa."},
+      {"en": "The system creates the employee from the candidate data, a contract from the offer, copies the candidate documents and creates a login, all in one go. The application becomes Hired.", "id": "Sistem membuat karyawan dari data kandidat, kontrak dari penawaran, menyalin dokumen kandidat dan membuat login, sekaligus. Lamaran menjadi Hired."},
+      {"en": "You land on Master Employee with the login card. The login and password are shown once; give them to the new employee by hand, then click Close.", "id": "Anda masuk ke Master Employee dengan kartu login. Login dan password ditampilkan satu kali; berikan ke karyawan baru secara langsung, lalu klik Close."},
+      {"en": "Provisioning is refused if an employee with the same National ID already works here. Afterwards complete the missing data in Master Employee, such as family and bank account.", "id": "Provisioning ditolak bila karyawan dengan No. KTP yang sama masih bekerja di sini. Setelah itu lengkapi data yang kurang di Master Employee, seperti keluarga dan rekening bank."}
     ],
     "fields": [
       {"label": "Position", "en": "Position of the new employee, picked from active positions in Position Master. Required. The requisition only holds a free-text title, so HR confirms the real position here.", "id": "Posisi karyawan baru, dipilih dari posisi aktif di Master Posisi. Wajib diisi. Permohonan hanya berisi judul teks bebas, jadi HR menentukan posisi sebenarnya di sini."},
-      {"label": "Provision to ERP", "en": "Creates the employee, contract and login for the chosen application. Blocked if the application was already provisioned.", "id": "Membuat karyawan, kontrak dan login untuk lamaran terpilih. Ditolak bila lamaran sudah pernah diprovision."}
+      {"label": "Provision to ERP", "en": "Creates the employee, contract and login for the chosen application in one transaction. Blocked if the application was already provisioned.", "id": "Membuat karyawan, kontrak dan login untuk lamaran terpilih dalam satu transaksi. Ditolak bila lamaran sudah pernah diprovision."}
     ]
   },
   {

@@ -207,7 +207,6 @@ final class MenuRoutes
             'HRM_RCR_INTERVIEW' => route('hrm.recruitment.interview-schedule'),
             'HRM_RCR_OFFER' => route('hrm.recruitment.offer.list'),
             'HRM_RCR_SYNCLOG' => route('v2.screen', 'hrm-rcr-sync-log'),
-            'HRM_RCR_PROVISION' => route('hrm.recruitment.hire-provision'),
             // 2026-08-30: portal simulasi internal digantikan Portal Rekrutmen
             // Profesional publik (URL sama, di luar auth) -- iframe tab ini
             // sekarang menampilkan landing page publik itu, bukan wizard KTP-only lama.
