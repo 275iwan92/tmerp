@@ -262,7 +262,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // & approval route TERPISAH (inventory_rules.yaml layar_terpisah).
             // {doc?} opsional -- dipakai layar Persetujuan (approval) utk deep-link
             // langsung ke form dokumen tertentu (grid<->form tetap 1 komponen).
-            Route::livewire('/inventory/stock-adjustment/{category}/{doc?}', 'pages::inventory.stock-adjustment')->name('inv.stock-adj.index');
+            Route::get('/inventory/stock-adjustment/{category}/{doc?}', fn (Illuminate\Http\Request $r, string $category, ?string $doc = null) => redirect(($doc || $r->query('open')) ? '/v2/s/inv-stock-adj-form?class='.strtoupper($category).'&id='.(int) ($doc ?: $r->query('open')) : ($r->boolean('new') ? '/v2/s/inv-stock-adj-form?class='.strtoupper($category).'&new=1' : '/v2/s/inv-'.strtolower($category).'-stock-adj')))->name('inv.stock-adj.index');
         });
 
         Route::middleware('module:HRM')->group(function () {

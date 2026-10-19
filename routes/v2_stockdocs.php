@@ -2,7 +2,7 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar dokumen stok manual v2 (form dokumen Inventory): Stock In, Stock Out dan Return from Production (inv-stock-doc-form), disusul Adjustment.
+ * Tujuan       : Route layar dokumen stok manual v2 (form dokumen Inventory): Stock In, Stock Out dan Return from Production (inv-stock-doc-form), serta Stock Adjustment dan Stock Opname (inv-stock-adj-form).
  * Sumber hulu  : App\Services\Inventory\StockDocEntryService (simpan Draft, Confirm = posting), StockReversalService (Cancel dengan dokumen pembalik, Duplicate), StockDocumentService.
  * Input        : POST form dokumen (stock_kind, stock_class, id, action save / confirm / cancel / duplicate) dan POST dialog Cancel Document (alasan).
  * Output       : Redirect ke form (id dokumen) atau ke grid jenis dan kelasnya dengan flash v2_flash / errors.
@@ -10,6 +10,7 @@
  * Status       : Aktif. Dibuat 2026-10-19 (Master T5, Jo): menggantikan halaman v1 pages::inventory.stock-in dan stock-out.
  */
 
+use App\Services\Inventory\StockAdjustmentService;
 use App\Services\Inventory\StockDocEntryService;
 use App\Services\Inventory\StockReversalService;
 use Illuminate\Http\Request;
@@ -77,4 +78,52 @@ Route::prefix('v2/inv/stock-doc')->name('v2.inv.stockdoc.')->middleware('module:
 
         return $form($kind, $class, $id)->with('v2_flash', tf('Document cancelled. Reversal :no posted.', ['no' => $res['doc_no']]).' '.($res['stock_warning'] ?? '').' '.($res['journal_warning'] ?? ''));
     })->whereNumber('id')->name('reverse');
+});
+
+// Adjustment dan Opname: Start = pilih jenis, Save = Draft, Submit = ajukan approval (keputusan di Approval Center), Pull = isi baris dari semua posisi bersaldo (belum disimpan), Cancel = batalkan Draft, Duplicate = salinan Draft.
+Route::prefix('v2/inv/stock-adj')->name('v2.inv.stockadj.')->middleware('module:INV')->group(function () {
+    $form = fn (string $class, int $id) => redirect(route('v2.screen', 'inv-stock-adj-form').'?class='.$class.'&id='.$id);
+
+    Route::post('/{class}/start', function (Request $r, string $class) {
+        $class = strtoupper($class);
+        abort_unless(StockAdjustmentService::supports($class), 404);
+        $type = (string) $r->input('type');
+        abort_unless(isset(StockAdjustmentService::KINDS[$type]), 422);
+
+        return redirect(route('v2.screen', 'inv-stock-adj-form').'?class='.$class.'&new=1&type='.$type);
+    })->name('start');
+
+    Route::post('/save', function (Request $r, StockAdjustmentService $svc) use ($form) {
+        $class = strtoupper((string) $r->input('stock_class'));
+        abort_unless(StockAdjustmentService::supports($class), 404);
+        $id = $r->filled('id') ? (int) $r->input('id') : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+
+        if ($id && $action === 'cancel') {
+            $svc->cancelDraft($class, $id, $user);
+
+            return redirect(route('v2.screen', 'inv-'.strtolower($class).'-stock-adj'))->with('v2_flash', t('Draft cancelled.'));
+        }
+        if ($id && $action === 'duplicate') {
+            return $form($class, $svc->duplicate($class, $id, $user))->with('v2_flash', t('Draft copy created. Correct it, then Submit.'));
+        }
+        if ($action === 'pull') {
+            $wh = (int) $r->input('warehouse_id');
+            if (! $wh) {
+                return back()->withInput()->withErrors(['warehouse_id' => t('Choose the warehouse first.')]);
+            }
+
+            return back()->withInput(array_merge($r->except('lines'), ['lines' => $svc->fullScopeRows($class, $wh)]))->with('v2_flash', t('Items with a balance pulled. Enter the counted quantity on each line, then Save.'));
+        }
+
+        $id = $svc->save($class, $id, $r->only(['doc_kind', 'doc_date', 'warehouse_id', 'reason_code', 'notes', 'opn_officer', 'opn_start', 'opn_stop', 'opn_witness', 'full_scope']), (array) $r->input('lines'), $user);
+        if ($action === 'submit') {
+            $warn = $svc->submit($class, $id, $user);
+
+            return $form($class, $id)->with('v2_flash', t('Submitted for approval.').' '.$warn);
+        }
+
+        return $form($class, $id)->with('v2_flash', t('Draft saved.'));
+    })->name('save');
 });

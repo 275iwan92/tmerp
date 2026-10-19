@@ -17,12 +17,12 @@ use Illuminate\Database\Eloquent\Model;
 
 /*
  * REMARK
- * Tujuan       : Induk grid dokumen stok (Stock In / Out / Return / Adjustment per kelas RM, FG, SFG): daftar dokumen dengan gudang, kategori, sumber, referensi dan status; Open dan + New Record membuka form v2 inv-stock-doc-form bila jenis dan kelasnya sudah punya (Stock In, Stock Out RM / SFG, Return RM / SFG), selain itu halaman v1.
+ * Tujuan       : Induk grid dokumen stok (Stock In / Out / Return / Adjustment per kelas RM, FG, SFG): daftar dokumen dengan gudang, kategori, sumber, referensi dan status; Open dan + New Record membuka form v2 inv-stock-doc-form bila jenis dan kelasnya sudah punya (Stock In, Stock Out RM / SFG, Return RM / SFG; Adjustment dan Opname lewat inv-stock-adj-form).
  * Sumber hulu  : tm2inv.rm_stock / fg_stock / sfg_stock + baris, tm2mst.wh_warehouse dan item master (query terpisah).
  * Input        : Pencarian, statistik, filter Category / Source / Warehouse / Status.
  * Output       : Baris grid.
  * Dipakai oleh : Menu Inventory > Stock (v2:inv-*-stock-in / -out / -return / -adj), layar inv-stock-doc-form (kembali ke daftar).
- * Status       : Aktif. Stock In, Stock Out dan Return sudah v2 (halaman v1 dipindah ke tmerp_unused 2026-10-19); Adjustment masih membuka halaman v1 (Master T5 berlanjut).
+ * Status       : Aktif. Stock In, Stock Out, Return, Adjustment dan Opname sudah v2 (halaman v1 dipindah ke tmerp_unused 2026-10-19); tidak ada lagi jenis yang membuka halaman v1 (Master T5 selesai).
  */
 
 // Dokumen stok (v1: pages::inventory.stock-in/out/return/adjustment {category}). Satu turunan = satu kelas
@@ -105,7 +105,7 @@ abstract class StockDocGrid extends DbGrid
 
     private function hasV2Form(): bool
     {
-        return StockDocEntryService::supports($this->kind(), $this->category());
+        return $this->kind() === 'adj' || StockDocEntryService::supports($this->kind(), $this->category());
     }
 
     protected function canCreate(): bool
@@ -115,6 +115,9 @@ abstract class StockDocGrid extends DbGrid
 
     public function openUrl(): ?string
     {
+        if ($this->kind() === 'adj') {
+            return route('v2.screen', 'inv-stock-adj-form').'?class='.$this->category().'&id={id}';
+        }
         if ($this->hasV2Form()) {
             return route('v2.screen', self::V2_FORM).'?kind='.$this->kind().'&class='.$this->category().'&id={id}';
         }
@@ -124,6 +127,9 @@ abstract class StockDocGrid extends DbGrid
 
     public function newUrl(): ?string
     {
+        if ($this->kind() === 'adj') {
+            return route('v2.screen', 'inv-stock-adj-form').'?class='.$this->category().'&new=1';
+        }
         if ($this->hasV2Form()) {
             return route('v2.screen', self::V2_FORM).'?kind='.$this->kind().'&class='.$this->category().'&new=1';
         }

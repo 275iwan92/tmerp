@@ -333,121 +333,125 @@
                 "id": "Daftar menampilkan dokumen Adjustment dan Opname kelas stok ini beserta statusnya. Cari dengan no dokumen atau catatan, atau pakai tab status dan filter."
             },
             {
-                "en": "Click + New Record. Choose Kind (Adjustment or Stock Opname), Document Date, Warehouse and Reason. For Stock Opname also fill the Opname Block: officer, count start and end, witness.",
-                "id": "Klik + New Record. Pilih Kind (Adjustment atau Stock Opname), Document Date, Warehouse dan Reason. Untuk Stock Opname isi juga Blok Opname: petugas, mulai dan selesai hitung, saksi."
+                "en": "Click + New Record. On the Start card choose the Type: Adjustment (single correction) or Stock Opname (scheduled physical count), then click Start.",
+                "id": "Klik + New Record. Di kartu Start pilih Type: Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal), lalu klik Start."
             },
             {
-                "en": "Add lines: search the raw material (2 or more characters) and click it. For a full count tick Full Scope and click Pull All Items With Balance to load every item that has stock in the warehouse.",
-                "id": "Tambah baris: cari bahan baku (2 huruf atau lebih) lalu klik. Untuk hitung penuh centang Full Scope dan klik Pull All Items With Balance untuk memuat semua item yang punya stok di gudang."
+                "en": "Fill Date, Warehouse and Reason (Opname also needs Count officer, Count start, Count stop and Witness). Write the chronology in Notes.",
+                "id": "Isi Date, Warehouse dan Reason (Opname juga perlu Count officer, Count start, Count stop dan Witness). Tulis kronologi di Notes."
             },
             {
-                "en": "On each line choose Location: System Balance and the price are loaded from the last Stock Card entry. Type the counted quantity in Physical Count; Variance and Variance Value are calculated.",
-                "id": "Di tiap baris pilih Location: System Balance dan harga dimuat dari catatan terakhir Kartu Stok. Ketik jumlah hasil hitung di Physical Count; Variance dan Variance Value dihitung otomatis."
+                "en": "Add lines: pick the raw material and the Bin of this warehouse, then type the Counted quantity. Opname with full scope: click Pull all items with a balance to fill every position, then count each line.",
+                "id": "Tambah baris: pilih bahan baku dan Bin gudang ini, lalu isi Counted. Opname cakupan penuh: klik Pull all items with a balance untuk mengisi semua posisi, lalu hitung tiap baris."
             },
             {
-                "en": "Click Save Draft. When the lines are final, click Submit for Approval. The lines are locked while approval runs.",
-                "id": "Klik Save Draft. Setelah baris final, klik Submit for Approval. Baris terkunci selama proses persetujuan."
+                "en": "Click Save. The system balance and average price are read from the Stock Card at every Save; Difference = Counted minus System. Write a Description on every line where the count differs.",
+                "id": "Klik Save. Saldo sistem dan harga rata-rata dibaca dari Kartu Stok pada setiap Save; Difference = Counted dikurangi System. Tulis Description di setiap baris yang hitungannya berbeda."
             },
             {
-                "en": "Approvers decide in Adjustment Approval. When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes REVISION_NEEDED: fix it and submit again.",
-                "id": "Approver memutuskan di Adjustment Approval. Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, status menjadi REVISION_NEEDED: perbaiki lalu ajukan lagi."
+                "en": "Click Submit. The absolute difference value decides the approval level. While waiting the form is read-only; the approver decides in the Adjustment and Opname Approval Center.",
+                "id": "Klik Submit. Nilai absolut selisih menentukan level approval. Selama menunggu form hanya-baca; approver memutuskan di Adjustment and Opname Approval Center."
+            },
+            {
+                "en": "When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes Rejected: open it and click Duplicate to correct and submit again. A posted document is corrected by a new one.",
+                "id": "Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, statusnya Rejected: buka lalu klik Duplicate untuk memperbaiki dan mengajukan lagi. Dokumen Posted dikoreksi dengan dokumen baru."
             }
         ],
         "fields": [
             {
                 "label": "Document No.",
-                "en": "Filled by the system when the draft is first saved (ADJ for Adjustment, OPN for Opname).",
-                "id": "Diisi sistem saat draft pertama disimpan (ADJ untuk Adjustment, OPN untuk Opname)."
+                "en": "Filled by the system when the draft is first saved (ADJ or OPN/yy/#####).",
+                "id": "Diisi sistem saat draft pertama disimpan (ADJ atau OPN/yy/#####)."
             },
             {
-                "label": "Document Date *",
-                "en": "Date of the correction or count. Required. Starts as today.",
-                "id": "Tanggal koreksi atau hitung. Wajib. Awalnya hari ini."
+                "label": "Date *",
+                "en": "Date of the correction. Required. Starts as today.",
+                "id": "Tanggal koreksi. Wajib. Awalnya hari ini."
             },
             {
-                "label": "Kind *",
-                "en": "Adjustment (single correction) or Stock Opname (scheduled physical count). Cannot be changed after the first save.",
-                "id": "Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal). Tidak bisa diubah setelah disimpan pertama kali."
+                "label": "Type",
+                "en": "Adjustment or Stock Opname, chosen on the Start card and fixed after the first Save.",
+                "id": "Adjustment atau Stock Opname, dipilih di kartu Start dan tetap setelah Save pertama."
             },
             {
                 "label": "Warehouse *",
-                "en": "Warehouse being corrected or counted. Required.",
-                "id": "Gudang yang dikoreksi atau dihitung. Wajib."
+                "en": "Warehouse that is corrected. The bins of the lines must belong to it. Required.",
+                "id": "Gudang yang dikoreksi. Bin pada baris harus milik gudang ini. Wajib."
             },
             {
                 "label": "Reason *",
-                "en": "Why the balance differs: previous counting/input error, damaged, lost, found (more than recorded), expired or other. Required.",
-                "id": "Mengapa saldo berbeda: salah hitung/input sebelumnya, rusak, hilang, ditemukan (lebih dari catatan), kadaluarsa atau lainnya. Wajib."
+                "en": "Why the balance is corrected: count error, damaged, lost, found, expired or other. Required.",
+                "id": "Alasan koreksi saldo: salah hitung, rusak, hilang, ditemukan, kedaluwarsa atau lainnya. Wajib."
             },
             {
                 "label": "Submitted by",
-                "en": "Shows the logged-in user. Display only.",
-                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+                "en": "The user who created the document.",
+                "id": "User yang membuat dokumen."
             },
             {
-                "label": "Opname Officer *",
-                "en": "Name of the person who counts. Required for Stock Opname only.",
-                "id": "Nama petugas yang menghitung. Wajib hanya untuk Stock Opname."
+                "label": "Count officer *",
+                "en": "Opname only: person who counted. Required for Stock Opname.",
+                "id": "Khusus Opname: petugas yang menghitung. Wajib untuk Stock Opname."
             },
             {
-                "label": "Count Start *",
-                "en": "Date and time the count started. Required for Stock Opname.",
-                "id": "Tanggal dan jam hitung mulai. Wajib untuk Stock Opname."
+                "label": "Count start *",
+                "en": "Opname only: date and time the count started. Required.",
+                "id": "Khusus Opname: tanggal dan jam mulai hitung. Wajib."
             },
             {
-                "label": "Count End *",
-                "en": "Date and time the count finished. Required for Stock Opname.",
-                "id": "Tanggal dan jam hitung selesai. Wajib untuk Stock Opname."
+                "label": "Count stop *",
+                "en": "Opname only: date and time the count ended. Required.",
+                "id": "Khusus Opname: tanggal dan jam selesai hitung. Wajib."
             },
             {
                 "label": "Witness *",
-                "en": "Name of the person who witnesses the count. Required for Stock Opname.",
-                "id": "Nama saksi hitung. Wajib untuk Stock Opname."
+                "en": "Opname only: person who witnessed the count. Required.",
+                "id": "Khusus Opname: saksi hitung. Wajib."
             },
             {
-                "label": "Full Scope (all items with balance)",
-                "en": "Tick when every item in the warehouse is counted; it shows the button Pull All Items With Balance that loads all items with a balance. Stock Opname only.",
-                "id": "Centang bila semua item di gudang dihitung; muncul tombol Pull All Items With Balance yang memuat semua item bersaldo. Hanya Stock Opname."
+                "label": "Full scope (every item with a balance)",
+                "en": "Opname only: tick when the count covers every item with a balance; Pull all items with a balance then fills the lines.",
+                "id": "Khusus Opname: centang bila hitungan mencakup semua item bersaldo; Pull all items with a balance lalu mengisi baris."
             },
             {
-                "label": "Notes / Chronology",
+                "label": "Notes / chronology",
                 "en": "Free text: what happened and how the difference was found.",
                 "id": "Teks bebas: apa yang terjadi dan bagaimana selisih ditemukan."
             },
             {
-                "label": "Location *",
-                "en": "Location of the counted stock. Choosing it loads System Balance and the price for that item and location. Required.",
-                "id": "Lokasi stok yang dihitung. Memilihnya memuat System Balance dan harga item di lokasi itu. Wajib."
+                "label": "Item *",
+                "en": "Item of the line, searched with 2 or more characters.",
+                "id": "Item baris, dicari dengan 2 huruf atau lebih."
             },
             {
-                "label": "System Balance",
-                "en": "Quantity the system says is there (from the last Stock Card entry). Display only.",
-                "id": "Jumlah menurut sistem (dari catatan terakhir Kartu Stok). Hanya tampilan."
+                "label": "Bin *",
+                "en": "Bin of the warehouse where the item is counted. One item and bin can appear only once in a document.",
+                "id": "Bin gudang tempat item dihitung. Satu item dan bin hanya boleh sekali dalam satu dokumen."
             },
             {
-                "label": "Physical Count *",
-                "en": "The real quantity counted, zero or more. Type the counted total, not the difference. Required.",
-                "id": "Jumlah nyata hasil hitung, nol atau lebih. Ketik total hasil hitung, bukan selisihnya. Wajib."
+                "label": "System",
+                "en": "Balance of this item in this bin on the Stock Card as of the last Save. Shown from the second Save on.",
+                "id": "Saldo item ini di bin ini pada Kartu Stok saat Save terakhir. Tampil mulai Save kedua."
             },
             {
-                "label": "Variance",
-                "en": "Physical Count minus System Balance, calculated. Plus means more than recorded, minus means less.",
-                "id": "Physical Count dikurangi System Balance, dihitung otomatis. Plus berarti lebih dari catatan, minus berarti kurang."
+                "label": "Counted *",
+                "en": "Quantity actually counted, zero or more. Required.",
+                "id": "Jumlah yang benar-benar dihitung, nol atau lebih. Wajib."
             },
             {
-                "label": "Variance Value",
-                "en": "Absolute value of the variance times the unit price, calculated. The total decides how many approval levels are needed.",
-                "id": "Nilai mutlak selisih dikali harga satuan, dihitung otomatis. Totalnya menentukan jumlah level persetujuan."
+                "label": "Difference",
+                "en": "Counted minus System. Minus means short, plus means over.",
+                "id": "Counted dikurangi System. Minus berarti kurang, plus berarti lebih."
             },
             {
-                "label": "Line Reason",
-                "en": "Remark per line; the screen marks it required when there is a variance. It is a reminder on the screen and is not saved with the document.",
-                "id": "Catatan per baris; layar menandainya wajib bila ada selisih. Hanya pengingat di layar dan tidak disimpan bersama dokumen."
+                "label": "Difference value (IDR)",
+                "en": "Difference times the average price read at the last Save. The absolute total decides the approval level.",
+                "id": "Selisih dikali harga rata-rata saat Save terakhir. Total absolutnya menentukan level approval."
             },
             {
-                "label": "Rejection Reason",
-                "en": "Shown to the approver only: required when rejecting, at least 10 characters.",
-                "id": "Hanya untuk approver: wajib saat menolak, minimal 10 karakter."
+                "label": "Description (required when the count differs)",
+                "en": "Reason for the line. Required when Counted differs from System; saved with the line.",
+                "id": "Alasan untuk baris. Wajib bila Counted berbeda dari System; disimpan bersama baris."
             }
         ]
     },
@@ -1041,121 +1045,125 @@
                 "id": "Daftar menampilkan dokumen Adjustment dan Opname kelas stok ini beserta statusnya. Cari dengan no dokumen atau catatan, atau pakai tab status dan filter."
             },
             {
-                "en": "Click + New Record. Choose Kind (Adjustment or Stock Opname), Document Date, Warehouse and Reason. For Stock Opname also fill the Opname Block: officer, count start and end, witness.",
-                "id": "Klik + New Record. Pilih Kind (Adjustment atau Stock Opname), Document Date, Warehouse dan Reason. Untuk Stock Opname isi juga Blok Opname: petugas, mulai dan selesai hitung, saksi."
+                "en": "Click + New Record. On the Start card choose the Type: Adjustment (single correction) or Stock Opname (scheduled physical count), then click Start.",
+                "id": "Klik + New Record. Di kartu Start pilih Type: Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal), lalu klik Start."
             },
             {
-                "en": "Add lines: search the product (2 or more characters) and click it. For a full count tick Full Scope and click Pull All Items With Balance to load every item that has stock in the warehouse.",
-                "id": "Tambah baris: cari produk (2 huruf atau lebih) lalu klik. Untuk hitung penuh centang Full Scope dan klik Pull All Items With Balance untuk memuat semua item yang punya stok di gudang."
+                "en": "Fill Date, Warehouse and Reason (Opname also needs Count officer, Count start, Count stop and Witness). Write the chronology in Notes.",
+                "id": "Isi Date, Warehouse dan Reason (Opname juga perlu Count officer, Count start, Count stop dan Witness). Tulis kronologi di Notes."
             },
             {
-                "en": "On each line choose Location: System Balance and the price are loaded from the last Stock Card entry. Type the counted quantity in Physical Count; Variance and Variance Value are calculated.",
-                "id": "Di tiap baris pilih Location: System Balance dan harga dimuat dari catatan terakhir Kartu Stok. Ketik jumlah hasil hitung di Physical Count; Variance dan Variance Value dihitung otomatis."
+                "en": "Add lines: pick the product and the Bin of this warehouse, then type the Counted quantity. Opname with full scope: click Pull all items with a balance to fill every position, then count each line.",
+                "id": "Tambah baris: pilih produk dan Bin gudang ini, lalu isi Counted. Opname cakupan penuh: klik Pull all items with a balance untuk mengisi semua posisi, lalu hitung tiap baris."
             },
             {
-                "en": "Click Save Draft. When the lines are final, click Submit for Approval. The lines are locked while approval runs.",
-                "id": "Klik Save Draft. Setelah baris final, klik Submit for Approval. Baris terkunci selama proses persetujuan."
+                "en": "Click Save. The system balance and average price are read from the Stock Card at every Save; Difference = Counted minus System. Write a Description on every line where the count differs.",
+                "id": "Klik Save. Saldo sistem dan harga rata-rata dibaca dari Kartu Stok pada setiap Save; Difference = Counted dikurangi System. Tulis Description di setiap baris yang hitungannya berbeda."
             },
             {
-                "en": "Approvers decide in Adjustment Approval. When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes REVISION_NEEDED: fix it and submit again.",
-                "id": "Approver memutuskan di Adjustment Approval. Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, status menjadi REVISION_NEEDED: perbaiki lalu ajukan lagi."
+                "en": "Click Submit. The absolute difference value decides the approval level. While waiting the form is read-only; the approver decides in the Adjustment and Opname Approval Center.",
+                "id": "Klik Submit. Nilai absolut selisih menentukan level approval. Selama menunggu form hanya-baca; approver memutuskan di Adjustment and Opname Approval Center."
+            },
+            {
+                "en": "When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes Rejected: open it and click Duplicate to correct and submit again. A posted document is corrected by a new one.",
+                "id": "Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, statusnya Rejected: buka lalu klik Duplicate untuk memperbaiki dan mengajukan lagi. Dokumen Posted dikoreksi dengan dokumen baru."
             }
         ],
         "fields": [
             {
                 "label": "Document No.",
-                "en": "Filled by the system when the draft is first saved (ADJ for Adjustment, OPN for Opname).",
-                "id": "Diisi sistem saat draft pertama disimpan (ADJ untuk Adjustment, OPN untuk Opname)."
+                "en": "Filled by the system when the draft is first saved (ADJ or OPN/yy/#####).",
+                "id": "Diisi sistem saat draft pertama disimpan (ADJ atau OPN/yy/#####)."
             },
             {
-                "label": "Document Date *",
-                "en": "Date of the correction or count. Required. Starts as today.",
-                "id": "Tanggal koreksi atau hitung. Wajib. Awalnya hari ini."
+                "label": "Date *",
+                "en": "Date of the correction. Required. Starts as today.",
+                "id": "Tanggal koreksi. Wajib. Awalnya hari ini."
             },
             {
-                "label": "Kind *",
-                "en": "Adjustment (single correction) or Stock Opname (scheduled physical count). Cannot be changed after the first save.",
-                "id": "Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal). Tidak bisa diubah setelah disimpan pertama kali."
+                "label": "Type",
+                "en": "Adjustment or Stock Opname, chosen on the Start card and fixed after the first Save.",
+                "id": "Adjustment atau Stock Opname, dipilih di kartu Start dan tetap setelah Save pertama."
             },
             {
                 "label": "Warehouse *",
-                "en": "Warehouse being corrected or counted. Required.",
-                "id": "Gudang yang dikoreksi atau dihitung. Wajib."
+                "en": "Warehouse that is corrected. The bins of the lines must belong to it. Required.",
+                "id": "Gudang yang dikoreksi. Bin pada baris harus milik gudang ini. Wajib."
             },
             {
                 "label": "Reason *",
-                "en": "Why the balance differs: previous counting/input error, damaged, lost, found (more than recorded), expired or other. Required.",
-                "id": "Mengapa saldo berbeda: salah hitung/input sebelumnya, rusak, hilang, ditemukan (lebih dari catatan), kadaluarsa atau lainnya. Wajib."
+                "en": "Why the balance is corrected: count error, damaged, lost, found, expired or other. Required.",
+                "id": "Alasan koreksi saldo: salah hitung, rusak, hilang, ditemukan, kedaluwarsa atau lainnya. Wajib."
             },
             {
                 "label": "Submitted by",
-                "en": "Shows the logged-in user. Display only.",
-                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+                "en": "The user who created the document.",
+                "id": "User yang membuat dokumen."
             },
             {
-                "label": "Opname Officer *",
-                "en": "Name of the person who counts. Required for Stock Opname only.",
-                "id": "Nama petugas yang menghitung. Wajib hanya untuk Stock Opname."
+                "label": "Count officer *",
+                "en": "Opname only: person who counted. Required for Stock Opname.",
+                "id": "Khusus Opname: petugas yang menghitung. Wajib untuk Stock Opname."
             },
             {
-                "label": "Count Start *",
-                "en": "Date and time the count started. Required for Stock Opname.",
-                "id": "Tanggal dan jam hitung mulai. Wajib untuk Stock Opname."
+                "label": "Count start *",
+                "en": "Opname only: date and time the count started. Required.",
+                "id": "Khusus Opname: tanggal dan jam mulai hitung. Wajib."
             },
             {
-                "label": "Count End *",
-                "en": "Date and time the count finished. Required for Stock Opname.",
-                "id": "Tanggal dan jam hitung selesai. Wajib untuk Stock Opname."
+                "label": "Count stop *",
+                "en": "Opname only: date and time the count ended. Required.",
+                "id": "Khusus Opname: tanggal dan jam selesai hitung. Wajib."
             },
             {
                 "label": "Witness *",
-                "en": "Name of the person who witnesses the count. Required for Stock Opname.",
-                "id": "Nama saksi hitung. Wajib untuk Stock Opname."
+                "en": "Opname only: person who witnessed the count. Required.",
+                "id": "Khusus Opname: saksi hitung. Wajib."
             },
             {
-                "label": "Full Scope (all items with balance)",
-                "en": "Tick when every item in the warehouse is counted; it shows the button Pull All Items With Balance that loads all items with a balance. Stock Opname only.",
-                "id": "Centang bila semua item di gudang dihitung; muncul tombol Pull All Items With Balance yang memuat semua item bersaldo. Hanya Stock Opname."
+                "label": "Full scope (every item with a balance)",
+                "en": "Opname only: tick when the count covers every item with a balance; Pull all items with a balance then fills the lines.",
+                "id": "Khusus Opname: centang bila hitungan mencakup semua item bersaldo; Pull all items with a balance lalu mengisi baris."
             },
             {
-                "label": "Notes / Chronology",
+                "label": "Notes / chronology",
                 "en": "Free text: what happened and how the difference was found.",
                 "id": "Teks bebas: apa yang terjadi dan bagaimana selisih ditemukan."
             },
             {
-                "label": "Location *",
-                "en": "Location of the counted stock. Choosing it loads System Balance and the price for that item and location. Required.",
-                "id": "Lokasi stok yang dihitung. Memilihnya memuat System Balance dan harga item di lokasi itu. Wajib."
+                "label": "Item *",
+                "en": "Item of the line, searched with 2 or more characters.",
+                "id": "Item baris, dicari dengan 2 huruf atau lebih."
             },
             {
-                "label": "System Balance",
-                "en": "Quantity the system says is there (from the last Stock Card entry). Display only.",
-                "id": "Jumlah menurut sistem (dari catatan terakhir Kartu Stok). Hanya tampilan."
+                "label": "Bin *",
+                "en": "Bin of the warehouse where the item is counted. One item and bin can appear only once in a document.",
+                "id": "Bin gudang tempat item dihitung. Satu item dan bin hanya boleh sekali dalam satu dokumen."
             },
             {
-                "label": "Physical Count *",
-                "en": "The real quantity counted, zero or more. Type the counted total, not the difference. Required.",
-                "id": "Jumlah nyata hasil hitung, nol atau lebih. Ketik total hasil hitung, bukan selisihnya. Wajib."
+                "label": "System",
+                "en": "Balance of this item in this bin on the Stock Card as of the last Save. Shown from the second Save on.",
+                "id": "Saldo item ini di bin ini pada Kartu Stok saat Save terakhir. Tampil mulai Save kedua."
             },
             {
-                "label": "Variance",
-                "en": "Physical Count minus System Balance, calculated. Plus means more than recorded, minus means less.",
-                "id": "Physical Count dikurangi System Balance, dihitung otomatis. Plus berarti lebih dari catatan, minus berarti kurang."
+                "label": "Counted *",
+                "en": "Quantity actually counted, zero or more. Required.",
+                "id": "Jumlah yang benar-benar dihitung, nol atau lebih. Wajib."
             },
             {
-                "label": "Variance Value",
-                "en": "Absolute value of the variance times the unit price, calculated. The total decides how many approval levels are needed.",
-                "id": "Nilai mutlak selisih dikali harga satuan, dihitung otomatis. Totalnya menentukan jumlah level persetujuan."
+                "label": "Difference",
+                "en": "Counted minus System. Minus means short, plus means over.",
+                "id": "Counted dikurangi System. Minus berarti kurang, plus berarti lebih."
             },
             {
-                "label": "Line Reason",
-                "en": "Remark per line; the screen marks it required when there is a variance. It is a reminder on the screen and is not saved with the document.",
-                "id": "Catatan per baris; layar menandainya wajib bila ada selisih. Hanya pengingat di layar dan tidak disimpan bersama dokumen."
+                "label": "Difference value (IDR)",
+                "en": "Difference times the average price read at the last Save. The absolute total decides the approval level.",
+                "id": "Selisih dikali harga rata-rata saat Save terakhir. Total absolutnya menentukan level approval."
             },
             {
-                "label": "Rejection Reason",
-                "en": "Shown to the approver only: required when rejecting, at least 10 characters.",
-                "id": "Hanya untuk approver: wajib saat menolak, minimal 10 karakter."
+                "label": "Description (required when the count differs)",
+                "en": "Reason for the line. Required when Counted differs from System; saved with the line.",
+                "id": "Alasan untuk baris. Wajib bila Counted berbeda dari System; disimpan bersama baris."
             }
         ]
     },
@@ -1832,121 +1840,125 @@
                 "id": "Daftar menampilkan dokumen Adjustment dan Opname kelas stok ini beserta statusnya. Cari dengan no dokumen atau catatan, atau pakai tab status dan filter."
             },
             {
-                "en": "Click + New Record. Choose Kind (Adjustment or Stock Opname), Document Date, Warehouse and Reason. For Stock Opname also fill the Opname Block: officer, count start and end, witness.",
-                "id": "Klik + New Record. Pilih Kind (Adjustment atau Stock Opname), Document Date, Warehouse dan Reason. Untuk Stock Opname isi juga Blok Opname: petugas, mulai dan selesai hitung, saksi."
+                "en": "Click + New Record. On the Start card choose the Type: Adjustment (single correction) or Stock Opname (scheduled physical count), then click Start.",
+                "id": "Klik + New Record. Di kartu Start pilih Type: Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal), lalu klik Start."
             },
             {
-                "en": "Add lines: search the part (2 or more characters) and click it. For a full count tick Full Scope and click Pull All Items With Balance to load every item that has stock in the warehouse.",
-                "id": "Tambah baris: cari part (2 huruf atau lebih) lalu klik. Untuk hitung penuh centang Full Scope dan klik Pull All Items With Balance untuk memuat semua item yang punya stok di gudang."
+                "en": "Fill Date, Warehouse and Reason (Opname also needs Count officer, Count start, Count stop and Witness). Write the chronology in Notes.",
+                "id": "Isi Date, Warehouse dan Reason (Opname juga perlu Count officer, Count start, Count stop dan Witness). Tulis kronologi di Notes."
             },
             {
-                "en": "On each line choose Location: System Balance and the price are loaded from the last Stock Card entry. Type the counted quantity in Physical Count; Variance and Variance Value are calculated.",
-                "id": "Di tiap baris pilih Location: System Balance dan harga dimuat dari catatan terakhir Kartu Stok. Ketik jumlah hasil hitung di Physical Count; Variance dan Variance Value dihitung otomatis."
+                "en": "Add lines: pick the part and the Bin of this warehouse, then type the Counted quantity. Opname with full scope: click Pull all items with a balance to fill every position, then count each line.",
+                "id": "Tambah baris: pilih part dan Bin gudang ini, lalu isi Counted. Opname cakupan penuh: klik Pull all items with a balance untuk mengisi semua posisi, lalu hitung tiap baris."
             },
             {
-                "en": "Click Save Draft. When the lines are final, click Submit for Approval. The lines are locked while approval runs.",
-                "id": "Klik Save Draft. Setelah baris final, klik Submit for Approval. Baris terkunci selama proses persetujuan."
+                "en": "Click Save. The system balance and average price are read from the Stock Card at every Save; Difference = Counted minus System. Write a Description on every line where the count differs.",
+                "id": "Klik Save. Saldo sistem dan harga rata-rata dibaca dari Kartu Stok pada setiap Save; Difference = Counted dikurangi System. Tulis Description di setiap baris yang hitungannya berbeda."
             },
             {
-                "en": "Approvers decide in Adjustment Approval. When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes REVISION_NEEDED: fix it and submit again.",
-                "id": "Approver memutuskan di Adjustment Approval. Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, status menjadi REVISION_NEEDED: perbaiki lalu ajukan lagi."
+                "en": "Click Submit. The absolute difference value decides the approval level. While waiting the form is read-only; the approver decides in the Adjustment and Opname Approval Center.",
+                "id": "Klik Submit. Nilai absolut selisih menentukan level approval. Selama menunggu form hanya-baca; approver memutuskan di Adjustment and Opname Approval Center."
+            },
+            {
+                "en": "When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes Rejected: open it and click Duplicate to correct and submit again. A posted document is corrected by a new one.",
+                "id": "Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, statusnya Rejected: buka lalu klik Duplicate untuk memperbaiki dan mengajukan lagi. Dokumen Posted dikoreksi dengan dokumen baru."
             }
         ],
         "fields": [
             {
                 "label": "Document No.",
-                "en": "Filled by the system when the draft is first saved (ADJ for Adjustment, OPN for Opname).",
-                "id": "Diisi sistem saat draft pertama disimpan (ADJ untuk Adjustment, OPN untuk Opname)."
+                "en": "Filled by the system when the draft is first saved (ADJ or OPN/yy/#####).",
+                "id": "Diisi sistem saat draft pertama disimpan (ADJ atau OPN/yy/#####)."
             },
             {
-                "label": "Document Date *",
-                "en": "Date of the correction or count. Required. Starts as today.",
-                "id": "Tanggal koreksi atau hitung. Wajib. Awalnya hari ini."
+                "label": "Date *",
+                "en": "Date of the correction. Required. Starts as today.",
+                "id": "Tanggal koreksi. Wajib. Awalnya hari ini."
             },
             {
-                "label": "Kind *",
-                "en": "Adjustment (single correction) or Stock Opname (scheduled physical count). Cannot be changed after the first save.",
-                "id": "Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal). Tidak bisa diubah setelah disimpan pertama kali."
+                "label": "Type",
+                "en": "Adjustment or Stock Opname, chosen on the Start card and fixed after the first Save.",
+                "id": "Adjustment atau Stock Opname, dipilih di kartu Start dan tetap setelah Save pertama."
             },
             {
                 "label": "Warehouse *",
-                "en": "Warehouse being corrected or counted. Required.",
-                "id": "Gudang yang dikoreksi atau dihitung. Wajib."
+                "en": "Warehouse that is corrected. The bins of the lines must belong to it. Required.",
+                "id": "Gudang yang dikoreksi. Bin pada baris harus milik gudang ini. Wajib."
             },
             {
                 "label": "Reason *",
-                "en": "Why the balance differs: previous counting/input error, damaged, lost, found (more than recorded), expired or other. Required.",
-                "id": "Mengapa saldo berbeda: salah hitung/input sebelumnya, rusak, hilang, ditemukan (lebih dari catatan), kadaluarsa atau lainnya. Wajib."
+                "en": "Why the balance is corrected: count error, damaged, lost, found, expired or other. Required.",
+                "id": "Alasan koreksi saldo: salah hitung, rusak, hilang, ditemukan, kedaluwarsa atau lainnya. Wajib."
             },
             {
                 "label": "Submitted by",
-                "en": "Shows the logged-in user. Display only.",
-                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+                "en": "The user who created the document.",
+                "id": "User yang membuat dokumen."
             },
             {
-                "label": "Opname Officer *",
-                "en": "Name of the person who counts. Required for Stock Opname only.",
-                "id": "Nama petugas yang menghitung. Wajib hanya untuk Stock Opname."
+                "label": "Count officer *",
+                "en": "Opname only: person who counted. Required for Stock Opname.",
+                "id": "Khusus Opname: petugas yang menghitung. Wajib untuk Stock Opname."
             },
             {
-                "label": "Count Start *",
-                "en": "Date and time the count started. Required for Stock Opname.",
-                "id": "Tanggal dan jam hitung mulai. Wajib untuk Stock Opname."
+                "label": "Count start *",
+                "en": "Opname only: date and time the count started. Required.",
+                "id": "Khusus Opname: tanggal dan jam mulai hitung. Wajib."
             },
             {
-                "label": "Count End *",
-                "en": "Date and time the count finished. Required for Stock Opname.",
-                "id": "Tanggal dan jam hitung selesai. Wajib untuk Stock Opname."
+                "label": "Count stop *",
+                "en": "Opname only: date and time the count ended. Required.",
+                "id": "Khusus Opname: tanggal dan jam selesai hitung. Wajib."
             },
             {
                 "label": "Witness *",
-                "en": "Name of the person who witnesses the count. Required for Stock Opname.",
-                "id": "Nama saksi hitung. Wajib untuk Stock Opname."
+                "en": "Opname only: person who witnessed the count. Required.",
+                "id": "Khusus Opname: saksi hitung. Wajib."
             },
             {
-                "label": "Full Scope (all items with balance)",
-                "en": "Tick when every item in the warehouse is counted; it shows the button Pull All Items With Balance that loads all items with a balance. Stock Opname only.",
-                "id": "Centang bila semua item di gudang dihitung; muncul tombol Pull All Items With Balance yang memuat semua item bersaldo. Hanya Stock Opname."
+                "label": "Full scope (every item with a balance)",
+                "en": "Opname only: tick when the count covers every item with a balance; Pull all items with a balance then fills the lines.",
+                "id": "Khusus Opname: centang bila hitungan mencakup semua item bersaldo; Pull all items with a balance lalu mengisi baris."
             },
             {
-                "label": "Notes / Chronology",
+                "label": "Notes / chronology",
                 "en": "Free text: what happened and how the difference was found.",
                 "id": "Teks bebas: apa yang terjadi dan bagaimana selisih ditemukan."
             },
             {
-                "label": "Location *",
-                "en": "Location of the counted stock. Choosing it loads System Balance and the price for that item and location. Required.",
-                "id": "Lokasi stok yang dihitung. Memilihnya memuat System Balance dan harga item di lokasi itu. Wajib."
+                "label": "Item *",
+                "en": "Item of the line, searched with 2 or more characters.",
+                "id": "Item baris, dicari dengan 2 huruf atau lebih."
             },
             {
-                "label": "System Balance",
-                "en": "Quantity the system says is there (from the last Stock Card entry). Display only.",
-                "id": "Jumlah menurut sistem (dari catatan terakhir Kartu Stok). Hanya tampilan."
+                "label": "Bin *",
+                "en": "Bin of the warehouse where the item is counted. One item and bin can appear only once in a document.",
+                "id": "Bin gudang tempat item dihitung. Satu item dan bin hanya boleh sekali dalam satu dokumen."
             },
             {
-                "label": "Physical Count *",
-                "en": "The real quantity counted, zero or more. Type the counted total, not the difference. Required.",
-                "id": "Jumlah nyata hasil hitung, nol atau lebih. Ketik total hasil hitung, bukan selisihnya. Wajib."
+                "label": "System",
+                "en": "Balance of this item in this bin on the Stock Card as of the last Save. Shown from the second Save on.",
+                "id": "Saldo item ini di bin ini pada Kartu Stok saat Save terakhir. Tampil mulai Save kedua."
             },
             {
-                "label": "Variance",
-                "en": "Physical Count minus System Balance, calculated. Plus means more than recorded, minus means less.",
-                "id": "Physical Count dikurangi System Balance, dihitung otomatis. Plus berarti lebih dari catatan, minus berarti kurang."
+                "label": "Counted *",
+                "en": "Quantity actually counted, zero or more. Required.",
+                "id": "Jumlah yang benar-benar dihitung, nol atau lebih. Wajib."
             },
             {
-                "label": "Variance Value",
-                "en": "Absolute value of the variance times the unit price, calculated. The total decides how many approval levels are needed.",
-                "id": "Nilai mutlak selisih dikali harga satuan, dihitung otomatis. Totalnya menentukan jumlah level persetujuan."
+                "label": "Difference",
+                "en": "Counted minus System. Minus means short, plus means over.",
+                "id": "Counted dikurangi System. Minus berarti kurang, plus berarti lebih."
             },
             {
-                "label": "Line Reason",
-                "en": "Remark per line; the screen marks it required when there is a variance. It is a reminder on the screen and is not saved with the document.",
-                "id": "Catatan per baris; layar menandainya wajib bila ada selisih. Hanya pengingat di layar dan tidak disimpan bersama dokumen."
+                "label": "Difference value (IDR)",
+                "en": "Difference times the average price read at the last Save. The absolute total decides the approval level.",
+                "id": "Selisih dikali harga rata-rata saat Save terakhir. Total absolutnya menentukan level approval."
             },
             {
-                "label": "Rejection Reason",
-                "en": "Shown to the approver only: required when rejecting, at least 10 characters.",
-                "id": "Hanya untuk approver: wajib saat menolak, minimal 10 karakter."
+                "label": "Description (required when the count differs)",
+                "en": "Reason for the line. Required when Counted differs from System; saved with the line.",
+                "id": "Alasan untuk baris. Wajib bila Counted berbeda dari System; disimpan bersama baris."
             }
         ]
     },

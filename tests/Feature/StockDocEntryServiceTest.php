@@ -291,8 +291,8 @@ class StockDocEntryServiceTest extends TestCase
             }
         }
         $this->assertNull(Grids::find('inv-fg-stock-out')->newUrl(), 'FG tidak punya Stock Out');
-        // Adjustment belum dipindah: tetap halaman v1 (Return: lihat StockReturnEntryTest).
-        $this->assertStringContainsString('/inventory/stock-adjustment/RM', Grids::find('inv-rm-stock-adj')->newUrl());
+        // Return dan Adjustment punya form sendiri (lihat StockReturnEntryTest dan StockAdjustmentServiceTest).
+        $this->assertStringContainsString('/v2/s/inv-stock-adj-form?class=RM&new=1', Grids::find('inv-rm-stock-adj')->newUrl());
 
         foreach (['stock-in', 'stock-out'] as $v1) {
             $this->assertFileDoesNotExist(resource_path('views/pages/inventory/'.$v1.'.blade.php'));

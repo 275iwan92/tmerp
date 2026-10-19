@@ -1,5 +1,5 @@
 <?php
-
+/* REMARK Tujuan: data layar Approval Center v2 (antrian dokumen menunggu keputusan user: PR, PO, CO, Adjustment / Opname, PRT, TF) dan keputusan Approve / Reject / Hold lewat aturan layar dokumennya; Adjustment dan Opname lewat StockAdjustmentService (tanpa komponen v1). Sumber hulu: flow engine (flow_config, flow_log), dokumen modul terkait. Input: layar approval-*, modul dan id dokumen, aksi, catatan. Output: baris x-dl::approval, pesan error keputusan. Dipakai oleh: layar approval-pr / po / co / stock / prt / tf, Board (WaitingDecision). Status: Aktif. */
 namespace App\Support\V2\Data;
 
 use App\Models\Inventory\FgStock;
@@ -12,16 +12,15 @@ use App\Models\Pur\PrRequisition;
 use App\Models\Pur\PrtReturn;
 use App\Models\Sdi\CoOrder;
 use App\Services\Flow\FlowEngineService;
-use App\Services\Inventory\StockPostingService;
+use App\Services\Inventory\StockAdjustmentService;
 use App\Services\Inventory\StockTransferService;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 
 // Approval Center v2 (DevLib Form Approval, disetujui user 2026-09-30): antrian dokumen yang menunggu keputusan user login
 // (flow engine: jabatan tetap + PLT), detail hanya-baca, keputusan Approve / Reject / Hold lewat aturan layar dokumennya
-// (PurchaseRequisition / PurchaseOrder / CustomerOrder::decide), log = tm2mst.flow_log.
+// (PurchaseRequisition / PurchaseOrder / CustomerOrder::decide, StockAdjustmentService::decide untuk Adjustment dan Opname), log = tm2mst.flow_log.
 final class ApprovalCenter
 {
     use FlowDocument;
@@ -32,7 +31,7 @@ final class ApprovalCenter
         'PO' => ['title' => 'Purchase Order', 'screen' => 'purchase-order', 'menu' => 'PROC'],
         'POC' => ['title' => 'Cash PO', 'screen' => 'purchase-order', 'menu' => 'PROC'],
         'CO' => ['title' => 'Customer Order', 'screen' => 'customer-order', 'menu' => 'SALES'],
-        'AD' => ['title' => 'Stock Adjustment', 'screen' => null, 'menu' => 'INV'],
+        'AD' => ['title' => 'Stock Adjustment', 'screen' => null, 'menu' => 'INV'], // tautan Buka = inv-stock-adj-form?class=&id= (disusun di doc())
         'OP' => ['title' => 'Stock Opname', 'screen' => null, 'menu' => 'INV'],
         'PRT' => ['title' => 'Purchase Return', 'screen' => null, 'menu' => 'PROC'],
         'TF' => ['title' => 'Stock Transfer', 'screen' => 'stock-transfer', 'menu' => 'INV'],
@@ -80,15 +79,6 @@ final class ApprovalCenter
         return null;
     }
 
-    private static function stockComponent(string $cat, int $id): Component
-    {
-        $c = app('livewire')->new('pages::inventory.stock-adjustment');
-        $c->category = $cat;
-        $c->openEdit($id);
-
-        return $c;
-    }
-
     // Hanya dokumen yang statusnya masih SUBMITTED: log flow yang tertinggal pada dokumen yang sudah lanjut (data lama)
     // tidak dianggap antrian.
     private static function doc(string $module, int $id, float $amount): ?array
@@ -119,10 +109,10 @@ final class ApprovalCenter
                 if (! $doc) {
                     return null;
                 }
-                $lines = collect(self::stockComponent($cat, $id)->lines)->map(function ($l) use ($num) {
-                    $diff = (float) ($l['qty_physical'] ?: 0) - (float) $l['qty_system'];
+                $lines = collect(app(StockAdjustmentService::class)->rows($cat, $doc->load('lines')))->map(function ($l) use ($num) {
+                    $diff = (float) ($l['physical'] ?: 0) - (float) $l['qty_system'];
 
-                    return ['description' => $l['name'], 'unit' => $l['uom_code'], 'system' => $num($l['qty_system']), 'physical' => $num($l['qty_physical'] ?: 0),
+                    return ['description' => $l['item_id_label'], 'unit' => $l['uom_code'], 'system' => $num($l['qty_system']), 'physical' => $num($l['physical'] ?: 0),
                         'diff' => ($diff > 0 ? '+' : '').$num($diff), 'price' => (float) $l['unit_price'], 'subtotal' => $diff * (float) $l['unit_price']];
                 });
                 $value = $lines->sum(fn ($l) => abs($l['subtotal']));
@@ -131,7 +121,7 @@ final class ApprovalCenter
                     'amount' => $value,
                     'summary' => [t('Category') => $cat, t('Reason') => $doc->reason_code ?: '—', t('Difference Value (absolute)') => $rp($value), t('Date') => $date($doc->doc_date),
                         t('Items') => $lines->count()] + ($module === 'OP' ? [t('Count Officer') => $doc->opn_officer ?: '—', t('Witness') => $doc->opn_witness ?: '—'] : []),
-                    'lines' => $lines->all(), 'note' => $doc->notes, 'v1' => route('inv.stock-adj.index', ['category' => $cat, 'doc' => $id])];
+                    'lines' => $lines->all(), 'note' => $doc->notes, 'url' => route('v2.screen', 'inv-stock-adj-form').'?class='.$cat.'&id='.$id];
             })(),
             'PRT' => (function () use ($id, $num, $rp) {
                 $r = PrtReturn::with('lines')->where('status', 'SUBMITTED')->find($id);
@@ -188,7 +178,7 @@ final class ApprovalCenter
 
         return $base + ['id' => $module.':'.$id, 'title' => t(self::MODULES[$module]['title']), 'submitted_by' => $state['submitted_by'] ?? '—', 'steps' => $steps,
             'history' => $history, 'held' => $state['held'] ? ['by' => collect($history)->last()['by'] ?? '', 'at' => collect($history)->last()['at'] ?? '', 'note' => collect($history)->last()['note'] ?? ''] : false,
-            'url' => $screen ? route('v2.screen', $screen).'?id='.$id : ($base['v1'] ?? null)];
+            'url' => $base['url'] ?? ($screen ? route('v2.screen', $screen).'?id='.$id : ($base['v1'] ?? null))];
     }
 
     // Keputusan lewat aturan layar dokumennya. Balasan = pesan error (kosong = sukses).
@@ -209,25 +199,15 @@ final class ApprovalCenter
         };
     }
 
-    // Aturan v1 pages::inventory.stock-adjustment: approve terakhir = posting ke kartu stok. Hold belum ada di v1 -> engine langsung.
+    // Aturan StockAdjustmentService::decide: approve terakhir = posting ke Kartu Stok; Reject butuh alasan >= 10 karakter dan mengembalikan ke pembuat; Hold lewat engine.
     private static function decideStock(string $module, int $id, string $action, string $note): string
     {
         [$cat] = self::stockDoc($module, $id) ?? [null];
-        $pending = self::pendingFor($module, $id);
-        if (! $cat || ! $pending) {
+        if (! $cat) {
             return t('This document is not waiting for your approval.');
         }
-        if ($action === 'hold') {
-            app(FlowEngineService::class)->hold($module, $id, $pending->flow_step_id, $note, (float) $pending->amount_snapshot);
 
-            return '';
-        }
-        $c = self::stockComponent($cat, $id);
-        $c->approvalNote = $note;
-        session()->forget('error');
-        $action === 'approve' ? $c->approveDoc(app(FlowEngineService::class), app(StockPostingService::class)) : $c->rejectDoc(app(FlowEngineService::class));
-
-        return $c->approvalError ?: (string) session('error', '');
+        return t(app(StockAdjustmentService::class)->decide($cat, $id, $action, $note, Auth::user()));
     }
 
     private static function decideReturn(int $id, string $action, string $note): string
