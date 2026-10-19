@@ -426,25 +426,23 @@
     "module": "HRM",
     "title": "Interview Schedule",
     "purpose": {
-      "en": "A calendar to schedule HR and user interviews for candidates who reached an interview stage, and to mark interviews done or cancelled.",
-      "id": "Kalender untuk menjadwalkan interview HR dan user bagi kandidat yang sudah sampai tahap interview, serta menandai interview selesai atau batal."
+      "en": "Schedule HR and user interviews for candidates who reached an interview stage, and mark interviews done or cancelled.",
+      "id": "Menjadwalkan interview HR dan user bagi kandidat yang sudah sampai tahap interview, serta menandai interview selesai atau batal."
     },
     "keywords": "jadwal interview, interview, wawancara, kalender, interviewer, hr interview, user interview, jadwalkan kandidat",
     "steps": [
-      {"en": "The grid lists all interviews with date, time, interviewer, location and status. Filter by Stage, Interviewer or Status. Open a row to select it on the calendar screen.", "id": "Grid menampilkan semua interview dengan tanggal, jam, interviewer, lokasi dan status. Saring berdasarkan Stage, Interviewer atau Status. Buka baris untuk memilihnya di layar kalender."},
-      {"en": "On the calendar screen, candidates waiting for a schedule are listed at the side. They are in an interview stage and have no scheduled interview yet.", "id": "Di layar kalender, kandidat yang menunggu jadwal terdaftar di samping. Mereka ada di tahap interview dan belum punya jadwal."},
-      {"en": "Switch the view with Day, Month, 3 Month or Year, and move with the arrows or Today.", "id": "Ganti tampilan dengan Day, Month, 3 Month atau Year, dan berpindah dengan tombol panah atau Today."},
-      {"en": "Drag a candidate to a date, or to an hour in the Day view. A dialog opens with the date and time filled in.", "id": "Seret kandidat ke sebuah tanggal, atau ke sebuah jam pada tampilan Day. Dialog terbuka dengan tanggal dan jam sudah terisi."},
-      {"en": "Choose the Interviewer, type the Location and click Save Schedule. The interviewer receives a notification.", "id": "Pilih Interviewer, ketik Location lalu klik Save Schedule. Interviewer menerima notifikasi."},
-      {"en": "Click a scheduled interview, then Mark Done after it took place, or Cancel to cancel it.", "id": "Klik interview yang terjadwal, lalu Mark Done setelah dilaksanakan, atau Cancel untuk membatalkannya."}
+      {"en": "The grid lists all interview schedules. Click + New Record to schedule a candidate, or open a row to read its schedule.", "id": "Grid menampilkan semua jadwal interview. Klik + New Record untuk menjadwalkan kandidat, atau buka baris untuk membaca jadwalnya."},
+      {"en": "Search and choose the application waiting to be scheduled. Only candidates in an Interview stage without a scheduled interview are listed; the stage comes from the application.", "id": "Cari dan pilih lamaran yang menunggu jadwal. Hanya kandidat di tahap Interview tanpa jadwal yang tampil; tahap diambil dari lamaran."},
+      {"en": "Pick the Interviewer, the Date (not in the past), the Time and optionally the Location (up to 150 characters).", "id": "Pilih Interviewer, Date (tidak boleh lampau), Time dan Location bila perlu (maksimal 150 karakter)."},
+      {"en": "Click Save. The interview is scheduled and the interviewer gets a notification with a link to the schedule.", "id": "Klik Save. Interview terjadwal dan interviewer menerima notifikasi berisi tautan ke jadwal."},
+      {"en": "After the interview open the schedule and click Mark Done, or Cancel schedule if it will not happen. Only a scheduled interview can be changed.", "id": "Setelah interview buka jadwalnya lalu klik Mark Done, atau Cancel schedule bila batal. Hanya jadwal yang masih scheduled yang bisa diubah."},
+      {"en": "Then enter the result of the interview in Assessment Result so the candidate can move to the next stage.", "id": "Lalu isi hasil interview di Assessment Result supaya kandidat bisa maju ke tahap berikutnya."}
     ],
     "fields": [
-      {"label": "Date", "en": "Interview date. Filled from the place where you dropped the candidate, and can be changed.", "id": "Tanggal interview. Terisi dari tempat kandidat dilepas, dan bisa diubah."},
-      {"label": "Time", "en": "Interview start time. Starts at 09:00 or at the hour you dropped on.", "id": "Jam mulai interview. Awalnya 09:00 atau jam tempat kandidat dilepas."},
-      {"label": "Interviewer", "en": "System user who does the interview, picked from active users. Required. The person is notified.", "id": "User sistem yang mewawancarai, dipilih dari user aktif. Wajib diisi. Orangnya mendapat notifikasi."},
-      {"label": "Location", "en": "Place of the interview, for example a meeting room. Free text.", "id": "Tempat interview, misalnya ruang meeting. Teks bebas."},
-      {"label": "Mark Done", "en": "Sets the selected interview to Done.", "id": "Mengubah interview terpilih menjadi Done."},
-      {"label": "Cancel", "en": "Cancels the selected interview and puts the candidate back in the waiting list.", "id": "Membatalkan interview terpilih dan mengembalikan kandidat ke daftar menunggu."}
+      {"label": "Application waiting to be scheduled", "en": "The application to schedule. Only IN_PROGRESS applications in an Interview stage without a scheduled interview are listed. Required.", "id": "Lamaran yang dijadwalkan. Hanya lamaran IN_PROGRESS di tahap Interview tanpa jadwal yang tampil. Wajib diisi."},
+      {"label": "Interviewer", "en": "The active user who will interview the candidate. Required; gets a notification.", "id": "User aktif yang akan mewawancarai kandidat. Wajib diisi; menerima notifikasi."},
+      {"label": "Date and Time", "en": "When the interview takes place. The date cannot be in the past. Required.", "id": "Kapan interview berlangsung. Tanggal tidak boleh lampau. Wajib diisi."},
+      {"label": "Location", "en": "Place of the interview, for example HR Meeting Room. Optional, up to 150 characters.", "id": "Tempat interview, misalnya Ruang Meeting HR. Boleh dikosongkan, maksimal 150 karakter."}
     ]
   },
   {

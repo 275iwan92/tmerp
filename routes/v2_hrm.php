@@ -2,15 +2,16 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) dan provisioning pegawai baru (hrm-rcr-provision-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) provisioning pegawai baru (hrm-rcr-provision-form) dan jadwal interview (hrm-rcr-interview-form).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService dan Recruitment\InterviewScheduleService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form dan hrm-rcr-provision-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result dan recruitment.hire-provision.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form, hrm-rcr-provision-form dan hrm-rcr-interview-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result, recruitment.hire-provision dan recruitment.interview-schedule.
  */
 
 use App\Models\Hrr\AppApplication;
+use App\Models\Hrr\AppInterviewSchedule;
 use App\Models\Hrr\CndCandidate;
 use App\Models\Hrr\VacVacancy;
 use App\Models\Master\AttDailyStatus;
@@ -26,6 +27,7 @@ use App\Services\Maintenance\MntDocumentService;
 use App\Services\Payroll\PayrollAccess;
 use App\Services\Recruitment\AssessmentResultService;
 use App\Services\Recruitment\HireProvisionService;
+use App\Services\Recruitment\InterviewScheduleService;
 use App\Services\Recruitment\RecruitmentInviteService;
 use App\Services\Recruitment\RecruitmentVacancyService;
 use Devlib\Locale;
@@ -190,5 +192,23 @@ Route::prefix('v2/hrm/provision')->name('v2.hrm.provision.')->middleware('module
 
         return redirect(route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id)->with('v2_flash', t('Employee provisioned. Complete the missing data below.'))
             ->with('v2_login_card', $cred ? $cred + ['code' => $e->employee_code] : null);
+    })->name('save');
+});
+
+// Jadwal interview: Save = jadwalkan lamaran yang menunggu (tahap dari server, interviewer diberi notifikasi), action done / cancel hanya dari SCHEDULED. Aturan = InterviewScheduleService (dipindah dari v1 pages::recruitment.interview-schedule).
+Route::prefix('v2/hrm/interview')->name('v2.hrm.interview.')->middleware('module:HRM')->group(function () {
+    Route::post('/save', function (Request $r, InterviewScheduleService $svc) {
+        if ($r->filled('id')) {
+            $s = AppInterviewSchedule::findOrFail((int) $r->input('id'));
+            $action = (string) $r->input('action');
+            abort_unless(in_array($action, ['done', 'cancel'], true), 422);
+            $action === 'done' ? $svc->markDone($s) : $svc->cancel($s);
+            $msg = t($action === 'done' ? 'Interview marked as done.' : 'Interview schedule cancelled.');
+        } else {
+            $s = $svc->schedule($r->only(['id_application', 'date', 'time', 'interviewer_id', 'location']));
+            $msg = t('Interview scheduled and the interviewer was notified.');
+        }
+
+        return redirect(route('v2.screen', 'hrm-rcr-interview-form').'?id='.$s->id_schedule)->with('v2_flash', $msg);
     })->name('save');
 });

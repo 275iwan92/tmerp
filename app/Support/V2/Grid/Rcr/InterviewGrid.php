@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Jadwal Interview (v1: recruitment.interview-schedule; ?open={id} memilih jadwal itu di panel kanan v1).
+/*
+ * REMARK
+ * Tujuan       : Grid Interview Schedule (jadwal interview per lamaran); Open membuka form v2 hrm-rcr-interview-form (baca-saja, Mark Done / Cancel), + New Record menjadwalkan lamaran yang menunggu. Kalender v1 belum ada padanannya.
+ * Sumber hulu  : tm2hrr.app_interview_schedule + app_application + cnd_candidate + sec_user.
+ * Input        : Pencarian, filter Stage / Interviewer / Status, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu HRM > Recruitment (v2:hrm-rcr-interview), layar hrm-rcr-interview-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::recruitment.interview-schedule sudah dipindah ke tmerp_unused (aturan D.25, T7k HRM).
+ */
 class InterviewGrid extends RcrGrid
 {
     private array $users = [];
@@ -25,14 +33,14 @@ class InterviewGrid extends RcrGrid
         return 'Interview Schedule';
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.recruitment.interview-schedule';
+        return route('v2.screen', 'hrm-rcr-interview-form').'?id={id}';
     }
 
     public function newUrl(): ?string
     {
-        return null;
+        return route('v2.screen', 'hrm-rcr-interview-form').'?new=1';
     }
 
     protected function models(): array

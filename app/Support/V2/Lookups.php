@@ -79,6 +79,8 @@ final class Lookups
             'search' => fn (string $q) => \App\Services\Recruitment\RecruitmentInviteService::vacancySearch($q), 'find' => fn ($v) => \App\Services\Recruitment\RecruitmentInviteService::vacancyFind($v)]);
         Lookup::define('rcr_assessment_awaiting', ['key' => 'id', 'label' => 'label', 'source' => 'tm2hrr.app_application (IN_PROGRESS, stage awaiting result)', 'columns' => ['candidate' => 'Candidate', 'stage' => 'Stage', 'vacancy' => 'Vacancy'],
             'search' => fn (string $q) => \App\Services\Recruitment\AssessmentResultService::awaitingSearch($q), 'find' => fn ($v) => \App\Services\Recruitment\AssessmentResultService::awaitingFind($v)]);
+        Lookup::define('rcr_interview_awaiting', ['key' => 'id', 'label' => 'label', 'source' => 'tm2hrr.app_application (IN_PROGRESS, interview stage without scheduled interview)', 'columns' => ['candidate' => 'Candidate', 'stage' => 'Stage', 'vacancy' => 'Vacancy'],
+            'search' => fn (string $q) => \App\Services\Recruitment\InterviewScheduleService::awaitingSearch($q), 'find' => fn ($v) => \App\Services\Recruitment\InterviewScheduleService::awaitingFind($v)]);
         Lookup::define('prod_process_machine_side', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_process (activate = 1, is_manual = 0)', 'columns' => ['code' => 'Code', 'name' => 'Process', 'stage' => 'Stage'],
             'search' => fn (string $q) => Data\ProductionRef::machineProcessSearch($q), 'find' => fn ($v) => Data\ProductionRef::processFind($v)]);
         Lookup::define('prod_machine_model', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_machine_model (activate = 1)', 'columns' => ['code' => 'Model', 'size' => 'Sheet size', 'drive' => 'Drive'],

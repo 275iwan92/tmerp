@@ -204,7 +204,6 @@ final class MenuRoutes
             'HRM_RCR_REQUISITION' => route('hrm.recruitment.requisition.list'),
             'HRM_RCR_REVIEW' => route('hrm.recruitment.candidate-review.list'),
             'HRM_RCR_PIPELINE' => route('hrm.recruitment.pipeline-board'),
-            'HRM_RCR_INTERVIEW' => route('hrm.recruitment.interview-schedule'),
             'HRM_RCR_OFFER' => route('hrm.recruitment.offer.list'),
             'HRM_RCR_SYNCLOG' => route('v2.screen', 'hrm-rcr-sync-log'),
             // 2026-08-30: portal simulasi internal digantikan Portal Rekrutmen
