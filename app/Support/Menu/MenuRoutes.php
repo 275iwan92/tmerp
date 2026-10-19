@@ -192,7 +192,6 @@ final class MenuRoutes
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('v2.screen', 'hrm-roster'),
             'HRM_CONTACT_GAP' => route('v2.screen', 'hrm-contact-gap'),
-            'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
             'HRM_CLOCKIN' => route('v2.screen', 'hrm-clockin'),
             'HRM_ATTENDANCE_UPLOAD' => route('v2.screen', 'hrm-attendance-upload'),
             'HRM_ATTENDANCE' => route('hrm.attendance-daily'),

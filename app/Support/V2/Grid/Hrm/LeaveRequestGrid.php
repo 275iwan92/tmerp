@@ -7,7 +7,15 @@ use App\Models\Master\EmpLeaveRequest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Approval Cuti/Sakit/Izin (v1: pages::hrm.leave-requests). Setujui/Tolak di layar tujuan, bukan di baris grid.
+/*
+ * REMARK
+ * Tujuan       : Grid Approval Cuti / Sakit / Izin (pengajuan dari Self-Service: PENDING menunggu HR); Open membuka form v2 hrm-leave-form tempat HR memutuskan. Tanpa New.
+ * Sumber hulu  : tm2mst.emp_leave_request + emp_employee.
+ * Input        : Pencarian, filter Type / Status, kotak status.
+ * Output       : Baris grid (hanya baca; keputusan lewat form).
+ * Dipakai oleh : Menu HRM (v2:hrm-leave), layar hrm-leave-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::hrm.leave-requests sudah dipindah ke tmerp_unused (aturan D.25, T7d HRM).
+ */
 class LeaveRequestGrid extends HrmGrid
 {
     public function slug(): string
@@ -25,9 +33,14 @@ class LeaveRequestGrid extends HrmGrid
         return self::TRANSACTIONAL;
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.leave-requests';
+        return route('v2.screen', 'hrm-leave-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return null;
     }
 
     protected function canCreate(): bool
