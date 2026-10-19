@@ -304,7 +304,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/recruitment/candidate-review/{application}', 'pages::recruitment.candidate-review.detail')->name('hrm.recruitment.candidate-review.detail')->where('application', '[0-9]+');
             Route::livewire('/hrm/recruitment/pipeline-board', 'pages::recruitment.pipeline-board')->name('hrm.recruitment.pipeline-board');
             Route::livewire('/hrm/recruitment/interview-schedule', 'pages::recruitment.interview-schedule')->name('hrm.recruitment.interview-schedule');
-            Route::livewire('/hrm/recruitment/assessment-result', 'pages::recruitment.assessment-result')->name('hrm.recruitment.assessment-result');
+            Route::get('/hrm/recruitment/assessment-result', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/hrm-rcr-assessment-form?new=1' : '/v2/s/hrm-rcr-assessment'))->name('hrm.recruitment.assessment-result');
             Route::livewire('/hrm/recruitment/offer', 'pages::recruitment.offer.list')->name('hrm.recruitment.offer.list');
             Route::livewire('/hrm/recruitment/offer/{application}', 'pages::recruitment.offer.entry')->name('hrm.recruitment.offer.entry')->where('application', '[0-9]+');
             Route::livewire('/hrm/recruitment/hire-provision', 'pages::recruitment.hire-provision')->name('hrm.recruitment.hire-provision');

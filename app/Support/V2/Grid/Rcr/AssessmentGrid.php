@@ -10,8 +10,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Input Hasil Psikotes/Interview (v1: recruitment.assessment-result). Input baru dimulai dari antrean tahap di v1
-// (butuh lamaran + tahap), jadi grid ini daftar hasil; New membuka layar v1.
+/*
+ * REMARK
+ * Tujuan       : Grid Assessment Result (hasil Psikotes / Interview terstruktur); Open membuka form v2 hrm-rcr-assessment-form (baca-saja), + New Record mencatat hasil untuk lamaran yang menunggu.
+ * Sumber hulu  : tm2hrr.app_assessment_result + app_application + cnd_candidate + sec_user.
+ * Input        : Pencarian, filter Stage / Recommendation / Assessor, kotak status.
+ * Output       : Baris grid (hanya baca; hasil baru lewat form).
+ * Dipakai oleh : Menu HRM > Recruitment (v2:hrm-rcr-assessment), layar hrm-rcr-assessment-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::recruitment.assessment-result sudah dipindah ke tmerp_unused (aturan D.25, T7i HRM).
+ */
 class AssessmentGrid extends RcrGrid
 {
     private array $users = [];
@@ -28,12 +35,12 @@ class AssessmentGrid extends RcrGrid
 
     public function openUrl(): ?string
     {
-        return null;
+        return route('v2.screen', 'hrm-rcr-assessment-form').'?id={id}';
     }
 
     public function newUrl(): ?string
     {
-        return route('hrm.recruitment.assessment-result');
+        return route('v2.screen', 'hrm-rcr-assessment-form').'?new=1';
     }
 
     protected function models(): array
@@ -62,7 +69,7 @@ class AssessmentGrid extends RcrGrid
             ['key' => 'name', 'label' => 'Candidate / Phone', 'type' => 'doc', 'party' => 'phone'],
             ['key' => 'stage', 'label' => 'Stage'],
             ['key' => 'score', 'label' => 'Score', 'type' => 'number'],
-            ['key' => 'recommendation', 'label' => 'Recommendation', 'type' => 'badge', 'tones' => ['LANJUT' => 'success', 'TIDAK_LANJUT' => 'danger', 'PERTIMBANGKAN' => 'warn']],
+            ['key' => 'recommendation', 'label' => 'Recommendation', 'type' => 'badge', 'tones' => ['LANJUT' => 'success', 'TIDAK_LANJUT' => 'danger', 'PERTIMBANGAN' => 'warn']],
             ['key' => 'assessor', 'label' => 'Assessor'],
             ['key' => 'at', 'label' => 'Assessed', 'type' => 'date'],
             ['key' => 'notes', 'label' => 'Notes'],
@@ -84,6 +91,7 @@ class AssessmentGrid extends RcrGrid
             ['label' => 'All'],
             ['label' => 'Proceed', 'where' => ['recommendation' => 'LANJUT'], 'tone' => 'success'],
             ['label' => 'Stop', 'where' => ['recommendation' => 'TIDAK_LANJUT'], 'tone' => 'danger'],
+            ['label' => 'Consider', 'where' => ['recommendation' => 'PERTIMBANGAN'], 'tone' => 'warn'],
         ];
     }
 

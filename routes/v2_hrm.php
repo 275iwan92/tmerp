@@ -2,12 +2,12 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) dan undangan Talent Pool (rcr-talent-pool-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) dan hasil Psikotes / Interview (hrm-rcr-assessment-form).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form dan rcr-talent-pool-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy dan recruitment.talent-pool.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form dan hrm-rcr-assessment-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool dan recruitment.assessment-result.
  */
 
 use App\Models\Hrr\CndCandidate;
@@ -22,8 +22,10 @@ use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\GpsApprovalService;
 use App\Services\Hrm\LeaveRequestService;
 use App\Services\Maintenance\MntDocumentService;
+use App\Services\Recruitment\AssessmentResultService;
 use App\Services\Recruitment\RecruitmentInviteService;
 use App\Services\Recruitment\RecruitmentVacancyService;
+use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -164,4 +166,14 @@ Route::prefix('v2/hrm/talent-pool')->name('v2.hrm.talentpool.')->middleware('mod
 
         return redirect(route('v2.screen', 'rcr-talent-pool-form').'?id='.$c->id_candidate)->with('v2_flash', tf('Invited to :vacancy.', ['vacancy' => $a->vacancy->title]));
     })->name('invite');
+});
+
+// Hasil Psikotes / Interview: Save = catat hasil lamaran yang menunggu (tahap dari server); hasil yang ada baca-saja. Aturan = AssessmentResultService (dipindah dari v1 pages::recruitment.assessment-result).
+Route::prefix('v2/hrm/assessment')->name('v2.hrm.assessment.')->middleware('module:HRM')->group(function () {
+    Route::post('/save', function (Request $r, AssessmentResultService $svc) {
+        $in = $r->only(['id_application', 'recommendation', 'notes']) + ['score' => filled($r->input('score')) ? Locale::input($r->input('score')) : null];
+        $res = $svc->record($in, (int) Auth::id());
+
+        return redirect(route('v2.screen', 'hrm-rcr-assessment-form').'?id='.$res->id_result)->with('v2_flash', t('Assessment result saved.'));
+    })->name('save');
 });

@@ -459,15 +459,16 @@
     },
     "keywords": "hasil psikotes, assessment, hasil interview, penilaian kandidat, skor, rekomendasi, lanjut, tidak lanjut",
     "steps": [
-      {"en": "Click + New Record. The list Awaiting Result shows candidates in a test or interview stage that still have no result.", "id": "Klik + New Record. Daftar Awaiting Result menampilkan kandidat di tahap tes atau interview yang belum punya hasil."},
-      {"en": "Click a candidate in that list to open the result dialog for the stage.", "id": "Klik kandidat di daftar itu untuk membuka dialog hasil untuk tahap tersebut."},
-      {"en": "Type the Score if there is one, choose a Recommendation and write the Notes. The note is required.", "id": "Ketik Score bila ada, pilih Recommendation dan tulis Notes. Notes wajib diisi."},
-      {"en": "Click Save. Your user is stored as the assessor. Now the candidate can be moved to the next stage in the Pipeline Board.", "id": "Klik Save. User Anda tersimpan sebagai penilai. Sekarang kandidat bisa dipindah ke tahap berikutnya di Pipeline Board."},
-      {"en": "Use the grid to look back at results, filtered by Stage, Recommendation or Assessor.", "id": "Pakai grid untuk melihat hasil sebelumnya, disaring berdasarkan Stage, Recommendation atau Assessor."}
+      {"en": "Click + New Record to open the Assessment Result Form.", "id": "Klik + New Record untuk membuka Assessment Result Form."},
+      {"en": "Search and choose the application awaiting a result. The list only shows candidates in a Psikotes or Interview stage that still have no result; the stage comes from the application.", "id": "Cari dan pilih lamaran yang menunggu hasil. Daftar hanya berisi kandidat di tahap Psikotes atau Interview yang belum punya hasil; tahap diambil dari lamaran."},
+      {"en": "Choose a Recommendation, type the Score (0 to 100) if there is one and write the Notes. The note is required.", "id": "Pilih Recommendation, ketik Score (0 sampai 100) bila ada dan tulis Notes. Notes wajib diisi."},
+      {"en": "Click Save. Your user is stored as the assessor. Now the candidate can be moved to the next stage in the Pipeline Board. A saved result cannot be changed.", "id": "Klik Save. User Anda tersimpan sebagai penilai. Sekarang kandidat bisa dipindah ke tahap berikutnya di Pipeline Board. Hasil yang sudah disimpan tidak bisa diubah."},
+      {"en": "Use the grid to look back at results, filtered by Stage, Recommendation or Assessor. Open a row to read the full result.", "id": "Pakai grid untuk melihat hasil sebelumnya, disaring berdasarkan Stage, Recommendation atau Assessor. Buka baris untuk membaca hasil lengkap."}
     ],
     "fields": [
-      {"label": "Score", "en": "Test or interview score, a number that may have decimals. Optional.", "id": "Skor tes atau interview, angka yang boleh berdesimal. Boleh dikosongkan."},
-      {"label": "Recommendation", "en": "Assessor's advice: Lanjut (proceed), Tidak Lanjut (stop) or Pertimbangan (consider). Starts on Lanjut.", "id": "Saran penilai: Lanjut, Tidak Lanjut atau Pertimbangan. Awalnya Lanjut."},
+      {"label": "Application awaiting result", "en": "The application to record. Only IN_PROGRESS applications in a test or interview stage without a result are listed. Required.", "id": "Lamaran yang dicatat. Hanya lamaran IN_PROGRESS di tahap tes atau interview yang belum punya hasil yang tampil. Wajib diisi."},
+      {"label": "Score", "en": "Test or interview score from 0 to 100, may have decimals. Optional.", "id": "Skor tes atau interview dari 0 sampai 100, boleh berdesimal. Boleh dikosongkan."},
+      {"label": "Recommendation", "en": "Assessor's advice: Proceed, Do Not Proceed or Consider. Required.", "id": "Saran penilai: Proceed, Do Not Proceed atau Consider. Wajib diisi."},
       {"label": "Notes", "en": "Assessor's notes explaining the result. Required.", "id": "Catatan penilai yang menjelaskan hasil. Wajib diisi."}
     ]
   },
