@@ -73,6 +73,11 @@ final class Lookups
             'search' => fn (string $q) => Data\ProductionRef::processSearch($q), 'find' => fn ($v) => Data\ProductionRef::processFind($v)]);
         Lookup::define('prod_machine', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_machine (activate = 1)', 'columns' => ['code' => 'Machine', 'name' => 'Name'],
             'search' => fn (string $q) => Data\ProductionRef::machineSearch($q), 'find' => fn ($v) => Data\ProductionRef::machineFind($v)]);
+        Lookup::define('prod_process_machine_side', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_process (activate = 1, is_manual = 0)', 'columns' => ['code' => 'Code', 'name' => 'Process', 'stage' => 'Stage'],
+            'search' => fn (string $q) => Data\ProductionRef::machineProcessSearch($q), 'find' => fn ($v) => Data\ProductionRef::processFind($v)]);
+        Lookup::define('prod_machine_model', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_machine_model (activate = 1)', 'columns' => ['code' => 'Model', 'size' => 'Sheet size', 'drive' => 'Drive'],
+            'fill' => ['max_sheet_length_mm' => 'work_length_mm', 'max_sheet_width_mm' => 'work_width_mm', 'max_speed_per_hour' => 'speed_per_hour', 'power_kw' => 'motor_kw'],
+            'search' => fn (string $q) => Data\ProductionRef::modelSearch($q), 'find' => fn ($v) => Data\ProductionRef::modelFind($v)]);
         Lookup::define('prod_machine_proc', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_machine (activate = 1, is_process_machine = 1)', 'columns' => ['code' => 'Machine', 'name' => 'Name'],
             'search' => fn (string $q) => Data\ProductionRef::processMachineSearch($q), 'find' => fn ($v) => Data\ProductionRef::machineFind($v)]);
         Lookup::define('stock_batch', ['key' => 'id', 'label' => 'label', 'source' => 'tm2inv.inv_batch (activate = 1)', 'columns' => ['batch_no' => 'Batch', 'lot' => 'Supplier lot', 'item' => 'Item', 'expiry' => 'Expiry'],

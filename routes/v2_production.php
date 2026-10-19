@@ -2,19 +2,21 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar master modul Production v2: Scrap Type (prod-scrap-form), Routing Template (prod-routing-form), BOP Rule (prod-bop-form) dan Process (prod-process-form), disusul Machine.
- * Sumber hulu  : App\Services\Production\ScrapTypeService, RoutingTemplateEntryService, BopRuleEntryService dan ProcessMasterService (dan layanan master Production berikutnya).
- * Input        : POST form (id, action save / activate / deactivate, isian; Routing: juga baris langkah steps[]; Process: juga baris matriks mesin machines[]).
+ * Tujuan       : Route layar master modul Production v2: Scrap Type (prod-scrap-form), Routing Template (prod-routing-form), BOP Rule (prod-bop-form), Process (prod-process-form) dan Machine (prod-machine-form).
+ * Sumber hulu  : App\Services\Production\ScrapTypeService, RoutingTemplateEntryService, BopRuleEntryService dan ProcessMasterService dan MachineMasterService (dan layanan master Production berikutnya).
+ * Input        : POST form (id, action save / activate / deactivate, isian; Routing: juga baris langkah steps[]; Process: juga baris matriks mesin machines[]; Machine: juga baris processes[] dan downtimes[]).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar prod-scrap-form, prod-routing-form, prod-bop-form dan prod-process-form.
- * Status       : Aktif. Dibuat 2026-10-19 (Master T6b, Jo): menggantikan halaman v1 pages::production.scrap-type, routing-template, bop-rule dan master-process.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar prod-scrap-form, prod-routing-form, prod-bop-form, prod-process-form dan prod-machine-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (Master T6b, Jo): menggantikan halaman v1 pages::production.scrap-type, routing-template, bop-rule, master-process dan master.machine.
  */
 
 use App\Models\Master\ProdBopRule;
+use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdProcess;
 use App\Models\Master\ProdRoutingTemplate;
 use App\Models\Prd\PrdScrapType;
 use App\Services\Production\BopRuleEntryService;
+use App\Services\Production\MachineMasterService;
 use App\Services\Production\ProcessMasterService;
 use App\Services\Production\RoutingTemplateEntryService;
 use App\Services\Production\ScrapTypeService;
@@ -104,5 +106,24 @@ Route::prefix('v2/prod/process')->name('v2.prod.process.')->middleware('module:P
         $p = $svc->save($p, $r->except(['id', 'action', 'machines']), (array) $r->input('machines'), $user);
 
         return $form($p)->with('v2_flash', tf(':name saved.', ['name' => $p->process_name]));
+    })->name('save');
+});
+
+// Machine: save (data mesin + matriks proses + log downtime) / activate / deactivate. DATA REAL: aturan = MachineMasterService + ProcessMachineMatrixService (dipindah dari v1 pages::master.machine).
+Route::prefix('v2/prod/machine')->name('v2.prod.machine.')->middleware('module:PROD')->group(function () {
+    Route::post('/save', function (Request $r, MachineMasterService $svc) {
+        $m = $r->filled('id') ? ProdMachine::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+        $form = fn (ProdMachine $x) => redirect(route('v2.screen', 'prod-machine-form').'?id='.$x->machine_id);
+
+        if ($m && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($m, $action === 'activate', $user);
+
+            return $form($m)->with('v2_flash', tf($action === 'activate' ? ':name activated.' : ':name deactivated.', ['name' => $m->machine_code]));
+        }
+        $m = $svc->save($m, $r->except(['id', 'action', 'processes', 'downtimes']), (array) $r->input('processes'), (array) $r->input('downtimes'), $user);
+
+        return $form($m)->with('v2_flash', tf(':name saved.', ['name' => $m->machine_code]));
     })->name('save');
 });

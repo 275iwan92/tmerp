@@ -17,7 +17,7 @@
 | Speed | Three layers: pair row (`prod_process_machine.speed_per_hour`), process default (`prod_process.default_speed_per_hour`), machine target (`speed_target_per_hour`). `speed_target_per_hour` is filled on 22 of 45 machines; `max_speed_per_hour` on 12. | FACT, query; `MachineCapabilityService.php:82-107` |
 | Downtime | `prod_machine_downtime`: 10 rows, 2 open (`end_at` NULL: `OFF-02` BREAKDOWN, `CMP-01` PLANNED_MAINT); a created or closed downtime triggers a new Draft plan (`MachineDowntimeObserver`). | FACT, query; `app/Observers/MachineDowntimeObserver.php` |
 | Used by the planner | Candidate eligibility (size either orientation, grammage, status, colours per pass for print), calendar (shifts), speed layers, skip when status is blocking, load and bottleneck percent. | FACT, `WoPlanningEnricher.php`, `PlanLoader.php:50,91-100`, `Ppic::exceptions` |
-| Screen | v2 grid over the v1 form: the grid is `MachineGrid` (columns machine, nickname, model, role, type, max speed, year); the edit form is the v1 Livewire component `pages::master.machine`. | FACT, `MachineGrid.php:25-65` |
+| Screen | v2 grid and v2 form: the grid is `MachineGrid` (columns machine, nickname, model, role, type, max speed, year); the edit form is the v2 screen `prod-machine-form` (`MachineMasterService`, pair matrix `ProcessMachineMatrixService`; the v1 page is archived in `tmerp_unused/master_machine_v1_2026-10-19.blade.php`). | FACT, `MachineGrid.php:30-92` |
 
 ## Relations
 - **source**: model catalog `prod_machine_model` (picking a model fills the general spec into the form; the officer can still change it), Maintenance (status through downtime and orders), HRM (division, work center).
@@ -35,3 +35,4 @@
 
 ## Already exists? Searched where, result
 `concept:find "machine"`: only the engine map mentions machines; no TG card for the machine master existed. Searched: one machine table (`prod_machine`); legacy `cac_idx_machine` (Costing) is a different, old costing table.
+- Re-checked 2026-10-19 after Master Machine moved to the v2 form `prod-machine-form` (rule D.25, Master T6b): the Screen row now describes the v2 form (`MachineMasterService`, `ProcessMachineMatrixService`, `MachineGrid`); the v1 page is archived in `tmerp_unused/master_machine_v1_2026-10-19.blade.php`. Machine data and the engines that read it were not changed; a stop that is opened or closed still triggers the PPIC re-plan through `MachineDowntimeObserver`, which now waits for the surrounding transaction to commit.

@@ -209,7 +209,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::middleware('module:MDATA')->group(function () {
             Route::redirect('/master/customer', '/v2/s/md-customer');
             Route::redirect('/master/supplier', '/v2/s/md-supplier');
-            Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
+            Route::get('/master/machine', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-machine-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-machine-form?new=1' : '/v2/s/prod-machine')))->name('master.machine');
             Route::redirect('/master/shift', '/v2/s/md-shift');
 
             Route::redirect('/master/raw-material', '/v2/s/md-raw')->name('master.raw-material.list');

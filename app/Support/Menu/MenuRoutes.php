@@ -55,7 +55,6 @@ final class MenuRoutes
             // Pintasan master: dipakai selama baris asalnya belum ber-target v2 (tm2sys); di ddtsys target v2 yang menang.
             'PRE_MD_PROD' => route('v2.screen', 'master-product'),
             'PRE_MD_MATCAT' => route('v2.screen', 'md-matcat'),
-            'PRE_MD_MACHINE' => route('master.machine'),
             // Halaman yang hanya ada di v2: menu v1 (top bar) membukanya apa adanya supaya barisnya bukan link mati.
             'SALES_MCARD' => route('v2.screen', 'master-card-collection'),
             'SALES_RPT_QUOOPEN' => route('v2.screen', 'quotation-outstanding'),
@@ -120,7 +119,6 @@ final class MenuRoutes
             'INV_WH_RPT_QC' => route('v2.screen', 'inv-rpt-inspection'),
             'INV_REF_MATCAT' => route('v2.screen', 'md-matcat'),
             'INV_REF_PROD' => route('v2.screen', 'master-product'),
-            'MD_MACHINE' => route('master.machine'),
             // MD_CURRENCY ternyata belum pernah dipetakan sejak dibuat
             // 2026-08-30 (link mati) -- ditemukan & diperbaiki 2026-09-02
             // sekalian nambah MD_EXCHRATE (Master Kurs, baru).

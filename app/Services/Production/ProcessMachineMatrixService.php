@@ -3,10 +3,10 @@
 /*
  * REMARK
  * Tujuan       : Matriks kapabilitas Proses x Mesin (prod_process_machine) untuk dua arah layar v2: Master Process (mesin pelaksana per proses) dan, nanti, Master Machine (proses per mesin). Satu aturan untuk keduanya: mesin utama (preference_rank 1 atau 2), bersertifikat, parameter khusus pasangan (kosong = warisi default, TIDAK PERNAH 0), pasangan tidak pernah dihapus (dinonaktifkan), pasangan lama yang dipasang lagi dihidupkan kembali.
- * Sumber hulu  : Aturan dipindah dari trait v1 App\Livewire\Concerns\ManagesProcessMachineCapability (capAdd, capRemove, capRestore, capTogglePrimary, capToggleCertified, capSaveParams) yang dipakai halaman v1 master-process dan machine: setup 0 sampai 65535 menit, kecepatan >= 0, waste 0 sampai 100 persen, waste tetap >= 0, tarif >= 0, crew 0 sampai 255, gramatur 0 sampai 65535 dengan maksimum >= minimum, catatan maks 255. Nilai efektif dan estimasi jam: MachineCapabilityService.
+ * Sumber hulu  : Aturan dipindah dari trait v1 App\Livewire\Concerns\ManagesProcessMachineCapability (diarsipkan di tmerp_unused/livewire_concerns_ManagesProcessMachineCapability_v1_2026-10-19.php) (capAdd, capRemove, capRestore, capTogglePrimary, capToggleCertified, capSaveParams) yang dipakai halaman v1 master-process dan machine: setup 0 sampai 65535 menit, kecepatan >= 0, waste 0 sampai 100 persen, waste tetap >= 0, tarif >= 0, crew 0 sampai 255, gramatur 0 sampai 65535 dengan maksimum >= minimum, catatan maks 255. Nilai efektif dan estimasi jam: MachineCapabilityService.
  * Input        : Sisi pemilik ('process' atau 'machine') dan id-nya, baris form (capability_id bila pasangan sudah ada, other_id = id sisi seberang, primary, is_certified, activate, setup_minutes, speed_per_hour, waste_pct, waste_fixed_qty, hourly_rate, manpower, gsm_min, gsm_max, note), user.
  * Output       : tm2mst.prod_process_machine berubah (tanpa delete); ValidationException bila aturan dilanggar. Kolom ukuran lembar min / max tidak disentuh.
- * Dipakai oleh : ProcessMasterService (layar prod-process-form); layar Machine v2 menyusul; tes ProcessMasterServiceTest.
+ * Dipakai oleh : ProcessMasterService (layar prod-process-form) dan MachineMasterService (layar prod-machine-form, sisi 'machine': hanya proses aktif yang memakai mesin); tes ProcessMasterServiceTest dan MachineMasterServiceTest.
  * Status       : Aktif (Master T6b, 2026-10-19). Data real pabrik: tidak ada nilai yang diisi atau diubah oleh pemindahan layar.
  */
 
@@ -104,10 +104,10 @@ final class ProcessMachineMatrixService
                 continue;
             }
             if (! $cap) {
-                $candidate = $side === 'process' ? ProdMachine::where('activate', true)->where('is_process_machine', true)->find($otherId) : ProdProcess::where('activate', true)->find($otherId);
+                $candidate = $side === 'process' ? ProdMachine::where('activate', true)->where('is_process_machine', true)->find($otherId) : ProdProcess::where('activate', true)->where('is_manual', false)->find($otherId);
                 $existing = ProdProcessMachine::where([$own => $ownerId, $oth => $otherId])->first();
                 if (! $candidate && ! $existing) {
-                    $errors['machines'] = "Row {$n}: ".($side === 'process' ? 'only active machines that run processes can be paired.' : 'choose an active process.');
+                    $errors['machines'] = "Row {$n}: ".($side === 'process' ? 'only active machines that run processes can be paired.' : 'choose an active process that uses a machine.');
 
                     continue;
                 }

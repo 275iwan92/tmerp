@@ -6,7 +6,15 @@ use App\Models\Master\ProdMachine;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Mesin (v1: pages::master.machine). Spek kosong ditampilkan kosong — jangan dikarang (CLAUDE.md §6B).
+/*
+ * REMARK
+ * Tujuan       : Grid Master Machine (aset mesin dan register kapabilitas); Open dan + New Record membuka form v2 prod-machine-form. Spek kosong ditampilkan kosong, tidak dikarang.
+ * Sumber hulu  : tm2mst.prod_machine + prod_machine_model + hitungan prod_process_machine.
+ * Input        : Pencarian, filter Type / Role / Brand, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu Production (v2:prod-machine), layar prod-machine-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::master.machine sudah dipindah ke tmerp_unused (aturan D.25, Master T6b).
+ */
 class MachineGrid extends ProdGrid
 {
     public function slug(): string
@@ -19,14 +27,14 @@ class MachineGrid extends ProdGrid
         return t('Master Machine');
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'master.machine';
+        return route('v2.screen', 'prod-machine-form').'?id={id}';
     }
 
-    protected function v1Component(): ?string
+    public function newUrl(): ?string
     {
-        return 'pages::master.machine';
+        return route('v2.screen', 'prod-machine-form').'?new=1';
     }
 
     public function search(): string

@@ -131,7 +131,7 @@
 
     <x-slot:machines>
         <x-dl::hint note>The machines that can do this process. They appear as machine choices in routing, BOP and scheduling; a machine marked Primary is suggested first. An empty number means "use the default of the process"; pairs are never deleted, untick Active to remove one. Saved together with Save.</x-dl::hint>
-        <x-dl::lines name="machines" title="Executing machines" add-label="+ Add machine" :min-rows="0" :rows="$rows" :columns="$columns" source="{{ Src::of('tm2mst.prod_process_machine') }}" />
+        <x-dl::lines name="machines" title="Executing machines" add-label="+ Add machine" :min-rows="0" row-lock="is_new" :rows="$rows" :columns="$columns" source="{{ Src::of('tm2mst.prod_process_machine') }}" />
         @if ($effRows)
             <x-dl::card title="Effective values (read-only)">
                 <x-dl::table :columns="['machine' => 'Machine', 'speed' => 'Capacity / hour', 'source' => 'Source', 'setup' => 'Setup (min)', 'waste' => 'Waste %', 'hours' => 'Est. hours for 10,000 units']" :rows="$effRows" empty="No machines yet." :source="Src::of('tm2mst.prod_process_machine')" />

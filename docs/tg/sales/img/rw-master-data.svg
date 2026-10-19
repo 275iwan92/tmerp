@@ -248,7 +248,7 @@
     <text x="839" y="919" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="904" y="904" width="26" height="22" fill="#bfdbfe"/>
     <text x="917" y="919" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <text x="8" y="945" stroke="none" fill="#000">Open the v1 machine page (form, capability ...</text>
+    <text x="8" y="945" stroke="none" fill="#000">Open the v2 Machine Form (identity, specifi...</text>
     <rect x="0" y="928" width="1008" height="26" fill="none"/>
     <rect x="982" y="930" width="26" height="22" fill="#bfdbfe"/>
     <text x="995" y="945" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">1</text>
@@ -272,12 +272,16 @@
     <text x="917" y="945" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="930" y="930" width="26" height="22" fill="#bfdbfe"/>
     <text x="943" y="945" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <text x="8" y="971" stroke="none" fill="#000">Save a machine</text>
+    <text x="8" y="971" stroke="none" fill="#000">Save a machine (with its process pairs and ...</text>
     <rect x="0" y="954" width="1008" height="26" fill="none"/>
     <rect x="696" y="956" width="26" height="22" fill="#fdba74"/>
     <text x="709" y="971" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+CU</text>
+    <rect x="826" y="956" width="26" height="22" fill="#fdba74"/>
+    <text x="839" y="971" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+W</text>
     <rect x="904" y="956" width="26" height="22" fill="#bfdbfe"/>
     <text x="917" y="971" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
+    <rect x="930" y="956" width="26" height="22" fill="#fdba74"/>
+    <text x="943" y="971" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+CU</text>
     <text x="8" y="997" stroke="none" fill="#000">Toggle a machine Active or Inactive</text>
     <rect x="0" y="980" width="1008" height="26" fill="none"/>
     <rect x="696" y="982" width="26" height="22" fill="#fdba74"/>
