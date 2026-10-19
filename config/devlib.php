@@ -12,6 +12,9 @@ return [
 
     'abilities' => ['po.*', 'devlib.*'],
 
+    // Back selalu ke alamat tombolnya (grid), bukan history.back(): setelah Save/redirect, riwayat browser menunjuk form isian, bukan grid.
+    'back_history' => false,
+
     // Bahasa antarmuka bawaan (id | en); label tombol preset ikut ini.
     'lang' => env('DEVLIB_LANG', 'id'),
 

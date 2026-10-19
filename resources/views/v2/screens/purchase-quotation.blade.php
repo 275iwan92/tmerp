@@ -35,7 +35,7 @@
                     'cells' => collect($r['cells'])->map(fn ($c) => ['value' => $c['pq_line_id'], 'text' => \Devlib\Locale::number($c['price'], 0).' / '.$c['uom'],
                         'sub' => $c['lead'] ? t('lead').' '.$c['lead'].' '.t('days') : null, 'disabled' => $c['ordered'] ? t('Already ordered (PO)') : (! $c['same_uom'] ? t('Unit differs from the PR') : null)])->all()])->all()" />
             <x-dl::action-bar>
-                <x-dl::button variant="secondary" icon="back" label="Back" :href="url()->previous() !== url()->current() ? url()->previous() : $home" />
+                <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 <x-dl::button preset="save" label="Create PO" :onclick="'return confirm('.json_encode(t('Create a Draft PO for the selected lines?')).')'" />
             </x-dl::action-bar>
         </x-dl::card>

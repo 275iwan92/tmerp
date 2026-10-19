@@ -57,3 +57,5 @@ No `ATTENTION-ENGINE` item in `docs/ENGINE-ATTENTION.md` concerns this engine. N
 
 ## Tests
 None for this engine. Related: `tests/Unit/PqFileReaderCsvTest.php` (3 tests, 16 asserts, passed 2026-10-17) covers only the CSV reader and `PqFileReader::number`.
+
+Re-checked 2026-10-19: line 38 of esources/views/v2/screens/purchase-quotation.blade.php (Back button of the compare form) was reworded in place, no line added or removed; the lines cited by this card (81) are unchanged, content still true.

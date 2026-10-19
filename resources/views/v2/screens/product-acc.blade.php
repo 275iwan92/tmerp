@@ -33,7 +33,7 @@
         :stats="[['label' => t('All')], ['label' => t('No Digital ACC yet'), 'where' => ['acc_digital' => t('NOT YET')], 'tone' => 'warn'], ['label' => t('Digital ACC done'), 'where' => ['acc_digital' => t('AVAILABLE')], 'tone' => 'success']]" />
 @else
     <x-dl::action-bar>
-        <x-dl::button variant="secondary" icon="back" label="Back" href="javascript:history.back()" />
+        <x-dl::button variant="secondary" icon="back" label="Back" :href="route('v2.screen', 'product-acc')" />
         <x-dl::button variant="secondary" icon="view" label="Master Product" :href="route('v2.screen', 'master-product').'?id='.$doc['id']" />
         <x-dl::doc-share target=".mp-proof" type="product-acc" :doc-id="$doc['id']" :number="$doc['code']" title="ACC / Proof Digital" orientation="landscape" />
     </x-dl::action-bar>
