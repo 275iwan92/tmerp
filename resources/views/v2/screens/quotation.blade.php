@@ -59,7 +59,7 @@
                     :source="Src::of('tm2sdi.iqp_inquiry')" />
             @endif
             <x-dl::action-bar>
-                <x-dl::button variant="secondary" icon="back" label="Back" :href="$home.'?pick=1'" />
+                <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 @if ($same)<x-dl::button preset="save" label="Create Quotation" />@endif
             </x-dl::action-bar>
         </x-dl::card>

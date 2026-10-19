@@ -19,6 +19,13 @@ class BackButtonTest extends TestCase
         $this->assertFalse(config('devlib.back_history'));
     }
 
+    public function test_form_back_does_not_return_to_the_pick_step(): void
+    {
+        foreach (['customer-invoice', 'quotation'] as $slug) {
+            $this->assertDoesNotMatchRegularExpression('/label="Back" :href="\$home\.\'\?(pick|new)=1/', file_get_contents(resource_path("views/v2/screens/{$slug}.blade.php")), "{$slug}: Back harus ke grid, bukan layar pilih.");
+        }
+    }
+
     public function test_no_back_button_uses_browser_history(): void
     {
         $hits = [];

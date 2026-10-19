@@ -57,7 +57,7 @@
                         ['key' => 'pick', 'label' => 'Invoice', 'type' => 'bool', 'default' => true, 'width' => '90px'],
                     ]" />
                 <x-dl::action-bar>
-                    <x-dl::button variant="secondary" icon="back" label="Back" :href="$home.'?new=1&type=INVOICE'" />
+                    <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                     <x-dl::button preset="save" label="Create" />
                 </x-dl::action-bar>
             </x-dl::card>
