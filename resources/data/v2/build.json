@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-19 18:43",
+    "generated": "2026-10-19 19:11",
     "database": "ddtsys",
     "totals": {
         "objects": 175,
@@ -23,10 +23,10 @@
         "databases": 10,
         "models": 380,
         "migrations": 645,
-        "tests": 232,
-        "dictionary": 16296,
+        "tests": 234,
+        "dictionary": 16308,
         "languages": 4,
-        "commits": 1458,
+        "commits": 1461,
         "since": "2026-08-06"
     },
     "modules": [
@@ -163,7 +163,7 @@
             "tests": 90
         }
     ],
-    "untracked": 1218,
+    "untracked": 1221,
     "days": [
         {
             "date": "2026-10-06",
@@ -247,7 +247,7 @@
             "date": "2026-10-19",
             "iwan": 4,
             "jo": 0,
-            "other": 22
+            "other": 25
         }
     ],
     "weeks": [
@@ -321,7 +321,7 @@
             "week": "2026-W43",
             "iwan": 4,
             "jo": 0,
-            "other": 22
+            "other": 25
         }
     ],
     "items": [
@@ -520,8 +520,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": null
         },
         {
             "type": "FORM",
@@ -1708,7 +1708,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-01",
+            "changed_at": "2026-10-19",
             "changed_by": null
         },
         {
@@ -5977,7 +5977,7 @@
             "built_at": "2026-09-23",
             "built_by": null,
             "changed_at": "2026-10-19",
-            "changed_by": "iwan"
+            "changed_by": null
         },
         {
             "type": "OBJECT",

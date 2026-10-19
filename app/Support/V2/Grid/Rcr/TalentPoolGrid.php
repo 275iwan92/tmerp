@@ -8,8 +8,15 @@ use App\Models\Hrr\VacVacancy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Talent Pool (v1: pages::recruitment.talent-pool): semua kandidat yang pernah melamar + riwayat lamarannya.
-// Buka = layar v1 pada kandidat itu (riwayat + "Undang ke Lowongan"); kandidat baru masuk lewat portal, bukan diketik.
+/*
+ * REMARK
+ * Tujuan       : Grid Talent Pool: semua kandidat yang pernah melamar + riwayat lamarannya; Open membuka form v2 rcr-talent-pool-form (Invite to vacancy). Kandidat baru masuk lewat portal karir, bukan diketik.
+ * Sumber hulu  : tm2hrr.cnd_candidate + app_application + vac_vacancy.
+ * Input        : Pencarian, filter Last Vacancy / Last Status, kotak status.
+ * Output       : Baris grid (hanya baca; undangan lewat form).
+ * Dipakai oleh : Menu HRM > Recruitment (v2:rcr-talent-pool), layar rcr-talent-pool-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::recruitment.talent-pool sudah dipindah ke tmerp_unused (aturan D.25, T7h HRM).
+ */
 class TalentPoolGrid extends RcrGrid
 {
     public function slug(): string
@@ -29,7 +36,7 @@ class TalentPoolGrid extends RcrGrid
 
     public function openUrl(): ?string
     {
-        return route('hrm.recruitment.talent-pool').'?open={id}';
+        return route('v2.screen', 'rcr-talent-pool-form').'?id={id}';
     }
 
     public function newUrl(): ?string

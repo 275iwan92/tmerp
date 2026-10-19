@@ -2,14 +2,15 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) dan lowongan kerja (hrm-rcr-vacancy-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) dan undangan Talent Pool (rcr-talent-pool-form).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form dan hrm-rcr-vacancy-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents dan recruitment.vacancy.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form dan rcr-talent-pool-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy dan recruitment.talent-pool.
  */
 
+use App\Models\Hrr\CndCandidate;
 use App\Models\Hrr\VacVacancy;
 use App\Models\Master\AttDailyStatus;
 use App\Models\Master\AttMobileGpsLog;
@@ -21,6 +22,7 @@ use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\GpsApprovalService;
 use App\Services\Hrm\LeaveRequestService;
 use App\Services\Maintenance\MntDocumentService;
+use App\Services\Recruitment\RecruitmentInviteService;
 use App\Services\Recruitment\RecruitmentVacancyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -152,4 +154,14 @@ Route::prefix('v2/hrm/vacancy')->name('v2.hrm.vacancy.')->middleware('module:HRM
 
         return redirect(route('v2.screen', 'hrm-rcr-vacancy-form').'?id='.$v->id_vacancy)->with('v2_flash', $msg);
     })->name('save');
+});
+
+// Talent Pool: undang kandidat yang ada ke lowongan terbuka (lamaran baru APPLIED, tahap 1). Aturan = RecruitmentInviteService (dipindah dari v1 pages::recruitment.talent-pool).
+Route::prefix('v2/hrm/talent-pool')->name('v2.hrm.talentpool.')->middleware('module:HRM')->group(function () {
+    Route::post('/invite', function (Request $r, RecruitmentInviteService $svc) {
+        $c = CndCandidate::findOrFail((int) $r->input('id'));
+        $a = $svc->invite($c, $r->input('id_vacancy'));
+
+        return redirect(route('v2.screen', 'rcr-talent-pool-form').'?id='.$c->id_candidate)->with('v2_flash', tf('Invited to :vacancy.', ['vacancy' => $a->vacancy->title]));
+    })->name('invite');
 });

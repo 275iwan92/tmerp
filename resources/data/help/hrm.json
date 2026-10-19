@@ -534,13 +534,13 @@
     "steps": [
       {"en": "In the grid, search by candidate name, phone or vacancy, or filter by Last Vacancy and Last Status.", "id": "Di grid, cari berdasarkan nama kandidat, telepon atau lowongan, atau saring berdasarkan Last Vacancy dan Last Status."},
       {"en": "Click the expand control on a row to see all applications of that candidate: vacancy, applied date, stage and status.", "id": "Klik tombol perluas pada baris untuk melihat semua lamaran kandidat itu: lowongan, tanggal melamar, tahap dan status."},
-      {"en": "Open the row to go to the candidate screen. Click the invite button (Undang ke Lowongan) there.", "id": "Buka baris untuk masuk ke layar kandidat. Klik tombol undang (Undang ke Lowongan) di sana."},
-      {"en": "Pick the Lowongan Tujuan, an open vacancy, and click Undang. A new application is created at stage 1 with status Applied.", "id": "Pilih Lowongan Tujuan, yaitu lowongan yang terbuka, lalu klik Undang. Lamaran baru dibuat di tahap 1 berstatus Applied."},
-      {"en": "New candidates cannot be typed in here. They come from the candidate portal.", "id": "Kandidat baru tidak bisa diketik di sini. Mereka datang dari portal kandidat."}
+      {"en": "Open the row to go to the Talent Pool Form. It shows the candidate (read-only) and the full application history.", "id": "Buka baris untuk masuk ke Talent Pool Form. Isinya data kandidat (baca-saja) dan seluruh riwayat lamaran."},
+      {"en": "In the card Invite to vacancy search and choose an open vacancy, then click Invite to vacancy. A new application is created at stage 1 with status Applied.", "id": "Di kartu Invite to vacancy cari dan pilih lowongan terbuka, lalu klik Invite to vacancy. Lamaran baru dibuat di tahap 1 berstatus Applied."},
+      {"en": "A closed vacancy, or one where the candidate already has an active application, is refused. New candidates cannot be typed in here; they come from the candidate portal.", "id": "Lowongan yang sudah ditutup, atau yang sudah punya lamaran aktif dari kandidat itu, ditolak. Kandidat baru tidak bisa diketik di sini; mereka datang dari portal kandidat."}
     ],
     "fields": [
-      {"label": "Lowongan Tujuan", "en": "The open vacancy to invite the candidate to. Only vacancies that are published and not closed are listed. Required.", "id": "Lowongan terbuka tujuan undangan. Hanya lowongan yang dipublikasikan dan belum ditutup yang tampil. Wajib diisi."},
-      {"label": "Undang", "en": "Creates a new application for the candidate on the chosen vacancy, so no data needs to be entered again.", "id": "Membuat lamaran baru untuk kandidat pada lowongan terpilih, sehingga data tidak perlu diisi ulang."}
+      {"label": "Vacancy", "en": "The open vacancy to invite the candidate to. Only vacancies that are published and not closed are listed. Required.", "id": "Lowongan terbuka tujuan undangan. Hanya lowongan yang dipublikasikan dan belum ditutup yang tampil. Wajib diisi."},
+      {"label": "Invite to vacancy", "en": "Creates a new application for the candidate on the chosen vacancy, so no data needs to be entered again.", "id": "Membuat lamaran baru untuk kandidat pada lowongan terpilih, sehingga data tidak perlu diisi ulang."}
     ]
   },
   {
