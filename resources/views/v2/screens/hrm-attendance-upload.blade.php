@@ -1,11 +1,11 @@
 {{--
  REMARK
- Tujuan       : Mengunggah file absensi mesin finger, pratinjau, lalu menyimpan dan menjalankan pencocokan shift.
+ Tujuan       : Mengunggah file absensi mesin finger, pratinjau, lalu menyimpan dan menjalankan pencocokan shift; kartu kedua Recalculate Attendance menghitung ulang presensi semua pegawai aktif untuk satu rentang tanggal (override manual HR tetap dipertahankan; dulu tombol di halaman v1 Daily Attendance).
  Sumber hulu  : App\Support\V2\Data\AttendanceUpload (tm2mst.att_finger_import, att_finger_raw, emp_employee); AttendanceCalculationService.
  Input        : File .csv / .txt / .xlsx (kolom device_pin, tanggal, jam_masuk, jam_keluar); session att_done, v2_flash, errors.
- Output       : x-dl::card + x-dl::action-form (posting ke v2.attendance-upload.parse dan rute simpan), pratinjau maksimal 500 baris, tombol ke Attendance Log.
+ Output       : x-dl::card + x-dl::action-form (posting ke v2.attendance-upload.parse dan rute simpan, serta v2.hrm.attendance.recalculate), pratinjau maksimal 500 baris, tombol ke Attendance Log.
  Dipakai oleh : Rute v2.screen dengan slug 'hrm-attendance-upload' (menu v2:hrm-attendance-upload di sys_app_menu), dirender view layar generik v2.
- Status       : Aktif (sama dengan layar v1).
+ Status       : Aktif (kartu Recalculate ditambah T7e HRM, 2026-10-19).
 --}}
 @php
     use App\Support\V2\Data\AttendanceUpload;
@@ -50,4 +50,14 @@
             </x-dl::action-bar>
         @endif
     @endif
+</x-dl::card>
+
+<x-dl::card title="Recalculate Attendance" description="Recalculates the daily attendance of every active employee for the dates below from the fingerprint scans, shifts, approved leave and sanctions. Manual overrides are kept. Up to 92 days.">
+    <x-dl::action-form action="{{ route('v2.hrm.attendance.recalculate') }}">
+        <x-dl::form.row :cols="3">
+            <x-dl::field.date name="from" label="From date" required :value="old('from', now()->startOfWeek(Carbon\Carbon::MONDAY)->toDateString())" :source="$src" />
+            <x-dl::field.date name="to" label="To date" required :value="old('to', now()->toDateString())" :source="$src" />
+        </x-dl::form.row>
+        <x-dl::action-bar><x-dl::button icon="fa-rotate" label="Recalculate Attendance" data-dl-confirm="{{ t('Recalculate attendance for the selected dates?') }}" /></x-dl::action-bar>
+    </x-dl::action-form>
 </x-dl::card>

@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Menghitung status presensi harian pegawai (H, T-5, T+5, T+15, PA, PAT, KJK, I, IS, S, C, CL, A, F, FF) dari scan finger, shift, cuti disetujui, lembur dan sanksi (urutan evaluasi Tier 2 7). Override manual HR (source MANUAL_OVERRIDE) tidak ditimpa hitung ulang.
+ * Sumber hulu  : tm2mst.att_finger_raw, emp_shift_roster / emp_shift_detail, emp_leave_request (APPROVED), emp_overtime_request, emp_disciplinary, sys_holiday.
+ * Input        : employee_id, tanggal, awal periode (hitung pelanggaran terlambat).
+ * Output       : Satu baris tm2mst.att_daily_status per pegawai per tanggal (updateOrCreate; source AUTO dan override_by / override_reason dikosongkan, kecuali baris MANUAL_OVERRIDE dikembalikan apa adanya).
+ * Dipakai oleh : AttendanceUpload, GpsClock, GpsApprovalService, AttendanceOverrideService (hitung ulang rentang dan "Recalculate this day"), PayrollEngineService (membaca hasil).
+ * Status       : Aktif. Perlindungan override manual ditambah 2026-10-19 (T7e HRM, disetujui Jo).
+ */
+
 namespace App\Services\Hrm;
 
 use App\Models\Master\AttDailyStatus;
@@ -26,6 +36,12 @@ class AttendanceCalculationService
 
     public function calculateForDate(int $employeeId, Carbon $date, Carbon $periodStart): AttDailyStatus
     {
+        // Keputusan HR (override manual dengan alasan audit) tidak ditimpa hitung ulang; hanya "Recalculate this day" di form presensi yang melepasnya (T7e, Jo 2026-10-19).
+        $manual = AttDailyStatus::where('employee_id', $employeeId)->whereDate('attendance_date', $date->toDateString())->where('source', 'MANUAL_OVERRIDE')->first();
+        if ($manual) {
+            return $manual;
+        }
+
         $leave = $this->approvedLeaveCovering($employeeId, $date);
         if ($leave) {
             return $this->save($employeeId, $date, $this->mapLeaveToStatusCode($leave));
@@ -293,6 +309,8 @@ class AttendanceCalculationService
                 'is_uang_roti' => $isUangRoti,
                 'late_violation_seq_in_period' => $lateViolationSeq,
                 'source' => 'AUTO',
+                'override_by' => null,
+                'override_reason' => null,
             ],
         );
     }

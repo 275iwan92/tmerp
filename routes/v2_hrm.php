@@ -2,17 +2,19 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), serta koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService dan AttendanceOverrideService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form dan hrm-leave-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests dan leave-requests.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form dan hrm-attendance-upload.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests dan attendance-daily.
  */
 
+use App\Models\Master\AttDailyStatus;
 use App\Models\Master\AttMobileGpsLog;
 use App\Models\Master\EmpCorrectionRequest;
 use App\Models\Master\EmpLeaveRequest;
+use App\Services\Hrm\AttendanceOverrideService;
 use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\GpsApprovalService;
 use App\Services\Hrm\LeaveRequestService;
@@ -81,4 +83,26 @@ Route::prefix('v2/hrm/leave')->name('v2.hrm.leave.')->middleware('module:HRM')->
 
         return redirect(route('v2.screen', 'hrm-leave-form').'?id='.$l->request_id)->with('v2_flash', $msg);
     })->name('decide');
+});
+
+// Presensi harian: Save = override status (alasan audit wajib), action recalculate = hitung ulang hari itu; recalculate range = kartu di hrm-attendance-upload. Aturan = AttendanceOverrideService (dipindah dari v1 pages::hrm.attendance-daily).
+Route::prefix('v2/hrm/attendance')->name('v2.hrm.attendance.')->middleware('module:HRM')->group(function () {
+    Route::post('/save', function (Request $r, AttendanceOverrideService $svc) {
+        $d = AttDailyStatus::findOrFail((int) $r->input('id'));
+        if ((string) $r->input('action') === 'recalculate') {
+            $svc->recalculateDay($d);
+            $msg = t('Attendance of this day was recalculated.');
+        } else {
+            $svc->override($d, (string) $r->input('status_code'), (string) $r->input('override_reason'), Auth::user());
+            $msg = t('Status overridden.');
+        }
+
+        return redirect(route('v2.screen', 'hrm-attendance-form').'?id='.$d->id_daily)->with('v2_flash', $msg);
+    })->name('save');
+
+    Route::post('/recalculate', function (Request $r, AttendanceOverrideService $svc) {
+        $res = $svc->recalculateRange((string) $r->input('from'), (string) $r->input('to'));
+
+        return redirect(route('v2.screen', 'hrm-attendance-upload'))->with('v2_flash', tf('Attendance was recalculated for :days employee days (:kept manual overrides kept).', ['days' => $res['days'], 'kept' => $res['kept']]));
+    })->name('recalculate');
 });

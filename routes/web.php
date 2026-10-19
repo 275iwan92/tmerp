@@ -275,7 +275,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/shift-roster/print', 'pages::hrm.shift-roster-print')->name('hrm.shift-roster.print');
             Route::get('/hrm/correction-requests', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-correction-form?id='.(int) $r->query('open') : '/v2/s/hrm-correction'))->name('hrm.correction-requests');
             Route::get('/hrm/leave-requests', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-leave-form?id='.(int) $r->query('open') : '/v2/s/hrm-leave'))->name('hrm.leave-requests');
-            Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
+            Route::get('/hrm/attendance-daily', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-attendance-form?id='.(int) $r->query('open') : '/v2/s/hrm-attendance'))->name('hrm.attendance-daily');
             Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary')->middleware('payroll:process');
             Route::get('/hrm/payroll/employee-bank', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-employee-form?id='.(int) $r->query('open').'&tab=bank' : '/v2/s/hrm-bank'))->name('hrm.payroll.employee-bank')->middleware('payroll:process');
             Route::get('/hrm/gps-approval', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-gps-form?id='.(int) $r->query('open') : '/v2/s/hrm-gps'))->name('hrm.gps-approval');

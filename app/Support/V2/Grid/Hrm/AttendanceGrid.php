@@ -7,7 +7,15 @@ use App\Models\Master\EmpEmployee;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Presensi harian (v1: pages::hrm.attendance-daily). 60 hari terakhir; buka baris = override status di layar v1.
+/*
+ * REMARK
+ * Tujuan       : Grid Presensi Harian (60 hari terakhir, hasil AttendanceCalculationService); Open membuka form v2 hrm-attendance-form tempat HR meng-override status atau menghitung ulang hari itu. Tanpa New.
+ * Sumber hulu  : tm2mst.att_daily_status + emp_employee.
+ * Input        : Pencarian, filter, kotak status.
+ * Output       : Baris grid (hanya baca; koreksi lewat form).
+ * Dipakai oleh : Menu HRM (v2:hrm-attendance), layar hrm-attendance-form dan hrm-attendance-upload (tombol Open Attendance Log).
+ * Status       : Aktif. Halaman v1 pages::hrm.attendance-daily sudah dipindah ke tmerp_unused (aturan D.25, T7e HRM).
+ */
 class AttendanceGrid extends HrmGrid
 {
     public const LATE = ['T-5', 'T+5', 'T+15', 'PAT-5', 'PAT+5'];
@@ -34,9 +42,14 @@ class AttendanceGrid extends HrmGrid
         return 'Payroll';
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.attendance-daily';
+        return route('v2.screen', 'hrm-attendance-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return null;
     }
 
     protected function canCreate(): bool

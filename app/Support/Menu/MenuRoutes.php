@@ -194,7 +194,6 @@ final class MenuRoutes
             'HRM_CONTACT_GAP' => route('v2.screen', 'hrm-contact-gap'),
             'HRM_CLOCKIN' => route('v2.screen', 'hrm-clockin'),
             'HRM_ATTENDANCE_UPLOAD' => route('v2.screen', 'hrm-attendance-upload'),
-            'HRM_ATTENDANCE' => route('hrm.attendance-daily'),
             'HRM_PAYROLL_SALARY' => route('hrm.payroll.employee-salary'),
             'HRM_PAYROLL_CALC' => route('hrm.payroll.batch-run'),
             'HRM_PAYROLL_PAYSLIP' => route('hrm.payroll.payslip-list'),
