@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-19 07:51",
+    "generated": "2026-10-19 09:35",
     "database": "ddtsys",
     "totals": {
         "objects": 175,
@@ -22,11 +22,11 @@
         "tables": 428,
         "databases": 10,
         "models": 380,
-        "migrations": 644,
-        "tests": 221,
-        "dictionary": 15869,
+        "migrations": 645,
+        "tests": 222,
+        "dictionary": 15898,
         "languages": 4,
-        "commits": "1440",
+        "commits": 1443,
         "since": "2026-08-06"
     },
     "modules": [
@@ -143,13 +143,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 91,
-            "days": 3,
-            "last": "2026-10-13",
+            "commits": 93,
+            "days": 4,
+            "last": "2026-10-19",
             "screens": 122,
-            "objects": 26,
+            "objects": 176,
             "engines": 2,
-            "tests": 28
+            "tests": 29
         },
         {
             "key": "jo",
@@ -163,7 +163,7 @@
             "tests": 90
         }
     ],
-    "untracked": 1204,
+    "untracked": 1205,
     "days": [
         {
             "date": "2026-10-06",
@@ -245,9 +245,9 @@
         },
         {
             "date": "2026-10-19",
-            "iwan": 0,
+            "iwan": 2,
             "jo": 0,
-            "other": 8
+            "other": 9
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W43",
-            "iwan": 0,
+            "iwan": 2,
             "jo": 0,
-            "other": 8
+            "other": 9
         }
     ],
     "items": [
@@ -4227,8 +4227,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4238,8 +4238,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4249,8 +4249,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4260,8 +4260,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4271,8 +4271,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4282,8 +4282,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4293,8 +4293,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4304,8 +4304,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4315,8 +4315,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4326,8 +4326,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4337,8 +4337,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4348,8 +4348,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4359,7 +4359,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4370,8 +4370,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4381,7 +4381,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-13",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4392,8 +4392,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-18",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4403,7 +4403,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-05",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4414,7 +4414,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4425,8 +4425,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4436,8 +4436,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4447,8 +4447,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4458,8 +4458,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4469,8 +4469,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4480,8 +4480,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4491,8 +4491,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4502,7 +4502,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4513,8 +4513,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-03",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4524,8 +4524,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": null,
-            "changed_at": "2026-10-07",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4535,8 +4535,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4546,8 +4546,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-08",
             "built_by": "jo",
-            "changed_at": "2026-10-08",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4557,7 +4557,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4568,7 +4568,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4579,8 +4579,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4590,8 +4590,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4601,8 +4601,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4612,8 +4612,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4623,8 +4623,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-29",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4634,8 +4634,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-04",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4645,8 +4645,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4656,8 +4656,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4667,8 +4667,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4678,8 +4678,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-14",
             "built_by": null,
-            "changed_at": "2026-10-14",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4689,8 +4689,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4700,8 +4700,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": null,
-            "changed_at": "2026-10-07",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4711,8 +4711,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4722,8 +4722,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4733,8 +4733,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4744,8 +4744,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4755,8 +4755,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4766,8 +4766,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4777,8 +4777,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4788,8 +4788,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4799,7 +4799,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4810,8 +4810,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4821,7 +4821,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4832,8 +4832,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4843,8 +4843,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-30",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4854,8 +4854,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4865,7 +4865,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -4876,8 +4876,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4887,8 +4887,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4898,8 +4898,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4909,8 +4909,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4920,8 +4920,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4931,8 +4931,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4942,8 +4942,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4953,8 +4953,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4964,8 +4964,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4975,8 +4975,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4986,8 +4986,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4997,8 +4997,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5008,8 +5008,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5019,8 +5019,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5030,8 +5030,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5041,8 +5041,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5052,8 +5052,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5063,8 +5063,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5074,8 +5074,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5085,8 +5085,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5096,8 +5096,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-14",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5107,8 +5107,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5118,8 +5118,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5129,7 +5129,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-13",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5140,8 +5140,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5151,8 +5151,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5162,7 +5162,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5173,8 +5173,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5184,7 +5184,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5195,8 +5195,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5206,8 +5206,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5217,8 +5217,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5228,8 +5228,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-14",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5239,8 +5239,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5250,8 +5250,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5261,8 +5261,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5272,8 +5272,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-14",
             "built_by": "jo",
-            "changed_at": "2026-10-14",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5283,8 +5283,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5294,7 +5294,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5305,8 +5305,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5316,8 +5316,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5327,8 +5327,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5338,8 +5338,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5349,8 +5349,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5360,8 +5360,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5371,8 +5371,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-14",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5382,8 +5382,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-16",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5393,8 +5393,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5404,8 +5404,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5415,8 +5415,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5426,8 +5426,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-17",
             "built_by": "jo",
-            "changed_at": "2026-10-17",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5437,8 +5437,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5448,8 +5448,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5459,8 +5459,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": "jo",
-            "changed_at": "2026-10-14",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5470,8 +5470,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5481,8 +5481,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-14",
             "built_by": null,
-            "changed_at": "2026-10-14",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5492,8 +5492,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5503,8 +5503,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5514,8 +5514,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5525,8 +5525,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5536,7 +5536,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-07",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5547,8 +5547,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5558,7 +5558,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-07",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5569,8 +5569,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-17",
             "built_by": "jo",
-            "changed_at": "2026-10-17",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5580,8 +5580,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5591,8 +5591,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5602,8 +5602,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5613,8 +5613,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5624,8 +5624,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-17",
             "built_by": "jo",
-            "changed_at": "2026-10-18",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5635,8 +5635,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-14",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5646,8 +5646,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5657,8 +5657,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": null,
-            "changed_at": "2026-10-07",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5668,8 +5668,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5679,8 +5679,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-14",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5690,8 +5690,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5701,7 +5701,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-05",
             "built_by": "iwan",
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5712,8 +5712,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5723,8 +5723,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5734,8 +5734,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": "iwan",
-            "changed_at": "2026-10-14",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5745,8 +5745,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5756,8 +5756,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5767,8 +5767,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5778,7 +5778,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-13",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5789,8 +5789,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5800,8 +5800,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-04",
             "built_by": null,
-            "changed_at": "2026-10-04",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5811,8 +5811,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-04",
             "built_by": null,
-            "changed_at": "2026-10-04",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5822,8 +5822,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-04",
             "built_by": null,
-            "changed_at": "2026-10-18",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5833,8 +5833,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5844,8 +5844,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5855,8 +5855,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-30",
             "built_by": null,
-            "changed_at": "2026-10-16",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5866,7 +5866,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-05",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5877,8 +5877,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5888,7 +5888,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": "iwan",
-            "changed_at": "2026-10-07",
+            "changed_at": "2026-10-19",
             "changed_by": "iwan"
         },
         {
@@ -5899,8 +5899,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5910,8 +5910,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5921,8 +5921,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-14",
             "built_by": null,
-            "changed_at": "2026-10-14",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5932,8 +5932,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-17",
             "built_by": "jo",
-            "changed_at": "2026-10-17",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5943,8 +5943,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-17",
             "built_by": "jo",
-            "changed_at": "2026-10-17",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5954,8 +5954,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5965,8 +5965,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5976,8 +5976,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5987,8 +5987,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5998,8 +5998,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-09",
             "built_by": "jo",
-            "changed_at": "2026-10-09",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6009,8 +6009,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6020,8 +6020,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6031,8 +6031,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6042,8 +6042,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6053,8 +6053,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-07",
             "built_by": null,
-            "changed_at": "2026-10-07",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6064,8 +6064,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6075,8 +6075,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-10",
-            "changed_by": "jo"
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6086,8 +6086,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6097,8 +6097,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6108,8 +6108,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6119,8 +6119,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-13",
             "built_by": null,
-            "changed_at": "2026-10-13",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6130,8 +6130,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6141,8 +6141,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "FEATURE",

@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Purchase Return / Nota Retur Barang (v1: pages::pur.prt.index -> entry). Buka = form v1; + New Record = pemilih sumber v1
-// (dari SPB yang punya qty ditolak QC, atau dari stok per supplier).
+// Purchase Return / Nota Retur Barang. Buka dan + New Record membuka form v2 pur-return-form (halaman v1 pages::pur.prt.index / entry
+// dipindah ke tmerp_unused 2026-10-19); kartu Start di form memilih sumber (SPB dengan qty ditolak QC, atau stok per supplier).
 class PurchaseReturnGrid extends DbGrid
 {
     private const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'CONFIRMED' => 'info', 'COMPLETED' => 'success', 'CANCELLED' => 'danger'];
@@ -65,12 +65,12 @@ class PurchaseReturnGrid extends DbGrid
 
     public function openUrl(): ?string
     {
-        return $this->routeUrl('pur.prt.entry', 'prt');
+        return route('v2.screen', 'pur-return-form').'?id={id}';
     }
 
     public function newUrl(): ?string
     {
-        return route('pur.prt.list').'?new=1';
+        return route('v2.screen', 'pur-return-form').'?new=1';
     }
 
     protected function models(): array

@@ -94,7 +94,6 @@ final class MenuRoutes
             'PROC_PO_APPR' => route('v2.screen', 'approval-po'),
             'PROC_RCV' => route('pur.pv.list'),
             'PROC_PQ' => route('v2.screen', 'purchase-quotation'),
-            'PROC_RET' => route('pur.prt.list'),
             'PROC_RET_APPR' => route('v2.screen', 'approval-prt'),
             'PROC_MON_PR' => route('v2.screen', 'pur-rpt-outstanding-pr'),
             'PROC_MON_PO' => route('v2.screen', 'pur-rpt-outstanding-po'),

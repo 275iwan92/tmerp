@@ -17,7 +17,7 @@ class PrtReturn extends Model
     protected $fillable = [
         'doc_no', 'i_doc_date', 'i_supplier_id', 'pv_id', 'po_id',
         'i_source', 'i_disposition', 'i_reason', 'c_credit_value',
-        'replacement_pv_id', 'rm_stock_doc_id',
+        'replacement_pv_id', 'rm_stock_doc_id', 'i_notes',
         'qc_inspector', 'comm_method', 'supplier_pic', 'physical_return_date', 'expedition',
         'cn_supplier_no', 'cn_received_date', 'replacement_due_date',
         'status', 'cancel_reason', 'created_by', 'updated_by',

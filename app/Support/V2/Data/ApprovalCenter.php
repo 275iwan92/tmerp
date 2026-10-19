@@ -13,6 +13,7 @@ use App\Models\Pur\PrtReturn;
 use App\Models\Sdi\CoOrder;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Inventory\StockAdjustmentService;
+use App\Services\Pur\PurchaseReturnService;
 use App\Services\Inventory\StockTransferService;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\Locale;
@@ -130,7 +131,7 @@ final class ApprovalCenter
                 return $r ? ['no' => $r->doc_no ?: 'PRT #'.$id, 'party' => $sup, 'date' => $r->i_doc_date?->toDateString(), 'amount' => (float) $r->c_credit_value,
                     'summary' => [t('Supplier') => $sup, t('Return Value') => $rp($r->c_credit_value), t('Disposition') => $r->i_disposition ?: '—', t('Reason') => $r->i_reason ?: '—', t('Items') => $r->lines->count()],
                     'lines' => $r->lines->map(fn ($l) => ['description' => $l->i_description, 'qty' => $num($l->i_qty), 'unit' => $l->i_uom, 'price' => (float) $l->c_unit_price,
-                        'subtotal' => (float) $l->c_line_value])->all(), 'note' => $r->i_reason, 'v1' => route('pur.prt.entry', $id)] : null;
+                        'subtotal' => (float) $l->c_line_value])->all(), 'note' => $r->i_reason, 'url' => route('v2.screen', 'pur-return-form').'?id='.$id] : null;
             })(),
             'TF' => (function () use ($id, $num, $rp) {
                 $t = StockTransfer::find($id);
@@ -212,16 +213,7 @@ final class ApprovalCenter
 
     private static function decideReturn(int $id, string $action, string $note): string
     {
-        $c = app('livewire')->new('pages::pur.prt.entry');
-        $c->prtId = $id;
-        $c->approvalNote = $note;
-        match ($action) {
-            'approve' => $c->approveDoc(app(FlowEngineService::class)),
-            'reject' => $c->rejectDoc(app(FlowEngineService::class)),
-            'hold' => $c->holdDoc(app(FlowEngineService::class)),
-        };
-
-        return (string) ($c->approvalError ?? '');
+        return t(app(PurchaseReturnService::class)->decide($id, $action, $note, Auth::user()));
     }
 
     // Log Keputusan user login di layar ini (flow_log): siapa, kapan, aksi, level, alasan.

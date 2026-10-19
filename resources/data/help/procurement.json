@@ -960,30 +960,30 @@
     },
     "keywords": "retur, return, purchase return, retur pembelian, nota retur, retur supplier, barang reject, credit note, ganti barang, qc reject, prt",
     "steps": [
-      {
-        "en": "Click + New Record and choose the source: From Receipt (QC Reject) for goods rejected at receiving, or From Stock for goods already in stock.",
-        "id": "Klik + New Record lalu pilih sumbernya: From Receipt (QC Reject) untuk barang yang ditolak saat penerimaan, atau From Stock untuk barang yang sudah di gudang."
-      },
-      {
-        "en": "Dari PV: click a receipt (PV) that has rejected quantity. From Stock: type at least 2 letters of the supplier name or code and click the supplier. A Draft return is created and opened.",
-        "id": "Dari PV: klik penerimaan (PV) yang punya qty reject. From Stock: ketik minimal 2 huruf nama atau kode supplier lalu klik supplier. Retur Draft dibuat dan dibuka."
-      },
-      {
-        "en": "Add lines: from a PV, click + Add beside a rejected line; from stock, search an item by code or name and click it. Then set Lot, Return Qty and, for stock items, the price.",
-        "id": "Add baris: dari PV, klik + Add di samping baris reject; dari stok, cari item dengan kode atau nama lalu klik. Lalu isi Lot, Return Qty dan, untuk item stok, harganya."
-      },
-      {
-        "en": "Fill the return date, Disposition (Credit Note or Replace Goods) and Main Reason, then the follow-up details if known.",
-        "id": "Isi tanggal retur, Disposition (Credit Note atau Replace Goods) dan Main Reason, lalu rincian follow-up bila sudah ada."
-      },
-      {
-        "en": "Click Submit for Approval. The return number is issued and the return goes to approval. It needs at least one line, a reason and a disposition. A Draft can be cancelled with a reason of at least 10 characters.",
-        "id": "Klik Submit for Approval. Nomor retur terbit dan retur masuk approval. Wajib ada minimal satu baris, alasan dan disposisi. Draft bisa dibatalkan dengan alasan minimal 10 karakter."
-      },
-      {
-        "en": "The approver decides on this form or in Purchase Return Approval Center. When the status is CONFIRMED, click Mark Complete once the replacement goods or credit note have been received.",
-        "id": "Approver memutuskan di form ini atau di Purchase Return Approval Center. Saat status CONFIRMED, klik Mark Complete setelah barang pengganti atau credit note diterima."
-      }
+        {
+            "en": "Click + New Record. On the Start card choose the source: a receipt (QC reject) for goods rejected at receiving, or a supplier for goods already in stock. Click Start.",
+            "id": "Klik + New Record. Di kartu Start pilih sumber: penerimaan (QC reject) untuk barang yang ditolak saat diterima, atau supplier untuk barang yang sudah masuk stok. Klik Start."
+        },
+        {
+            "en": "From a receipt the rejected lines are listed with Rejected and Returnable: enter Return qty on each line you return (never above Returnable). From stock pick the items with the lookup; an empty price uses the last price of the item.",
+            "id": "Dari penerimaan, baris yang ditolak tampil dengan Rejected dan Returnable: isi Return qty pada baris yang diretur (tidak boleh lebih dari Returnable). Dari stok pilih item lewat lookup; harga kosong memakai harga terakhir item."
+        },
+        {
+            "en": "Fill Return date, Disposition (Credit note or Replace goods) and Main reason. The second tab holds the follow-up: communication, supplier PIC, ship date, expedition, credit note or replacement date, and Notes.",
+            "id": "Isi Return date, Disposition (Credit note atau Replace goods) dan Main reason. Tab kedua berisi tindak lanjut: komunikasi, PIC supplier, tanggal kirim, ekspedisi, tanggal nota kredit atau pengganti, dan Notes."
+        },
+        {
+            "en": "Click Save for a draft. Click Submit: the return number is issued and the return goes to approval. It needs a line, a Main reason and a disposition; the lines cannot be edited while it is in approval.",
+            "id": "Klik Save untuk draft. Klik Submit: nomor retur terbit dan retur masuk approval. Perlu satu baris, Main reason dan disposisi; baris tidak bisa diubah selama approval."
+        },
+        {
+            "en": "The approver decides in the Purchase Return Approval Center; the form is read-only meanwhile. When Confirmed, click Mark Complete once the replacement goods or the credit note have arrived. A Rejected or Cancelled return can be copied with Duplicate.",
+            "id": "Approver memutuskan di Purchase Return Approval Center; form hanya-baca selama itu. Setelah Confirmed, klik Mark Complete saat barang pengganti atau nota kredit sudah diterima. Retur yang Rejected atau Cancelled bisa disalin dengan Duplicate."
+        },
+        {
+            "en": "Cancel (draft only) asks for a reason of at least 10 characters.",
+            "id": "Cancel (hanya draft) meminta alasan minimal 10 karakter."
+        }
     ],
     "fields": [
       {

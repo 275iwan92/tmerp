@@ -133,7 +133,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_planning.php';
         require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
-        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php';
+        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php';
         require __DIR__.'/v2_warehouse.php';
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
@@ -242,8 +242,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/purchasing/po/{po}/print', 'pages::pur.po.print')->name('pur.po.print');
             Route::livewire('/purchasing/pv', 'pages::pur.pv.index')->name('pur.pv.list');
             Route::livewire('/purchasing/pv/{pv}/edit', 'pages::pur.pv.entry')->name('pur.pv.entry');
-            Route::livewire('/purchasing/prt', 'pages::pur.prt.index')->name('pur.prt.list');
-            Route::livewire('/purchasing/prt/{prt}/edit', 'pages::pur.prt.entry')->name('pur.prt.entry');
+            Route::get('/purchasing/prt', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/pur-return-form?new=1' : '/v2/s/purchase-return'))->name('pur.prt.list');
+            Route::get('/purchasing/prt/{prt}/edit', fn (int $prt) => redirect('/v2/s/pur-return-form?id='.$prt))->name('pur.prt.entry');
         });
 
         Route::middleware('module:INV')->group(function () {

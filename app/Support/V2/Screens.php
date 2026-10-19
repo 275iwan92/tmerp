@@ -83,7 +83,7 @@ final class Screens
                     $it('purchase-receive', ['Goods Receipt (SPB)', 'fa-solid fa-truck-ramp-box', 'pur/pv/index + entry.blade.php', null]),
                 ]],
                 ['label' => 'Return', 'items' => [
-                    $it('approval-prt', ['Purchase Return Approval Center', 'fa-solid fa-stamp', 'pur/prt/approval.blade.php', null]),
+                    $it('approval-prt', ['Purchase Return Approval Center', 'fa-solid fa-stamp', 'pur/prt/approval.blade.php', null]), $it('pur-return-form', ['Purchase Return Form', 'fa-solid fa-reply', 'v2 baru: Purchase Return (NRB) di atas tm2pur.prt_return + prt_line; sumber penerimaan QC reject atau stok; Submit = flow approval PRT, keputusan di Approval Center; dibuka dari grid purchase-return', null]),
                 ]],
                 ['label' => 'Master', 'items' => [$it('master-raw')]],
             ]],
