@@ -191,7 +191,6 @@ final class MenuRoutes
             'HRM_SOP' => route('hrm.sop-documents'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('v2.screen', 'hrm-roster'),
-            'HRM_CORRECTION' => route('hrm.correction-requests'),
             'HRM_CONTACT_GAP' => route('v2.screen', 'hrm-contact-gap'),
             'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
             'HRM_CLOCKIN' => route('v2.screen', 'hrm-clockin'),

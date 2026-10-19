@@ -6,12 +6,12 @@ use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpCorrectionRequest;
 use App\Models\Master\EmpEmployee;
 use App\Models\Sys\SecUser;
+use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\EmployeeProfileService;
 use App\Support\Menu\MenuRoutes;
 use App\Support\V2\Grid\Grids;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 // Keputusan user 2026-09-23: bank = Master Supplier kategori BANK; pegawai cuma
@@ -104,7 +104,7 @@ class EmployeeBankSupplierTest extends TestCase
         $this->assertSame('MANDIRI · 999 · a.n. ZZ Baru', $req->newValueLabel());
 
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
-        Livewire::test('pages::hrm.correction-requests')->call('approve', $req->request_id);
+        app(CorrectionRequestService::class)->approve($req, SecUser::where('login', 'johiwan')->firstOrFail());
 
         $acc = EmpBankAccount::where('employee_id', $emp)->where('is_primary', true)->where('activate', true)->firstOrFail();
         $this->assertSame('MANDIRI', $acc->bank_name);

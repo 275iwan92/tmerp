@@ -273,7 +273,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // Layar v1 Master Employee dipensiunkan 2026-10-16: alamat lama (bookmark, tautan v1) -> grid v2; nama rute dipertahankan.
             Route::redirect('/hrm/employee', '/v2/s/hrm-employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster/print', 'pages::hrm.shift-roster-print')->name('hrm.shift-roster.print');
-            Route::livewire('/hrm/correction-requests', 'pages::hrm.correction-requests')->name('hrm.correction-requests');
+            Route::get('/hrm/correction-requests', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-correction-form?id='.(int) $r->query('open') : '/v2/s/hrm-correction'))->name('hrm.correction-requests');
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
             Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
             Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary')->middleware('payroll:process');

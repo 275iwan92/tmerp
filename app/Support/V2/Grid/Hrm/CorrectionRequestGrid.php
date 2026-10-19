@@ -4,10 +4,19 @@ namespace App\Support\V2\Grid\Hrm;
 
 use App\Models\Master\EmpCorrectionRequest;
 use App\Models\Master\EmpEmployee;
+use App\Services\Hrm\CorrectionRequestService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Koreksi Data Karyawan (v1: pages::hrm.correction-requests).
+/*
+ * REMARK
+ * Tujuan       : Grid Koreksi Data Karyawan (pengajuan dari Self-Service dan Setup Keamanan Akun: PENDING menunggu HR); Open membuka form v2 hrm-correction-form tempat HR memutuskan. Tanpa New. Nilai pengajuan rekening gaji disamarkan bagi yang tidak berhak payroll atas pegawai itu.
+ * Sumber hulu  : tm2mst.emp_correction_request + emp_employee.
+ * Input        : Pencarian, filter Field / Status, kotak status.
+ * Output       : Baris grid (hanya baca; keputusan lewat form).
+ * Dipakai oleh : Menu HRM (v2:hrm-correction), layar hrm-correction-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::hrm.correction-requests sudah dipindah ke tmerp_unused (aturan D.25, T7c HRM).
+ */
 class CorrectionRequestGrid extends HrmGrid
 {
     public function slug(): string
@@ -25,9 +34,14 @@ class CorrectionRequestGrid extends HrmGrid
         return self::TRANSACTIONAL;
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.correction-requests';
+        return route('v2.screen', 'hrm-correction-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return null;
     }
 
     protected function canCreate(): bool
@@ -66,9 +80,11 @@ class CorrectionRequestGrid extends HrmGrid
 
     protected function row(Model $m): array
     {
+        $v = CorrectionRequestService::values($m, auth()->user());
+
         return [
             'name' => $m->employee?->full_name, 'code' => $m->employee?->employee_code, 'field' => $m->field_name,
-            'old' => $m->old_value, 'new' => $m->newValueLabel(), 'reason' => $m->reason,
+            'old' => $v['old'], 'new' => $v['new'], 'reason' => $m->reason,
             'requested' => $m->requested_at?->toDateString(), 'status' => $m->status,
         ];
     }
