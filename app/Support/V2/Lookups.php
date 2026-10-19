@@ -73,6 +73,8 @@ final class Lookups
             'search' => fn (string $q) => Data\ProductionRef::processSearch($q), 'find' => fn ($v) => Data\ProductionRef::processFind($v)]);
         Lookup::define('prod_machine', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_machine (activate = 1)', 'columns' => ['code' => 'Machine', 'name' => 'Name'],
             'search' => fn (string $q) => Data\ProductionRef::machineSearch($q), 'find' => fn ($v) => Data\ProductionRef::machineFind($v)]);
+        Lookup::define('prod_machine_proc', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_machine (activate = 1, is_process_machine = 1)', 'columns' => ['code' => 'Machine', 'name' => 'Name'],
+            'search' => fn (string $q) => Data\ProductionRef::processMachineSearch($q), 'find' => fn ($v) => Data\ProductionRef::machineFind($v)]);
         Lookup::define('stock_batch', ['key' => 'id', 'label' => 'label', 'source' => 'tm2inv.inv_batch (activate = 1)', 'columns' => ['batch_no' => 'Batch', 'lot' => 'Supplier lot', 'item' => 'Item', 'expiry' => 'Expiry'],
             'search' => fn (string $q) => Data\StockEntry::batchSearch($q), 'find' => fn ($v) => Data\StockEntry::batchFind($v)]);
 

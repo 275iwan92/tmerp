@@ -6,7 +6,15 @@ use App\Models\Master\ProdProcess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Proses (v1: pages::production.master-process).
+/*
+ * REMARK
+ * Tujuan       : Grid Master Process (proses produksi dan parameter bawaannya); Open dan + New Record membuka form v2 prod-process-form.
+ * Sumber hulu  : tm2mst.prod_process + org_department + hitungan prod_process_machine.
+ * Input        : Pencarian, filter Stage / Department / Performed By.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu Production (v2:prod-process), layar prod-process-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::production.master-process sudah dipindah ke tmerp_unused (aturan D.25, Master T6b).
+ */
 class ProcessGrid extends ProdGrid
 {
     public function slug(): string
@@ -19,14 +27,14 @@ class ProcessGrid extends ProdGrid
         return t('Master Process');
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'production.master-process';
+        return route('v2.screen', 'prod-process-form').'?id={id}';
     }
 
-    protected function v1Component(): ?string
+    public function newUrl(): ?string
     {
-        return 'pages::production.master-process';
+        return route('v2.screen', 'prod-process-form').'?new=1';
     }
 
     public function search(): string

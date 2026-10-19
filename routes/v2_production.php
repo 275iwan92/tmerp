@@ -2,18 +2,20 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar master modul Production v2: Scrap Type (prod-scrap-form), Routing Template (prod-routing-form) dan BOP Rule (prod-bop-form), disusul Process dan Machine.
- * Sumber hulu  : App\Services\Production\ScrapTypeService, RoutingTemplateEntryService dan BopRuleEntryService (dan layanan master Production berikutnya).
- * Input        : POST form (id, action save / activate / deactivate, isian; Routing: juga baris langkah steps[]).
+ * Tujuan       : Route layar master modul Production v2: Scrap Type (prod-scrap-form), Routing Template (prod-routing-form), BOP Rule (prod-bop-form) dan Process (prod-process-form), disusul Machine.
+ * Sumber hulu  : App\Services\Production\ScrapTypeService, RoutingTemplateEntryService, BopRuleEntryService dan ProcessMasterService (dan layanan master Production berikutnya).
+ * Input        : POST form (id, action save / activate / deactivate, isian; Routing: juga baris langkah steps[]; Process: juga baris matriks mesin machines[]).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar prod-scrap-form, prod-routing-form dan prod-bop-form.
- * Status       : Aktif. Dibuat 2026-10-19 (Master T6b, Jo): menggantikan halaman v1 pages::production.scrap-type, routing-template dan bop-rule.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar prod-scrap-form, prod-routing-form, prod-bop-form dan prod-process-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (Master T6b, Jo): menggantikan halaman v1 pages::production.scrap-type, routing-template, bop-rule dan master-process.
  */
 
 use App\Models\Master\ProdBopRule;
+use App\Models\Master\ProdProcess;
 use App\Models\Master\ProdRoutingTemplate;
 use App\Models\Prd\PrdScrapType;
 use App\Services\Production\BopRuleEntryService;
+use App\Services\Production\ProcessMasterService;
 use App\Services\Production\RoutingTemplateEntryService;
 use App\Services\Production\ScrapTypeService;
 use Illuminate\Http\Request;
@@ -83,5 +85,24 @@ Route::prefix('v2/prod/bop')->name('v2.prod.bop.')->middleware('module:PROD')->g
         $rule = $svc->save($rule, $r->except(['id', 'action']), $user);
 
         return $form($rule)->with('v2_flash', tf(':name saved.', ['name' => $name($rule)]));
+    })->name('save');
+});
+
+// Process: save (data proses + matriks mesin) / activate / deactivate. DATA REAL: aturan = ProcessMasterService + ProcessMachineMatrixService (dipindah dari v1 pages::production.master-process).
+Route::prefix('v2/prod/process')->name('v2.prod.process.')->middleware('module:PROD')->group(function () {
+    Route::post('/save', function (Request $r, ProcessMasterService $svc) {
+        $p = $r->filled('id') ? ProdProcess::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+        $form = fn (ProdProcess $x) => redirect(route('v2.screen', 'prod-process-form').'?id='.$x->id_process);
+
+        if ($p && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($p, $action === 'activate', $user);
+
+            return $form($p)->with('v2_flash', tf($action === 'activate' ? ':name activated.' : ':name deactivated.', ['name' => $p->process_name]));
+        }
+        $p = $svc->save($p, $r->except(['id', 'action', 'machines']), (array) $r->input('machines'), $user);
+
+        return $form($p)->with('v2_flash', tf(':name saved.', ['name' => $p->process_name]));
     })->name('save');
 });

@@ -212,7 +212,7 @@
     <text x="813" y="815" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="826" y="800" width="26" height="22" fill="#bfdbfe"/>
     <text x="839" y="815" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <text x="8" y="841" stroke="none" fill="#000">Open the v1 process page (form, capability ...</text>
+    <text x="8" y="841" stroke="none" fill="#000">Open the v2 Process Form (main info, parame...</text>
     <rect x="0" y="824" width="1008" height="26" fill="none"/>
     <rect x="982" y="826" width="26" height="22" fill="#bfdbfe"/>
     <text x="995" y="841" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">1</text>
@@ -230,10 +230,12 @@
     <text x="865" y="841" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="878" y="826" width="26" height="22" fill="#bfdbfe"/>
     <text x="891" y="841" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <text x="8" y="867" stroke="none" fill="#000">Save a process</text>
+    <text x="8" y="867" stroke="none" fill="#000">Save a process (with its machine pairs)</text>
     <rect x="0" y="850" width="1008" height="26" fill="none"/>
     <rect x="670" y="852" width="26" height="22" fill="#fdba74"/>
     <text x="683" y="867" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+CU</text>
+    <rect x="826" y="852" width="26" height="22" fill="#fdba74"/>
+    <text x="839" y="867" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+W</text>
     <text x="8" y="893" stroke="none" fill="#000">Toggle a process Active or Inactive</text>
     <rect x="0" y="876" width="1008" height="26" fill="none"/>
     <rect x="670" y="878" width="26" height="22" fill="#fdba74"/>

@@ -55,7 +55,6 @@ final class MenuRoutes
             // Pintasan master: dipakai selama baris asalnya belum ber-target v2 (tm2sys); di ddtsys target v2 yang menang.
             'PRE_MD_PROD' => route('v2.screen', 'master-product'),
             'PRE_MD_MATCAT' => route('v2.screen', 'md-matcat'),
-            'PRE_MD_PROCESS' => route('production.master-process'),
             'PRE_MD_MACHINE' => route('master.machine'),
             // Halaman yang hanya ada di v2: menu v1 (top bar) membukanya apa adanya supaya barisnya bukan link mati.
             'SALES_MCARD' => route('v2.screen', 'master-card-collection'),
@@ -128,7 +127,6 @@ final class MenuRoutes
             'MD_CURRENCY' => route('v2.screen', 'md-currency'),
             'MD_EXCHRATE' => route('v2.screen', 'md-exchange-rate'),
             'MD_HOLIDAY' => route('v2.screen', 'holiday-calendar'),
-            'PROD_MST_PROCESS' => route('production.master-process'),
             // Dua item ini activate=0 di sys_app_menu (belum pernah tayang);
             // dipetakan ke ProDev baru supaya tidak jadi link mati kalau nanti
             // diaktifkan -- Master Card lama ada di production.old-prodev.print.

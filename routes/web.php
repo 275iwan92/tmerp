@@ -317,7 +317,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
             Route::get('/production/scrap-type', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-scrap-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-scrap-form?new=1' : '/v2/s/prod-scrap')))->name('production.scrap-type');
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
-            Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
+            Route::get('/production/master-process', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-process-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-process-form?new=1' : '/v2/s/prod-process')))->name('production.master-process');
             Route::get('/production/routing-template', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-routing-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-routing-form?new=1' : '/v2/s/prod-routing')))->name('production.routing-template');
             Route::get('/production/bop-rule', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-bop-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-bop-form?new=1' : '/v2/s/prod-bop-rule')))->name('production.bop-rule');
             // ProDev BARU (2026-09-14) -- Imposition Plano Optimizer, port dari

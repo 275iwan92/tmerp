@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 /*
  * REMARK
- * Tujuan       : Bahan lookup master Production v2: cari proses (kode, nama, tahap) dan mesin (kode, nama) untuk baris langkah routing dan layar master Production berikutnya. Hanya baca.
+ * Tujuan       : Bahan lookup master Production v2: cari proses (kode, nama, tahap) dan mesin (kode, nama; juga hanya mesin proses) untuk baris langkah routing, matriks proses x mesin dan layar master Production berikutnya. Hanya baca.
  * Sumber hulu  : tm2mst.prod_process (activate = 1) dan prod_machine (activate = 1); data real pabrik, tidak diubah.
  * Input        : Kata cari, id.
  * Output       : Baris lookup (Devlib\Lookup search / find).
- * Dipakai oleh : App\Support\V2\Lookups (prod_process, prod_machine), layar prod-routing-form.
+ * Dipakai oleh : App\Support\V2\Lookups (prod_process, prod_machine, prod_machine_proc), layar prod-routing-form dan prod-process-form.
  * Status       : Aktif (Master T6b).
  */
 
@@ -53,6 +53,13 @@ final class ProductionRef
         $m = ProdMachine::query()->find((int) $value);
 
         return $m ? self::machineRow($m) : null;
+    }
+
+    /** @return list<array<string, mixed>> mesin proses aktif (alat penunjang seperti kompresor dan forklift tidak ikut) untuk baris matriks proses x mesin */
+    public static function processMachineSearch(string $q, int $limit = 30): array
+    {
+        return ProdMachine::query()->where('activate', true)->where('is_process_machine', true)->where(fn ($w) => $w->where('machine_code', 'like', "%{$q}%")->orWhere('machine_name', 'like', "%{$q}%"))
+            ->orderBy('machine_code')->limit($limit)->get()->map(fn (ProdMachine $m) => self::machineRow($m))->all();
     }
 
     private static function machineRow(ProdMachine $m): array
