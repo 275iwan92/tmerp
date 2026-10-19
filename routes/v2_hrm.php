@@ -2,22 +2,24 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), serta koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService dan AttendanceOverrideService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) dan register SOP / WI perusahaan (hrm-sop-form).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form dan hrm-attendance-upload.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests dan attendance-daily.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload dan hrm-sop-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily dan sop-documents.
  */
 
 use App\Models\Master\AttDailyStatus;
 use App\Models\Master\AttMobileGpsLog;
 use App\Models\Master\EmpCorrectionRequest;
 use App\Models\Master\EmpLeaveRequest;
+use App\Models\Mnt\MntDocument;
 use App\Services\Hrm\AttendanceOverrideService;
 use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\GpsApprovalService;
 use App\Services\Hrm\LeaveRequestService;
+use App\Services\Maintenance\MntDocumentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -105,4 +107,30 @@ Route::prefix('v2/hrm/attendance')->name('v2.hrm.attendance.')->middleware('modu
 
         return redirect(route('v2.screen', 'hrm-attendance-upload'))->with('v2_flash', tf('Attendance was recalculated for :days employee days (:kept manual overrides kept).', ['days' => $res['days'], 'kept' => $res['kept']]));
     })->name('recalculate');
+});
+
+// SOP / WI perusahaan: Save, Approve, Back to Draft, Activate / Deactivate; hanya HR Officer (sama dengan layar Maintenance). Aturan = MntDocumentService (diekstrak dari route v2.mnt.document.save dan v1 pages::hrm.sop-documents).
+Route::prefix('v2/hrm/sop')->name('v2.hrm.sop.')->middleware('module:HRM')->group(function () {
+    Route::post('/save', function (Request $r, MntDocumentService $svc) {
+        $user = Auth::user();
+        abort_unless($user->isHrOfficer(), 403, t('Only the HR Officer can change SOP and Work Instruction documents.'));
+        $m = $r->filled('id') ? MntDocument::company()->findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+
+        if ($m && $action === 'approve') {
+            $svc->approve($m, $user);
+            $msg = t('Document approved.');
+        } elseif ($m && $action === 'to_draft') {
+            $svc->backToDraft($m, $user);
+            $msg = t('Document is a draft again (new revision).');
+        } elseif ($m && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($m, $action === 'activate', $user);
+            $msg = t($action === 'activate' ? 'Document activated.' : 'Document deactivated.');
+        } else {
+            $m = $svc->saveCompany($m, $r->except(['id', 'action', 'lines']), (array) $r->input('lines', []), $user);
+            $msg = t('Document saved.');
+        }
+
+        return redirect(route('v2.screen', 'hrm-sop-form').'?id='.$m->id_document)->with('v2_flash', $msg);
+    })->name('save');
 });

@@ -2,12 +2,12 @@
 
 /*
  * REMARK
- * Tujuan       : Grid v2 hrm-sop: daftar SOP dan Work Instruction perusahaan; Open / New membuka form v1 pages::hrm.sop-documents.
+ * Tujuan       : Grid v2 hrm-sop: daftar SOP dan Work Instruction perusahaan; Open dan + New Record (hanya HR Officer) membuka form v2 hrm-sop-form.
  * Sumber hulu  : tm2mnt.mnt_document (+ mnt_document_line), register SOP / WI tunggal sejak 2026-10-18 (sop_document dilebur).
  * Input        : Pencarian dan filter grid.
  * Output       : Baris dokumen (doc_set kosong); non HR Officer hanya melihat yang Approved.
- * Dipakai oleh : Menu HRM_SOP, Grids registry.
- * Status       : Aktif.
+ * Dipakai oleh : Menu HRM (v2:hrm-sop), layar hrm-sop-form (kembali ke daftar), Grids registry.
+ * Status       : Aktif. Halaman v1 pages::hrm.sop-documents sudah dipindah ke tmerp_unused (aturan D.25, T7f HRM).
  */
 
 namespace App\Support\V2\Grid\Hrm;
@@ -17,7 +17,7 @@ use App\Models\Mnt\MntDocument;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// SOP dan Work Instruction perusahaan = tm2mnt.mnt_document dengan doc_set kosong (v1: pages::hrm.sop-documents). HR Officer menulis; yang lain hanya melihat yang Approved.
+// SOP dan Work Instruction perusahaan = tm2mnt.mnt_document dengan doc_set kosong. HR Officer menulis; yang lain hanya melihat yang Approved.
 class SopGrid extends HrmGrid
 {
     public function slug(): string
@@ -40,14 +40,19 @@ class SopGrid extends HrmGrid
         return 'Organization';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'hrm.sop-documents';
+        return (bool) auth()->user()?->isHrOfficer();
     }
 
-    protected function v1Component(): ?string
+    public function openUrl(): ?string
     {
-        return 'pages::hrm.sop-documents';
+        return route('v2.screen', 'hrm-sop-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return $this->canCreate() ? route('v2.screen', 'hrm-sop-form').'?new=1' : null;
     }
 
     protected function models(): array

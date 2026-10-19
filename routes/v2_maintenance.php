@@ -7,7 +7,7 @@
  * Input        : Permintaan layar Maintenance.
  * Output       : Perubahan data Maintenance dan redirect.
  * Dipakai oleh : Layar maintenance-*.
- * Status       : Aktif. Perubahan dokumen SOP / WI hanya HR Officer (2026-10-18).
+ * Status       : Aktif. Perubahan dokumen SOP / WI hanya HR Officer (2026-10-18); aturan dokumen kini di MntDocumentService (dipakai juga layar HRM hrm-sop-form, T7f).
  */
 
 use App\Models\Master\MatRaw;
@@ -25,6 +25,7 @@ use App\Models\Mnt\MntWatchPoint;
 use App\Services\Maintenance\AssetProfileService;
 use App\Services\Maintenance\DailyCheckService;
 use App\Services\Maintenance\MaintenanceAccess;
+use App\Services\Maintenance\MntDocumentService;
 use App\Services\Maintenance\OrderService;
 use App\Services\Maintenance\PartSupplyService;
 use App\Services\Maintenance\PlanService;
@@ -140,26 +141,22 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
         abort_unless(MaintenanceAccess::canManageDocuments(Auth::user()), 403, t('Only the HR Officer can change SOP and Work Instruction documents.'));
         $action = (string) $r->input('action', 'save');
         $m = $r->filled('id') ? MntDocument::findOrFail($r->integer('id')) : null;
-        $login = Auth::user()->login;
+        $svc = app(MntDocumentService::class);
 
         if ($m && in_array($action, ['activate', 'deactivate'], true)) {
-            $m->update(['activate' => $action === 'activate', 'updated_by' => $login]);
-            MntLog::add('DOCUMENT', $m->id_document, $action === 'activate' ? 'Activated' : 'Deactivated');
+            $svc->setActive($m, $action === 'activate', Auth::user());
 
             return redirect($doc($m->id_document))->with('v2_flash', $action === 'activate' ? 'Document activated.' : 'Document deactivated.');
         }
         if ($m && $action === 'approve') {
             abort_if($m->isApproved(), 422, t('This document is already approved.'));
-            $m->update(['status' => 'APPROVED', 'approved_by' => $login, 'approved_at' => now(), 'updated_by' => $login]);
-            MntLog::add('DOCUMENT', $m->id_document, 'Approved', 'Revision '.$m->revision);
+            $svc->approve($m, Auth::user());
 
             return redirect($doc($m->id_document))->with('v2_flash', 'Document approved.');
         }
         if ($m && $action === 'to_draft') {
             abort_unless($m->isApproved(), 422, t('Only an approved document can go back to draft.'));
-            $rev = str_pad((string) ((int) $m->revision + 1), 2, '0', STR_PAD_LEFT);
-            $m->update(['status' => 'DRAFT', 'revision' => $rev, 'approved_by' => null, 'approved_at' => null, 'updated_by' => $login]);
-            MntLog::add('DOCUMENT', $m->id_document, 'Back to draft', 'New revision '.$rev);
+            $svc->backToDraft($m, Auth::user());
 
             return redirect($doc($m->id_document))->with('v2_flash', 'Document is a draft again (new revision).');
         }
@@ -168,20 +165,11 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
         $d = $r->validate(['doc_no' => ['required', 'string', 'max:40', 'unique:tm2mnt.mnt_document,doc_no'.($m ? ','.$m->id_document.',id_document' : '')],
             'kind' => ['required', Rule::in(array_keys(MntDocument::KINDS))], 'doc_set' => ['nullable', 'string', 'max:10'], 'title' => ['required', 'string', 'max:200'],
             'file_location' => ['nullable', 'string', 'max:255']], [], ['doc_no' => t('Document no.'), 'title' => t('Title')]);
-        $isNew = ! $m;
-        $m = $m ? tap($m)->update($d + ['updated_by' => $login]) : MntDocument::create($d + ['revision' => '00', 'status' => 'DRAFT', 'activate' => true, 'created_by' => $login, 'updated_by' => $login]);
-        MntLog::add('DOCUMENT', $m->id_document, $isNew ? 'Created' : 'Saved');
-
-        foreach (array_keys((array) $r->input('remove', [])) as $lid) {
-            $m->lines()->whereKey((int) $lid)->delete();
-        }
-        foreach ((array) $r->input('lines', []) as $lid => $row) {
-            $m->lines()->whereKey((int) $lid)->update(['section' => trim((string) ($row['section'] ?? '')) ?: 'Steps', 'line_text' => trim((string) ($row['line_text'] ?? '')) ?: '-', 'updated_by' => $login]);
-        }
+        $m = $svc->saveHeader($m, $d, Auth::user());
+        $svc->updateLines($m, array_keys((array) $r->input('remove', [])), (array) $r->input('lines', []), Auth::user());
         $msg = 'Document saved.';
         if ($action === 'add_line' && trim((string) $r->input('new_line')) !== '') {
-            $m->lines()->create(['seq_no' => (int) $m->lines()->max('seq_no') + 1, 'section' => trim((string) $r->input('new_section', 'Steps')) ?: 'Steps',
-                'line_text' => trim((string) $r->input('new_line')), 'created_by' => $login, 'updated_by' => $login]);
+            $svc->addLine($m, (string) $r->input('new_section', 'Steps'), (string) $r->input('new_line'), Auth::user());
             $msg = 'Line added.';
         }
 

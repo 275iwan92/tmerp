@@ -188,7 +188,6 @@ final class MenuRoutes
             'PROD_SHIFT_ROSTER' => route('v2.screen', 'hrm-roster'),
             'HRM_ORG_STRUCTURE' => route('hrm.position'),
             'HRM_ORG_CHART' => route('hrm.org-chart'),
-            'HRM_SOP' => route('hrm.sop-documents'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('v2.screen', 'hrm-roster'),
             'HRM_CONTACT_GAP' => route('v2.screen', 'hrm-contact-gap'),
