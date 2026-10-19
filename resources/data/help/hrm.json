@@ -279,10 +279,10 @@
     "keywords": "rekening, bank, transfer gaji, tunai, cash, nomor rekening, atas nama, metode gaji, rekening karyawan",
     "steps": [
       {"en": "Search by NIK, name or code, or filter by Department, Salary Method or Bank. The status boxes count Transfer and Cash.", "id": "Cari berdasarkan NIK, nama atau kode, atau saring berdasarkan Department, Salary Method atau Bank. Kotak status menghitung Transfer dan Cash."},
-      {"en": "Open the employee row.", "id": "Buka baris karyawan."},
+      {"en": "Open the employee row: the Master Employee form opens on its Bank tab. Only people with the payroll right see the list and the tab (Direksi: everyone; HR Officer: Non-staff only).", "id": "Buka baris karyawan: form Master Employee terbuka di tab Bank. Hanya yang berhak payroll yang melihat daftar dan tab ini (Direksi: semua; HR Officer: hanya Non-staff)."},
       {"en": "Pick the Bank, then fill Account No. and Account Holder.", "id": "Pilih Bank, lalu isi Account No. dan Account Holder."},
       {"en": "To pay in cash, clear the bank selection. The old account is deactivated.", "id": "Untuk dibayar tunai, kosongkan pilihan bank. Rekening lama dinonaktifkan."},
-      {"en": "Click Save.", "id": "Klik Save."}
+      {"en": "Click Save on the employee form. The bank account is saved together with the rest of the employee data.", "id": "Klik Save di form pegawai. Rekening bank tersimpan bersama data pegawai lainnya."}
     ],
     "fields": [
       {"label": "Bank", "en": "Bank of the salary account, picked from Supplier Master category BANK. Leave empty (Cash / Tunai) for cash payment. New banks are added in Supplier Master.", "id": "Bank rekening gaji, dipilih dari Master Supplier kategori BANK. Kosongkan (Cash / Tunai) untuk gaji tunai. Bank baru ditambahkan di Master Supplier."},

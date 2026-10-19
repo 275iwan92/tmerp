@@ -277,7 +277,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
             Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
             Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary')->middleware('payroll:process');
-            Route::livewire('/hrm/payroll/employee-bank', 'pages::hrm.payroll-employee-bank')->name('hrm.payroll.employee-bank')->middleware('payroll:process');
+            Route::get('/hrm/payroll/employee-bank', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-employee-form?id='.(int) $r->query('open').'&tab=bank' : '/v2/s/hrm-bank'))->name('hrm.payroll.employee-bank')->middleware('payroll:process');
             Route::get('/hrm/gps-approval', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-gps-form?id='.(int) $r->query('open') : '/v2/s/hrm-gps'))->name('hrm.gps-approval');
             Route::livewire('/hrm/payroll/batch-run', 'pages::hrm.payroll-batch-run')->name('hrm.payroll.batch-run')->middleware('payroll:process');
             Route::livewire('/hrm/payroll/payslip', 'pages::hrm.payroll-payslip-list')->name('hrm.payroll.payslip-list')->middleware('payroll:payslip');

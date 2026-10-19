@@ -3,7 +3,7 @@
 /*
  * REMARK
  * Tujuan       : Aturan dan simpan profil pegawai (identitas, pekerjaan, rekening gaji, BPJS, foto) dari layar v2 Master Employee Form; satu pintu, tanpa logika di layar.
- * Sumber hulu  : Aturan sama dengan layar v1 pages::master.employee (zona beku: validasi, kode pegawai TM-nnnnn, login otomatis pegawai baru, hak ubah Staff / Payroll tidak diubah).
+ * Sumber hulu  : Aturan sama dengan layar v1 pages::master.employee (zona beku: validasi, kode pegawai TM-nnnnn, login otomatis pegawai baru, hak ubah Staff / Payroll tidak diubah; rekening gaji hanya bagi yang berhak payroll atas pegawai itu, T7b).
  * Input        : Array isian form, file foto opsional, user yang menyimpan.
  * Output       : EmpEmployee tersimpan (+ kredensial login bila pegawai baru dan belum punya login); ValidationException bila isian salah.
  * Dipakai oleh : routes/v2.php (hrm.employee.save), tes EmployeeProfileScreenTest, EmployeeAccountServiceTest, EmployeeBankSupplierTest, PayrollAccessTest.
@@ -56,9 +56,18 @@ final class EmployeeProfileService
         return PayrollAccess::canProcess($user) && (! $e?->exists || PayrollAccess::canSeeEmployee($user, $e->employee_id));
     }
 
+    // Rekening gaji = data payroll (rahasia): hanya yang berhak payroll atas pegawai itu (Direksi semua, HR Officer hanya Non-staff); admin tanpa hak payroll tidak.
+    public static function canEditBank(SecUser $user, ?EmpEmployee $e): bool
+    {
+        return $e?->exists && PayrollAccess::canProcess($user) && PayrollAccess::canSeeEmployee($user, $e->employee_id);
+    }
+
     /** @return array{0: EmpEmployee, 1: ?array} pegawai tersimpan dan kredensial login (hanya untuk pegawai baru) */
     public function save(?EmpEmployee $e, array $input, SecUser $user, ?UploadedFile $photo = null): array
     {
+        if (! self::canEditBank($user, $e)) {
+            unset($input['bank_supplier_id'], $input['bank_account_no'], $input['bank_account_holder']);
+        }
         $data = $this->validate($e, $input, $user, $photo);
         $payload = $this->payload($data) + ['updated_by' => $user->login];
         if (self::canEditStaffType($user) && isset($data['staff_type'])) {

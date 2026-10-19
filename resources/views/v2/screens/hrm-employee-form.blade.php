@@ -5,7 +5,7 @@
  Input        : Query id (pegawai) atau new=1; session v2_flash dan errors.
  Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate / Remove Photo) -> EmployeeProfileService. POST v2.hrm.employee.contract / family / deceased / education / discipline -> EmployeeRecordService (tiap dialog menyimpan sendiri; tanpa edit / hapus baris).
  Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record), kembali dari dialog lewat ?tab=; flash v2_login_card = kartu login pegawai baru (sekali tampil). Documents = unggah dokumen HR (EmployeeRecordService::addDocument); BPJS ikut Save utama; Account = EmployeeAccountService (buat login, reset password, aktif / nonaktif), kartu login sekali tampil.
- Status       : Aktif (mockup.test dulu, keputusan Jo 2026-10-16). Gaji kontrak tersembunyi mengikuti aturan v1 (admin, posisi salary_hidden_from_hr, tipe KONTRAK / BORONGAN).
+ Status       : Aktif (mockup.test dulu, keputusan Jo 2026-10-16). Gaji kontrak tersembunyi mengikuti aturan v1 (admin, posisi salary_hidden_from_hr, tipe KONTRAK / BORONGAN). Tab Bank (rekening gaji) hanya tampil bila EmployeeProfileService::canEditBank (hak payroll atas pegawai itu; T7b), dibuka langsung lewat ?tab=bank dari grid hrm-bank.
 --}}
 @php
     use App\Models\Master\EmpEmployee;
@@ -35,13 +35,14 @@
     $byTab = collect($missing)->groupBy('tab')->map->count();
     $tab = fn (string $label, string $key) => $byTab->has($key) ? $label.' ('.$byTab[$key].')' : $label;
     $todo = t('To complete').': '.collect($missing)->map(fn ($m) => t($m['label']).' ('.t(ucfirst($m['tab'])).')')->implode(', ');
-    $bank = $new ? null : EmployeeBankService::primary($e->employee_id);
+    $canBank = ! $new && Profile::canEditBank($user, $e);
+    $bank = $canBank ? EmployeeBankService::primary($e->employee_id) : null;
     $kes = $e->bpjsKesehatan;
     $ket = $e->bpjsKetenagakerjaan;
     $isAdmin = (bool) $user->is_admin;
     $acct = $isAdmin && ! $new ? app(Account::class)->userOf($e) : null;
     $tabs = ['profile' => $tab('Profile', 'profile'), 'job' => $tab('Job', 'job'), 'contract' => 'Contract', 'family' => $tab('Family', 'family'), 'education' => 'Education']
-        + ($new ? [] : ['kpi' => 'KPI', 'skills' => 'Skills', 'documents' => 'Documents', 'bpjs' => 'BPJS']) + ['bank' => 'Bank', 'discipline' => 'Discipline'] + ($isAdmin && ! $new ? ['account' => 'Account'] : []);
+        + ($new ? [] : ['kpi' => 'KPI', 'skills' => 'Skills', 'documents' => 'Documents', 'bpjs' => 'BPJS']) + ($canBank ? ['bank' => 'Bank'] : []) + ['discipline' => 'Discipline'] + ($isAdmin && ! $new ? ['account' => 'Account'] : []);
     $seeSalary = fn ($c) => $user->is_admin || (! $e->position?->salary_hidden_from_hr && $c && in_array($c->employment_type, ['KONTRAK', 'BORONGAN'], true));
     $statusTone = ['WORKING' => 'success', 'DIRUMAHKAN' => 'warn', 'CUTI' => 'info'];
     $kpiSvc = app(Kpi::class);

@@ -7,6 +7,8 @@ use App\Models\Master\EmpCorrectionRequest;
 use App\Models\Master\EmpEmployee;
 use App\Models\Sys\SecUser;
 use App\Services\Hrm\EmployeeProfileService;
+use App\Support\Menu\MenuRoutes;
+use App\Support\V2\Grid\Grids;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
@@ -111,18 +113,21 @@ class EmployeeBankSupplierTest extends TestCase
         $this->assertSame('APPROVED', $req->fresh()->status);
     }
 
-    public function test_payroll_bank_screen_uses_supplier_lookup_and_cash_option(): void
+    // T7b: halaman v1 Payroll > Rekening Bank dipensiunkan; daftar = grid hrm-bank (dibatasi payroll), rekening diubah di tab Bank Master Employee.
+    public function test_payroll_bank_grid_opens_the_employee_bank_tab_and_v1_redirects(): void
     {
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
         $emp = $this->makeEmployee();
 
-        $c = Livewire::test('pages::hrm.payroll-employee-bank')->call('openForm', $emp)
-            ->set('bankSupplierId', (string) $this->bankId('BRI'))->set('accountNo', '555')->set('accountHolderName', 'ZZ')
-            ->call('save')->assertHasNoErrors();
-        $this->assertSame('BRI', EmployeeBankOf($emp)?->bank_name);
-
-        $c->call('openForm', $emp)->set('bankSupplierId', '')->call('save');
-        $this->assertNull(EmployeeBankOf($emp), 'Cash = rekening dinonaktifkan.');
+        $this->get(route('v2.screen', 'hrm-bank'))->assertOk();
+        $this->assertStringContainsString('/v2/s/hrm-employee-form?id={id}&tab=bank', Grids::find('hrm-bank')->openUrl());
+        $this->assertNull(Grids::find('hrm-bank')->newUrl());
+        $this->get(route('v2.screen', 'hrm-employee-form').'?id='.$emp.'&tab=bank')->assertOk()->assertSee('name="bank_supplier_id"', false)->assertSee('— Cash —');
+        $this->get('/hrm/payroll/employee-bank')->assertRedirect('/v2/s/hrm-bank');
+        $this->get('/hrm/payroll/employee-bank?open='.$emp)->assertRedirect('/v2/s/hrm-employee-form?id='.$emp.'&tab=bank');
+        $this->assertFileDoesNotExist(resource_path('views/pages/hrm/payroll-employee-bank.blade.php'));
+        $this->assertFileExists(base_path('tmerp_unused/hrm_payroll_employee_bank_v1_2026-10-19.blade.php'));
+        $this->assertArrayNotHasKey('HRM_PAYROLL_BANK', MenuRoutes::map());
     }
 
     public function test_loose_mode_only_name_is_required(): void

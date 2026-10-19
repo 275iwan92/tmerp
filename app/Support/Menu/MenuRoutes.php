@@ -198,7 +198,6 @@ final class MenuRoutes
             'HRM_ATTENDANCE_UPLOAD' => route('v2.screen', 'hrm-attendance-upload'),
             'HRM_ATTENDANCE' => route('hrm.attendance-daily'),
             'HRM_PAYROLL_SALARY' => route('hrm.payroll.employee-salary'),
-            'HRM_PAYROLL_BANK' => route('hrm.payroll.employee-bank'),
             'HRM_PAYROLL_CALC' => route('hrm.payroll.batch-run'),
             'HRM_PAYROLL_PAYSLIP' => route('hrm.payroll.payslip-list'),
             'HRM_PAYROLL_BANKXFER' => route('hrm.payroll.bank-transfer'),

@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Karyawan & Rekening Bank (v1: pages::hrm.payroll-employee-bank). Tanpa rekening utama = dibayar tunai.
+/*
+ * REMARK
+ * Tujuan       : Grid Master Karyawan & Rekening Bank (rekening gaji utama per pegawai aktif; tanpa rekening = dibayar tunai). Daftar ini dibatasi PayrollAccess (screenAllowed + restrict): Direksi semua pegawai, HR Officer hanya Non-staff; Open membuka tab Bank di Master Employee v2 tempat rekening diubah.
+ * Sumber hulu  : tm2mst.emp_employee + emp_bank_account + sup_supplier (BANK) + org_position / org_department.
+ * Input        : Pencarian, filter Department / Salary Method / Bank, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat hrm-employee-form tab Bank, EmployeeBankService).
+ * Dipakai oleh : Menu HRM > Payroll (v2:hrm-bank), layar hrm-employee-form.
+ * Status       : Aktif. Halaman v1 pages::hrm.payroll-employee-bank sudah dipindah ke tmerp_unused (aturan D.25, T7b HRM).
+ */
 class BankAccountGrid extends HrmGrid
 {
     private array $banks = [];
@@ -35,9 +43,14 @@ class BankAccountGrid extends HrmGrid
         return 'Payroll';
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.payroll.employee-bank';
+        return route('v2.screen', 'hrm-employee-form').'?id={id}&tab=bank';
+    }
+
+    public function newUrl(): ?string
+    {
+        return null;
     }
 
     protected function canCreate(): bool

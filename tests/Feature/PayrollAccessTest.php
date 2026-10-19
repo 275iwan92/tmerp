@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\ForcePasswordChange;
+use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrPayslip;
 use App\Models\Sys\SecUser;
@@ -140,5 +141,44 @@ class PayrollAccessTest extends TestCase
         $hr = $this->user('hr', ['HR_OFFICER']);
         $this->assertFalse(EmployeeProfileService::canEditStaffType($hr));
         $this->assertFalse(EmployeeProfileService::canEditPayrollMethod($hr, EmpEmployee::find($staffId)), 'HR Officer cannot change the payroll method of a staff member');
+    }
+
+    // Rekening gaji = data payroll (T7b, Jo 2026-10-19): tab Bank di Master Employee dan simpan rekening mengikuti PayrollAccess.
+    public function test_bank_tab_and_bank_save_follow_the_payroll_scope(): void
+    {
+        $this->withoutMiddleware(ForcePasswordChange::class);
+        $staff = EmpEmployee::query()->where('staff_type', 'STAFF')->where('activate', true)->where('employee_id', '>', 1)->orderBy('employee_id')->firstOrFail();
+        $non = EmpEmployee::query()->where('staff_type', 'NON_STAFF')->where('activate', true)->where('employee_id', '>', 1)->orderBy('employee_id')->firstOrFail();
+        $dir = $this->user('dir', ['DIREKSI']);
+        $hr = $this->user('hr', ['HR_OFFICER']);
+        $admin = $this->user('admin', [], true);
+
+        $this->assertTrue(EmployeeProfileService::canEditBank($dir, $staff));
+        $this->assertTrue(EmployeeProfileService::canEditBank($dir, $non));
+        $this->assertFalse(EmployeeProfileService::canEditBank($hr, $staff), 'HR Officer holds Non-staff only');
+        $this->assertTrue(EmployeeProfileService::canEditBank($hr, $non));
+        $this->assertFalse(EmployeeProfileService::canEditBank($admin, $non), 'admin without payroll role');
+        $this->assertFalse(EmployeeProfileService::canEditBank($dir, null));
+
+        $form = fn (SecUser $u, EmpEmployee $e) => $this->actingAs($u)->get(route('v2.screen', 'hrm-employee-form').'?id='.$e->employee_id.'&tab=bank');
+        $form($dir, $staff)->assertOk()->assertSee('name="bank_supplier_id"', false);
+        $form($hr, $non)->assertOk()->assertSee('name="bank_supplier_id"', false);
+        $form($hr, $staff)->assertOk()->assertDontSee('name="bank_supplier_id"', false);
+        $form($admin, $non)->assertOk()->assertDontSee('name="bank_supplier_id"', false);
+
+        // Simpan: bank yang terkirim oleh pengguna tanpa hak diabaikan server (di dalam transaksi yang di-rollback).
+        $bank = (int) DB::connection('tm2mst')->table('sup_supplier')->where('category', 'BANK')->where('activate', 1)->orderBy('id_supplier')->value('id_supplier');
+        DB::connection('tm2mst')->beginTransaction();
+        try {
+            $tmp = EmpEmployee::create(['employee_code' => 'ZZ-BANKGAP', 'company_id' => $staff->company_id, 'full_name' => 'ZZ Bank Gap', 'staff_type' => 'STAFF', 'payment_frequency' => 'MONTHLY', 'created_by' => 'test', 'updated_by' => 'test']);
+            $input = ['full_name' => 'ZZ Bank Gap', 'staff_type' => 'STAFF', 'payment_frequency' => 'MONTHLY', 'bank_supplier_id' => (string) $bank, 'bank_account_no' => '123', 'bank_account_holder' => 'ZZ'];
+            app(EmployeeProfileService::class)->save($tmp, $input, $hr);
+            app(EmployeeProfileService::class)->save($tmp, $input, $admin);
+            $this->assertSame(0, EmpBankAccount::where('employee_id', $tmp->employee_id)->count(), 'no account written without the payroll right');
+            app(EmployeeProfileService::class)->save($tmp, $input, $dir);
+            $this->assertSame('123', EmpBankAccount::where('employee_id', $tmp->employee_id)->where('activate', true)->value('account_no'));
+        } finally {
+            DB::connection('tm2mst')->rollBack();
+        }
     }
 }
