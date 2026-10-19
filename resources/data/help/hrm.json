@@ -228,8 +228,8 @@
     "steps": [
       {"en": "Open the screen. Waiting items are listed first; the grid shows the date, time, type, distance in meters and whether it was inside or outside the radius.", "id": "Buka layar ini. Data yang menunggu tampil paling atas; grid menunjukkan tanggal, jam, jenis, jarak dalam meter dan apakah di dalam atau di luar radius."},
       {"en": "Filter by Type, Radius or Status if you need to find a record.", "id": "Saring berdasarkan Type, Radius atau Status bila perlu mencari satu catatan."},
-      {"en": "Click Approve if the location is acceptable. The clock record is then written as attendance data and that day is recalculated.", "id": "Klik Approve bila lokasinya dapat diterima. Catatan clock lalu masuk sebagai data presensi dan hari itu dihitung ulang."},
-      {"en": "To refuse, click Reject and type the reason. The record does not count for attendance.", "id": "Untuk menolak, klik Reject dan tulis alasannya. Catatan itu tidak dihitung sebagai presensi."}
+      {"en": "Open a waiting record to see the clock details (time, coordinates, distance). Click Approve if the location is acceptable: the clock is written as attendance data and that day is recalculated.", "id": "Buka catatan yang menunggu untuk melihat rincian clock (waktu, koordinat, jarak). Klik Approve bila lokasinya dapat diterima: clock masuk sebagai data presensi dan hari itu dihitung ulang."},
+      {"en": "To refuse, click Reject and type the reason (up to 255 characters). The record does not count for attendance. A decision is final; Approve and Reject only appear while the record is Waiting.", "id": "Untuk menolak, klik Reject dan tulis alasannya (maks 255 karakter). Catatan itu tidak dihitung sebagai presensi. Keputusan bersifat final; Approve dan Reject hanya muncul selama catatan masih Waiting."}
     ],
     "fields": [
       {"label": "Rejection Reason", "en": "Required when rejecting. Explain why the location is not accepted.", "id": "Wajib saat menolak. Jelaskan mengapa lokasi tidak diterima."},

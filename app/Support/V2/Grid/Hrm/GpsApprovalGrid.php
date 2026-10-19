@@ -8,7 +8,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
-// Approval Lokasi GPS (v1: pages::hrm.gps-approval).
+/*
+ * REMARK
+ * Tujuan       : Grid Approval Lokasi GPS (catatan clock dari HP: PENDING di luar radius menunggu HR, AUTO_APPROVED di dalam radius); Open membuka form v2 hrm-gps-form tempat HR memutuskan. Tanpa New (catatan lahir dari GpsClock).
+ * Sumber hulu  : tm2mst.att_mobile_gps_log + emp_employee.
+ * Input        : Pencarian, filter Type / Radius / Status, kotak status.
+ * Output       : Baris grid (hanya baca; keputusan lewat form).
+ * Dipakai oleh : Menu HRM > Time Attendance (v2:hrm-gps), layar hrm-gps-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::hrm.gps-approval sudah dipindah ke tmerp_unused (aturan D.25, T7 HRM).
+ */
 class GpsApprovalGrid extends HrmGrid
 {
     public function slug(): string
@@ -26,9 +34,14 @@ class GpsApprovalGrid extends HrmGrid
         return self::TRANSACTIONAL;
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.gps-approval';
+        return route('v2.screen', 'hrm-gps-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return null;
     }
 
     protected function canCreate(): bool
