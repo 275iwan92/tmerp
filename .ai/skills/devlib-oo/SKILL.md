@@ -15,11 +15,11 @@ Sumber: memori `feedback_devlib_object_oriented_inheritance_first`, `docs/global
 ## Cara DevLib OO bekerja
 - Akar: `Devlib\Components\DevlibComponent` (abstrak, turunan `Component` Laravel): `tag()`, `source()`, `lineage()` (rantai induk tampil di tooltip Developer Mode), `can="modul.aksi"`, terjemahan otomatis prop teks, `dictionaryGroup()`, `jsClass()` opsional.
 - Anak = `extends` induk dan hanya menyatakan yang berbeda (contoh `SideScreen extends Drawer`; `SideScreen\Layout extends Tabs`). Induk dapat fitur baru -> semua anak ikut.
-- PHP + JS berpasangan: `jsClass()` -> `data-dl-js`; JS `class X extends Devlib.Component` (`static selector`, `init()`, `emit()`), didaftar `Devlib.define/register`; timpa perilaku induk dengan `Devlib.register(class Y extends Devlib.classes.Kanban {...})`. Satu kelas per file di `packages/devlib/resources/assets/js/components/`.
+- PHP + JS berpasangan: `jsClass()` -> `data-dl-js`; JS `class X extends Devlib.Component` (`static selector`, `init()`, `emit()`), didaftar `Devlib.define/register`; timpa perilaku induk dengan `Devlib.register(class Y extends Devlib.classes.Kanban {...})`. Satu kelas per file di `../devlib/resources/assets/js/components/`.
 - Pola sama di luar komponen: `Devlib\PrintDoc\Document` + satu subclass per dokumen (`App\Support\V2\Print`); `EngineRegistry`; kelas Grid (`app/Support/V2/Grid/*`, daftar dokumen = turunan `DocListGrid`); trait `PricedDummyChain` untuk seeder; layar v2 = deklarasi tipis dari `x-dl::*` / `x-mp::*`; form khusus = objek `x-mp::*` (`packages/mockup-parts`).
 
 ## Cara menerapkan (setiap tugas)
-1. **Cari objek terdekat dulu** (katalog devlib.test, `packages/devlib/src/Components`, `packages/mockup-parts`, `_manifest.yaml`) lalu **PERLUAS atau SUSUN** darinya. Jangan menulis dari nol.
+1. **Cari objek terdekat dulu** (katalog devlib.test, `../devlib/src/Components`, `packages/mockup-parts`, `_manifest.yaml`) lalu **PERLUAS atau SUSUN** darinya. Jangan menulis dari nol.
 2. Perilaku yang mungkin dipakai >1 layar = tambahkan di **INDUK** (prop / method / hook baru). Beda per layar = kelas anak tipis atau props — **jangan salin-tempel**.
 3. Layar tetap kecil: **deklarasikan, jangan bangun.** Tanpa HTML mentah, JS inline, hex warna. Form kecil = `x-dl::action-form`; form dokumen/master = `x-dl::form`.
 4. Objek baru: **DevLib dulu** (demo di devlib.test + entri katalog), mockup/tmerp mewarisi. Kode non-UI sama: kelas dasar / trait + subclass per kasus.
@@ -39,7 +39,7 @@ Main code (layar, route, komponen Livewire, command) harus **sederhana, mudah di
 Dikutip di `docs/globaluserrules.md` D.17.
 ## Arah warisan DevLib -> tmerp
 
-DevLib membuat, tmerp mewarisi; paket `packages/devlib` tanpa kode `App\`, helper global (mis. `raw()`) milik paket. Rinci: skill `devlib-inheritance`.
+DevLib membuat, tmerp mewarisi; paket `../devlib` tanpa kode `App\`, helper global (mis. `raw()`) milik paket. Rinci: skill `devlib-inheritance`.
 
 ## Bila skill generik bertentangan
 Contoh: saran "buat Blade component/Form Request/controller baru" padahal sudah ada objek DevLib yang bisa diperluas; saran markup Tailwind mentah; file Livewire berprefix `⚡`. Pilih jalur DevLib / tmerp, sebut singkat alasannya.

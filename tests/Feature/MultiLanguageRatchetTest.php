@@ -26,9 +26,9 @@ class MultiLanguageRatchetTest extends TestCase
     /** @return array<string, int> */
     public static function currentCounts(): array
     {
-        $php = (new Finder)->files()->in([resource_path('views/v2'), app_path('Support/V2'), base_path('packages/devlib/src'), base_path('packages/devlib/resources/views')])
+        $php = (new Finder)->files()->in([resource_path('views/v2'), app_path('Support/V2'), base_path('../devlib/src'), base_path('../devlib/resources/views')])
             ->name(['*.php']);
-        $js = (new Finder)->files()->in(base_path('packages/devlib/resources/assets/js'))->exclude('vendor')->name('*.js');  // vendor = pustaka pihak ketiga (Anime.js), bukan teks layar
+        $js = (new Finder)->files()->in(base_path('../devlib/resources/assets/js'))->exclude('vendor')->name('*.js');  // vendor = pustaka pihak ketiga (Anime.js), bukan teks layar
         $c = array_fill_keys(array_keys(self::BASELINE), 0);
 
         foreach ($php as $f) {
@@ -87,7 +87,7 @@ class MultiLanguageRatchetTest extends TestCase
     {
         $keys = array_keys(Lang::all());
         $missing = [];
-        foreach ((new Finder)->files()->in(base_path('packages/devlib/resources/assets/js'))->name('*.js') as $f) {
+        foreach ((new Finder)->files()->in(base_path('../devlib/resources/assets/js'))->name('*.js') as $f) {
             preg_match_all("/\\bTf?\\('([a-z][\\w.]*)'/", $f->getContents(), $m);
             foreach (array_unique($m[1]) as $k) {
                 if (! in_array($k, $keys, true)) {

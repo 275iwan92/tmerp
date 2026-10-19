@@ -26,7 +26,7 @@ disk privat (`chat.disk`, folder `chat/`), bukan di database, dan hanya bisa dib
 
 ## Memasang di aplikasi lain
 
-1. Salin folder `packages/chat` (dan `packages/devlib` bila layar DevLib dipakai).
+1. Salin folder `packages/chat` (dan `../devlib` bila layar DevLib dipakai).
 2. Daftarkan autoload + provider. Salah satu:
    - `composer.json` aplikasi: `"Chat\\": "packages/chat/src/"` di `autoload.psr-4`, `composer dump-autoload`, lalu
      `Chat\ChatServiceProvider::class` di `bootstrap/providers.php` (cara tmerp); atau

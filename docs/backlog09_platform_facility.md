@@ -106,7 +106,7 @@ Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga t
    b. Label Indonesia `Tujuan` tercatat sebagai sumber English (ddtsys, 2026-10-02 18:25, salah satu grid Delivery): ganti
       labelnya ke English di layar / kelas grid, tambahkan kata itu ke `Dictionary::ID_WORDS`, hapus baris kamusnya.
    c. Nama aplikasi `ERP TM` tercatat di kamus tm2sys (judul `x-dl::layer-menu` = data, bukan label): bungkus `raw()` di
-      `packages/devlib/resources/views/components/layer-shell.blade.php` (`:title`), hapus baris kamusnya (juga `TELASIH MAKMUR` di ddt).
+      `../devlib/resources/views/components/layer-shell.blade.php` (`:title`), hapus baris kamusnya (juga `TELASIH MAKMUR` di ddt).
    d. Pesan flash yang dikirim sebagai variabel utuh (`:message="$error"`, `session('v2_flash')`) tidak bisa dibedakan dari
       label: yang bernomor dokumen tertahan `Dictionary::looksLikeData()`, yang berisi nama masih bisa tercatat. Perlu
       keputusan: pesan flash dianggap teks jadi (`raw()` di semua alert flash) atau diterjemahkan di tempat pesan dibuat.

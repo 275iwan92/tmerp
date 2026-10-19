@@ -22,7 +22,7 @@
 - Periksa dan HAPUS dead code pada file yang disentuh (fungsi/rute/prop/CSS/JS tak dirujuk, variabel tak terbaca, duplikasi): buktikan dulu lewat grep rute/view/JS/tes, hapus (bukan komentar), perilaku tidak berubah. Yang meragukan (flag URL seperti `?layout=tabs`, `?extras=1`) jangan dihapus, daftarkan di laporan.
 - Kode minimal yang menyelesaikan masalah; tanpa fitur spekulatif. Komentar hanya untuk yang tidak lazim.
 - **Teks HITAM (latar terang) atau TERANG (latar gelap), tanpa abu-abu**; abu-abu hanya token `--dl-disabled` untuk yang disabled. Ditulis di token / objek DevLib, bukan per layar (ubah satu, semua turunan ikut). Layar review = blog (`x-dl::review-feed`), huruf besar, tombol keputusan besar.
-- Dasar: OO + komponen modular + library; **DevLib membuat, tmerp mewarisi** (skill `devlib-oo`, `devlib-inheritance`; rulebook D.15, D.17, D.18, D.21). **Cek `packages/devlib` dan `packages/mockup-parts` dulu**, pakai atau turunkan objek yang ada; layar v2 = objek `x-dl::*` / `x-mp::*`, tanpa tag mentah, warna literal, atau kelas lokal (dijaga `DevlibOnlyRatchetTest`).
+- Dasar: OO + komponen modular + library; **DevLib membuat, tmerp mewarisi** (skill `devlib-oo`, `devlib-inheritance`; rulebook D.15, D.17, D.18, D.21). **Cek `../devlib` dan `packages/mockup-parts` dulu**, pakai atau turunkan objek yang ada; layar v2 = objek `x-dl::*` / `x-mp::*`, tanpa tag mentah, warna literal, atau kelas lokal (dijaga `DevlibOnlyRatchetTest`).
 - UI: tombol dokumen selalu English (New, Save, Undo, Delete, Confirm, Cancel, Duplicate, Back to Draft, Back; status Draft/Confirmed/Cancelled/Closed); aksi di panel atas form, tab Riwayat selalu ada. Input teks = `x-form.input` (badge aa/Aa/AA); nilai yang ada di master dipilih lewat lookup; warna lewat token, bukan hex. Tanggal `dd-Mmm-yyyy`.
 
 ## 3b. Prinsip bisnis (rinci di rulebook)
@@ -70,7 +70,7 @@ php artisan engine:catalog               # setelah daftar engine berubah
 ## 6. Peta kode
 - Halaman v2: `routes/v2*.php`, `resources/views/v2`, menu dari `sys_app_menu` lewat `App\Support\V2\AppMenu` (`target='v2:<slug>'`). Layar v1 (Livewire SFC di `resources/views/pages/<modul>`) diganti v2 satu per satu, tidak dipoles.
 - Logika bisnis di `app/Services/*` (`Costing`, `Imposition`, `Sales`, `Scheduling`, `Payroll`, ...), bukan di komponen. Engine terdaftar di `App\Support\Engines\EngineRegistry`.
-- Grid: `DbGrid` + kelas turunan di `App\Support\V2\Grid`; objek DevLib di `packages/devlib`, bagian khusus di `packages/mockup-parts`.
+- Grid: `DbGrid` + kelas turunan di `App\Support\V2\Grid`; objek DevLib di `../devlib` (repo git sendiri `Herd\devlib`, setara tmerp, dipasang lewat Composer path repository `telasih/devlib`; dipindah dari `packages/devlib` 2026-10-19; **perubahan DevLib di-commit di repo itu, bukan di git tmerp**), bagian khusus di `packages/mockup-parts`.
 - `DataOriginScope` (web) menyembunyikan DUMMY/LEGACY sesuai setelan admin; console/test melihat semua.
 - Peta lengkap dokumen: `docs/index_master.md`, `docs/md_for_systems/uistandardindex.md`, `docs/claude_docs_reference.md`; alur vital Inquiry/ProDev/ProCost/Quotation/CO/CPDEL: `docs/claude_vital_flows.md` (WAJIB dibaca sebelum menyentuhnya).
 - Dokumen usang dicari per topik (isi lengkap tersimpan di `sys_md_library`): `php artisan md:library search "kata kunci" --env=mockup`, baca dengan `md:library show <id>`; tambah arsip baru: `md:library add` setelah memindah berkas ke `tmerp_unused`.

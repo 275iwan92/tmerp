@@ -14,7 +14,7 @@ gram kali besar sel seri kas bank log model dua tim sub non pos air die pin top 
 api dom url min max sum id en no ok up of or to in on at is it by an as be do go so we us
 pasang takaran'''.split())
 vocab -= STOP
-roots = sys.argv[2:] or ['resources/views/v2', 'app/Support/V2', 'routes/v2.php', 'packages/devlib/src', 'packages/devlib/resources/views', 'packages/devlib/resources/assets/js',
+roots = sys.argv[2:] or ['resources/views/v2', 'app/Support/V2', 'routes/v2.php', '../devlib/src', '../devlib/resources/views', '../devlib/resources/assets/js',
                           'packages/mockup-parts/src', 'packages/mockup-parts/resources', 'packages/chat/src', 'packages/chat/resources', 'packages/assistant/src', 'packages/assistant/resources']
 flt = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] != '-' else ''
 

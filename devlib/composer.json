@@ -90,7 +90,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../packages/devlib",
+            "url": "../../devlib",
             "options": {
                 "symlink": true
             }

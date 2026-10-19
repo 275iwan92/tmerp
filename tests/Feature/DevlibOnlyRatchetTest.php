@@ -143,7 +143,7 @@ class DevlibOnlyRatchetTest extends TestCase
     public function test_every_devlib_and_mockup_part_component_descends_from_devlib_component(): void
     {
         $orphans = [];
-        foreach (['Devlib\\Components' => base_path('packages/devlib/src/Components'), 'MockupParts\\Components' => base_path('packages/mockup-parts/src/Components')] as $ns => $dir) {
+        foreach (['Devlib\\Components' => base_path('../devlib/src/Components'), 'MockupParts\\Components' => base_path('packages/mockup-parts/src/Components')] as $ns => $dir) {
             foreach ((new Finder)->files()->in($dir)->name('*.php') as $f) {
                 $class = $ns.'\\'.str_replace(['/', '.php'], ['\\', ''], str_replace('\\', '/', $f->getRelativePathname()));
                 if (class_exists($class) && ! (new ReflectionClass($class))->isSubclassOf(DevlibComponent::class) && $class !== DevlibComponent::class) {

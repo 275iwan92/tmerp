@@ -74,7 +74,7 @@ packages/assistant/            <- paket; tidak tahu apa pun tentang tabel ERP in
 app/Assistant/                 <- adaptor milik ERP ini (satu-satunya bagian yang tahu tabel ERP)
   ErpAsker, ErpNavigator (sys_app_menu), ErpKnowledge (sys_help_*), ErpSettings (sys_constant)
   Metrics/SalesToday, Metrics/DeadstockValue, ...
-packages/devlib                <- tampilan drawer = objek DevLib x-dl::assistant (aturan "DevLib dulu")
+../devlib                <- tampilan drawer = objek DevLib x-dl::assistant (aturan "DevLib dulu")
 ```
 
 Pindah ke aplikasi lain = pasang paketnya, tulis adaptornya (penanya, menu, bantuan) dan kelas metric aplikasi itu. Mesin, tabel

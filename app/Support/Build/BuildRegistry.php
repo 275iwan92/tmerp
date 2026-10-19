@@ -47,6 +47,9 @@ final class BuildRegistry
 
     private const DAYS = 14;
 
+    // Tag di repo DevLib pada commit hasil pemisahan dari tmerp (2026-10-19): commit sesudahnya belum ada di git tmerp.
+    private const DEVLIB_SPLIT = 'split-from-tmerp';
+
     private const CONNECTIONS = ['tm2mst', 'tm2sdi', 'tm2pur', 'tm2inv', 'tm2prd', 'tm2acc', 'tm2hrm', 'tm2hrr', 'tm2pyr', 'tm2mnt', 'tm2sys'];
 
     public static function snapshot(): array
@@ -61,7 +64,7 @@ final class BuildRegistry
             'generated' => now()->format('Y-m-d H:i'),
             'database' => DB::connection('tm2sys')->getDatabaseName(),
             'totals' => [
-                'objects' => self::files('packages/devlib/src/Components') - 1,   // tanpa induk abstrak DevlibComponent
+                'objects' => (new Finder)->files()->in(self::devlibDir().'/src/Components')->name('*.php')->count() - 1,   // tanpa induk abstrak DevlibComponent
                 'modules' => count($modules),
                 'modules_done' => count(array_filter($modules, fn ($m) => $m['v2'] === $m['total'])),
                 'screens' => $sum('total'), 'v2' => $sum('v2'), 'v1' => $sum('v1'), 'not_built' => $sum('not_built'),
@@ -79,7 +82,7 @@ final class BuildRegistry
                 'tests' => self::files('tests', '*Test.php'),
                 'dictionary' => DB::connection('tm2sys')->table('sys_dictionary')->count(),
                 'languages' => DB::connection('tm2sys')->table('sys_languages')->count(),
-                'commits' => self::git('rev-list --count HEAD'),
+                'commits' => (int) self::git('rev-list --count HEAD') + (int) self::devlibGit('rev-list --count '.self::DEVLIB_SPLIT.'..HEAD'),
                 'since' => self::git('log --reverse --format=%ad --date=short', true),
             ],
             'modules' => $modules,
@@ -142,7 +145,12 @@ final class BuildRegistry
     // jenis (layar v2, objek DevLib, engine, test); 'days' = commit per hari 14 hari terakhir; 'weeks' = per minggu, seluruh riwayat.
     private static function work(): array
     {
-        $r = Process::path(base_path())->run(['git', 'log', '--date=short', '--name-only', '--format=@@%ad%x1f%(trailers:key=Agent,valueonly,separator=%x2C)']);
+        $format = ['git', 'log', '--date=short', '--name-only', '--format=@@%ad%x1f%(trailers:key=Agent,valueonly,separator=%x2C)'];
+        $r = Process::path(base_path())->run($format);
+        $dev = Process::path(self::devlibDir())->run([...$format, self::DEVLIB_SPLIT.'..HEAD']);
+        // DevLib hidup di repo sendiri (Herd\devlib); riwayat sebelum pemisahan ada di git tmerp, sesudahnya di repo itu.
+        // Berkasnya diberi awalan lama packages/devlib/ supaya satu kunci per objek. Terbaru dulu: log DevLib didahulukan.
+        $devLines = $dev->successful() ? array_map(fn ($l) => $l === '' || str_starts_with($l, '@@') ? $l : 'packages/devlib/'.$l, preg_split('/\R/', $dev->output())) : [];
         $engineFiles = array_column(EngineRegistry::catalog(), 'file');
         $kind = fn (string $f) => match (true) {
             str_starts_with($f, 'resources/views/v2/') || str_starts_with($f, 'app/Support/V2/Grid/') || str_starts_with($f, 'app/Support/V2/Data/') => 'screens',
@@ -156,7 +164,7 @@ final class BuildRegistry
         $untracked = 0;
         $perDay = $perWeek = $files = [];
         $who = $date = null;
-        foreach ($r->successful() ? preg_split('/\R/', $r->output()) : [] as $line) {
+        foreach ([...$devLines, ...($r->successful() ? preg_split('/\R/', $r->output()) : [])] as $line) {
             if (str_starts_with($line, '@@')) {
                 [$date, $tag] = array_pad(explode("\x1f", substr($line, 2)), 2, '');
                 $who = strtolower(trim(explode(',', $tag)[0]));
@@ -171,7 +179,7 @@ final class BuildRegistry
                 }
                 $agents[$who]['commits']++;
                 $agents[$who]['days'][$date] = true;
-                $agents[$who]['last'] ??= $date;   // git log: terbaru dulu
+                $agents[$who]['last'] = max($agents[$who]['last'] ?? $date, $date);
             } elseif ($line !== '' && $date !== null) {
                 // terbaru dulu: 'last' diisi sekali, 'first' ditimpa terus sampai commit tertua
                 $files[$line] = ['first' => $date, 'first_by' => $who] + ($files[$line] ?? ['last' => $date, 'last_by' => $who]);
@@ -246,7 +254,7 @@ final class BuildRegistry
             $file = isset($e['class']) ? $rel($e['class']) : $e['file'];
             $out[] = ['type' => 'ENGINE', 'key' => 'engine:'.$e['key'], 'name' => $e['name'], 'module' => $e['group'], 'qc' => 'READY_FOR_QC'] + $hist([$file]);
         }
-        foreach ((new Finder)->files()->in(base_path('packages/devlib/src/Components'))->name('*.php')->sortByName() as $f) {
+        foreach ((new Finder)->files()->in(self::devlibDir().'/src/Components')->name('*.php')->sortByName() as $f) {
             $path = 'packages/devlib/src/Components/'.str_replace('\\', '/', $f->getRelativePathname());
             $name = str_replace(['/', '.php'], [' · ', ''], str_replace('\\', '/', $f->getRelativePathname()));
             if ($name !== 'DevlibComponent') {
@@ -276,9 +284,20 @@ final class BuildRegistry
         return (new Finder)->files()->in(base_path($dir))->name($name)->count();
     }
 
-    private static function git(string $args, bool $firstLine = false): ?string
+    // Akar paket DevLib (repo sendiri di samping tmerp), dicari dari kelas paketnya supaya tidak bergantung pada nama folder.
+    private static function devlibDir(): string
     {
-        $r = Process::path(base_path())->run('git '.$args);
+        return str_replace('\\', '/', dirname((string) realpath((new \ReflectionClass(\Devlib\DevlibServiceProvider::class))->getFileName()), 2));
+    }
+
+    private static function devlibGit(string $args): ?string
+    {
+        return self::git($args, false, self::devlibDir());
+    }
+
+    private static function git(string $args, bool $firstLine = false, ?string $dir = null): ?string
+    {
+        $r = Process::path($dir ?? base_path())->run('git '.$args);
         if (! $r->successful()) {
             return null;
         }

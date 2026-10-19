@@ -56,7 +56,7 @@ class DeliveryTrackTest extends TestCase
         $names = array_map('basename', $scripts);
         $this->assertContains('anime.umd.min.js', $names);
         $this->assertLessThan(array_search('core.js', $names, true), array_search('anime.umd.min.js', $names, true));
-        $this->assertStringContainsString('window.anime.animate', file_get_contents(dirname(__DIR__, 2).'/packages/devlib/resources/assets/js/components/delivery-track.js'));
+        $this->assertStringContainsString('window.anime.animate', file_get_contents(dirname(__DIR__, 3).'/devlib/resources/assets/js/components/delivery-track.js'));
     }
 
     public function test_incident_stage_and_accident_result_are_wired(): void

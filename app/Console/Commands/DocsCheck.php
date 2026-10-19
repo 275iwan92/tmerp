@@ -26,7 +26,8 @@ class DocsCheck extends Command
 
     protected $description = 'Check the Technical Guide cards against the database, the code and each other (read only)';
 
-    private const ROOTS = ['app', 'resources', 'routes', 'tests', 'docs', 'packages', 'database'];
+    // '../devlib' = paket DevLib di repo sendiri (dipindah dari tmerp/packages/devlib 2026-10-19); kartu mengutipnya sebagai ../devlib/...
+    private const ROOTS = ['app', 'resources', 'routes', 'tests', 'docs', 'packages', 'database', '../devlib'];
 
     private array $errors = [];
 

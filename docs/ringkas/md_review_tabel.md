@@ -203,7 +203,7 @@
 | 186 | `docs/ppic_demo/ppic_fakta_nyata.md` | 115 | 2026-10-09 | 0 | **PERTAHANKAN** | Fakta nyata PPIC (09-Okt) | |
 | 187 | `packages/assistant/README.md` | 57 | 2026-10-02 | - | **PERTAHANKAN** | Panduan paket/alat berdiri sendiri | |
 | 188 | `packages/chat/README.md` | 113 | 2026-10-02 | - | **PERTAHANKAN** | Panduan paket/alat berdiri sendiri | |
-| 189 | `packages/devlib/resources/assets/js/vendor/ANIME-LICENSE.md` | 9 | 2026-10-07 | 0 | **PERTAHANKAN** | Lisensi pustaka pihak ketiga | |
+| 189 | `../devlib/resources/assets/js/vendor/ANIME-LICENSE.md` | 9 | 2026-10-07 | 0 | **PERTAHANKAN** | Lisensi pustaka pihak ketiga | |
 | 190 | `packages/mockup-parts/README.md` | 43 | 2026-10-01 | - | **PERTAHANKAN** | Panduan paket/alat berdiri sendiri | |
 | 191 | `realtime/README.md` | 35 | 2026-10-02 | - | **PERTAHANKAN** | Panduan paket/alat berdiri sendiri | |
 | 192 | `resources/data/help/_format.md` | 53 | 2026-10-02 | 2 | **PERTAHANKAN** | Panduan paket/alat berdiri sendiri | |

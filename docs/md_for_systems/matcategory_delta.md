@@ -161,7 +161,7 @@ Layar v1 (`/master/mat-category`, pohon Level + Induk) sudah diarsipkan.
 
 | Bagian | File |
 |---|---|
-| Objek DevLib dropdown berantai penyusun kode (umum, dipakai lagi untuk Product) | `packages/devlib/src/Components/CodeChain.php` (`x-dl::code-chain`), `resources/assets/js/components/code-chain.js`, demo `devlib/resources/views/demos/code-chain.blade.php` |
+| Objek DevLib dropdown berantai penyusun kode (umum, dipakai lagi untuk Product) | `../devlib/src/Components/CodeChain.php` (`x-dl::code-chain`), `resources/assets/js/components/code-chain.js`, demo `devlib/resources/views/demos/code-chain.blade.php` |
 | Aturan rantai + kode (posisi terkunci, prefix per tingkat, kode tidak bentrok, ganti nama ikut ke `mat_raw`) | `app/Services/Master/MaterialCategoryService.php` |
 | Layar + daftar + cetakan | `resources/views/v2/screens/md-matcat.blade.php`, `app/Support/V2/Grid/Master/MatCategoryGrid.php` (print = seluruh rantai, route `v2.report.print`), route simpan `v2.matcat.save` |
 | Pagar | `tests/Feature/MaterialCategoryChainTest.php`: setiap baris `doc_rmprefix1.sql` dicocokkan ke `mat_category` (549 cocok; 7 penyimpangan 5.7 dikunci sebagai daftar KNOWN_*) |

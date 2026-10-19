@@ -3,7 +3,7 @@
 /*
  * REMARK
  * Tujuan       : Menguji objek DevLib x-dl::review-feed (kartu blog + tombol keputusan + saringan) dan MdDigest (ringkasan berkas .md).
- * Sumber hulu  : packages/devlib/src/Components/ReviewFeed.php, app/Services/Sys/MdDigest.php.
+ * Sumber hulu  : ../devlib/src/Components/ReviewFeed.php, app/Services/Sys/MdDigest.php.
  * Input        : Kartu contoh dalam memori dan satu berkas .md sementara di storage/framework/testing.
  * Output       : Lulus/gagal; berkas sementara dihapus di tearDown. Tidak menulis ke database.
  * Dipakai oleh : Penguji (Claude) setelah mengubah objek review atau layar MD Review / Old Stories Review.

@@ -5,7 +5,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 base = 'C:/Users/iwanp/Herd/tmerp'
 d = json.load(open(f'{here}/probe/{which}.json', encoding='utf-8'))
 IGNORE = re.compile(r'translation-dictionary|setup-help|help-center|^dev$|daily-quotes')
-roots = ['resources/views/v2', 'app/Support', 'app/Services', 'app/Models', 'app/Providers', 'app/Assistant', 'routes', 'packages/devlib/src', 'packages/devlib/resources',
+roots = ['resources/views/v2', 'app/Support', 'app/Services', 'app/Models', 'app/Providers', 'app/Assistant', 'routes', '../devlib/src', '../devlib/resources',
          'packages/mockup-parts', 'packages/chat', 'packages/assistant', 'config']
 files = {}
 for r in roots:

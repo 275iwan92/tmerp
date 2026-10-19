@@ -1,6 +1,6 @@
 {{-- REMARK
 Tujuan: kerangka HTML semua halaman situs devlib.test (judul tab, CSS/JS DevLib dan mockup-parts).
-Sumber hulu: config devlib.brand.name untuk akhiran judul tab (DevLib); paket packages/devlib dan packages/mockup-parts.
+Sumber hulu: config devlib.brand.name untuk akhiran judul tab (DevLib); paket ../devlib dan packages/mockup-parts.
 Input: variabel $title dan section body dari tiap view.
 Output: dokumen HTML lengkap.
 Dipakai oleh: view login, home, lib, generator, summary, history, agent-log di devlib/resources/views.

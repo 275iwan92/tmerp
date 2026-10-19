@@ -114,7 +114,7 @@
 15. Semua layar = turunan objek DevLib (`x-dl::*`, `x-mp::*`), bukan HTML mentah; dijaga `DevlibOnlyRatchetTest`; layar v1 diganti satu per satu.
 16. Setiap ENGINE terdaftar di `EngineRegistry`; berubah → `php artisan engine:catalog`.
 17. Dasar pemrograman = OO + komponen modular + library; kode utama sederhana, mudah di-debug, traceable; satu kelas satu tanggung jawab; tanpa salin-tempel; exception bernama berkonteks.
-18. DevLib membuat, tmerp mewarisi; `packages/devlib` tidak memakai `App\`; dijaga `DevlibInheritanceTest`.
+18. DevLib membuat, tmerp mewarisi; `../devlib` tidak memakai `App\`; dijaga `DevlibInheritanceTest`.
 19. QC cepat per layar: Approved / Need improvement; tiga lapis QC → UAT officer → UAT supervisor; awal sesi `php artisan qc:reviews`.
 20. Identitas agen menurut hari: Senin-Selasa Iwan, Rabu-Sabtu Jo; trailer commit `Agent:`.
 21. **Standar kode:** OO + DevLib dulu; sederhana; REMARK enam butir + `docs/SCREEN-INDEX.md`; tanpa dead code (buktikan lewat grep, hapus, bukan komentar).
