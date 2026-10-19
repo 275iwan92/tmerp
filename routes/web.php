@@ -133,7 +133,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_planning.php';
         require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
-        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php';
+        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php'; require __DIR__.'/v2_production.php';
         require __DIR__.'/v2_warehouse.php';
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
@@ -315,7 +315,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/production/wo/new', 'pages::production.wo-entry')->name('production.wo.new');
             Route::livewire('/production/wo/{wo}/print', 'pages::production.wo-print')->name('production.wo.print')->where('wo', '[0-9]+');
             Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
-            Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
+            Route::get('/production/scrap-type', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-scrap-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-scrap-form?new=1' : '/v2/s/prod-scrap')))->name('production.scrap-type');
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
             Route::livewire('/production/routing-template', 'pages::production.routing-template')->name('production.routing-template');

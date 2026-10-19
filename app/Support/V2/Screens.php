@@ -168,7 +168,7 @@ final class Screens
                     $it('production-wo', ['Work Order (PPIC)', 'fa-solid fa-clipboard-list', 'v2 baru: Work Order dari ProDev (BOP, routing, BOM, mesin yang bisa antre)', 'ppic_wo_detail.jpg']),
                     $it('production-live', ['Live Schedule', 'fa-solid fa-chart-gantt', 'v2 baru: pemantauan read-only jadwal yang berlaku (operasi CONFIRMED / berjalan) per proses dan mesin, plus rincian good, bad, status, operator', null]),
                     $it('crew-form', ['Assign Crew Form', 'fa-solid fa-people-group', 'v2 baru: crew per mesin SBU Offset (nama = nickname + indeks, maks 4), periode dari-sampai, anggota maks 10 dari karyawan produksi, shift dari Master Shift', null]),
-                    $it('production-learning', ['Learning Changes', 'fa-solid fa-graduation-cap', 'v2 baru: nilai changeover Assumed dikoreksi dari waktu setup nyata, tiap perubahan tercatat dan bisa dikembalikan', null]),
+                    $it('production-learning', ['Learning Changes', 'fa-solid fa-graduation-cap', 'v2 baru: nilai changeover Assumed dikoreksi dari waktu setup nyata, tiap perubahan tercatat dan bisa dikembalikan', null]), $it('prod-scrap-form', ['Scrap Type Form', 'fa-solid fa-trash-can-arrow-up', 'v2 baru: master Tipe Scrap (Reject / Waste) di atas tm2prd.prd_scrap_type; kode unik per kategori, kategori dan kode terkunci bila sudah dipakai di catatan output produksi; dibuka dari grid prod-scrap', null]),
                 ]],
                 ['label' => 'Entry OUTPUT', 'items' => [
                     $it('production-operator', ['Production Output', 'fa-solid fa-stopwatch', 'v2 baru: entry hasil produksi di mesin untuk crew yang login: timer SETUP dan PRODUCTION, LIST OF JOBS dari PPIC Planning, input GOOD / BAD', null]),

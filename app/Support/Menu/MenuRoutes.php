@@ -189,7 +189,6 @@ final class MenuRoutes
             // per task dari WO Detail (masuk lewat Worklist WO), lihat
             // wo-entry.blade.php "Catat Output". Menu ini cuma pintu masuk.
             'PROD_OUTPUT' => route('production.wo.list'),
-            'PROD_SCRAP_TYPE' => route('production.scrap-type'),
             'PROD_PROCESS_RATE' => route('production.process-rate'),
             'PROD_MTS_FORECAST' => route('v2.screen', 'demand-forecast'),
             'PROD_SHIFT_ROSTER' => route('v2.screen', 'hrm-roster'),

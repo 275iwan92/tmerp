@@ -6,7 +6,15 @@ use App\Models\Prd\PrdScrapType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Kelola Tipe Scrap (v1: pages::production.scrap-type).
+/*
+ * REMARK
+ * Tujuan       : Grid Master Tipe Scrap (Reject / Waste) dengan kategori; Open dan + New Record membuka form v2 prod-scrap-form.
+ * Sumber hulu  : tm2prd.prd_scrap_type.
+ * Input        : Pencarian, filter Category.
+ * Output       : Baris grid; tombol aktif / nonaktif membalik prd_scrap_type.activate.
+ * Dipakai oleh : Menu Production (v2:prod-scrap), layar prod-scrap-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::production.scrap-type sudah dipindah ke tmerp_unused (aturan D.25, Master T6b).
+ */
 class ScrapTypeGrid extends ProdGrid
 {
     public function slug(): string
@@ -19,14 +27,19 @@ class ScrapTypeGrid extends ProdGrid
         return t('Scrap Types');
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'production.scrap-type';
+        return true;
     }
 
-    protected function v1Component(): ?string
+    public function openUrl(): ?string
     {
-        return 'pages::production.scrap-type';
+        return route('v2.screen', 'prod-scrap-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'prod-scrap-form').'?new=1';
     }
 
     public function search(): string

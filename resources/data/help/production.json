@@ -418,15 +418,44 @@
     },
     "keywords": "tipe scrap, scrap type, reject, waste, cacat, jenis reject, jenis waste, kelola scrap",
     "steps": [
-      {"en": "Open Kelola Tipe Scrap. Filter by Category or search by code and name.", "id": "Buka Kelola Tipe Scrap. Filter menurut Category atau cari kode dan nama."},
-      {"en": "Click + New Record and choose the Category: Reject or Waste.", "id": "Klik + New Record dan pilih Category: Reject atau Waste."},
-      {"en": "Enter the Code and the Type Name, then click Save.", "id": "Isi Code dan Type Name, lalu klik Save."},
-      {"en": "Use the active toggle on a row to hide a type that is no longer used.", "id": "Pakai tombol aktif di baris untuk menyembunyikan tipe yang tidak dipakai lagi."}
+        {
+            "en": "Open Scrap Types. Filter by Category or search by code and name. Click a row to open it.",
+            "id": "Buka Scrap Types. Filter berdasarkan Category atau cari kode dan nama. Klik baris untuk membukanya."
+        },
+        {
+            "en": "Click + New Record. Choose the Category (Reject for defective finished goods, Waste for material or process loss), enter the Code and the Type name, and optionally a Sort order.",
+            "id": "Klik + New Record. Pilih Category (Reject untuk barang jadi cacat, Waste untuk bahan atau proses terbuang), isi Code dan Type name, dan Sort order bila perlu."
+        },
+        {
+            "en": "Click Save. The code is made upper case (spaces become underscores) and must be unique within its category.",
+            "id": "Klik Save. Kode dijadikan huruf besar (spasi jadi garis bawah) dan harus unik di dalam kategorinya."
+        },
+        {
+            "en": "Once a type is used in a production output record, its Category and Code are locked. To retire a type click Deactivate; it stays on past records.",
+            "id": "Setelah tipe dipakai di catatan output produksi, Category dan Code terkunci. Untuk menghentikan tipe, klik Deactivate; tipe tetap ada di catatan lama."
+        }
     ],
     "fields": [
-      {"label": "Category", "en": "Reject (defective finished goods) or Waste (material or process thrown away). Decides which list it appears in when recording output.", "id": "Reject (barang jadi cacat) atau Waste (bahan atau proses terbuang). Menentukan di daftar mana tipe ini muncul saat catat output."},
-      {"label": "Code", "en": "Unique code, for example COLOR_OFF. Required, up to 30 characters.", "id": "Kode unik, misalnya COLOR_OFF. Wajib, maksimal 30 karakter."},
-      {"label": "Type Name", "en": "Name shown when recording output, for example Warna Tidak Sesuai. Required, up to 100 characters.", "id": "Nama yang tampil saat catat output, misalnya Warna Tidak Sesuai. Wajib, maksimal 100 karakter."}
+        {
+            "label": "Category *",
+            "en": "Reject = defective finished goods; Waste = material or process lost. Locked once the type is used.",
+            "id": "Reject = barang jadi cacat; Waste = bahan atau proses terbuang. Terkunci setelah tipe dipakai."
+        },
+        {
+            "label": "Code *",
+            "en": "Short identifier, unique within the category: letters, digits, underscore or hyphen, up to 30 characters. Locked once the type is used.",
+            "id": "Pengenal singkat, unik di dalam kategori: huruf, angka, garis bawah atau tanda hubung, maksimal 30 karakter. Terkunci setelah tipe dipakai."
+        },
+        {
+            "label": "Type name *",
+            "en": "Name shown when output is recorded, up to 100 characters.",
+            "id": "Nama yang tampil saat output dicatat, maksimal 100 karakter."
+        },
+        {
+            "label": "Sort order",
+            "en": "Lower numbers appear first in the list of types. Empty = 500 for a new type.",
+            "id": "Angka kecil tampil lebih dulu di daftar tipe. Kosong = 500 untuk tipe baru."
+        }
     ]
   },
   {
