@@ -318,7 +318,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::get('/production/scrap-type', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-scrap-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-scrap-form?new=1' : '/v2/s/prod-scrap')))->name('production.scrap-type');
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
-            Route::livewire('/production/routing-template', 'pages::production.routing-template')->name('production.routing-template');
+            Route::get('/production/routing-template', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-routing-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-routing-form?new=1' : '/v2/s/prod-routing')))->name('production.routing-template');
             Route::livewire('/production/bop-rule', 'pages::production.bop-rule')->name('production.bop-rule');
             // ProDev BARU (2026-09-14) -- Imposition Plano Optimizer, port dari
             // docs/mockups/mockup_prodev_imposition.html. Ini yang dipasang di

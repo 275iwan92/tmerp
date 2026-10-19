@@ -6,7 +6,15 @@ use App\Models\Master\ProdRoutingTemplate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Routing Template (v1: pages::production.routing-template).
+/*
+ * REMARK
+ * Tujuan       : Grid Master Routing Template (urutan operasi standar per tipe produk) dengan tipe produk, bahan, template bawaan dan jumlah langkah; Open dan + New Record membuka form v2 prod-routing-form.
+ * Sumber hulu  : tm2mst.prod_routing_template + prod_routing_step (jumlah langkah).
+ * Input        : Pencarian, filter Product Type.
+ * Output       : Baris grid; tombol aktif / nonaktif membalik prod_routing_template.activate.
+ * Dipakai oleh : Menu Production (v2:prod-routing), layar prod-routing-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::production.routing-template sudah dipindah ke tmerp_unused (aturan D.25, Master T6b).
+ */
 class RoutingTemplateGrid extends ProdGrid
 {
     public function slug(): string
@@ -19,14 +27,19 @@ class RoutingTemplateGrid extends ProdGrid
         return 'Master Routing Template';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'production.routing-template';
+        return true;
     }
 
-    protected function v1Component(): ?string
+    public function openUrl(): ?string
     {
-        return 'pages::production.routing-template';
+        return route('v2.screen', 'prod-routing-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'prod-routing-form').'?new=1';
     }
 
     public function search(): string

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
  * Input        : Nama lookup, kata cari, parameter ctx dari field.
  * Output       : Baris lookup untuk x-dl::field.lookup dan kolom lookup x-dl::lines.
  * Dipakai oleh : Semua layar v2 dengan field atau baris lookup; Devlib route devlib.lookup.
- * Status       : Aktif. Lookup stock_item_rm / _fg / _sfg, stock_bin, stock_batch, stock_return_bin ditambah 2026-10-19 untuk dokumen stok manual (Stock In, Stock Out, Return).
+ * Status       : Aktif. Lookup stock_item_rm / _fg / _sfg, stock_bin, stock_batch, stock_return_bin ditambah 2026-10-19 untuk dokumen stok manual (Stock In, Stock Out, Return); prod_process dan prod_machine untuk langkah routing (Master T6b).
  */
 
 // Lookup = data master yang dipilih di layar v2 (bentuk sama dengan tabel tujuannya, lihat `source`).
@@ -68,6 +68,11 @@ final class Lookups
             'search' => fn (string $q) => Data\StockEntry::binSearch($q), 'find' => fn ($v) => Data\StockEntry::binFind($v)]);
         Lookup::define('stock_return_bin', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.wh_loc (activate = 1; usable untuk GOOD, non-usable untuk SCRAP)', 'columns' => ['code' => 'Bin', 'warehouse' => 'Warehouse', 'type' => 'Type'],
             'search' => fn (string $q) => Data\StockEntry::binSearch($q, 40, false), 'find' => fn ($v) => Data\StockEntry::binFind($v)]);
+        // Master Production (langkah routing): proses aktif dan mesin aktif; mesin yang tidak mampu proses ditolak server saat Save.
+        Lookup::define('prod_process', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_process (activate = 1)', 'columns' => ['name' => 'Process', 'code' => 'Code', 'stage' => 'Stage'],
+            'search' => fn (string $q) => Data\ProductionRef::processSearch($q), 'find' => fn ($v) => Data\ProductionRef::processFind($v)]);
+        Lookup::define('prod_machine', ['key' => 'id', 'label' => 'label', 'source' => 'tm2mst.prod_machine (activate = 1)', 'columns' => ['code' => 'Machine', 'name' => 'Name'],
+            'search' => fn (string $q) => Data\ProductionRef::machineSearch($q), 'find' => fn ($v) => Data\ProductionRef::machineFind($v)]);
         Lookup::define('stock_batch', ['key' => 'id', 'label' => 'label', 'source' => 'tm2inv.inv_batch (activate = 1)', 'columns' => ['batch_no' => 'Batch', 'lot' => 'Supplier lot', 'item' => 'Item', 'expiry' => 'Expiry'],
             'search' => fn (string $q) => Data\StockEntry::batchSearch($q), 'find' => fn ($v) => Data\StockEntry::batchFind($v)]);
 

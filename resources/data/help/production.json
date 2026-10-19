@@ -345,26 +345,88 @@
     },
     "keywords": "routing template, template routing, rute produksi, urutan proses, langkah produksi, bop template, master routing",
     "steps": [
-      {"en": "Open Master Routing Template. Filter by Product Type, or search by code and name.", "id": "Buka Master Routing Template. Filter menurut Product Type, atau cari berdasarkan kode dan nama."},
-      {"en": "Click + New Record or double-click a template. Fill the code, name, optional product type, material hint and description, then save.", "id": "Klik + New Record atau klik dua kali sebuah template. Isi kode, nama, tipe produk (boleh kosong), acuan bahan dan keterangan, lalu simpan."},
-      {"en": "In Production Step Sequence pick a Process, optionally a Suggested Machine, a Branch and Optional, then click add. Steps get numbers in tens so you can insert later.", "id": "Di Production Step Sequence pilih Process, bila perlu Suggested Machine, Branch dan Optional, lalu klik tambah. Steps bernomor kelipatan 10 agar mudah disisipkan nanti."},
-      {"en": "Edit a step to change Sequence No., Qty Factor or Notes, then click Save. A check tells you if the order breaks a precedence rule or a process has no machine.", "id": "Ubah sebuah langkah untuk mengganti Sequence No., Qty Factor atau Notes, lalu klik Save. Ada pemeriksaan bila urutan melanggar aturan precedence atau proses belum punya mesin."},
-      {"en": "Use the active toggle on the grid to switch a template off.", "id": "Pakai tombol aktif di grid untuk menonaktifkan template."}
+        {
+            "en": "Open Master Routing Template. Filter by Product Type, or search by code and name. Click a row to open it.",
+            "id": "Buka Master Routing Template. Filter berdasarkan Product Type, atau cari kode dan nama. Klik baris untuk membukanya."
+        },
+        {
+            "en": "Click + New Record. On the Template tab fill the code, name, optional product type, material reference and description; tick Default if it is the standard template for that type.",
+            "id": "Klik + New Record. Di tab Template isi kode, nama, tipe produk, referensi bahan dan deskripsi; centang Default bila template ini standar untuk tipe itu."
+        },
+        {
+            "en": "On the Production steps tab click + Add step for each operation: Process, optionally the Preferred machine, Branch (MAIN by default), Optional, Qty factor and Note. An empty Seq becomes the next multiple of 10.",
+            "id": "Di tab Production steps klik + Add step untuk tiap operasi: Process, Preferred machine bila ada, Branch (MAIN bawaan), Optional, Qty factor dan Note. Seq kosong menjadi kelipatan 10 berikutnya."
+        },
+        {
+            "en": "Click Save: the template and all its steps are saved together. The machine must be registered as able to do the process and a sequence number can be used once per branch.",
+            "id": "Klik Save: template dan semua langkahnya disimpan bersama. Mesin harus terdaftar mampu mengerjakan proses dan nomor urut hanya boleh sekali per cabang."
+        },
+        {
+            "en": "Below the steps the check shows precedence problems and processes with no machine, and a table shows the machine ProDev would propose per step. Use Deactivate to switch a template off.",
+            "id": "Di bawah langkah, hasil pemeriksaan menampilkan masalah urutan dan proses tanpa mesin, dan tabel menunjukkan mesin yang diusulkan ProDev per langkah. Pakai Deactivate untuk mematikan template."
+        }
     ],
     "fields": [
-      {"label": "Template Code", "en": "Unique template code such as BOX-DPX-4C. Required.", "id": "Kode template unik seperti BOX-DPX-4C. Wajib."},
-      {"label": "Product Type (code)", "en": "Product type code the template is for. Empty means all types.", "id": "Kode tipe produk tujuan template. Kosong berarti semua tipe."},
-      {"label": "Active Status", "en": "Active or Nonaktif.", "id": "Active atau Nonaktif."},
-      {"label": "Template Name", "en": "Descriptive name, for example Box Duplex Full Color + Laminasi. Required.", "id": "Nama deskriptif, misalnya Box Duplex Full Color + Laminasi. Wajib."},
-      {"label": "Material Reference", "en": "Material the route is meant for, for example DUPLEX 350gsm.", "id": "Bahan yang menjadi acuan rute, misalnya DUPLEX 350gsm."},
-      {"label": "Description", "en": "Free description of the template.", "id": "Keterangan bebas tentang template."},
-      {"label": "Process", "en": "Process of the step, picked from Master Process.", "id": "Process untuk langkah ini, dipilih dari Master Process."},
-      {"label": "Suggested Machine", "en": "Suggested machine. Only machines registered as able to run the chosen process are listed.", "id": "Usulan mesin. Hanya mesin yang terdaftar mampu mengerjakan proses terpilih yang muncul."},
-      {"label": "Branch", "en": "Branch of the route, such as MAIN, BODY or LID. Steps are grouped by branch.", "id": "Branch rute, seperti MAIN, BODY atau LID. Steps dikelompokkan menurut cabang."},
-      {"label": "Optional", "en": "Tick if the step is not always needed.", "id": "Centang bila langkah tidak selalu diperlukan."},
-      {"label": "Sequence No.", "en": "Order number of the step; multiples of 10, use 15 or 25 to insert.", "id": "Nomor urut langkah; kelipatan 10, pakai 15 atau 25 untuk menyisipkan."},
-      {"label": "Qty Factor", "en": "Quantity factor of the step; 0.5 means the sheet is split in half.", "id": "Faktor jumlah langkah; 0.5 berarti plano dibelah dua."},
-      {"label": "Notes", "en": "Note on the step.", "id": "Catatan untuk langkah ini."}
+        {
+            "label": "Template code *",
+            "en": "Unique short code: letters, digits, underscore or hyphen, up to 20 characters; made upper case.",
+            "id": "Kode singkat unik: huruf, angka, garis bawah atau tanda hubung, maksimal 20 karakter; dijadikan huruf besar."
+        },
+        {
+            "label": "Template name *",
+            "en": "Name of the standard routing, up to 150 characters.",
+            "id": "Nama routing standar, maksimal 150 karakter."
+        },
+        {
+            "label": "Product type (code)",
+            "en": "Product type this template is for, up to 20 characters. Optional.",
+            "id": "Tipe produk yang memakai template ini, maksimal 20 karakter. Opsional."
+        },
+        {
+            "label": "Material reference",
+            "en": "Hint about the material, for example DUPLEX 350gsm. Optional.",
+            "id": "Petunjuk bahan, misalnya DUPLEX 350gsm. Opsional."
+        },
+        {
+            "label": "Default template",
+            "en": "Used automatically when the product matches and there is no other choice. With no default, the officer chooses.",
+            "id": "Dipakai otomatis bila produk cocok dan tidak ada pilihan lain. Tanpa default, officer yang memilih."
+        },
+        {
+            "label": "Branch",
+            "en": "Parallel line of the routing (MAIN, BODY, LID...). Rules are checked per branch.",
+            "id": "Jalur paralel routing (MAIN, BODY, LID...). Aturan diperiksa per cabang."
+        },
+        {
+            "label": "Seq",
+            "en": "Order of the step inside its branch, 1 to 65535, unique per branch. Empty = next multiple of 10.",
+            "id": "Urutan langkah di dalam cabangnya, 1 sampai 65535, unik per cabang. Kosong = kelipatan 10 berikutnya."
+        },
+        {
+            "label": "Process *",
+            "en": "Operation of the step, chosen from the active processes.",
+            "id": "Operasi langkah, dipilih dari proses aktif."
+        },
+        {
+            "label": "Preferred machine",
+            "en": "Machine the template prefers. It must be registered as able to do the process; if it later does not qualify, ProDev falls back to its top suggestion.",
+            "id": "Mesin yang diutamakan template. Harus terdaftar mampu mengerjakan proses; bila kelak tidak memenuhi syarat, ProDev memakai usulan teratasnya."
+        },
+        {
+            "label": "Optional",
+            "en": "Tick for a step that is not needed on every product.",
+            "id": "Pilih Ya untuk langkah yang tidak dibutuhkan di setiap produk."
+        },
+        {
+            "label": "Qty factor",
+            "en": "Multiplier of the quantity at this step, 0.001 to 99. Empty = 1.",
+            "id": "Pengali jumlah pada langkah ini, 0.001 sampai 99. Kosong = 1."
+        },
+        {
+            "label": "Note",
+            "en": "Free remark for the step, up to 255 characters.",
+            "id": "Catatan bebas untuk langkah, maksimal 255 karakter."
+        }
     ]
   },
   {
