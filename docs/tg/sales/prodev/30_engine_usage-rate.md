@@ -1,6 +1,6 @@
 # ENGINE card: Usage Rate Engine
 
-> DRAFT GROUP C (2026-10-16), awaiting Jo's approval. Source: `app/Services/ProDev/UsageRateEngine.php` read in full (202 lines), `RefreshUsageRates.php`, `bop-rule.blade.php:250-290`. There is no test for this engine (grep `tests/`). The engine was **not run** in this session because `refresh()` always writes to `prod_bop_rule` (see Finding 1); there is no worked example from data.
+> DRAFT GROUP C (2026-10-16), awaiting Jo's approval. Source: `app/Services/ProDev/UsageRateEngine.php` read in full (202 lines), `RefreshUsageRates.php`, and the BOP Rule form (`BopRuleEntryService.php:119-144`, moved on 2026-10-19 from the v1 page now in `tmerp_unused/production_bop_rule_v1_2026-10-19.blade.php`). There is no test for this engine (grep `tests/`). The engine was **not run** in this session because `refresh()` always writes to `prod_bop_rule` (see Finding 1); there is no worked example from data.
 
 - **Canonical name**: Usage Rate Engine. **Class**: `App\Services\ProDev\UsageRateEngine`. **Registry**: key `usage-rate`, mode `suggest`, group Pro-Dev. **Module/sub-module**: Sales > Pro-Dev (raw material of the BOP/BOM rules); its source data is Production.
 - **Frozen status**: ProDev is frozen (flow/data). This engine changes rule master values, not the flow.
@@ -12,8 +12,8 @@ FACT:
 | Trigger | File:line |
 |---|---|
 | Monthly schedule on day 1 at 02:00, without overlap | `routes/console.php:18` -> command `prodev:usage-rates` (`app/Console/Commands/RefreshUsageRates.php`, default 3 months back, option `--dry`) |
-| Refresh-suggestions button (admin only: `canEdit` = `is_admin`) | `resources/views/pages/production/bop-rule.blade.php:256` (`refreshSuggestions`, always `apply=true`) |
-| Apply-suggestion button for one rule (does not call the engine, copies the suggestion columns) | `bop-rule.blade.php:261-280` |
+| Refresh-suggestions button (admin only: `canEdit` = `is_admin`) | `app/Services/Production/BopRuleEntryService.php:138-144` (`refreshSuggestions`, always `apply=true`; button "Refresh suggestions" on the form `prod-bop-form`) |
+| Apply-suggestion button for one rule (does not call the engine, copies the suggestion columns) | `app/Services/Production/BopRuleEntryService.php:126-136` (tab Usage suggestions) |
 The BOP Rule screen in the mockup menu is hidden (`PROD_MST_BOP_RULE`, `hide_in_menu`=1, target `v2:prod-bop-rule`).
 
 ## Flow (text twin, no diagram: no branching other than auto-apply)
@@ -55,7 +55,7 @@ No ATTENTION-ENGINE item specific to this engine (read in full).
 2. The registry says "Below the minimum sample nothing is proposed". FACT: the suggestion is still written; the minimum only holds back auto-apply.
 3. The registry says "Values typed by an officer are never overwritten". FACT: column `rate_source` is read (line 40) but not used in any decision; the only guard is `auto_apply = 0`. A rule with `auto_apply` that an officer once typed can be overwritten.
 4. `processWaste` does not filter `wo_status = COMPLETED` (lines 158-164), while `materialUsage` and `woCount` do. Waste is computed from all WOs since the start date, including unfinished ones.
-5. The apply-suggestion button (`bop-rule.blade.php:261-280`) marks `rate_source = AUTO` even though the admin did it manually.
+5. The apply-suggestion button (`BopRuleEntryService::applySuggestion`) marks `rate_source = AUTO` even though the admin did it manually.
 6. There is no test.
 
 ## Tests
@@ -71,3 +71,4 @@ None.
 
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the `apply` input line of the `usage-rate` registry entry is now `EngineRegistry.php:209`; `engines.json` lost the 3 removed engines only; nothing else in this card changed.
 > Label pass 2026-10-18 (Jo): the visible texts of the screens this card cites (labels, columns, tabs, buttons, messages) are English now. Tables, fields, flow and stored values are unchanged, so nothing else in this card changed. Verified: 2026-10-18.
+- Re-checked 2026-10-19 after the BOP Rule screen moved to the v2 form `prod-bop-form` (rule D.25, Master T6b): the two button rows and finding 5 now cite `BopRuleEntryService`; the engine itself was not changed.

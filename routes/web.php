@@ -319,7 +319,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
             Route::get('/production/routing-template', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-routing-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-routing-form?new=1' : '/v2/s/prod-routing')))->name('production.routing-template');
-            Route::livewire('/production/bop-rule', 'pages::production.bop-rule')->name('production.bop-rule');
+            Route::get('/production/bop-rule', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-bop-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-bop-form?new=1' : '/v2/s/prod-bop-rule')))->name('production.bop-rule');
             // ProDev BARU (2026-09-14) -- Imposition Plano Optimizer, port dari
             // docs/mockups/mockup_prodev_imposition.html. Ini yang dipasang di
             // menu (SALES_IMPO). Layar ProDev LAMA (workbench 3-kolom +

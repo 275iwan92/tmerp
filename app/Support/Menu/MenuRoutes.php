@@ -129,7 +129,6 @@ final class MenuRoutes
             'MD_EXCHRATE' => route('v2.screen', 'md-exchange-rate'),
             'MD_HOLIDAY' => route('v2.screen', 'holiday-calendar'),
             'PROD_MST_PROCESS' => route('production.master-process'),
-            'PROD_MST_BOP_RULE' => route('production.bop-rule'),
             // Dua item ini activate=0 di sys_app_menu (belum pernah tayang);
             // dipetakan ke ProDev baru supaya tidak jadi link mati kalau nanti
             // diaktifkan -- Master Card lama ada di production.old-prodev.print.

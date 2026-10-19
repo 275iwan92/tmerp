@@ -2,16 +2,18 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar master modul Production v2: Scrap Type (prod-scrap-form) dan Routing Template (prod-routing-form), disusul BOP Rule, Process dan Machine.
- * Sumber hulu  : App\Services\Production\ScrapTypeService dan RoutingTemplateEntryService (dan layanan master Production berikutnya).
+ * Tujuan       : Route layar master modul Production v2: Scrap Type (prod-scrap-form), Routing Template (prod-routing-form) dan BOP Rule (prod-bop-form), disusul Process dan Machine.
+ * Sumber hulu  : App\Services\Production\ScrapTypeService, RoutingTemplateEntryService dan BopRuleEntryService (dan layanan master Production berikutnya).
  * Input        : POST form (id, action save / activate / deactivate, isian; Routing: juga baris langkah steps[]).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar prod-scrap-form dan prod-routing-form.
- * Status       : Aktif. Dibuat 2026-10-19 (Master T6b, Jo): menggantikan halaman v1 pages::production.scrap-type dan routing-template.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar prod-scrap-form, prod-routing-form dan prod-bop-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (Master T6b, Jo): menggantikan halaman v1 pages::production.scrap-type, routing-template dan bop-rule.
  */
 
+use App\Models\Master\ProdBopRule;
 use App\Models\Master\ProdRoutingTemplate;
 use App\Models\Prd\PrdScrapType;
+use App\Services\Production\BopRuleEntryService;
 use App\Services\Production\RoutingTemplateEntryService;
 use App\Services\Production\ScrapTypeService;
 use Illuminate\Http\Request;
@@ -53,5 +55,33 @@ Route::prefix('v2/prod/routing')->name('v2.prod.routing.')->middleware('module:P
         $t = $svc->save($t, $r->except(['id', 'action', 'steps']), (array) $r->input('steps'), $user);
 
         return $form($t)->with('v2_flash', tf(':name saved.', ['name' => $t->template_name]));
+    })->name('save');
+});
+
+// BOP Rule: save / activate / deactivate / apply suggestion / refresh suggestions (hanya admin). Aturan = BopRuleEntryService (dipindah dari v1 pages::production.bop-rule).
+Route::prefix('v2/prod/bop')->name('v2.prod.bop.')->middleware('module:PROD')->group(function () {
+    Route::post('/save', function (Request $r, BopRuleEntryService $svc) {
+        $rule = $r->filled('id') ? ProdBopRule::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $user = Auth::user();
+        $form = fn (ProdBopRule $x) => redirect(route('v2.screen', 'prod-bop-form').'?id='.$x->id_bop_rule);
+        $name = fn (ProdBopRule $x) => $x->step_label ?: ($x->material_role ?: 'Rule '.$x->id_bop_rule);
+
+        if ($action === 'refresh') {
+            $msg = $svc->refreshSuggestions($user);
+
+            return ($rule ? $form($rule) : redirect(route('v2.screen', 'prod-bop-rule')))->with('v2_flash', $msg);
+        }
+        if ($rule && $action === 'apply') {
+            return $form($rule)->with('v2_flash', t($svc->applySuggestion($rule, $user)));
+        }
+        if ($rule && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($rule, $action === 'activate', $user);
+
+            return $form($rule)->with('v2_flash', tf($action === 'activate' ? ':name activated.' : ':name deactivated.', ['name' => $name($rule)]));
+        }
+        $rule = $svc->save($rule, $r->except(['id', 'action']), $user);
+
+        return $form($rule)->with('v2_flash', tf(':name saved.', ['name' => $name($rule)]));
     })->name('save');
 });

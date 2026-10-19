@@ -8,8 +8,15 @@ use App\Models\Master\RefFinishingType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// BOP Rule Setting (v1: pages::production.bop-rule): urutan langkah Bill of Process + bahan yang ikut tiap langkah, dibaca
-// engine ProDev. Grid ini hanya daftar; Edit / New / Aktif-Nonaktif memakai layar dan aturan v1 (hanya admin yang mengubah).
+/*
+ * REMARK
+ * Tujuan       : Grid BOP Rule Setting: urutan langkah Bill of Process dan bahan yang ikut tiap langkah (dibaca engine ProDev); Open dan + New Record membuka form v2 prod-bop-form (hanya admin yang boleh mengubah).
+ * Sumber hulu  : tm2mst.prod_bop_rule + prod_process + ref_finishing_type.
+ * Input        : Pencarian, filter Scope / Finishing / Process / Material Role.
+ * Output       : Baris grid; tombol aktif / nonaktif membalik prod_bop_rule.activate (hanya admin).
+ * Dipakai oleh : Menu Production (v2:prod-bop-rule), layar prod-bop-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::production.bop-rule sudah dipindah ke tmerp_unused (aturan D.25, Master T6b).
+ */
 class BopRuleGrid extends ProdGrid
 {
     public function slug(): string
@@ -27,14 +34,19 @@ class BopRuleGrid extends ProdGrid
         return 'fa-solid fa-list-check';
     }
 
-    protected function v1Route(): ?string
+    protected function canCreate(): bool
     {
-        return 'production.bop-rule';
+        return (bool) auth()->user()?->is_admin;
     }
 
-    protected function v1Component(): ?string
+    public function openUrl(): ?string
     {
-        return 'pages::production.bop-rule';
+        return route('v2.screen', 'prod-bop-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return $this->canCreate() ? route('v2.screen', 'prod-bop-form').'?new=1' : null;
     }
 
     protected function models(): array

@@ -440,32 +440,128 @@
     },
     "keywords": "bop rule, aturan bop, bill of process, aturan proses, langkah standar, sisipan finishing, grup gabung, takaran bahan, usulan data nyata, prodev",
     "steps": [
-      {"en": "Open BOP Rule Setting. Filter by Scope, Finishing, Process or Material Role. Rules are ordered by the Step number.", "id": "Buka BOP Rule Setting. Filter menurut Scope, Finishing, Process atau Material Role. Aturan diurutkan menurut nomor Step."},
-      {"en": "Click + New Record (admin only). Choose Rule Type: Standard Step or Finishing Insert.", "id": "Klik + New Record (khusus admin). Pilih Rule Type: Standard Step atau Finishing Insert."},
-      {"en": "Fill the order (Sequence), the process, the label and the merge group, then the material part: pattern, selection rule, BOM line name, usage basis and rate.", "id": "Isi urutan (Sequence), proses, label dan grup gabung, lalu bagian bahan: pola, cara pilih bahan, nama baris BOM, dasar pemakaian dan takaran."},
-      {"en": "Click Save. Use the arrows on a row to move it up or down, and the toggle to switch it off. New rules apply to new jobs only.", "id": "Klik Save. Pakai tanda panah di baris untuk menaikkan atau menurunkan urutan, dan tombol aktif untuk menonaktifkan. Aturan baru hanya berlaku untuk job baru."},
-      {"en": "Click Usulan dari Data Nyata to calculate suggested usage rates and waste from work orders finished in the last 3 months, then apply a suggestion on its row.", "id": "Klik Usulan dari Data Nyata untuk menghitung usulan takaran dan waste dari WO selesai 3 bulan terakhir, lalu terapkan usulan di barisnya."}
+        {
+            "en": "Open BOP Rule Setting. Filter by Scope, Finishing, Process or Material Role. Rules are ordered by Seq. Click a row to open it (only an admin can change a rule).",
+            "id": "Buka BOP Rule Setting. Filter berdasarkan Scope, Finishing, Process atau Material Role. Aturan berurutan menurut Seq. Klik baris untuk membukanya (hanya admin yang bisa mengubah aturan)."
+        },
+        {
+            "en": "Click + New Record (admin only). Choose Rule type: Standard step or Finishing insert (then choose the Finishing).",
+            "id": "Klik + New Record (khusus admin). Pilih Rule type: Standard step atau Finishing insert (lalu pilih Finishing)."
+        },
+        {
+            "en": "Fill Seq, the Process, the Routing label and the Merge group, then the material part: pattern, selection method, BOM line name, usage basis and rate.",
+            "id": "Isi Seq, Process, Routing label dan Merge group, lalu bagian bahan: pola, metode pilih, nama baris BOM, dasar pemakaian dan takaran."
+        },
+        {
+            "en": "Click Save. To move a rule change its Seq (lower runs first); use Deactivate to switch it off. New rules apply to new jobs only.",
+            "id": "Klik Save. Untuk memindah aturan ubah Seq-nya (angka kecil lebih dulu); pakai Deactivate untuk mematikannya. Aturan baru hanya berlaku untuk job baru."
+        },
+        {
+            "en": "On the Usage suggestions tab click Apply suggestion to take the suggested rate and waste, or tick Auto apply. Refresh suggestions recalculates them from work orders finished in the last 3 months.",
+            "id": "Di tab Usage suggestions klik Apply suggestion untuk memakai takaran dan waste usulan, atau centang Auto apply. Refresh suggestions menghitung ulang dari WO selesai 3 bulan terakhir."
+        }
     ],
     "fields": [
-      {"label": "Rule Type", "en": "Standard Step (used when its condition is met) or Finishing Insert (inserted when that finishing is chosen in the Inquiry). Required.", "id": "Standard Step (dipakai bila kondisinya terpenuhi) atau Finishing Insert (disisipkan bila finishing itu dipilih di Inquiry). Wajib."},
-      {"label": "Finishing", "en": "For Finishing Insert: the finishing type that triggers the rule. Required for that scope.", "id": "Untuk Finishing Insert: jenis finishing yang memicu aturan. Wajib untuk jenis ini."},
-      {"label": "Condition", "en": "For standard steps: always used, or only when the plano differs from the sheet, the material has layers, or glue is needed.", "id": "Untuk langkah standar: selalu dipakai, atau hanya bila plano beda ukuran, bahan berlapis, atau perlu lem."},
-      {"label": "Part Type Only", "en": "Limit the rule to a part type (DC, DC+SHEET, DC+SF, SHEET, KRAFT). Empty means all part types.", "id": "Batasi aturan untuk tipe part tertentu (DC, DC+SHEET, DC+SF, SHEET, KRAFT). Kosong berarti semua tipe part."},
-      {"label": "Sequence", "en": "Order number of the step in the Bill of Process. Required.", "id": "Nomor urut langkah di Bill of Process. Wajib."},
-      {"label": "Process (empty = material rule only)", "en": "Process of the step from Master Proses. Leave empty for a material-only rule.", "id": "Proses langkah ini dari Master Proses. Kosongkan untuk aturan khusus bahan."},
-      {"label": "Auto Machine", "en": "Let ProDev pick the machine: the chosen print machine or the chosen die-cut machine. Empty means no machine.", "id": "Biarkan ProDev memilih mesin: mesin cetak pilihan atau mesin pond pilihan. Kosong berarti tanpa mesin."},
-      {"label": "Routing Label", "en": "Text shown in the routing. Tokens {machine}, {attr}, {roll} and {pack} are replaced automatically.", "id": "Teks yang tampil di routing. Token {machine}, {attr}, {roll} dan {pack} diganti otomatis."},
-      {"label": "Default Waste (%)", "en": "Default waste percentage of the step.", "id": "Persentase waste bawaan langkah."},
-      {"label": "Default Tolerance (%)", "en": "Default tolerance percentage.", "id": "Persentase toleransi bawaan."},
-      {"label": "Merge Group", "en": "Neighbouring steps with the same group are shown as one row, for example PLONG. Empty means not merged.", "id": "Langkah bersebelahan dengan grup sama ditampilkan sebagai satu baris, misalnya PLONG. Kosong berarti tidak digabung."},
-      {"label": "Joined Text when Merged", "en": "Text added when merged, for example + Emboss.", "id": "Teks tambahan saat digabung, misalnya + Emboss."},
-      {"label": "Material Pattern (mat_raw, separate with |)", "en": "Pattern of material names or codes in the raw material master, separated by |, for example PLASTIKLAMDOFF%.", "id": "Pola nama atau kode bahan di master raw material, dipisah |, misalnya PLASTIKLAMDOFF%."},
-      {"label": "Material Selection Method", "en": "How the material is chosen: smallest roll wide enough, best name match, best stock match, or ink by name.", "id": "Cara memilih bahan: roll terkecil yang cukup lebar, nama paling cocok, stok terbanyak, atau tinta menurut nama."},
-      {"label": "BOM Line Name", "en": "Name of the Bill of Material line, for example LEM LAMINASI.", "id": "Nama baris Bill of Material, misalnya LEM LAMINASI."},
-      {"label": "Usage Basis", "en": "What the usage rate is based on, such as metres per sheet, grams per m2 or per piece or per pack.", "id": "Dasar takaran pemakaian, misalnya meter per lembar, gram per m2, per pcs atau per pack."},
-      {"label": "Usage Rate", "en": "Usage rate according to the chosen basis. Rate Source shows MANUAL or AUTO (applied automatically each month).", "id": "Takaran pemakaian menurut dasar yang dipilih. Rate Source menunjukkan MANUAL atau AUTO (diterapkan otomatis tiap bulan)."},
-      {"label": "Notes", "en": "Free note on the rule.", "id": "Catatan bebas tentang aturan."},
-      {"label": "Active", "en": "Tick for rules that ProDev should use.", "id": "Centang untuk aturan yang harus dipakai ProDev."}
+        {
+            "label": "Rule type",
+            "en": "Standard Step (used when its condition is met) or Finishing Insert (inserted when that finishing is chosen in the Inquiry). Required.",
+            "id": "Standard Step (dipakai bila kondisinya terpenuhi) atau Finishing Insert (disisipkan bila finishing itu dipilih di Inquiry). Wajib."
+        },
+        {
+            "label": "Finishing (finishing insert only)",
+            "en": "For Finishing Insert: the finishing type that triggers the rule. Required for that scope.",
+            "id": "Untuk Finishing Insert: jenis finishing yang memicu aturan. Wajib untuk jenis ini."
+        },
+        {
+            "label": "Condition (standard step only)",
+            "en": "For standard steps: always used, or only when the plano differs from the sheet, the material has layers, or glue is needed.",
+            "id": "Untuk langkah standar: selalu dipakai, atau hanya bila plano beda ukuran, bahan berlapis, atau perlu lem."
+        },
+        {
+            "label": "Part type only",
+            "en": "Limit the rule to a part type (DC, DC+SHEET, DC+SF, SHEET, KRAFT). Empty means all part types.",
+            "id": "Batasi aturan untuk tipe part tertentu (DC, DC+SHEET, DC+SF, SHEET, KRAFT). Kosong berarti semua tipe part."
+        },
+        {
+            "label": "Seq",
+            "en": "Order number of the step in the Bill of Process. Required.",
+            "id": "Nomor urut langkah di Bill of Process. Wajib."
+        },
+        {
+            "label": "Process (empty = material rule only)",
+            "en": "Process of the step from Master Proses. Leave empty for a material-only rule.",
+            "id": "Proses langkah ini dari Master Proses. Kosongkan untuk aturan khusus bahan."
+        },
+        {
+            "label": "Auto machine",
+            "en": "Let ProDev pick the machine: the chosen print machine or the chosen die-cut machine. Empty means no machine.",
+            "id": "Biarkan ProDev memilih mesin: mesin cetak pilihan atau mesin pond pilihan. Kosong berarti tanpa mesin."
+        },
+        {
+            "label": "Routing label",
+            "en": "Text shown in the routing. Tokens {machine}, {attr}, {roll} and {pack} are replaced automatically.",
+            "id": "Teks yang tampil di routing. Token {machine}, {attr}, {roll} dan {pack} diganti otomatis."
+        },
+        {
+            "label": "Default waste (%)",
+            "en": "Default waste percentage of the step.",
+            "id": "Persentase waste bawaan langkah."
+        },
+        {
+            "label": "Default tolerance (%)",
+            "en": "Default tolerance percentage.",
+            "id": "Persentase toleransi bawaan."
+        },
+        {
+            "label": "Merge group",
+            "en": "Neighbouring steps with the same group are shown as one row, for example PLONG. Empty means not merged.",
+            "id": "Langkah bersebelahan dengan grup sama ditampilkan sebagai satu baris, misalnya PLONG. Kosong berarti tidak digabung."
+        },
+        {
+            "label": "Joined text when merged",
+            "en": "Text added when merged, for example + Emboss.",
+            "id": "Teks tambahan saat digabung, misalnya + Emboss."
+        },
+        {
+            "label": "Material pattern (mat_raw, separate with |)",
+            "en": "Pattern of material names or codes in the raw material master, separated by |, for example PLASTIKLAMDOFF%.",
+            "id": "Pola nama atau kode bahan di master raw material, dipisah |, misalnya PLASTIKLAMDOFF%."
+        },
+        {
+            "label": "Material selection method",
+            "en": "How the material is chosen: smallest roll wide enough, best name match, best stock match, or ink by name.",
+            "id": "Cara memilih bahan: roll terkecil yang cukup lebar, nama paling cocok, stok terbanyak, atau tinta menurut nama."
+        },
+        {
+            "label": "BOM line name",
+            "en": "Name of the Bill of Material line, for example LEM LAMINASI.",
+            "id": "Nama baris Bill of Material, misalnya LEM LAMINASI."
+        },
+        {
+            "label": "Usage basis",
+            "en": "What the usage rate is based on, such as metres per sheet, grams per m2 or per piece or per pack.",
+            "id": "Dasar takaran pemakaian, misalnya meter per lembar, gram per m2, per pcs atau per pack."
+        },
+        {
+            "label": "Usage rate",
+            "en": "Usage rate according to the chosen basis. Rate Source shows MANUAL or AUTO (applied automatically each month).",
+            "id": "Takaran pemakaian menurut dasar yang dipilih. Rate Source menunjukkan MANUAL atau AUTO (diterapkan otomatis tiap bulan)."
+        },
+        {
+            "label": "Notes",
+            "en": "Free note on the rule.",
+            "id": "Catatan bebas tentang aturan."
+        },
+        {
+            "label": "Suggested rate / waste",
+            "en": "Usage rate and waste calculated from the work orders completed in the last 3 months, shown on the Usage suggestions tab. They change the rule only with Apply suggestion or Auto apply.",
+            "id": "Takaran dan waste yang dihitung dari WO selesai 3 bulan terakhir, tampil di tab Usage suggestions. Hanya mengubah aturan lewat Apply suggestion atau Auto apply."
+        },
+        {
+            "label": "Auto apply",
+            "en": "Tick to take the suggestion automatically at every refresh.",
+            "id": "Centang agar usulan diambil otomatis pada setiap hitung ulang."
+        }
     ]
   },
   {
