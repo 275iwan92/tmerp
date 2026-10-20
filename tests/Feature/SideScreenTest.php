@@ -55,7 +55,7 @@ class SideScreenTest extends TestCase
     // Demo katalog devlib.test (Part 2 > Containers & Navigation > Side Screen) harus tetap bisa dirender.
     public function test_devlib_catalog_demo_renders(): void
     {
-        $html = view()->file(base_path('devlib/resources/views/demos/side-screen.blade.php'))->render();
+        $html = view()->file(base_path('../devlib/site/resources/views/demos/side-screen.blade.php'))->render();
         $this->assertStringContainsString('data-dl-side-screen="demo-help"', $html);
         $this->assertStringContainsString('data-dl-ss-nav="tickets"', $html);
     }

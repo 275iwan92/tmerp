@@ -19,7 +19,7 @@
         "livewire/livewire": "^4.3",
         "maatwebsite/excel": "^4.0",
         "power-components/livewire-powergrid": "^6.11",
-        "telasih/devlib": "@dev"
+        "jo/devlib": "@dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

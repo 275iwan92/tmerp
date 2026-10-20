@@ -1,3 +1,0 @@
-<x-dl::grid id="grid-photo" :rows="\App\Support\DemoData::products()" search="Cari produk..." :filters="['category' => 'Kategori']"
-    :columns="[['key' => 'image', 'label' => 'Foto', 'type' => 'image', 'sortable' => false], ['key' => 'name', 'label' => 'Produk'], ['key' => 'code', 'label' => 'Kode'], ['key' => 'category', 'label' => 'Kategori'], ['key' => 'price', 'label' => 'Harga/pcs', 'type' => 'money'], ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['AKTIF' => 'success', 'BARU' => 'info', 'NONAKTIF' => 'neutral']]]"
-    :cards="['image' => 'image', 'title' => 'name', 'sub' => 'code', 'badge' => 'status', 'tones' => ['AKTIF' => 'success', 'BARU' => 'info', 'NONAKTIF' => 'neutral'], 'meta' => ['category', 'price']]" />

@@ -49,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
         // x-dl::env-badge texts (empty on the live site): title suffix of the logo (ERP TM - mockup ver 0.20), host / IP under the user name.
         $this->app->bind('devlib.env_title', fn () => \App\Support\EnvBadge::title());
         $this->app->bind('devlib.env_where', fn () => \App\Support\EnvBadge::where());
+        // Identitas aplikasi (nama / tagline / logo) dibaca DevLib dari tabel konstanta saat tampil, bukan ditulis di config.
+        $this->app->bind('devlib.brand', fn () => ['name' => \App\Support\Branding\Brand::name(), 'tagline' => \App\Support\Branding\Brand::tagline(), 'logo' => \App\Support\Branding\Brand::logoUrl()]);
         Lookups::register();
 
         // PPIC: a machine going down or coming back makes the engines prepare a new Draft plan (App\Services\Scheduling\Plan\PlanEvents).

@@ -142,7 +142,7 @@ return new class extends Migration
         }
 
         // Kata harian: isi awal dari berkas contoh DevLib (366 baris "teks | penulis"); sesudah itu dirawat di Setup > Daily Quotes.
-        $file = base_path('devlib/public/media/text/motivasi-harian.txt');
+        $file = base_path('../devlib/site/public/media/text/motivasi-harian.txt');
         if (is_file($file) && ! $db->table('sys_daily_quote')->exists()) {
             $day = 0;
             foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
