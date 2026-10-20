@@ -193,7 +193,6 @@ final class MenuRoutes
             'HRM_CONTACT_GAP' => route('v2.screen', 'hrm-contact-gap'),
             'HRM_CLOCKIN' => route('v2.screen', 'hrm-clockin'),
             'HRM_ATTENDANCE_UPLOAD' => route('v2.screen', 'hrm-attendance-upload'),
-            'HRM_PAYROLL_CALC' => route('hrm.payroll.batch-run'),
             'HRM_PAYROLL_PAYSLIP' => route('hrm.payroll.payslip-list'),
             'HRM_PAYROLL_BANKXFER' => route('hrm.payroll.bank-transfer'),
             'HRM_PAYROLL_CASHROSTER' => route('v2.screen', 'hrm-cash-roster'),

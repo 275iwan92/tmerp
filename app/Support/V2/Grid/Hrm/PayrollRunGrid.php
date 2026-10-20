@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Perhitungan Gaji (v1: pages::hrm.payroll-batch-run). Baris = periode payroll; buka = alur DRAFT..CLOSED di layar v1.
+/*
+ * REMARK
+ * Tujuan       : Grid Payroll Runs: periode payroll dengan jumlah slip dan anomali (dalam cakupan user) serta langkah status DRAFT sampai CLOSED; Open membuka form v2 hrm-payroll-run-form (alur siklus), + New Record membuka form periode baru.
+ * Sumber hulu  : tm2pyr.pyr_payroll_run + pyr_payslip.
+ * Input        : Pencarian, filter Period / Status, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu HRM > Payroll (v2:hrm-payroll-run), layar hrm-payroll-run-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::hrm.payroll-batch-run sudah dipindah ke tmerp_unused (aturan D.25, T8 Payroll).
+ */
 class PayrollRunGrid extends HrmGrid
 {
     private array $slips = [];
@@ -35,9 +43,14 @@ class PayrollRunGrid extends HrmGrid
         return 'Payroll';
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.payroll.batch-run';
+        return route('v2.screen', 'hrm-payroll-run-form').'?id={id}';
+    }
+
+    public function newUrl(): ?string
+    {
+        return route('v2.screen', 'hrm-payroll-run-form').'?new=1';
     }
 
     protected function models(): array
