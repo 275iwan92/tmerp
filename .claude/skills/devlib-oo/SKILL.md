@@ -10,36 +10,36 @@ description: Skill UTAMA (prioritas 1) proyek TMERP — cara kerja object orient
 2. `tmerp-stack-rules` (+ `tmerp-screen`, `tmerp-ui-mockup`) — aturan proyek
 3. Skill generik (Boost, `superpowers-laravel:*`, dst) — hanya untuk hal yang tidak diatur 1 dan 2. Bertentangan = abaikan skill generik.
 
-Sumber: memori `feedback_devlib_object_oriented_inheritance_first`, `docs/globaluserrules.md` D.15, `docs/componentstandard.md`.
+Sumber: memori `feedback_devlib_object_oriented_inheritance_first`, `docs/globaluserrules.md` D.15, D.17, D.18. Aturan UMUM (cara DevLib OO bekerja, arah warisan, kode proyek/main code) ada di skill umum `devlib` (`SKILL.md`, `inheritance.md`, `engine.md`); file ini hanya menambah yang KHUSUS tmerp.
 
-## Cara DevLib OO bekerja
+## Pola OO khusus tmerp
 
-- Akar: `Devlib\Components\DevlibComponent` (abstrak, turunan `Component` Laravel): `tag()`, `source()`, `lineage()` (rantai induk tampil di tooltip Developer Mode), `can="modul.aksi"`, terjemahan otomatis prop teks, `dictionaryGroup()`, `jsClass()` opsional.
-- Anak = `extends` induk dan hanya menyatakan yang berbeda (contoh `SideScreen extends Drawer`; `SideScreen\Layout extends Tabs`). Induk dapat fitur baru -> semua anak ikut.
-- PHP + JS berpasangan: `jsClass()` -> `data-dl-js`; JS `class X extends Devlib.Component` (`static selector`, `init()`, `emit()`), didaftar `Devlib.define/register`; timpa perilaku induk dengan `Devlib.register(class Y extends Devlib.classes.Kanban {...})`. Satu kelas per file di `../devlib/resources/assets/js/components/`.
-- Pola sama di luar komponen: `Devlib\PrintDoc\Document` + satu subclass per dokumen (`App\Support\V2\Print`); `EngineRegistry`; kelas Grid (`app/Support/V2/Grid/*`, daftar dokumen = turunan `DocListGrid`); trait `PricedDummyChain` untuk seeder; layar v2 = deklarasi tipis dari `x-dl::*` / `x-mp::*`; form khusus = objek `x-mp::*` (`packages/mockup-parts`).
+Akar `DevlibComponent`, anak = `extends` induk, PHP + JS berpasangan (`jsClass()`): lihat skill `devlib` (`inheritance.md`). Pola yang sama di luar komponen, di tmerp:
+- Print: `Devlib\PrintDoc\Document` + satu subclass per dokumen di `App\Support\V2\Print`; engine terdaftar di `App\Support\Engines\EngineRegistry`; kelas Grid di `app/Support/V2/Grid/*` (daftar dokumen = turunan `DocListGrid`); trait `PricedDummyChain` untuk seeder (`database/seeders/Concerns`).
+- JS: timpa perilaku induk dengan `Devlib.register(class Y extends Devlib.classes.Kanban {...})`; satu kelas per file di `../devlib/resources/assets/js/components/`.
+- Layar v2 = deklarasi tipis dari `x-dl::*` / `x-mp::*`; form khusus = objek `x-mp::*` (`packages/mockup-parts`) yang menurunkan objek DevLib dan hanya menimpa titik timpa-nya (mis. `Inv/WarehouseDesk::sources()`).
 
 ## Cara menerapkan (setiap tugas)
 
-1. **Cari objek terdekat dulu** (katalog devlib.test, `../devlib/src/Components`, `packages/mockup-parts`, `_manifest.yaml`) lalu **PERLUAS atau SUSUN** darinya. Jangan menulis dari nol.
-2. Perilaku yang mungkin dipakai >1 layar = tambahkan di **INDUK** (prop / method / hook baru). Beda per layar = kelas anak tipis atau props — **jangan salin-tempel**.
-3. Layar tetap kecil: **deklarasikan, jangan bangun.** Tanpa HTML mentah, JS inline, hex warna. Form kecil = `x-dl::action-form`; form dokumen/master = `x-dl::form`.
-4. Objek baru: **DevLib dulu** (demo di devlib.test + entri katalog), mockup/tmerp mewarisi. Kode non-UI sama: kelas dasar / trait + subclass per kasus.
-5. Patuhi kontrak rantai: implement `tag()`, `source()`, `jsClass()` bila ada JS; teks English (kamus menerjemahkan), nilai data dibungkus `raw()`.
-6. Tes penjaga: `DevlibOnlyRatchetTest` (HTML mentah tidak boleh bertambah), tes per objek ala `SideScreenTest`.
-7. Selesai membangun: `php artisan build:catalog --env=mockup` (commit `build.json`) dan trailer commit `Agent: Iwan|Jo`.
+1. **Cari objek terdekat dulu** (katalog devlib.test, `../devlib/src/Components`, `../devlib/skills/devlib/components.md`, `packages/mockup-parts`, `resources/views/components/_manifest.yaml`) lalu **PERLUAS atau SUSUN** darinya; perilaku >1 layar naik ke INDUK, bukan salin-tempel (rinci: skill `devlib`).
+2. Layar tetap kecil: deklarasikan, jangan bangun. Form kecil = `x-dl::action-form`; form dokumen/master = `x-dl::form`.
+3. Objek baru: **DevLib dulu** (demo di devlib.test + entri katalog), mockup/tmerp mewarisi. Kode non-UI sama: kelas dasar / trait + subclass per kasus.
+4. Patuhi kontrak rantai: implement `tag()`, `source()`, `jsClass()` bila ada JS; teks English (kamus menerjemahkan), nilai data dibungkus `raw()`.
+5. Tes penjaga: `DevlibOnlyRatchetTest` (HTML mentah tidak boleh bertambah), tes per objek ala `SideScreenTest`.
+6. Selesai membangun: `php artisan build:catalog --env=mockup` (commit `build.json`) dan trailer commit `Agent: Iwan|Jo`.
 
 ## Dasar pemrograman: OO + komponen modular + library (user 2026-10-07)
 
-Main code (layar, route, komponen Livewire, command) harus **sederhana, mudah di-debug, traceable**:
-- **Main code = daftar panggilan.** Dibaca seperti alur bisnis (`$order = CoOrderBuilder::fromQuotation($q); $order->confirm();`). Logika, rumus, query, dan markup tinggal di kelas / service / library / objek `x-dl::*`, bukan di file layar.
-- **Satu kelas = satu tanggung jawab**, nama kelas dan method memuat maksud. Method pendek; bila perlu komentar untuk menjelaskan *apa*, pecah jadi method bernama.
-- **Modular & berdiri sendiri:** modul / paket (`packages/*`) tidak bergantung pada kode tmerp; ketergantungan lewat kontrak (interface / kelas dasar) dan konstruktor, bukan `new` tersembunyi atau global.
-- **Library dulu:** cari kelas di `app/Services`, `app/Support`, `packages/*` sebelum menulis. Perilaku dipakai >1 tempat = naik ke induk / trait / library, tidak disalin.
-- **Traceable:** objek memakai `tag()` / `source()` / `lineage()`; engine terdaftar di `EngineRegistry`; satu jalur log; kegagalan = exception bernama (bukan `false` / `null` diam-diam) dengan konteks (id dokumen, langkah); jangan menelan error dengan `catch` kosong.
-- **Mudah di-debug:** tanpa efek samping tersembunyi, tanpa magic string berserakan (pakai konstanta / enum), satu sumber kebenaran per nilai, input / output method jelas dan bertipe (`declare(strict_types=1)` untuk kode baru, tipe parameter dan return).
-- **Yang bertambah = test kecil per kelas** (service / engine), supaya bug terlacak ke satu kelas.
+Main code = daftar panggilan, satu kelas satu tanggung jawab, traceable, test kecil per kelas: aturan umum di skill `devlib` (`inheritance.md`, bagian "Kode proyek"). Tambahan khusus tmerp:
+- **Library dulu:** cari kelas di `app/Services`, `app/Support`, `packages/*` sebelum menulis; perilaku dipakai >1 tempat naik ke induk / trait / library.
+- Modul / paket (`packages/*`) tidak bergantung pada kode tmerp; ketergantungan lewat kontrak (interface / kelas dasar) dan konstruktor.
+- Traceable: objek memakai `tag()` / `source()` / `lineage()`; engine terdaftar di `EngineRegistry`; satu jalur log; kegagalan = exception bernama dengan konteks (id dokumen, langkah).
+- Kode baru: `declare(strict_types=1)`, tipe parameter dan return; konstanta / enum, bukan magic string.
 Dikutip di `docs/globaluserrules.md` D.17.
+
+## Arah warisan DevLib -> tmerp
+
+DevLib membuat, tmerp mewarisi; paket `../devlib` tanpa kode `App\`, helper global (mis. `raw()`) milik paket. Rinci: skill `devlib-inheritance`.
 
 ## Bila skill generik bertentangan
 

@@ -2,7 +2,7 @@
 
 > Disusun ulang 2026-10-14 (disetujui Jo) dari 515 baris. Versi lama dengan bagian usangnya: `tmerp_unused/CLAUDE_before_ringkas_2026-10-14.md` dan riwayat git.
 > Aturan user bernomor (A.n..E.n): indeks `docs/ringkas/globaluserrules.md`, detail `docs/globaluserrules.md` pada nomor yang sama. Bahasa jawaban ke Jo: Indonesia, pendek, jujur.
-> Awal sesi: `php artisan qc:reviews --env=mockup` (kerjakan Need improvement, D.19), `gen:requests` di folder `devlib/`, dan baca rating <= 3 bintang di devlib.test > Quality & Rating. Sebelum diskusi atau usul di modul X, baca TG (D.24): `docs/tg/00_big-map.md`, halaman sub-modul X, kartu terkait, dan kartu modul hulunya.
+> Awal sesi: `php artisan qc:reviews --env=mockup` (perintah milik library DevLib, tersedia juga di tmerp; kerjakan Need improvement, D.19), `php artisan gen:requests` dari folder `../devlib/site` (perintah situs acuan, tidak ada di tmerp), dan baca rating <= 3 bintang di devlib.test > Quality & Rating. Sebelum diskusi atau usul di modul X, baca TG (D.24): `docs/tg/00_big-map.md`, halaman sub-modul X, kartu terkait, dan kartu modul hulunya.
 
 ## 1. Bisnis dan aturan keras
 - OFFSET PRINTING (karton box/kemasan). Semua data dummy mulai dari INQUIRY dan wajib punya **Master Card + artwork + dieline** dengan ukuran jelas (P x L x T, datar, mm). Berkas asli Jo di `docs/attachments/MC-*.xlsx` dan `docs/attachments/mastercard/` dipakai apa adanya; dieline tidak digambar ulang. **Per level (stage) hanya 2 set, maksimum 3, dan dua set itu wajib benar-benar real dan lengkap (B.17); Test/DEMO/Contoh bukan set sah; dummy wajib bisa di-reset.**
@@ -33,7 +33,7 @@
 - Alur vital Inquiry/ProDev/ProCost/Quotation/CO/CPDEL: baca `docs/claude_vital_flows.md` sebelum menyentuhnya.
 
 ## 4. Stack dan perintah
-PHP ^8.3, Laravel 13, Livewire 4 (SFC), Filament 5, PowerGrid, Tailwind 4 + Vite 8. Tiga situs, satu kode: **devlib.test** (objek `x-dl::*`, DB `devlib`), **mockup.test** (UAT, DB dummy `ddt*` via `.env.mockup`), **tmerp.test** (live, `tm2*`; Herd).
+PHP ^8.3, Laravel 13, Livewire 4 (SFC), Filament 5, PowerGrid, Tailwind 4 + Vite 8. Tiga situs: **devlib.test** (situs acuan objek `x-dl::*`, DB `devlib`; kodenya di repo devlib, `../devlib/site`, bukan di repo tmerp), **mockup.test** (UAT, DB dummy `ddt*` via `.env.mockup`) dan **tmerp.test** (live, `tm2*`; Herd) = satu kode tmerp.
 
 ```bash
 composer setup                       # install + .env + key + migrate + build
@@ -70,7 +70,7 @@ php artisan engine:catalog               # setelah daftar engine berubah
 ## 6. Peta kode
 - Halaman v2: `routes/v2*.php`, `resources/views/v2`, menu dari `sys_app_menu` lewat `App\Support\V2\AppMenu` (`target='v2:<slug>'`). Layar v1 (Livewire SFC di `resources/views/pages/<modul>`) diganti v2 satu per satu, tidak dipoles.
 - Logika bisnis di `app/Services/*` (`Costing`, `Imposition`, `Sales`, `Scheduling`, `Payroll`, ...), bukan di komponen. Engine terdaftar di `App\Support\Engines\EngineRegistry`.
-- Grid: `DbGrid` + kelas turunan di `App\Support\V2\Grid`; objek DevLib di `../devlib` (repo git sendiri `Herd\devlib`, setara tmerp, dipasang lewat Composer path repository `telasih/devlib`; dipindah dari `packages/devlib` 2026-10-19; **perubahan DevLib di-commit di repo itu, bukan di git tmerp**), bagian khusus di `packages/mockup-parts`.
+- Grid: `DbGrid` + kelas turunan di `App\Support\V2\Grid`; objek DevLib di `../devlib` (repo git sendiri `Herd\devlib`, setara tmerp, dipasang lewat Composer path repository `jo/devlib` (tautan `vendor/jo/devlib`); dipindah dari `packages/devlib` 2026-10-19; situs acuan devlib.test = `../devlib/site`; **perubahan DevLib di-commit di repo itu, bukan di git tmerp**), bagian khusus di `packages/mockup-parts`.
 - `DataOriginScope` (web) menyembunyikan DUMMY/LEGACY sesuai setelan admin; console/test melihat semua.
 - Peta lengkap dokumen: `docs/index_master.md`, `docs/md_for_systems/uistandardindex.md`, `docs/claude_docs_reference.md`; alur vital Inquiry/ProDev/ProCost/Quotation/CO/CPDEL: `docs/claude_vital_flows.md` (WAJIB dibaca sebelum menyentuhnya).
 - Dokumen usang dicari per topik (isi lengkap tersimpan di `sys_md_library`): `php artisan md:library search "kata kunci" --env=mockup`, baca dengan `md:library show <id>`; tambah arsip baru: `md:library add` setelah memindah berkas ke `tmerp_unused`.
