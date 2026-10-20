@@ -33,7 +33,7 @@
 @endif
 
 <x-mp::sales.inquiry-form mode="NEW" :doc="$doc ?? []" :readonly="(bool) $readonly" :back-url="route('v2.screen', 'inquiry')"
-    :links="[t('🔀 Imposition') => route('v2.screen', 'prodev'), t('🖨 Print Note') => route('v2.screen', 'nota-inquiry').($doc ? '?id='.$doc['id'] : '')]"
+    :links="[t('🔀 Imposition') => route('v2.screen', 'prodev'), t('🖨 Print Note') => ($doc ? \App\Support\V2\Print\PrintDocs::url('inquiry-note', $doc['id'], ['from' => 'inquiry-new']) : route('v2.screen', 'nota-inquiry'))]"
     :prodev-url="route('v2.screen', 'prodev').'?part={part}&inquiry={inquiry}'"
     :urls="['save' => route('v2.inquiry.save'), 'end' => route('v2.inquiry.end', '__ID__'), 'artwork' => route('v2.inquiry.artwork', '__ID__'),
         'customer' => route('v2.inquiry.customer')]">

@@ -39,7 +39,7 @@ final class Screens
                     $it('master-card-collection', ['Master Card Collection', 'fa-solid fa-id-card', 'v2 baru: upload master card lama (Excel/foto) -> Master Product / Inquiry', 'master_card_collection_v2.jpg']),
                     $it('sales-price', ['Prices from Pro-Cost (tiers & prices)', 'fa-solid fa-tags', 'inquiry/costing.blade.php (hanya tier & harga terpublish)', null]),
                     $it('quotation', ['Quotation', 'fa-solid fa-file-signature', 'Services/Sales/QuotationEntryService (aturan; v1 diarsipkan)', 'mockup_sales_quotation_entry.html']),
-                    $it('nota-inquiry', ['Inquiry Note', 'fa-solid fa-receipt', 'inquiry/nota.blade.php', 'nota_inquiry_mockup.html']),
+                    $it('nota-inquiry', ['Inquiry Note', 'fa-solid fa-receipt', 'v2: daftar + cetak inquiry-note (nota v1 diarsipkan)', 'nota_inquiry_mockup.html']),
                 ]],
                 ['label' => 'Order', 'items' => [
                     $it('customer-order', ['Customer Order', 'fa-solid fa-bag-shopping', 'Services/Sales/CoEntryService (aturan; v1 diarsipkan)', 'mockup_co_entry.html']),

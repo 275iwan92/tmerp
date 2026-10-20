@@ -29,23 +29,19 @@ class PrintNotaComponentSmokeTest extends TestCase
         $this->assertStringContainsString('dl-pdoc__foot', $html);
     }
 
-    public function test_inquiry_nota_renders_shared_print_components_with_bw_toggle(): void
+    // Nota Inquiry sekarang v2 (x-dl::print-doc, A4 dengan lembar lampiran); v1 pages::inquiry.nota diarsipkan 2026-10-20.
+    public function test_inquiry_note_renders_v2_print_doc_with_appendices(): void
     {
-        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
-        $this->actingAs($admin);
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
 
         $inquiry = IqpInquiry::has('parts')->firstOrFail();
 
-        $component = Livewire::test('pages::inquiry.nota', ['inquiry' => $inquiry->id_inquiry]);
-        $html = $component->html();
+        $html = $this->get('/v2/print/inquiry-note/'.$inquiry->id_inquiry)->assertOk()->getContent();
 
-        $this->assertStringContainsString('print-doc', $html);
-        $this->assertDoesNotMatchRegularExpression('/class="[^"]*\bbw\b[^"]*"/', $html);
-        $this->assertStringContainsString('NOTA INQUIRY', $html);
+        $this->assertStringContainsString('dl-pdoc', $html);
+        $this->assertStringContainsString('data-paper="a4"', $html);
         $this->assertStringContainsString($inquiry->inquiry_no, $html);
-        $this->assertStringContainsString('KONFIRMASI CUSTOMER', $html);
-
-        $bwHtml = $component->set('bw', true)->html();
-        $this->assertMatchesRegularExpression('/class="[^"]*\bbw\b[^"]*print-doc[^"]*"|class="[^"]*print-doc[^"]*\bbw\b[^"]*"/', $bwHtml);
+        $this->assertGreaterThanOrEqual(2, substr_count($html, 'dl-pdoc__sheet is-a4 dl-pdoc__appx'), 'Specification + Terms & Customer Confirmation sheets.');
+        $this->assertStringContainsString('dl-pdoc__chk', $html, 'Customer confirmation checkboxes.');
     }
 }

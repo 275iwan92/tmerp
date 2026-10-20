@@ -22,7 +22,7 @@ final class PrintDocs
 
     // jenis => [kelas, slug layar asal (tombol Back + hak akses modulnya), kode konstanta penanda tangan]
     public const MAP = [
-        'inquiry' => [InquiryPrint::class, 'inquiry-new', 'INQ'],
+        'inquiry' => [InquiryPrint::class, 'inquiry-new', 'INQ'], 'inquiry-note' => [InquiryNotePrint::class, 'nota-inquiry', null],
         'quotation' => [QuotationPrint::class, 'quotation', 'QUO'],
         'customer-order' => [CustomerOrderPrint::class, 'customer-order', 'CO'],
         'cpdel' => [CpdelPrint::class, 'cpdel', 'CPDEL'],

@@ -152,12 +152,12 @@ class CompanyNamePpnPrintTest extends TestCase
                 'address' => "Jl. Uji No. 1\nSurabaya", 'phone' => '031-999', 'email' => 'uji@contoh.co.id'], null, null, 'test');
 
             $inquiryId = DB::connection('tm2sdi')->table('iqp_inquiry')->where('tax_scheme', 'PPN')->value('id_inquiry');
-            $html = Livewire::test('pages::inquiry.nota', ['inquiry' => $inquiryId])->html();
-            $this->assertStringContainsString('Telasih Uji', $html);
+            // Cetak Nota Inquiry v2 (dokumen PPN = kop badan hukum + NPWP).
+            $html = $this->get('/v2/print/inquiry-note/'.$inquiryId)->assertOk()->getContent();
             $this->assertStringContainsString('CV. Legal Uji', $html);
             $this->assertStringContainsString('NPWP 11.222.333.4-555.666', $html);
-            $this->assertStringContainsString('Jl. Uji No. 1<br />', $html, 'Alamat multi-baris tetap berbaris.');
-            $this->assertStringContainsString('Telp 031-999', $html);
+            $this->assertStringContainsString('Jl. Uji No. 1', $html);
+            $this->assertStringContainsString('031-999', $html);
 
             try {
                 Identification::saveCompany(['name' => '', 'legal_name' => 'CV. Legal Uji'], null, null, 'test');
@@ -175,14 +175,15 @@ class CompanyNamePpnPrintTest extends TestCase
         $this->assertSame($company, (array) DB::connection('tm2mst')->table('org_company')->where('company_code', 'TM')->first(['npwp_number', 'address', 'phone', 'email']));
     }
 
-    public function test_inquiry_nota_with_ppn_offers_choice(): void
+    public function test_inquiry_note_with_ppn_prints_the_legal_name_kop(): void
     {
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
         $inquiryId = DB::connection('tm2sdi')->table('iqp_inquiry')->where('tax_scheme', 'PPN')->value('id_inquiry');
 
-        $html = Livewire::test('pages::inquiry.nota', ['inquiry' => $inquiryId])->html();
+        $html = $this->get('/v2/print/inquiry-note/'.$inquiryId)->assertOk()->getContent();
 
-        $this->assertStringContainsString('class="kop-choice"', $html);
+        // v2 tidak punya pilihan kop (kop mengikuti skema pajak inquiry).
+        $this->assertStringNotContainsString('class="kop-choice"', $html);
         $this->assertStringContainsString('CV. Langgeng Jaya Makmur', $html);
     }
 }

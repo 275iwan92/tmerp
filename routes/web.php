@@ -146,9 +146,9 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/inquiry/new', 'pages::inquiry.form')->name('inquiry.form');
             Route::get('/inquiry/recalc', fn (Illuminate\Http\Request $r) => redirect('/v2/s/inquiry-recalc'.($r->filled('id') ? '?id='.(int) $r->query('id') : '')))->name('inquiry.recalc');
             Route::get('/inquiry/revise', fn (Illuminate\Http\Request $r) => redirect('/v2/s/inquiry-revise'.($r->filled('id') ? '?id='.(int) $r->query('id') : '')))->name('inquiry.revise');
-            Route::livewire('/inquiry/imposition', 'pages::inquiry.imposition-list')->name('inquiry.imposition.list');
-            Route::livewire('/inquiry/{inquiry}/imposition', 'pages::inquiry.imposition')->name('inquiry.imposition');
-            Route::livewire('/inquiry/{inquiry}/nota', 'pages::inquiry.nota')->name('inquiry.nota');
+            Route::redirect('/inquiry/imposition', '/v2/s/prodev-new')->name('inquiry.imposition.list');
+            Route::get('/inquiry/{inquiry}/imposition', fn (int $inquiry) => redirect('/v2/prodev/open/'.$inquiry))->name('inquiry.imposition');
+            Route::get('/inquiry/{inquiry}/nota', fn (int $inquiry) => redirect('/v2/print/inquiry-note/'.$inquiry))->name('inquiry.nota');
             Route::redirect('/sales/win-rate', '/v2/s/sales-win-rate')->name('sales.win-rate');
 
             Route::redirect('/quotation', '/v2/s/quotation')->name('quotation.list');
