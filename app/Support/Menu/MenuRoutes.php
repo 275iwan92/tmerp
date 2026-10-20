@@ -18,7 +18,7 @@ final class MenuRoutes
     public static function map(): array
     {
         return [
-            'SALES_INQ' => route('inquiry.hub'),
+            'SALES_INQ' => route('v2.screen', 'inquiry'),
             // Pro-Dev (2026-09-03, koreksi user, DIKOREKSI LAGI hari sama):
             // SALES_IMPO dulu nunjuk ke inquiry.imposition.list (Imposition
             // Engine lama, per-Inquiry) -- sempat dialihkan LANGSUNG ke layar
@@ -39,7 +39,7 @@ final class MenuRoutes
             // 2026-09-16: balik ke GRID depan (production.prodev.list) -- sempat
             // diarahkan langsung ke form 2026-09-14 dan user menegaskan grid
             // tidak boleh hilang; dari grid klik 2x baru masuk layar kerja.
-            'SALES_IMPO' => route('production.prodev.list'),
+            'SALES_IMPO' => route('v2.screen', 'prodev'),
             'SALES_COST' => route('inquiry.costing.list'),
             // Menu PREORDER (Inquiry & Quotation): layar v1 yang sama dibuka juga dari modul ini (migration
             // 2026_10_02_000008). Pro-Cost Instant = Mode #2 standalone, di v1 hanya lewat link di grid Pro-Cost.
@@ -72,25 +72,25 @@ final class MenuRoutes
             // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
             // Quotation SEKARANG per-customer (redesain 2026-08-20, bukan lagi
             // per-inquiry) -> punya list sungguhan, tak perlu numpang Inquiry Hub.
-            'SALES_QUOT' => route('quotation.list'),
-            'SALES_SO' => route('co.list'),
+            'SALES_QUOT' => route('v2.screen', 'quotation'),
+            'SALES_SO' => route('v2.screen', 'customer-order'),
             // Plan Delivery -> Customer Plan Delivery (CPDEL), dipindah ke grup
             // Sales Order (keputusan user 2026-09-03, lihat migration
             // rename_cpdel_and_regroup_delivery_menu).
-            'SALES_CPDEL' => route('co.delivery-plan'),
+            'SALES_CPDEL' => route('v2.screen', 'cpdel'),
             // Delivery Order/Surat Jalan (DO+SJ 1 tabel 2 cetakan) -- sebelumnya
             // modul "Dispatch" berdiri sendiri, digabung ke sini 2026-08-28 (lihat
             // migration move_dispatch_menu_into_sales_delivery). "Delivery Notes"
             // (SALES_DN, ditambah 2026-09-03) reuse grid yang sama -- lihat catatan
             // di migration rename_cpdel_and_regroup_delivery_menu.
-            'SALES_DO' => route('dispatch.do.index'),
-            'SALES_DN' => route('dispatch.do.index'),
-            'SALES_WINRATE' => route('sales.win-rate'),
-            'PROC_PR' => route('pur.pr.list'),
+            'SALES_DO' => route('v2.screen', 'delivery-order'),
+            'SALES_DN' => route('v2.screen', 'delivery-notes'),
+            'SALES_WINRATE' => route('v2.screen', 'sales-win-rate'),
+            'PROC_PR' => route('v2.screen', 'purchase-requisition'),
             'PROC_PR_APPR' => route('v2.screen', 'approval-pr'),
-            'PROC_PO' => route('pur.po.list'),
+            'PROC_PO' => route('v2.screen', 'purchase-order'),
             'PROC_PO_APPR' => route('v2.screen', 'approval-po'),
-            'PROC_RCV' => route('pur.pv.list'),
+            'PROC_RCV' => route('v2.screen', 'purchase-receive'),
             'PROC_PQ' => route('v2.screen', 'purchase-quotation'),
             'PROC_RET_APPR' => route('v2.screen', 'approval-prt'),
             'PROC_MON_PR' => route('v2.screen', 'pur-rpt-outstanding-pr'),
@@ -187,13 +187,13 @@ final class MenuRoutes
             'PROD_MTS_FORECAST' => route('v2.screen', 'demand-forecast'),
             'PROD_SHIFT_ROSTER' => route('v2.screen', 'hrm-roster'),
             'HRM_ORG_STRUCTURE' => route('hrm.position'),
-            'HRM_ORG_CHART' => route('hrm.org-chart'),
+            'HRM_ORG_CHART' => route('v2.screen', 'hrm-org-chart'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('v2.screen', 'hrm-roster'),
             'HRM_CONTACT_GAP' => route('v2.screen', 'hrm-contact-gap'),
             'HRM_CLOCKIN' => route('v2.screen', 'hrm-clockin'),
             'HRM_ATTENDANCE_UPLOAD' => route('v2.screen', 'hrm-attendance-upload'),
-            'HRM_PAYROLL_BANKXFER' => route('hrm.payroll.bank-transfer'),
+            'HRM_PAYROLL_BANKXFER' => route('v2.screen', 'hrm-bank-transfer'),
             'HRM_PAYROLL_CASHROSTER' => route('v2.screen', 'hrm-cash-roster'),
             'HRM_DISCIPLINE_REPORT' => route('v2.screen', 'hrm-discipline'),
             // Recruitment (L1-L9, L8 dibangun 2026-09-02 + Portal Candidate
@@ -203,11 +203,11 @@ final class MenuRoutes
             // Profesional publik (URL sama, di luar auth) -- iframe tab ini
             // sekarang menampilkan landing page publik itu, bukan wizard KTP-only lama.
             'HRM_RCR_PORTAL' => route('careers.landing'),
-            'SET_CONFIG' => route('setup.identification'),
-            'SET_LANG' => route('setup.language'),
+            'SET_CONFIG' => route('v2.screen', 'setup-identification'),
+            'SET_LANG' => route('v2.screen', 'languages'),
             'SET_LOCALIZATION' => route('setup.localization'),
-            'SET_CONSTANTS' => route('setup.constants'),
-            'SET_DATA_ORIGIN' => route('setup.data-origin'),
+            'SET_CONSTANTS' => route('v2.screen', 'setup-constants'),
+            'SET_DATA_ORIGIN' => route('v2.screen', 'setup-data-origin'),
             'SET_USER' => route('v2.screen', 'security-accounts'),
             'SET_GROUP' => route('v2.screen', 'security-groups'),
             'SET_PERM' => route('v2.screen', 'security-permissions'),

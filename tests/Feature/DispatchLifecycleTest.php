@@ -10,7 +10,6 @@ use App\Models\Sys\SecUser;
 use App\Services\Dispatch\DispatchService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 // dispatch_tier2.md §C (status lifecycle) + §F (Sisi A/B cetak, DISPATCH-08).
@@ -181,11 +180,11 @@ class DispatchLifecycleTest extends TestCase
         $svc->confirm($this->do, 'test');
         $this->do->refresh();
 
-        $doHtml = Livewire::test('pages::dispatch.do.print', ['doId' => $this->do->id_delivery])->html();
+        $doHtml = $this->get('/v2/print/delivery-order/'.$this->do->id_delivery)->assertOk()->getContent();
         $this->assertStringContainsString('ITEM-RAHASIA-HARGA', $doHtml);
         $this->assertStringContainsString('777.777', $doHtml);
 
-        $sjHtml = Livewire::test('pages::dispatch.do.print-surat-jalan', ['doId' => $this->do->id_delivery])->html();
+        $sjHtml = $this->get('/v2/print/delivery-note/'.$this->do->id_delivery)->assertOk()->getContent();
         $this->assertStringContainsString('ITEM-RAHASIA-HARGA', $sjHtml);
         $this->assertStringNotContainsString('777.777', $sjHtml);
         $this->assertStringNotContainsString('777777', $sjHtml);

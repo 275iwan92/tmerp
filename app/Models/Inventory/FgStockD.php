@@ -1,47 +1,27 @@
 <?php
 
+/* REMARK
+ * Tujuan       : Baris dokumen stok barang jadi (FG), termasuk qty_returned, return_condition, source_detail_id dan line_note/cancel_reason bila ada; aturan umum ada di StockDocLine.
+ * Sumber hulu  : tm2inv.fg_stock_d, ditulis StockDocumentService, StockDocEntryService.
+ * Input        : kolom baris (kunci barang: product_id, parts_id).
+ * Output       : model Eloquent dengan relasi product().
+ * Dipakai oleh : StockPostingService, StockReversalService, grid dan form dokumen stok.
+ * Status       : Aktif.
+ */
+
 namespace App\Models\Inventory;
 
-use App\Models\Master\WhLoc;
 use App\Models\Master\ProdProduct;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class FgStockD extends Model
+class FgStockD extends StockDocLine
 {
-    protected $connection = 'tm2inv';
+    protected const ITEM_KEYS = ['product_id', 'parts_id'];
 
     protected $table = 'fg_stock_d';
-
-    protected $primaryKey = 'doc_detail_id';
-
-    const CREATED_AT = 'create_log';
-
-    const UPDATED_AT = 'update_log';
-
-    protected $fillable = [
-        'doc_id', 'seq_no', 'product_id', 'parts_id', 'qty', 'qty_returned',
-        'qty_system', 'qty_physical', 'action_type', 'return_condition', 'source_detail_id',
-        'uom_code', 'lot_no', 'unit_price', 'qty_unitprice', 'location_id',
-        'batch_id', 'owner_type', 'owner_id',
-        'create_by', 'update_by',
-    ];
-
-    protected $casts = [
-        'qty' => 'decimal:4',
-        'qty_returned' => 'decimal:4',
-        'qty_system' => 'decimal:4',
-        'qty_physical' => 'decimal:4',
-        'unit_price' => 'decimal:4',
-    ];
 
     public function product(): BelongsTo
     {
         return $this->belongsTo(ProdProduct::class, 'product_id', 'id_product');
-    }
-
-    public function location(): BelongsTo
-    {
-        return $this->belongsTo(WhLoc::class, 'location_id', 'location_id');
     }
 }

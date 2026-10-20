@@ -7,13 +7,12 @@
  * Input        : requisition (opsional), array isian header, user yang bertindak, keputusan dan catatan.
  * Output       : tm2hrr.rcr_requisition dan rcr_requisition_approval berubah; ValidationException (field / document) atau AuthorizationException bila aturan dilanggar.
  * Dipakai oleh : routes/v2_hrm.php (v2.hrm.requisition.save), layar hrm-rcr-requisition-form, tes RequisitionServiceTest.
- * Status       : Aktif (T7l HRM, 2026-10-19).
+ * Status       : Aktif (T7l HRM, 2026-10-19); cek approver, pemilik langkah, dan baris langkah memakai penolong RecruitmentApprovalService (2026-10-20).
  */
 
 namespace App\Services\Recruitment;
 
 use App\Models\Hrr\RcrApprovalMatrix;
-use App\Models\Hrr\RcrApproverAssignment;
 use App\Models\Hrr\RcrRequisition;
 use App\Models\Hrr\RcrRequisitionApproval;
 use App\Models\Sys\SecUser;
@@ -94,13 +93,7 @@ final class RequisitionService
                 throw ValidationException::withMessages(['document' => 'Position, qualification and reason are required before submitting.']);
             }
             $steps = RcrApprovalMatrix::where('id_track', $fresh->id_track)->orderBy('approval_seq')->get();
-            if ($steps->isEmpty()) {
-                throw ValidationException::withMessages(['document' => 'This track has no approval steps configured.']);
-            }
-            $missing = $steps->filter(fn ($s) => ! RcrApproverAssignment::resolve($s->approver_role, $fresh->department_id))->pluck('approver_role')->unique()->implode(', ');
-            if ($missing !== '') {
-                throw ValidationException::withMessages(['document' => 'No approver is assigned for: '.$missing.'.']);
-            }
+            RecruitmentApprovalService::assertApproversReady($steps, $fresh->department_id, 'This track has no approval steps configured.');
             app(RecruitmentApprovalService::class)->submitRequisition($fresh);
         });
     }
@@ -113,7 +106,7 @@ final class RequisitionService
         }
         $current = $r->approvals()->where('decision', 'PENDING')->orderBy('approval_seq')->first();
 
-        return $current && (int) $current->approver_id === (int) $user->getKey() ? $current : null;
+        return RecruitmentApprovalService::ownedBy($current, $user);
     }
 
     public function decide(RcrRequisition $r, SecUser $user, string $decision, ?string $note): void
@@ -137,12 +130,7 @@ final class RequisitionService
     /** Langkah approval untuk tabel di form: peran dari matriks track, approver, keputusan. */
     public static function steps(RcrRequisition $r): array
     {
-        $roles = RcrApprovalMatrix::where('id_track', $r->id_track)->pluck('approver_role', 'approval_seq')->all();
-        $approvals = $r->approvals()->get();
-        $names = SecUser::whereKey($approvals->pluck('approver_id')->filter()->all())->pluck('name', 'id_user')->all();
-
-        return $approvals->map(fn (RcrRequisitionApproval $a) => ['seq' => (string) $a->approval_seq, 'role' => (string) ($roles[$a->approval_seq] ?? '—'), 'approver' => (string) ($names[$a->approver_id] ?? '—'),
-            'decision' => (string) $a->decision, 'at' => $a->decided_at?->format('d-M-Y H:i') ?? '—', 'note' => (string) ($a->note ?? '')])->all();
+        return RecruitmentApprovalService::stepRows($r->approvals()->get(), RcrApprovalMatrix::where('id_track', $r->id_track)->pluck('approver_role', 'approval_seq')->all(), true);
     }
 
     /** Riwayat tab History: dibuat dan tiap keputusan, terbaru di atas. */

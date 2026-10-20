@@ -1,5 +1,15 @@
 <?php
 
+/* REMARK
+ * Tujuan       : Approval berjenjang Requisition dan Offer rekrutmen (matriks track, resolusi peran ke user) serta tiga penolong yang dipakai bersama
+ *                RequisitionService dan OfferService: cek kesiapan approver, pemilik langkah PENDING, dan baris langkah untuk tabel form.
+ * Sumber hulu  : rcr_approval_matrix, rcr_offer_approval_matrix, RcrApproverAssignment (tm2hrr); user (tm2sys).
+ * Input        : dokumen Requisition / Offer, langkah matriks, keputusan.
+ * Output       : baris approval PENDING / APPROVED / REJECTED dan status dokumen; ValidationException kunci document bila approver belum siap.
+ * Dipakai oleh : RequisitionService, OfferService, layar approval rekrutmen.
+ * Status       : Aktif; tiga penolong statis ditarik dari dua service (duplikasi, Jo 2026-10-20).
+ */
+
 namespace App\Services\Recruitment;
 
 use App\Models\Hrr\AppOffer;
@@ -9,6 +19,10 @@ use App\Models\Hrr\RcrApproverAssignment;
 use App\Models\Hrr\RcrOfferApprovalMatrix;
 use App\Models\Hrr\RcrRequisition;
 use App\Models\Hrr\RcrRequisitionApproval;
+use App\Models\Sys\SecUser;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 // Approval berjenjang utk Requisition (rcr_approval_matrix) & Offer
 // (rcr_offer_approval_matrix) -- BESPOKE, bukan FlowEngineService (itu utk
@@ -112,5 +126,32 @@ class RecruitmentApprovalService
                 $q->select('id_requisition')->from('rcr_requisition')->where('status', 'SUBMITTED');
             })
             ->get();
+    }
+
+    /** Track harus punya langkah dan tiap peran di langkah itu harus punya approver (departemen bila perlu); kalau tidak: ValidationException kunci document. */
+    public static function assertApproversReady(Collection $steps, ?int $departmentId, string $noStepsMessage): void
+    {
+        if ($steps->isEmpty()) {
+            throw ValidationException::withMessages(['document' => $noStepsMessage]);
+        }
+        $missing = $steps->filter(fn ($s) => ! RcrApproverAssignment::resolve($s->approver_role, $departmentId))->pluck('approver_role')->unique()->implode(', ');
+        if ($missing !== '') {
+            throw ValidationException::withMessages(['document' => 'No approver is assigned for: '.$missing.'.']);
+        }
+    }
+
+    /** Langkah PENDING terkecil bila miliknya user ini, selain itu null; $current = langkah PENDING terkecil dokumen (atau null). */
+    public static function ownedBy(?Model $current, SecUser $user): ?Model
+    {
+        return $current && (int) $current->approver_id === (int) $user->getKey() ? $current : null;
+    }
+
+    /** Baris tabel langkah approval di form: peran dari matriks track, nama approver, keputusan, waktu (+ catatan bila diminta). */
+    public static function stepRows(Collection $approvals, array $roles, bool $withNote = false): array
+    {
+        $names = SecUser::whereKey($approvals->pluck('approver_id')->filter()->all())->pluck('name', 'id_user')->all();
+
+        return $approvals->map(fn (Model $a) => ['seq' => (string) $a->approval_seq, 'role' => (string) ($roles[$a->approval_seq] ?? '—'), 'approver' => (string) ($names[$a->approver_id] ?? '—'),
+            'decision' => (string) $a->decision, 'at' => $a->decided_at?->format('d-M-Y H:i') ?? '—'] + ($withNote ? ['note' => (string) ($a->note ?? '')] : []))->all();
     }
 }

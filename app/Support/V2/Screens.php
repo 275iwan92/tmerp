@@ -19,7 +19,7 @@ final class Screens
             'master-uom' => ['Units of Measure', 'fa-solid fa-ruler', 'master/uom.blade.php', 'mockup_master_uom_v4.html'],
             'master-currency' => ['Currencies & Exchange Rates', 'fa-solid fa-coins', 'master/currency.blade.php', null],
             'master-card' => ['Master Card', 'fa-solid fa-id-card', 'production/prodev.blade.php (Master Card)', 'mockup_mastercard_ver2.jpg'],
-            'prodev' => ['Pro-Dev (Product Development)', 'fa-solid fa-table-cells', 'production/prodev.blade.php + prodev-list.blade.php', 'mockup_prodev_imposition.html'],
+            'prodev' => ['Pro-Dev (Product Development)', 'fa-solid fa-table-cells', 'production/prodev.blade.php (aturan; prodev-list v1 diarsipkan)', 'mockup_prodev_imposition.html'],
         ];
     }
 
@@ -31,24 +31,24 @@ final class Screens
         return [
             ['code' => 'SALES', 'short' => 'SLS', 'label' => 'Sales', 'icon' => 'fa-solid fa-cart-shopping', 'groups' => [
                 ['label' => 'Inquiry & Quotation', 'items' => [
-                    $it('inquiry', ['Inquiry Product (worklist)', 'fa-solid fa-inbox', 'inquiry/hub.blade.php', 'inquiry_main_hub.html']),
+                    $it('inquiry', ['Inquiry Product (worklist)', 'fa-solid fa-inbox', 'v2: worklist Inquiry (hub v1 diarsipkan 2026-10-20)', 'inquiry_main_hub.html']),
                     $it('inquiry-new', ['New Inquiry', 'fa-solid fa-file-circle-plus', 'inquiry/form.blade.php', 'inquiry_new.html']),
-                    $it('inquiry-revise', ['Inquiry Revise', 'fa-solid fa-file-pen', 'inquiry/revise.blade.php', 'inquiry_revise_v2.html']),
-                    $it('inquiry-recalc', ['Inquiry Recalc', 'fa-solid fa-calculator', 'inquiry/recalc.blade.php', 'inquiry_recalc_v2.html']),
+                    $it('inquiry-revise', ['Inquiry Revise', 'fa-solid fa-file-pen', 'v2: Inquiry Revise (v1 diarsipkan 2026-10-20)', 'inquiry_revise_v2.html']),
+                    $it('inquiry-recalc', ['Inquiry Recalc', 'fa-solid fa-calculator', 'v2: Inquiry Recalc (v1 diarsipkan 2026-10-20)', 'inquiry_recalc_v2.html']),
                     $it('prodev'),
                     $it('master-card-collection', ['Master Card Collection', 'fa-solid fa-id-card', 'v2 baru: upload master card lama (Excel/foto) -> Master Product / Inquiry', 'master_card_collection_v2.jpg']),
                     $it('sales-price', ['Prices from Pro-Cost (tiers & prices)', 'fa-solid fa-tags', 'inquiry/costing.blade.php (hanya tier & harga terpublish)', null]),
-                    $it('quotation', ['Quotation', 'fa-solid fa-file-signature', 'quotation/entry.blade.php + list', 'mockup_sales_quotation_entry.html']),
+                    $it('quotation', ['Quotation', 'fa-solid fa-file-signature', 'quotation/entry.blade.php (aturan; list v1 diarsipkan)', 'mockup_sales_quotation_entry.html']),
                     $it('nota-inquiry', ['Inquiry Note', 'fa-solid fa-receipt', 'inquiry/nota.blade.php', 'nota_inquiry_mockup.html']),
                 ]],
                 ['label' => 'Order', 'items' => [
-                    $it('customer-order', ['Customer Order', 'fa-solid fa-bag-shopping', 'co/entry.blade.php + list', 'mockup_co_entry.html']),
-                    $it('cpdel', ['Customer Plan Delivery', 'fa-solid fa-truck-ramp-box', 'co/delivery-plan.blade.php', 'co_delivery_plan_mockup.html']),
+                    $it('customer-order', ['Customer Order', 'fa-solid fa-bag-shopping', 'co/entry.blade.php (aturan; list v1 diarsipkan)', 'mockup_co_entry.html']),
+                    $it('cpdel', ['Customer Plan Delivery', 'fa-solid fa-truck-ramp-box', 'v2: App\Support\V2\Data\Cpdel (aturan: pages::co.delivery-plan)', 'co_delivery_plan_mockup.html']),
                     $it('approval-co', ['CO Approval Center', 'fa-solid fa-stamp', 'v2 baru: DevLib Form Approval + flow engine CO (F&A SPV -> Operational Manager)', null]),
                 ]],
                 ['label' => 'Delivery', 'items' => [
-                    $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'dispatch/do/entry.blade.php + list', null]),
-                    $it('delivery-notes', ['Delivery Notes', 'fa-solid fa-file-lines', 'dispatch/do/print-surat-jalan.blade.php', null]),
+                    $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'v2: App\Support\V2\Data\DeliveryOrder (aturan: pages::dispatch.do.entry)', null]),
+                    $it('delivery-notes', ['Delivery Notes', 'fa-solid fa-file-lines', 'v2: cetak delivery-note (DeliveryNotePrint)', null]),
                     $it('proof-of-delivery', ['Proof of Delivery', 'fa-solid fa-clipboard-check', 'v2 baru: tm2sdi.do_delivery_pod (KPI janji kirim)', null]),
                     $it('subcon-delivery-note', ['Subcontract Delivery Note', 'fa-solid fa-dolly', 'v2 baru: tm2sdi.do_delivery do_type SUBCON (backlog02 19.1)', null]),
                 ]],
@@ -60,7 +60,7 @@ final class Screens
                 ['label' => 'Master', 'items' => [$it('master-product'), $it('product-acc'), $it('master-raw'), $it('master-customer'), $it('master-card')]],
                 ['label' => 'Lookup', 'items' => [$it('master-matcat'), $it('master-uom'), $it('master-currency')]],
                 ['label' => t('Reports'), 'items' => [
-                    $it('win-rate', ['Win-Rate Sales', 'fa-solid fa-trophy', 'sales/win-rate.blade.php', null]),
+                    $it('win-rate', ['Win-Rate Sales', 'fa-solid fa-trophy', 'v2: grid sales-win-rate (WinRateGrid)', null]),
                     $it('quotation-outstanding', ['Open Quotations', 'fa-solid fa-hourglass-half', 'v2 baru: quo_quotation PUBLISHED belum WIN/LOST', null]),
                     $it('quotation-followup', ['Quotation Follow-up', 'fa-solid fa-phone', 'v2 baru: quo_activity', null]),
                 ]],
@@ -71,16 +71,16 @@ final class Screens
             ]],
             ['code' => 'PROC', 'short' => 'PRC', 'label' => 'Procurement', 'icon' => 'fa-solid fa-cart-flatbed', 'groups' => [
                 ['label' => 'Requisition', 'items' => [
-                    $it('purchase-requisition', ['Purchase Requisition (PR)', 'fa-solid fa-file-circle-plus', 'pur/pr/index + entry.blade.php', 'mockup_purchase_requisition.html']),
+                    $it('purchase-requisition', ['Purchase Requisition (PR)', 'fa-solid fa-file-circle-plus', 'v2: App\Support\V2\Data\PurchaseRequisition (aturan: pages::pur.pr.entry)', 'mockup_purchase_requisition.html']),
                     $it('approval-pr', ['PR Approval Center', 'fa-solid fa-stamp', 'pur/pr/approval.blade.php', 'mockup_pr_approval_center.html']),
                 ]],
                 ['label' => 'Order', 'items' => [
                     $it('purchase-quotation', ['Purchase Quotation (PQ)', 'fa-solid fa-file-import', 'pur/pq/index + entry.blade.php (v2: upload file penawaran)', null]),
-                    $it('purchase-order', ['Purchase Order (PO)', 'fa-solid fa-file-invoice-dollar', 'pur/po/index + entry.blade.php', null]),
+                    $it('purchase-order', ['Purchase Order (PO)', 'fa-solid fa-file-invoice-dollar', 'v2: App\Support\V2\Data\PurchaseOrder (aturan: pages::pur.po.entry)', null]),
                     $it('approval-po', ['PO Approval Center', 'fa-solid fa-stamp', 'pur/po/approval.blade.php', 'mockup_po_approval_center.html']),
                 ]],
                 ['label' => 'Receive', 'items' => [
-                    $it('purchase-receive', ['Goods Receipt (SPB)', 'fa-solid fa-truck-ramp-box', 'pur/pv/index + entry.blade.php', null]),
+                    $it('purchase-receive', ['Goods Receipt (SPB)', 'fa-solid fa-truck-ramp-box', 'v2: App\Support\V2\Data\PurchaseReceive (aturan: pages::pur.pv.entry)', null]),
                 ]],
                 ['label' => 'Return', 'items' => [
                     $it('approval-prt', ['Purchase Return Approval Center', 'fa-solid fa-stamp', 'pur/prt/approval.blade.php', null]), $it('pur-return-form', ['Purchase Return Form', 'fa-solid fa-reply', 'v2 baru: Purchase Return (NRB) di atas tm2pur.prt_return + prt_line; sumber penerimaan QC reject atau stok; Submit = flow approval PRT, keputusan di Approval Center; dibuka dari grid purchase-return', null]),

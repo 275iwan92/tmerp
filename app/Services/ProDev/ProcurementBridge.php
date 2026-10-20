@@ -12,12 +12,12 @@ use App\Models\Sdi\DoLine;
 use App\Models\Sdi\IqpPart;
 use Illuminate\Support\Facades\DB;
 
-// Dari ProDev ke Procurement (user 2026-09-17):
-// - baris BOM yang stoknya kurang -> Purchase Requisition bahan (source MRP);
-// - langkah BOP yang tidak dikerjakan sendiri -> PR subkon (source
-//   SUBCONTRACT) + Surat Jalan ke subkon (do_delivery SUBCON) yang WAJIB
-//   menunjuk CO asal supaya biaya subkon terlacak ke costing order itu.
-// PR dibuat DRAFT -- tetap lewat approval PR yang sudah ada, tidak dilompati.
+/* REMARK
+ * Tujuan: jembatan ProDev ke Procurement (user 2026-09-17): BOM kurang stok jadi PR bahan DRAFT (source MRP); langkah BOP subkon jadi PR subkon + Surat Jalan subkon (do_delivery SUBCON) yang WAJIB menunjuk CO asal.
+ * Sumber hulu: ProDev (BOM, BOP), CO asal, master bahan. Input: part, inquiry, bahan pilihan.
+ * Output: PR DRAFT di tm2pur (tetap lewat approval PR, tidak dilompati), DO subkon di tm2sdi, tautan balik ke layar v2 purchase-requisition ?id=.
+ * Dipakai oleh: layar ProDev (BOM) dan Work Order. Status: Aktif; tautan PR ke v2 sejak 2026-10-20 (v1 pur.pr.entry tak punya rute tampilan).
+ */
 class ProcurementBridge
 {
     private function tag(ProdPart $part): string
@@ -107,7 +107,7 @@ class ProcurementBridge
                 'ok' => true,
                 'message' => tf(':name :qty :uom added to draft PR #:id.', ['name' => $material->material_name,
                     'qty' => rtrim(rtrim(number_format($qty, 4, '.', ''), '0'), '.'), 'uom' => $uom, 'id' => $pr->pr_id]),
-                'url' => route('pur.pr.entry', ['pr' => $pr->pr_id]),
+                'url' => route('v2.screen', 'purchase-requisition').'?id='.$pr->pr_id,
             ];
         });
     }
@@ -275,7 +275,7 @@ class ProcurementBridge
         return [
             'ok' => true,
             'message' => implode(' ', $messages),
-            'prUrl' => $prId ? route('pur.pr.entry', ['pr' => $prId]) : null,
+            'prUrl' => $prId ? route('v2.screen', 'purchase-requisition').'?id='.$prId : null,
         ];
     }
 }

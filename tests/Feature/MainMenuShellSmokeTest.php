@@ -67,10 +67,10 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $this->get('/setup/identification')->assertOk()->assertSee('Identitas Aplikasi');
-        $this->get('/setup/language')->assertOk()->assertSee('Language');
+        $this->get('/setup/identification')->assertRedirect('/v2/s/setup-identification');
+        $this->get('/setup/language')->assertRedirect('/v2/s/languages');
         $this->get('/setup/localization')->assertOk()->assertSee('Terjemahan Teks UI');
-        $this->get('/setup/constants')->assertOk()->assertSee('Constants');
+        $this->get('/setup/constants')->assertRedirect('/v2/s/setup-constants');
     }
 
     // 2026-09-07: footer "Settings"/"Security" dulu 2 array Alpine literal

@@ -7,7 +7,7 @@
  * Input        : lamaran (app_application), penawaran, array isian, user yang bertindak.
  * Output       : tm2hrr.app_offer dan app_offer_approval berubah; ValidationException (field / document) atau AuthorizationException bila aturan dilanggar.
  * Dipakai oleh : routes/v2_hrm.php (v2.hrm.offer.save), layar hrm-rcr-offer-form, tes OfferServiceTest.
- * Status       : Aktif (T7m HRM, 2026-10-20).
+ * Status       : Aktif (T7m HRM, 2026-10-20); cek approver, pemilik langkah, dan baris langkah memakai penolong RecruitmentApprovalService (2026-10-20).
  */
 
 namespace App\Services\Recruitment;
@@ -15,7 +15,6 @@ namespace App\Services\Recruitment;
 use App\Models\Hrr\AppApplication;
 use App\Models\Hrr\AppOffer;
 use App\Models\Hrr\AppOfferApproval;
-use App\Models\Hrr\RcrApproverAssignment;
 use App\Models\Hrr\RcrOfferApprovalMatrix;
 use App\Models\Sys\SecUser;
 use App\Services\Payroll\PayrollAccess;
@@ -89,13 +88,7 @@ final class OfferService
             }
             $trackId = $fresh->application->vacancy->requisition->id_track;
             $steps = RcrOfferApprovalMatrix::where('id_track', $trackId)->orderBy('approval_seq')->get();
-            if ($steps->isEmpty()) {
-                throw ValidationException::withMessages(['document' => 'This track has no offer approval steps configured.']);
-            }
-            $missing = $steps->filter(fn ($s) => ! RcrApproverAssignment::resolve($s->approver_role, null))->pluck('approver_role')->unique()->implode(', ');
-            if ($missing !== '') {
-                throw ValidationException::withMessages(['document' => 'No approver is assigned for: '.$missing.'.']);
-            }
+            RecruitmentApprovalService::assertApproversReady($steps, null, 'This track has no offer approval steps configured.');
             app(RecruitmentApprovalService::class)->submitOffer($fresh);
         });
     }
@@ -108,7 +101,7 @@ final class OfferService
         }
         $current = AppOfferApproval::where('id_offer', $o->getKey())->where('decision', 'PENDING')->orderBy('approval_seq')->first();
 
-        return $current && (int) $current->approver_id === (int) $user->getKey() ? $current : null;
+        return RecruitmentApprovalService::ownedBy($current, $user);
     }
 
     public function decide(AppOffer $o, SecUser $user, string $decision): void
@@ -188,11 +181,8 @@ final class OfferService
     {
         $o->loadMissing('application.vacancy.requisition');
         $roles = RcrOfferApprovalMatrix::where('id_track', $o->application->vacancy->requisition->id_track)->pluck('approver_role', 'approval_seq')->all();
-        $approvals = AppOfferApproval::where('id_offer', $o->getKey())->orderBy('approval_seq')->get();
-        $names = SecUser::whereKey($approvals->pluck('approver_id')->filter()->all())->pluck('name', 'id_user')->all();
 
-        return $approvals->map(fn (AppOfferApproval $a) => ['seq' => (string) $a->approval_seq, 'role' => (string) ($roles[$a->approval_seq] ?? '—'), 'approver' => (string) ($names[$a->approver_id] ?? '—'),
-            'decision' => (string) $a->decision, 'at' => $a->decided_at?->format('d-M-Y H:i') ?? '—'])->all();
+        return RecruitmentApprovalService::stepRows(AppOfferApproval::where('id_offer', $o->getKey())->orderBy('approval_seq')->get(), $roles);
     }
 
     /** Riwayat tab History: dibuat dan tiap keputusan, terbaru di atas. */

@@ -9,7 +9,9 @@ use App\Models\Sdi\DoLine;
 use App\Models\Sys\SecUser;
 use App\Services\Dispatch\DispatchService;
 use App\Support\Branding\Brand;
+use App\Support\V2\Data\Identification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -99,13 +101,10 @@ class CompanyNamePpnPrintTest extends TestCase
         // Cetak hanya untuk DO yang sudah Confirm (aturan layar cetak DO).
         $this->do->update(['status' => 'CONFIRMED']);
 
-        foreach (['pages::dispatch.do.print', 'pages::dispatch.do.print-surat-jalan'] as $page) {
-            $html = Livewire::test($page, ['doId' => $this->do->id_delivery])->html();
-            $this->assertStringContainsString('ppnKop = false">Non PPN', $html, $page);
-            $this->assertStringContainsString('ppnKop = true">PPN', $html, $page);
-            $this->assertStringContainsString('Telasih Makmur', $html, $page);
-            $this->assertStringContainsString('CV. Langgeng Jaya Makmur', $html, $page);
-            $this->assertStringContainsString('NPWP '.Brand::companyNpwp(), $html, $page);
+        // Cetak DO/Surat Jalan hanya v2 (v1 diarsipkan 2026-10-20): kop memakai nama perusahaan; pilihan kop PPN (CV. Langgeng) belum ada di v2.
+        foreach (['delivery-order', 'delivery-note'] as $type) {
+            $html = $this->get('/v2/print/'.$type.'/'.$this->do->id_delivery)->assertOk()->getContent();
+            $this->assertStringContainsStringIgnoringCase('Telasih Makmur', $html, $type);
         }
     }
 
@@ -148,15 +147,8 @@ class CompanyNamePpnPrintTest extends TestCase
         $company = (array) DB::connection('tm2mst')->table('org_company')->where('company_code', 'TM')->first(['npwp_number', 'address', 'phone', 'email']);
 
         try {
-            Livewire::test('pages::setup.identification')
-                ->set('companyName', 'Telasih Uji')
-                ->set('companyLegalName', 'CV. Legal Uji')
-                ->set('companyNpwp', '11.222.333.4-555.666')
-                ->set('companyAddress', "Jl. Uji No. 1\nSurabaya")
-                ->set('companyPhone', '031-999')
-                ->set('companyEmail', 'uji@contoh.co.id')
-                ->call('saveCompany')
-                ->assertHasNoErrors();
+            Identification::saveCompany(['name' => 'Telasih Uji', 'legal_name' => 'CV. Legal Uji', 'npwp' => '11.222.333.4-555.666',
+                'address' => "Jl. Uji No. 1\nSurabaya", 'phone' => '031-999', 'email' => 'uji@contoh.co.id'], null, null, 'test');
 
             $inquiryId = DB::connection('tm2sdi')->table('iqp_inquiry')->where('tax_scheme', 'PPN')->value('id_inquiry');
             $html = Livewire::test('pages::inquiry.nota', ['inquiry' => $inquiryId])->html();
@@ -166,7 +158,12 @@ class CompanyNamePpnPrintTest extends TestCase
             $this->assertStringContainsString('Jl. Uji No. 1<br />', $html, 'Alamat multi-baris tetap berbaris.');
             $this->assertStringContainsString('Telp 031-999', $html);
 
-            Livewire::test('pages::setup.identification')->set('companyName', '')->call('saveCompany')->assertHasErrors(['companyName']);
+            try {
+                Identification::saveCompany(['name' => '', 'legal_name' => 'CV. Legal Uji'], null, null, 'test');
+                $this->fail('Nama perusahaan kosong harus ditolak.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('name', $e->errors());
+            }
         } finally {
             foreach ($consts as $key => $text) {
                 DB::connection('tm2sys')->table('sys_constant')->where('constant_key', $key)->update(['constant_text' => $text]);

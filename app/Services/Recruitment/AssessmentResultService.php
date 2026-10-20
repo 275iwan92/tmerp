@@ -7,7 +7,7 @@
  * Input        : id_application, recommendation, score (opsional), notes; id user penilai.
  * Output       : tm2hrr.app_assessment_result bertambah satu baris; ValidationException (kunci id_application / field) bila aturan dilanggar.
  * Dipakai oleh : routes/v2_hrm.php (v2.hrm.assessment.save), layar hrm-rcr-assessment-form, lookup rcr_assessment_awaiting, tes AssessmentResultServiceTest.
- * Status       : Aktif (T7i HRM, 2026-10-19).
+ * Status       : Aktif (T7i HRM, 2026-10-19); antrean tahap (pendingStage, awaitingSearch/Find) diwarisi dari PipelineStageQueue (2026-10-20).
  */
 
 namespace App\Services\Recruitment;
@@ -21,25 +21,25 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-final class AssessmentResultService
+final class AssessmentResultService extends PipelineStageQueue
 {
     public const RECS = ['LANJUT' => 'Proceed', 'TIDAK_LANJUT' => 'Do Not Proceed', 'PERTIMBANGAN' => 'Consider'];
 
     public const STAGES = ['PSIKOTES', 'INTERVIEW_HR', 'INTERVIEW_USER'];
 
-    /** Tahap penilaian lamaran ini sekarang, atau null bila lamaran tidak sedang menunggu hasil. */
-    public static function pendingStage(AppApplication $a): ?AppPipelineStageConfig
+    protected static function stages(): array
     {
-        if ($a->status !== 'IN_PROGRESS') {
-            return null;
-        }
-        $a->loadMissing('vacancy.requisition');
-        $stage = AppPipelineStageConfig::where('id_track', $a->vacancy?->requisition?->id_track)->where('stage_seq', $a->current_stage_seq)->whereIn('stage_code', self::STAGES)->first();
-        if (! $stage || AppAssessmentResult::where('id_application', $a->getKey())->where('stage_code', $stage->stage_code)->exists()) {
-            return null;
-        }
+        return self::STAGES;
+    }
 
-        return $stage;
+    protected static function handled(AppApplication $a, AppPipelineStageConfig $stage): bool
+    {
+        return AppAssessmentResult::where('id_application', $a->getKey())->where('stage_code', $stage->stage_code)->exists();
+    }
+
+    protected static function vacancyText(AppApplication $a): string
+    {
+        return (string) ($a->vacancy?->vacancy_code ?? '');
     }
 
     public function record(array $in, int $userId): AppAssessmentResult
@@ -69,30 +69,5 @@ final class AssessmentResultService
         $by = SecUser::whereKey($r->assessor_id)->value('name') ?? '';
 
         return [['at' => $r->assessed_at?->toDateTimeString(), 'by' => (string) $by, 'action' => 'Recorded', 'note' => $r->stage_code.' · '.(self::RECS[$r->recommendation] ?? $r->recommendation)]];
-    }
-
-    /** @return list<array<string, mixed>> lamaran yang menunggu hasil, untuk lookup */
-    public static function awaitingSearch(string $q, int $limit = 30): array
-    {
-        return AppApplication::with(['candidate', 'vacancy.requisition'])->where('status', 'IN_PROGRESS')
-            ->when($q !== '', fn ($w) => $w->whereHas('candidate', fn ($c) => $c->where('name', 'like', "%{$q}%")))
-            ->orderByDesc('id_application')->get()
-            ->map(fn (AppApplication $a) => ($s = self::pendingStage($a)) ? self::row($a, $s) : null)->filter()->take($limit)->values()->all();
-    }
-
-    /** @return array<string, mixed>|null */
-    public static function awaitingFind(mixed $value): ?array
-    {
-        $a = AppApplication::with(['candidate', 'vacancy.requisition'])->find((int) $value);
-        $s = $a ? self::pendingStage($a) : null;
-
-        return $s ? self::row($a, $s) : null;
-    }
-
-    private static function row(AppApplication $a, AppPipelineStageConfig $s): array
-    {
-        $name = (string) ($a->candidate?->name ?? '—');
-
-        return ['id' => (int) $a->id_application, 'candidate' => $name, 'stage' => (string) $s->stage_name, 'vacancy' => (string) ($a->vacancy?->vacancy_code ?? ''), 'label' => $name.' — '.$s->stage_name];
     }
 }

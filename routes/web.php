@@ -142,24 +142,24 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_dummy_mastercard.php'; require __DIR__.'/v2_techguide.php'; // TG diagram route (same line: docs/tg cards cite web.php line numbers)
 
         Route::middleware('module:SALES')->group(function () {
-            Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');
+            Route::redirect('/inquiry', '/v2/s/inquiry')->name('inquiry.hub');
             Route::livewire('/inquiry/new', 'pages::inquiry.form')->name('inquiry.form');
-            Route::livewire('/inquiry/recalc', 'pages::inquiry.recalc')->name('inquiry.recalc');
-            Route::livewire('/inquiry/revise', 'pages::inquiry.revise')->name('inquiry.revise');
+            Route::get('/inquiry/recalc', fn (Illuminate\Http\Request $r) => redirect('/v2/s/inquiry-recalc'.($r->filled('id') ? '?id='.(int) $r->query('id') : '')))->name('inquiry.recalc');
+            Route::get('/inquiry/revise', fn (Illuminate\Http\Request $r) => redirect('/v2/s/inquiry-revise'.($r->filled('id') ? '?id='.(int) $r->query('id') : '')))->name('inquiry.revise');
             Route::livewire('/inquiry/imposition', 'pages::inquiry.imposition-list')->name('inquiry.imposition.list');
             Route::livewire('/inquiry/{inquiry}/imposition', 'pages::inquiry.imposition')->name('inquiry.imposition');
             Route::livewire('/inquiry/{inquiry}/nota', 'pages::inquiry.nota')->name('inquiry.nota');
-            Route::livewire('/sales/win-rate', 'pages::sales.win-rate')->name('sales.win-rate');
+            Route::redirect('/sales/win-rate', '/v2/s/sales-win-rate')->name('sales.win-rate');
 
-            Route::livewire('/quotation', 'pages::quotation.list')->name('quotation.list');
+            Route::redirect('/quotation', '/v2/s/quotation')->name('quotation.list');
             Route::livewire('/quotation/new', 'pages::quotation.entry')->name('quotation.create');
             Route::livewire('/quotation/{quotation}/edit', 'pages::quotation.entry')->name('quotation.entry');
             Route::livewire('/quotation/{quotation}/print', 'pages::quotation.print')->name('quotation.print');
 
-            Route::livewire('/co', 'pages::co.list')->name('co.list');
+            Route::redirect('/co', '/v2/s/customer-order')->name('co.list');
             Route::livewire('/co/{order}/edit', 'pages::co.entry')->name('co.entry');
             Route::livewire('/co/{order}/print', 'pages::co.print')->name('co.print');
-            Route::livewire('/co/delivery-plan', 'pages::co.delivery-plan')->name('co.delivery-plan');
+            Route::redirect('/co/delivery-plan', '/v2/s/cpdel')->name('co.delivery-plan');
 
             // Delivery (DO/Surat Jalan) -- sebelumnya modul "Dispatch" berdiri sendiri,
             // digabung ke Sales > grup "Delivery" (menu SALES_DO) 2026-08-28 atas
@@ -168,10 +168,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // krn DoList SELALU pre-create header via picker customer sebelum redirect
             // ke Entry (lihat catatan deviasi di dispatch/do/list.blade.php) -- tak
             // pernah ada Entry tanpa doId.
-            Route::livewire('/dispatch/do', 'pages::dispatch.do.list')->name('dispatch.do.index');
-            Route::livewire('/dispatch/do/{doId}', 'pages::dispatch.do.entry')->name('dispatch.do.entry');
-            Route::livewire('/dispatch/do/{doId}/print', 'pages::dispatch.do.print')->name('dispatch.do.print');
-            Route::livewire('/dispatch/do/{doId}/print-surat-jalan', 'pages::dispatch.do.print-surat-jalan')->name('dispatch.do.print-surat-jalan');
+            Route::redirect('/dispatch/do', '/v2/s/delivery-order')->name('dispatch.do.index');
+            Route::get('/dispatch/do/{doId}', fn (int $doId) => redirect('/v2/s/delivery-order?id='.$doId))->name('dispatch.do.entry')->where('doId', '[0-9]+');
+            Route::get('/dispatch/do/{doId}/print', fn (int $doId) => redirect('/v2/print/delivery-order/'.$doId))->name('dispatch.do.print')->where('doId', '[0-9]+');
+            Route::get('/dispatch/do/{doId}/print-surat-jalan', fn (int $doId) => redirect('/v2/print/delivery-note/'.$doId))->name('dispatch.do.print-surat-jalan')->where('doId', '[0-9]+');
         });
 
         Route::middleware('module:COSTING')->group(function () {
@@ -186,17 +186,17 @@ Route::middleware(['auth', 'locale'])->group(function () {
         });
 
         Route::get('/security', fn (Illuminate\Http\Request $r) => redirect(match ($r->query('tab')) { 'groups' => $r->filled('open') ? '/v2/s/security-group-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/security-group-form?new=1' : '/v2/s/security-groups'), 'perms' => '/v2/s/security-permissions', 'migration' => '/v2/s/setup-migration', default => $r->filled('open') ? '/v2/s/security-account-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/security-account-form?new=1' : '/v2/s/security-accounts') }))->name('security.index')->middleware('admin');
-        Route::livewire('/setup/identification', 'pages::setup.identification')->name('setup.identification')->middleware('admin');
-        Route::livewire('/setup/language', 'pages::setup.language')->name('setup.language')->middleware('admin');
+        Route::redirect('/setup/identification', '/v2/s/setup-identification')->name('setup.identification')->middleware('admin');
+        Route::redirect('/setup/language', '/v2/s/languages')->name('setup.language')->middleware('admin');
         Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
-        Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
-        Route::livewire('/setup/data-origin', 'pages::setup.data-origin')->name('setup.data-origin')->middleware('admin');
+        Route::redirect('/setup/constants', '/v2/s/setup-constants')->name('setup.constants')->middleware('admin');
+        Route::redirect('/setup/data-origin', '/v2/s/setup-data-origin')->name('setup.data-origin')->middleware('admin');
         Route::get('/setup/support-tickets', fn (Illuminate\Http\Request $r) => redirect($r->filled('open') ? '/v2/s/support-ticket-form?id='.(int) $r->query('open') : '/v2/s/support-tickets'))->name('setup.support-tickets')->middleware('admin');
 
         // Help Center -- panduan pakai aplikasi (bukan tiket support, itu modal
         // "Help & Support" terpisah di profile dropdown). SEMUA user login boleh
         // akses (tanpa middleware 'admin' seperti /security di atas).
-        Route::livewire('/bantuan', 'pages::help.index')->name('help.index');
+        Route::get('/bantuan', fn () => redirect()->route('v2.help'))->name('help.index');
 
         // Self-service v1 dihapus 2026-10-18 (aturan D.25): layar resmi = Edit profile v2 (v2.profile).
         // URL lama hanya diteruskan ke sana (?tab ikut dibawa) supaya bookmark tidak 404.
@@ -234,14 +234,14 @@ Route::middleware(['auth', 'locale'])->group(function () {
         });
 
         Route::middleware('module:PROC')->group(function () {
-            Route::livewire('/purchasing/pr', 'pages::pur.pr.index')->name('pur.pr.list');
-            Route::livewire('/purchasing/pr/{pr}/edit', 'pages::pur.pr.entry')->name('pur.pr.entry');
-            Route::livewire('/purchasing/pr/{pr}/print', 'pages::pur.pr.print')->name('pur.pr.print');
-            Route::livewire('/purchasing/po', 'pages::pur.po.index')->name('pur.po.list');
-            Route::livewire('/purchasing/po/{po}/edit', 'pages::pur.po.entry')->name('pur.po.entry');
-            Route::livewire('/purchasing/po/{po}/print', 'pages::pur.po.print')->name('pur.po.print');
-            Route::livewire('/purchasing/pv', 'pages::pur.pv.index')->name('pur.pv.list');
-            Route::livewire('/purchasing/pv/{pv}/edit', 'pages::pur.pv.entry')->name('pur.pv.entry');
+            Route::redirect('/purchasing/pr', '/v2/s/purchase-requisition')->name('pur.pr.list');
+            Route::get('/purchasing/pr/{pr}/edit', fn (int $pr) => redirect('/v2/s/purchase-requisition?id='.$pr))->name('pur.pr.entry')->where('pr', '[0-9]+');
+            Route::get('/purchasing/pr/{pr}/print', fn (int $pr) => redirect('/v2/print/purchase-requisition/'.$pr))->name('pur.pr.print')->where('pr', '[0-9]+');
+            Route::redirect('/purchasing/po', '/v2/s/purchase-order')->name('pur.po.list');
+            Route::get('/purchasing/po/{po}/edit', fn (int $po) => redirect('/v2/s/purchase-order?id='.$po))->name('pur.po.entry')->where('po', '[0-9]+');
+            Route::get('/purchasing/po/{po}/print', fn (int $po) => redirect('/v2/print/purchase-order/'.$po))->name('pur.po.print')->where('po', '[0-9]+');
+            Route::redirect('/purchasing/pv', '/v2/s/purchase-receive')->name('pur.pv.list');
+            Route::get('/purchasing/pv/{pv}/edit', fn (int $pv) => redirect('/v2/s/purchase-receive?id='.$pv))->name('pur.pv.entry')->where('pv', '[0-9]+');
             Route::get('/purchasing/prt', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/pur-return-form?new=1' : '/v2/s/purchase-return'))->name('pur.prt.list');
             Route::get('/purchasing/prt/{prt}/edit', fn (int $prt) => redirect('/v2/s/pur-return-form?id='.$prt))->name('pur.prt.entry');
         });
@@ -269,7 +269,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // Layar v1 Master Position dipensiunkan 2026-10-17: alamat lama -> grid v2; nama rute dipertahankan.
             Route::redirect('/hrm/position', '/v2/s/hrm-position')->name('hrm.position');
             Route::get('/hrm/sop', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-sop-form?id='.(int) $r->query('open') : '/v2/s/hrm-sop'))->name('hrm.sop-documents');
-            Route::livewire('/hrm/org-chart', 'pages::hrm.org-chart')->name('hrm.org-chart');
+            Route::redirect('/hrm/org-chart', '/v2/s/hrm-org-chart')->name('hrm.org-chart');
             // Layar v1 Master Employee dipensiunkan 2026-10-16: alamat lama (bookmark, tautan v1) -> grid v2; nama rute dipertahankan.
             Route::redirect('/hrm/employee', '/v2/s/hrm-employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster/print', 'pages::hrm.shift-roster-print')->name('hrm.shift-roster.print');
@@ -283,7 +283,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::get('/hrm/payroll/payslip', fn () => redirect('/v2/s/hrm-payslip'))->name('hrm.payroll.payslip-list')->middleware('payroll:payslip');
             Route::get('/hrm/payroll/payslip/print-all/{run}', fn (int $run) => redirect('/v2/hrm/payslip/print-all/'.$run))->name('hrm.payroll.payslip-print-all')->middleware('payroll:payslip')->where('run', '[0-9]+');
             Route::get('/hrm/payroll/payslip/{payslip}/print', fn (int $payslip) => redirect('/v2/print/payslip/'.$payslip))->name('hrm.payroll.payslip-print')->middleware('payroll:payslip')->where('payslip', '[0-9]+');
-            Route::livewire('/hrm/payroll/bank-transfer', 'pages::hrm.payroll-bank-transfer')->name('hrm.payroll.bank-transfer')->middleware('payroll:process');
+            Route::redirect('/hrm/payroll/bank-transfer', '/v2/s/hrm-bank-transfer')->name('hrm.payroll.bank-transfer')->middleware('payroll:process');
 
             // Recruitment (L1-L9 minus L8, lihat docs/recruitment_state.yaml) --
             // portal simulasi (Portal Candidate) sengaja di bawah middleware
@@ -328,7 +328,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // putus (ProCost Mode #1 masih baca prod_layout_group yang cuma
             // bisa dibuat di sana), tapi TIDAK muncul di menu mana pun.
             // Grid depan dulu (griduistandard.md), klik 2x baru buka layar kerja.
-            Route::livewire('/production/prodev-list', 'pages::production.prodev-list')->name('production.prodev.list');
+            Route::redirect('/production/prodev-list', '/v2/s/prodev')->name('production.prodev.list');
             // Lookup Product Market (officer ProDev): sumber "Kategori Produk" di Inquiry New.
             Route::redirect('/lookup/product-market', '/v2/s/sales-product-market');
             Route::redirect('/lookup/product-market/new', '/v2/s/sales-market-form?new=1');

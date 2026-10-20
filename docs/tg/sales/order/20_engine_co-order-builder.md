@@ -11,14 +11,14 @@ Searched in `routes/console.php` (no CO schedule), `app/Observers` (only 2, unre
 |---|---|---|
 | `findOrCreateFromQuotation` | Quotation WIN button (v2) | `app/Support/V2/Data/Quotation.php:284`; route `routes/v2.php:442-445` |
 | | Pick a Quotation on the Customer Order screen (v2) | `app/Support/V2/Data/CustomerOrder.php:83` |
-| | v1 screens | `resources/views/pages/co/list.blade.php:149`, `pages/quotation/entry.blade.php:502` |
+| | v1 screens | `tmerp_unused/co_list_v1_2026-10-20.blade.php:149`, `pages/quotation/entry.blade.php:502` |
 | | Dummy seeder/migration | `database/seeders/UatQuotationInquirySeeder.php:127`, `database/migrations/2026_09_21_000007_seed_inquiry_to_co_win_chain.php:139` |
 | `createInstant` | Create an INSTANT CO from a customer choice (v2) and Duplicate of a rejected/cancelled CO | `CustomerOrder.php:88`, `CustomerOrder.php:241` |
-| | v1, PPIC dummy, migration | `pages/co/list.blade.php:160`, `app/Console/Commands/PpicSeedDummy.php:77`, migration `…000007…:202` |
+| | v1, PPIC dummy, migration | `tmerp_unused/co_list_v1_2026-10-20.blade.php:160`, `app/Console/Commands/PpicSeedDummy.php:77`, migration `…000007…:202` |
 | `addProductLine` | Pick a Master Product on an INSTANT CO (v1, called from a component that v2 also uses) | `pages/co/entry.blade.php:219`, `PpicSeedDummy.php:78`, migration `…:210` |
 | `submit` | CO Confirm button (v2) | `CustomerOrder.php:192` |
 | `confirm` | Last approval passes | `CustomerOrder.php:223` (inside `decide`) |
-| | v1 path without approval, and seeders | `pages/co/entry.blade.php:414`, `pages/co/list.blade.php:180`, migration `…:158,215` |
+| | v1 path without approval, and seeders | `pages/co/entry.blade.php:414`, `tmerp_unused/co_list_v1_2026-10-20.blade.php:180`, migration `…:158,215` |
 | `cancel` / `cancelBlocker` | CO Cancel button (v2) | `CustomerOrder.php:267` |
 
 ## Input / Output
@@ -68,7 +68,7 @@ Customer Order screens v2 and v1, Quotation (WIN), dummy seeders, Planning (read
 - Trigger A.11/A.15 is guarded only in `submit`/`decide` (v2): CO card, finding 3.
 
 ## Tests
-No test for `CoOrderBuilder` (grep `tests/`: zero). Tests touching related parts: `tests/Feature/CoDueDateTest.php` (passed 2/2), `CoListExpandRowTest.php`, `QtyMinimLumpSumTest.php`. Proposal (needs Jo's approval, not done): one WIN -> submit -> confirm test that cleans up its own data.
+No test for `CoOrderBuilder` (grep `tests/`: zero). Tests touching related parts: `tests/Feature/CoDueDateTest.php` (passed 2/2), `CoListExpandRowTest` (archived to `tmerp_unused/test_CoListExpandRowTest_v1_2026-10-20.php`), `QtyMinimLumpSumTest.php`. Proposal (needs Jo's approval, not done): one WIN -> submit -> confirm test that cleans up its own data.
 Update 2026-10-18: `CoListExpandRowTest` no longer relies on the old dummy CO; it builds its own CO and external cost through `tests/Support/WoFixture.php` and removes them in tearDown (1 passed on `--env=mockup`).
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.
