@@ -311,10 +311,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
         });
 
         Route::middleware('module:PROD')->group(function () {
-            Route::livewire('/production/wo', 'pages::production.wo-list')->name('production.wo.list');
-            Route::livewire('/production/wo/new', 'pages::production.wo-entry')->name('production.wo.new');
+            Route::redirect('/production/wo', '/v2/s/production-wo')->name('production.wo.list');
+            Route::redirect('/production/wo/new', '/v2/s/production-wo?new=1')->name('production.wo.new');
             Route::get('/production/wo/{wo}/print', fn (int $wo) => redirect('/v2/production/wo/'.$wo.'/print'))->name('production.wo.print')->where('wo', '[0-9]+');
-            Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
+            Route::get('/production/wo/{wo}', fn (int $wo) => redirect('/v2/s/production-wo?id='.$wo))->name('production.wo.entry')->where('wo', '[0-9]+');
             Route::get('/production/scrap-type', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-scrap-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-scrap-form?new=1' : '/v2/s/prod-scrap')))->name('production.scrap-type');
             Route::redirect('/production/process-rate', '/v2/s/production-process-rate')->name('production.process-rate');
             Route::get('/production/master-process', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-process-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-process-form?new=1' : '/v2/s/prod-process')))->name('production.master-process');

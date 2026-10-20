@@ -1,11 +1,11 @@
 <?php
 
 /* REMARK
- * Tujuan       : Induk dua sheet Target Rate (qty per jam) default per Produk + Part + Proses + Mesin / Pegawai: dipakai WO Generation dan tombol "refill" di Bill of Process WO Detail, selalu bisa ditimpa manual per WO. Turunan hanya menyebut model, kolom sumber daya, dan slug.
+ * Tujuan       : Induk dua sheet Target Rate (qty per jam) default per Produk + Part + Proses + Mesin / Pegawai: dipakai WO Generation, selalu bisa ditimpa manual per WO. Turunan hanya menyebut model, kolom sumber daya, dan slug.
  * Sumber hulu  : prod_part_process_machine_rate / prod_part_process_employee_rate (tm2mst), master produk, proses, mesin, pegawai; pindahan layar v1 pages::production.process-rate.
  * Input        : sel yang berubah (produk, part, proses, mesin / pegawai, target, aktif).
  * Output       : baris rate tersimpan; target wajib >= 0,01; baris tidak dihapus, cukup dinonaktifkan.
- * Dipakai oleh : layar v2 production-process-rate (tab Mesin dan Pegawai), WoGenerationService::refillTargetDefault.
+ * Dipakai oleh : layar v2 production-process-rate (tab Mesin dan Pegawai), WoGenerationService.
  * Status       : Aktif (T9 pindahan v1, 2026-10-20).
  */
 
@@ -42,7 +42,7 @@ abstract class ProcessRateLookup extends DbLookup
 
     public function guide(): ?string
     {
-        return 'Default target per Product + Part + Process + resource — used by WO Generation and the refill button in the Work Order Bill of Process; it can always be overridden by hand per WO.';
+        return 'Default target per Product + Part + Process + resource — used by WO Generation; it can always be overridden by hand per WO.';
     }
 
     public function columns(): array

@@ -1,5 +1,5 @@
 {{-- REMARK
-Tujuan       : Layar Work Order PPIC: grid, picker Create Work Order, dan Form WO berupa accordion (Master Card, Bill of Process, Bill of Material, Simulation, QUE).
+Tujuan       : Layar Work Order PPIC: grid, picker Create Work Order, dan Form WO berupa accordion (Master Card, Bill of Process, Bill of Material, Simulation, QUE); tab Bill of Process memuat kartu Execution dan tab Bill of Material kartu Material substitution (partial wo-execution dan wo-substitution, pindahan fitur v1).
 Sumber hulu  : Ppic::workOrder/masterCard/bomSheet/simulation, prd_wo*, Master Card otomatis dari Inquiry + ProDev.
 Input        : Query ?id= (WO), ?new=1 (picker), ?open= atau ?tab= (bagian terbuka), ?layout=tabs, ?extras=1 (kartu angka + legenda Gantt di Simulation, mati secara default).
 Output       : Tampilan; aksi lewat rute v2.ppic.* (target, reorder, earliest, bom-cells, queue-move, process, apply, delete). Sheet BOP dan BOM: toolbar hanya ADD / DELETE / RESET (tanpa Search dan hitung baris; DELETE aktif setelah nomor baris diklik; RESET = ambil ulang dari engine ProDev, hanya WO Draft), teks hitam lewat token DevLib (tanpa kelas lokal). Urutan BOP dan Priority dari form ini tertunda sampai PROCESS; Earliest start = lantai waktu engine. Kolom Start dan Stop editable: Start menggeser operasi lewat engine dampak (pending), Stop mengubah target per jam (Run h mengikuti). Live Schedule kini menu sendiri (production-live).
@@ -299,6 +299,7 @@ Status       : Aktif di mockup (ddt*). Simulation: strip ML (x-dl::suggestion-st
                 'status' => raw($o['plan_status'] === 'DRAFT' ? 'Draft' : $o['task_status']), 'gates' => raw(implode(' / ', array_map(fn ($x) => $gateText[$x] ?? $x, $o['gates']))),
                 'out' => raw($o['progress'].'% · '.Locale::number($o['good'], 0))], $ops)" />
         @endif
+        @include('v2.partials.wo-execution', ['wo' => $wo, 'ops' => $ops, 'src' => $src])
         @php $woHtml['bop'] = new \Illuminate\Support\HtmlString(ob_get_clean()); @endphp
         @php ob_start(); @endphp
         @php
@@ -355,6 +356,7 @@ Status       : Aktif di mockup (ddt*). Simulation: strip ML (x-dl::suggestion-st
                     'onhand' => $m['onhand'], 'available' => $m['available'], 'release' => Locale::decimal($m['release'], 2), 'purchase' => Locale::decimal($m['purchase'], 2)], $bomRows)" />
         @endif
     </x-dl::card>
+        @include('v2.partials.wo-substitution', ['wo' => $wo, 'src' => $src])
         @php $woHtml['bom'] = new \Illuminate\Support\HtmlString(ob_get_clean()); @endphp
     @php $queue = Ppic::queue($wo->wo_id); ob_start(); @endphp
         <x-dl::queue-board :processes="$queue['processes']" :machines="$queue['machines']" :rows="$queue['rows']" :process="$queue['process']" :machine="$queue['machine']" :suggested="$queue['suggested'] ?? false" empty="Nothing is queued on this machine." />

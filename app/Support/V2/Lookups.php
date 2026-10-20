@@ -43,7 +43,7 @@ final class Lookups
             'columns' => ['material_name' => 'Item Name', 'material_code' => 'Code', 'uom_purchase' => 'Unit'],
             'search' => fn (string $q) => self::materials()->where(fn ($w) => $w->where('material_name', 'like', "%{$q}%")->orWhere('material_code', 'like', "%{$q}%"))
                 ->orderBy('material_name')->limit(50)->get(),
-            'find' => fn ($v) => self::materials()->where('material_id', (int) $v)->first()]);
+            'find' => fn ($v) => self::materials()->where('material_id', (int) $v)->first()]); Lookup::define('wo_substitute_material', ['key' => 'material_id', 'label' => 'label', 'source' => 'tm2mst.mat_raw (activate = 1)', 'columns' => ['material_name' => 'Item Name', 'material_code' => 'Code'], 'search' => fn (string $q) => self::woMaterials()->where(fn ($w) => $w->where('material_name', 'like', "%{$q}%")->orWhere('material_code', 'like', "%{$q}%"))->orderBy('material_name')->limit(15)->get(), 'find' => fn ($v) => self::woMaterials()->where('material_id', (int) $v)->first()]); Lookup::define('subcon_supplier', ['key' => 'id_supplier', 'label' => 'label', 'source' => 'tm2mst.sup_supplier (activate = 1, is_subcon = 1)', 'columns' => ['supplier_name' => 'Supplier', 'supplier_code' => 'Code'], 'search' => fn (string $q) => self::subconSuppliers()->where(fn ($w) => $w->where('supplier_name', 'like', "%{$q}%")->orWhere('supplier_code', 'like', "%{$q}%"))->orderBy('supplier_name')->limit(8)->get(), 'find' => fn ($v) => self::subconSuppliers()->where('id_supplier', (int) $v)->first()]);
 
         // Item stok semua kelas (form Batch): memilih item juga mengisi Class (RM / SFG / FG) lewat fill.
         Lookup::define('stock_item', ['key' => 'item_code', 'label' => 'label', 'source' => 'tm2mst.mat_raw + tm2mst.prod_part + tm2mst.prod_product (activate = 1)',
@@ -148,5 +148,17 @@ final class Lookups
         $r = $q->first(['id_village', 'id_district', 'id_city', 'full_label', 'postal_code']);
 
         return $r ? (array) $r + ['area' => $v, 'level' => $m[1], 'id' => (int) $m[2]] : null;
+    }
+
+    // Bahan pengganti pada substitusi Work Order: semua mat_raw aktif (sama dengan v1 wo-entry), bukan hanya yang confirmed.
+    private static function woMaterials()
+    {
+        return DB::connection('tm2mst')->table('mat_raw')->where('activate', 1)->select('material_id', 'material_code', 'material_name', DB::raw("CONCAT(material_code, ' · ', material_name) as label"));
+    }
+
+    // Vendor subkontrak (supplier berstatus is_subcon, aktif).
+    private static function subconSuppliers()
+    {
+        return DB::connection('tm2mst')->table('sup_supplier')->where('activate', 1)->where('is_subcon', 1)->select('id_supplier', 'supplier_code', 'supplier_name', DB::raw("CONCAT(supplier_code, ' · ', supplier_name) as label"));
     }
 }

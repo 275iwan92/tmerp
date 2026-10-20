@@ -2,12 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Prd\PrdWoOperation;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sys\SecUser;
 use App\Services\Scheduling\RateBandResolver;
 use App\Services\Scheduling\WoGenerationService;
-use Livewire\Livewire;
 use Tests\Support\WoFixture;
 use Tests\TestCase;
 
@@ -64,45 +62,6 @@ class ProductionWoGenerationTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
         app(WoGenerationService::class)->generateFromDelivery(CoOrderDelivery::findOrFail($wo->source_delivery_id));
-    }
-
-    // Picklist Plan Delivery = modal di WO Detail (production.wo.new); delivery yang sudah melahirkan WO tak boleh muncul lagi.
-    public function test_delivery_picklist_modal_excludes_already_generated_delivery(): void
-    {
-        $this->actingAs($this->admin());
-        $wo = $this->seedWo('GEN3');
-        $open = $this->seedChain('GEN3B');
-
-        $html = Livewire::test('pages::production.wo-entry')->call('openDeliveryModal')->html();
-
-        $this->assertStringNotContainsString('pickPlanDelivery('.$wo->source_delivery_id.')', $html);
-        $this->assertStringContainsString('pickPlanDelivery('.$open['delivery_id'].')', $html);
-    }
-
-    public function test_screen2_bill_of_process_is_editable_while_draft(): void
-    {
-        $this->actingAs($this->admin());
-        $wo = $this->seedWo('GEN4');
-        $this->assertSame('DRAFT', $wo->wo_status);
-
-        $test = Livewire::test('pages::production.wo-entry', ['wo' => $wo->wo_id])
-            ->assertSee('Bill of Material')
-            ->assertSee('Tambah Proses')
-            ->call('addProcessRow');
-
-        $newOp = PrdWoOperation::where('wo_id', $wo->wo_id)->orderByDesc('operation_id')->first();
-        $test->call('updateOperationField', $newOp->operation_id, 'process_name', 'Cetak');
-        $newOp->refresh();
-        $this->assertSame('Cetak', $newOp->process_name);
-
-        // Mesin OFF-02 punya rate 6000/jam untuk produk + bagian fixture ini.
-        $test->call('updateOperationField', $newOp->operation_id, 'machine_id', $this->fxMachineId())
-            ->call('refillTargetDefault', $newOp->operation_id);
-        $newOp->refresh();
-        $this->assertEquals(6000, (float) $newOp->rate_band_value);
-
-        $test->call('removeProcessRow', $newOp->operation_id);
-        $this->assertNull(PrdWoOperation::find($newOp->operation_id));
     }
 
     public function test_wo_print_form_renders_bop_and_bom(): void

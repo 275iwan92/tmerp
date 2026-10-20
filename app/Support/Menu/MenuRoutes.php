@@ -177,12 +177,12 @@ final class MenuRoutes
             'INV_RM_ITEM5' => route('v2.screen', 'approval-stock'),
             'INV_FG_ITEM5' => route('v2.screen', 'approval-stock'),
             'INV_SFG_ITEM5' => route('v2.screen', 'approval-stock'),
-            'PROD_WO_LIST' => route('production.wo.list'),
+            'PROD_WO_LIST' => route('v2.screen', 'production-wo'),
             'PROD_MPS' => route('v2.screen', 'production-scheduling'),
             // Production Output (F15) belum punya layar sendiri -- catat output
             // per task dari WO Detail (masuk lewat Worklist WO), lihat
             // wo-entry.blade.php "Catat Output". Menu ini cuma pintu masuk.
-            'PROD_OUTPUT' => route('production.wo.list'),
+            'PROD_OUTPUT' => route('v2.screen', 'production-wo'),
             'PROD_PROCESS_RATE' => route('v2.screen', 'production-process-rate'),
             'PROD_MTS_FORECAST' => route('v2.screen', 'demand-forecast'),
             'PROD_SHIFT_ROSTER' => route('v2.screen', 'hrm-roster'),
