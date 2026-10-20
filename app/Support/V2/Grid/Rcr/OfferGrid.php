@@ -8,8 +8,15 @@ use App\Models\Hrr\CndCandidate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Offering (v1: recruitment.offer.list -> offer.entry per LAMARAN). Baris = lamaran tahap OFFERING atau yang sudah punya
-// penawaran, supaya {id} = id lamaran seperti route v1. Nilai gaji sengaja tidak ditampilkan di grid.
+/*
+ * REMARK
+ * Tujuan       : Grid Offering: lamaran tahap OFFERING atau yang sudah punya penawaran (baris = lamaran, {id} = id lamaran); Open membuka form v2 hrm-rcr-offer-form. Nilai gaji sengaja tidak ditampilkan di grid; penawaran pertama dibuat dari form (tanpa + New Record).
+ * Sumber hulu  : tm2hrr.app_application + app_offer + cnd_candidate + vac_vacancy.
+ * Input        : Pencarian, filter Vacancy / Offer Status, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu HRM > Recruitment (v2:hrm-rcr-offer), layar hrm-rcr-offer-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::recruitment.offer.list dan entry sudah dipindah ke tmerp_unused (aturan D.25, T7m HRM).
+ */
 class OfferGrid extends RcrGrid
 {
     private const OFFER_TONES = ['DRAFT' => 'neutral', 'PENDING_APPROVAL' => 'warn', 'APPROVED' => 'info', 'SENT' => 'info',
@@ -27,7 +34,7 @@ class OfferGrid extends RcrGrid
 
     public function openUrl(): ?string
     {
-        return $this->routeUrl('hrm.recruitment.offer.entry', 'application');
+        return route('v2.screen', 'hrm-rcr-offer-form').'?application={id}';
     }
 
     public function newUrl(): ?string

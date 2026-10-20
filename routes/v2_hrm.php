@@ -2,16 +2,17 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) provisioning pegawai baru (hrm-rcr-provision-form) jadwal interview (hrm-rcr-interview-form) dan permohonan tenaga kerja (hrm-rcr-requisition-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService dan Recruitment\InterviewScheduleService dan Recruitment\RequisitionService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) provisioning pegawai baru (hrm-rcr-provision-form) jadwal interview (hrm-rcr-interview-form) permohonan tenaga kerja (hrm-rcr-requisition-form) dan penawaran kerja (hrm-rcr-offer-form).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService dan Recruitment\InterviewScheduleService dan Recruitment\RequisitionService dan Recruitment\OfferService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form, hrm-rcr-provision-form, hrm-rcr-interview-form dan hrm-rcr-requisition-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result, recruitment.hire-provision, recruitment.interview-schedule dan recruitment.requisition (list, entry).
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form, hrm-rcr-provision-form, hrm-rcr-interview-form, hrm-rcr-requisition-form dan hrm-rcr-offer-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result, recruitment.hire-provision, recruitment.interview-schedule dan recruitment.requisition (list, entry) dan recruitment.offer (list, entry).
  */
 
 use App\Models\Hrr\AppApplication;
 use App\Models\Hrr\AppInterviewSchedule;
+use App\Models\Hrr\AppOffer;
 use App\Models\Hrr\CndCandidate;
 use App\Models\Hrr\RcrRequisition;
 use App\Models\Hrr\VacVacancy;
@@ -29,6 +30,7 @@ use App\Services\Payroll\PayrollAccess;
 use App\Services\Recruitment\AssessmentResultService;
 use App\Services\Recruitment\HireProvisionService;
 use App\Services\Recruitment\InterviewScheduleService;
+use App\Services\Recruitment\OfferService;
 use App\Services\Recruitment\RecruitmentInviteService;
 use App\Services\Recruitment\RecruitmentVacancyService;
 use App\Services\Recruitment\RequisitionService;
@@ -247,5 +249,42 @@ Route::prefix('v2/hrm/requisition')->name('v2.hrm.requisition.')->middleware('mo
         }
 
         return redirect($form.'?id='.$req->id_requisition)->with('v2_flash', $msg);
+    })->name('save');
+});
+
+// Penawaran kerja per lamaran: Save draft, Submit for Approval, Approve / Reject (approver yang ditugaskan), Send, Candidate Accepted / Declined, Revise. Aturan = OfferService + RecruitmentApprovalService (dipindah dari v1 pages::recruitment.offer).
+Route::prefix('v2/hrm/offer')->name('v2.hrm.offer.')->middleware('module:HRM')->group(function () {
+    Route::post('/save', function (Request $r, OfferService $svc) {
+        $user = Auth::user();
+        $app = AppApplication::findOrFail((int) $r->input('application'));
+        $o = $r->filled('id') ? AppOffer::where('id_application', $app->id_application)->findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        abort_unless(in_array($action, ['save', 'submit', 'approve', 'reject', 'send', 'accepted', 'declined', 'revise'], true), 422);
+        abort_if(! $o && ! in_array($action, ['save', 'submit'], true), 422);
+
+        if (in_array($action, ['save', 'submit'], true)) {
+            $in = $r->only(['employment_type', 'start_date']) + ['proposed_salary' => filled($r->input('proposed_salary')) ? Locale::input($r->input('proposed_salary')) : null];
+            $o = $svc->save($app, $o, $in, $user);
+            if ($action === 'submit') {
+                try {
+                    $svc->submit($o);
+                } catch (ValidationException $e) {
+                    return redirect(route('v2.screen', 'hrm-rcr-offer-form').'?application='.$app->id_application)->withErrors($e->errors())->with('v2_flash', t('Draft saved.'));
+                }
+            }
+            $msg = t($action === 'submit' ? 'Offer submitted for approval.' : 'Draft saved.');
+        } else {
+            match ($action) {
+                'approve' => $svc->decide($o, $user, 'APPROVED'),
+                'reject' => $svc->decide($o, $user, 'REJECTED'),
+                'send' => $svc->send($o),
+                'accepted' => $svc->accepted($o),
+                'declined' => $svc->declined($o),
+                'revise' => $svc->revise($o, $user),
+            };
+            $msg = t(['approve' => 'Offer approved.', 'reject' => 'Offer rejected.', 'send' => 'Offer marked as sent to the candidate.', 'accepted' => 'Candidate accepted the offer.', 'declined' => 'Candidate declined the offer.', 'revise' => 'New offer round started.'][$action]);
+        }
+
+        return redirect(route('v2.screen', 'hrm-rcr-offer-form').'?application='.$app->id_application)->with('v2_flash', $msg);
     })->name('save');
 });

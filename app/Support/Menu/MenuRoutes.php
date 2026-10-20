@@ -203,7 +203,6 @@ final class MenuRoutes
             // simulasi) -- lihat docs/recruitment_state.yaml.
             'HRM_RCR_REVIEW' => route('hrm.recruitment.candidate-review.list'),
             'HRM_RCR_PIPELINE' => route('hrm.recruitment.pipeline-board'),
-            'HRM_RCR_OFFER' => route('hrm.recruitment.offer.list'),
             'HRM_RCR_SYNCLOG' => route('v2.screen', 'hrm-rcr-sync-log'),
             // 2026-08-30: portal simulasi internal digantikan Portal Rekrutmen
             // Profesional publik (URL sama, di luar auth) -- iframe tab ini
