@@ -9,8 +9,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Master Gaji & Pajak Pegawai (v1: pages::hrm.payroll-employee-salary). Baris = pegawai aktif; setelan gaji di tm2pyr
-// (terenkripsi, dibuka lewat cast model) dicocokkan di PHP (lintas database).
+/*
+ * REMARK
+ * Tujuan       : Grid Master Employee Salary & Tax: pegawai aktif dengan setelan gaji aktif (nominal hanya untuk yang berhak payroll atas pegawai itu); Open membuka form v2 hrm-salary-form. Tanpa + New Record (baris = pegawai aktif).
+ * Sumber hulu  : tm2mst.emp_employee + tm2pyr.pyr_employee_salary (terenkripsi lewat cast model), dicocokkan di PHP (lintas database).
+ * Input        : Pencarian, filter PTKP / Salary Setup, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form), unduhan Excel untuk GM / Direksi.
+ * Dipakai oleh : Menu HRM > Payroll (v2:hrm-salary), layar hrm-salary-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::hrm.payroll-employee-salary sudah dipindah ke tmerp_unused (aturan D.25, T8 Payroll).
+ */
 class SalaryGrid extends HrmGrid
 {
     private array $salaries = [];
@@ -35,9 +42,9 @@ class SalaryGrid extends HrmGrid
         return 'Payroll';
     }
 
-    protected function v1Route(): ?string
+    public function openUrl(): ?string
     {
-        return 'hrm.payroll.employee-salary';
+        return route('v2.screen', 'hrm-salary-form').'?id={id}';
     }
 
     protected function canCreate(): bool

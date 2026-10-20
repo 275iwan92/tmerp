@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-20 09:39",
+    "generated": "2026-10-20 09:42",
     "database": "ddtsys",
     "totals": {
         "objects": 175,
@@ -23,10 +23,10 @@
         "databases": 10,
         "models": 380,
         "migrations": 645,
-        "tests": 240,
-        "dictionary": 16542,
+        "tests": 241,
+        "dictionary": 16611,
         "languages": 4,
-        "commits": 1479,
+        "commits": 1480,
         "since": "2026-08-06"
     },
     "modules": [
@@ -143,13 +143,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 101,
+            "commits": 102,
             "days": 5,
             "last": "2026-10-20",
-            "screens": 134,
+            "screens": 136,
             "objects": 176,
             "engines": 2,
-            "tests": 35
+            "tests": 36
         },
         {
             "key": "jo",
@@ -245,7 +245,7 @@
         },
         {
             "date": "2026-10-20",
-            "iwan": 2,
+            "iwan": 3,
             "jo": 0,
             "other": 9
         }
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W43",
-            "iwan": 10,
+            "iwan": 11,
             "jo": 0,
             "other": 37
         }
@@ -2709,8 +2709,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-20",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",

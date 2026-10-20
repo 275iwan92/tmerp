@@ -2,12 +2,12 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) provisioning pegawai baru (hrm-rcr-provision-form) jadwal interview (hrm-rcr-interview-form) permohonan tenaga kerja (hrm-rcr-requisition-form) dan penawaran kerja (hrm-rcr-offer-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService dan Recruitment\InterviewScheduleService dan Recruitment\RequisitionService dan Recruitment\OfferService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) provisioning pegawai baru (hrm-rcr-provision-form) jadwal interview (hrm-rcr-interview-form) permohonan tenaga kerja (hrm-rcr-requisition-form) penawaran kerja (hrm-rcr-offer-form) dan master gaji pegawai (hrm-salary-form).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService dan Recruitment\InterviewScheduleService dan Recruitment\RequisitionService dan Recruitment\OfferService dan Payroll\EmployeeSalarySettingService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form, hrm-rcr-provision-form, hrm-rcr-interview-form, hrm-rcr-requisition-form dan hrm-rcr-offer-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result, recruitment.hire-provision, recruitment.interview-schedule dan recruitment.requisition (list, entry) dan recruitment.offer (list, entry).
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form, hrm-rcr-provision-form, hrm-rcr-interview-form, hrm-rcr-requisition-form, hrm-rcr-offer-form dan hrm-salary-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result, recruitment.hire-provision, recruitment.interview-schedule dan recruitment.requisition (list, entry) dan recruitment.offer (list, entry) dan payroll-employee-salary.
  */
 
 use App\Models\Hrr\AppApplication;
@@ -19,6 +19,7 @@ use App\Models\Hrr\VacVacancy;
 use App\Models\Master\AttDailyStatus;
 use App\Models\Master\AttMobileGpsLog;
 use App\Models\Master\EmpCorrectionRequest;
+use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpLeaveRequest;
 use App\Models\Mnt\MntDocument;
 use App\Services\Hrm\AttendanceOverrideService;
@@ -26,6 +27,7 @@ use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\GpsApprovalService;
 use App\Services\Hrm\LeaveRequestService;
 use App\Services\Maintenance\MntDocumentService;
+use App\Services\Payroll\EmployeeSalarySettingService;
 use App\Services\Payroll\PayrollAccess;
 use App\Services\Recruitment\AssessmentResultService;
 use App\Services\Recruitment\HireProvisionService;
@@ -286,5 +288,20 @@ Route::prefix('v2/hrm/offer')->name('v2.hrm.offer.')->middleware('module:HRM')->
         }
 
         return redirect(route('v2.screen', 'hrm-rcr-offer-form').'?application='.$app->id_application)->with('v2_flash', $msg);
+    })->name('save');
+});
+
+// Master gaji dan pajak pegawai: Save = versi baru (versi lama ditutup), hanya user berhak payroll atas pegawai itu. Aturan = EmployeeSalarySettingService (dipindah dari v1 pages::hrm.payroll-employee-salary).
+Route::prefix('v2/hrm/salary')->name('v2.hrm.salary.')->middleware(['module:HRM', 'payroll:process'])->group(function () {
+    Route::post('/save', function (Request $r, EmployeeSalarySettingService $svc) {
+        $e = EmpEmployee::findOrFail((int) $r->input('id'));
+        $num = fn (string $k) => filled($r->input($k)) ? Locale::input($r->input($k)) : null;
+        $in = ['ptkp_status' => $r->input('ptkp_status'), 'bpjs_active' => $r->boolean('bpjs_active'), 'pph21_active' => $r->boolean('pph21_active')];
+        foreach (['basic_salary_monthly', 'tj_keahlian_monthly', 'tj_loyalitas_monthly', 'tj_prestasi_monthly', 'bonus_pagi_amount', 'bonus_hadir_amount'] as $k) {
+            $in[$k] = $num($k);
+        }
+        $saved = $svc->save($e, $in, Auth::user());
+
+        return redirect(route('v2.screen', 'hrm-salary-form').'?id='.$e->employee_id)->with('v2_flash', t($saved ? 'Salary and tax setting saved as a new version.' : 'No changes to save.'));
     })->name('save');
 });

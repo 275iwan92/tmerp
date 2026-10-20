@@ -247,20 +247,16 @@
     "steps": [
       {"en": "Search by name or employee code, or use the status boxes (Not set, BPJS active, PPh21 active) and the PTKP and Salary Setup filters.", "id": "Cari berdasarkan nama atau kode karyawan, atau pakai kotak status (Not set, BPJS active, PPh21 active) dan filter PTKP serta Salary Setup."},
       {"en": "Find employees marked Not set. Payroll marks them as anomalies until a salary is set.", "id": "Cari karyawan berstatus Not set. Perhitungan gaji menandai mereka sebagai anomali sampai gajinya diatur."},
-      {"en": "Click Atur Gaji & Pajak on the row. You need payroll authority; HR Officers without it cannot open it, except for security guards.", "id": "Klik Atur Gaji & Pajak pada baris. Anda perlu hak payroll; HR Officer tanpa hak itu tidak bisa membukanya, kecuali untuk satpam."},
-      {"en": "Fill the salary components, choose the PTKP status and tick the BPJS and PPh21 switches that apply.", "id": "Isi komponen gaji, pilih status PTKP dan centang saklar BPJS serta PPh21 yang berlaku."},
-      {"en": "Click Save. The old setting is closed with an end date and a new one is created, so the salary history is kept.", "id": "Klik Save. Pengaturan lama ditutup dengan tanggal akhir dan dibuat yang baru, sehingga riwayat gaji tetap tersimpan."}
+      {"en": "Open the row to see the Salary & Tax Form. You need payroll authority over that employee; HR Officers see only non-staff employees.", "id": "Buka baris untuk melihat Salary & Tax Form. Anda perlu hak payroll atas karyawan itu; HR Officer hanya melihat karyawan non-staff."},
+      {"en": "Fill the salary components, choose the PTKP status from the list and tick the BPJS and PPh21 switches that apply. PTKP is required when PPh21 is ticked.", "id": "Isi komponen gaji, pilih status PTKP dari daftar dan centang saklar BPJS serta PPh21 yang berlaku. PTKP wajib bila PPh21 dicentang."},
+      {"en": "Click Save. The old setting is closed with an end date and a new version is created, so the salary history is kept (tab Salary history). Saving without any change creates nothing.", "id": "Klik Save. Pengaturan lama ditutup dengan tanggal akhir dan dibuat versi baru, sehingga riwayat gaji tetap tersimpan (tab Salary history). Menyimpan tanpa perubahan tidak membuat apa pun."}
     ],
     "fields": [
-      {"label": "Base Salary / Month (IDR) *", "en": "Monthly base salary. Required, 0 or more. Confidential.", "id": "Gaji pokok per bulan. Wajib, 0 atau lebih. Rahasia."},
-      {"label": "Skill Allowance / Month (IDR)", "en": "Monthly skill allowance. Default 0.", "id": "Tunjangan keahlian per bulan. Bawaan 0."},
-      {"label": "Loyalty Allowance / Month (IDR)", "en": "Monthly loyalty allowance. Default 0.", "id": "Tunjangan loyalitas per bulan. Bawaan 0."},
-      {"label": "Performance Allowance / Month (IDR)", "en": "Monthly performance allowance. Default 0.", "id": "Tunjangan prestasi per bulan. Bawaan 0."},
-      {"label": "Morning Bonus / Day (IDR)", "en": "Daily early-arrival bonus amount. Default 0.", "id": "Nominal bonus datang pagi per hari. Bawaan 0."},
-      {"label": "Attendance Bonus / Day (IDR)", "en": "Daily attendance bonus amount. Default 0.", "id": "Nominal bonus hadir per hari. Bawaan 0."},
-      {"label": "PTKP Status (required when PPh21 is enabled)", "en": "Non-taxable income status, from TK/0 to K/3. Required when Potong PPh21 is ticked.", "id": "Status PTKP, dari TK/0 sampai K/3. Wajib bila Potong PPh21 dicentang."},
-      {"label": "Deduct BPJS (JHT/JP/Kes)", "en": "Tick to deduct BPJS for this employee in payroll. Off by default; HR switches it on per employee.", "id": "Centang untuk memotong BPJS karyawan ini di perhitungan gaji. Awalnya mati; HR menyalakannya per karyawan."},
-      {"label": "Deduct PPh21 (TER)", "en": "Tick to deduct income tax PPh21 (TER method) for this employee. Off by default.", "id": "Centang untuk memotong PPh21 (metode TER) karyawan ini. Awalnya mati."}
+      {"label": "Base salary / month (IDR)", "en": "Monthly base salary. Required, 0 or more. Confidential.", "id": "Gaji pokok per bulan. Wajib, 0 atau lebih. Rahasia."},
+      {"label": "Skill, loyalty and performance allowance / month (IDR)", "en": "Monthly allowances. Default 0.", "id": "Tunjangan bulanan keahlian, loyalitas dan prestasi. Bawaan 0."},
+      {"label": "Morning bonus and Attendance bonus / day (IDR)", "en": "Daily bonus amounts. Default 0.", "id": "Nominal bonus per hari untuk datang pagi dan hadir. Bawaan 0."},
+      {"label": "PTKP status", "en": "Non-taxable income status, from TK/0 to K/3. Required when PPh21 is ticked.", "id": "Status PTKP, dari TK/0 sampai K/3. Wajib bila PPh21 dicentang."},
+      {"label": "Deduct BPJS and Deduct PPh21", "en": "Tick to deduct BPJS or PPh21 for this employee in payroll. Off by default; set per employee.", "id": "Centang untuk memotong BPJS atau PPh21 karyawan ini di perhitungan gaji. Bawaan mati; diatur per karyawan."}
     ]
   },
   {
