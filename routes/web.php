@@ -280,9 +280,9 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::get('/hrm/payroll/employee-bank', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-employee-form?id='.(int) $r->query('open').'&tab=bank' : '/v2/s/hrm-bank'))->name('hrm.payroll.employee-bank')->middleware('payroll:process');
             Route::get('/hrm/gps-approval', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-gps-form?id='.(int) $r->query('open') : '/v2/s/hrm-gps'))->name('hrm.gps-approval');
             Route::get('/hrm/payroll/batch-run', fn (Illuminate\Http\Request $r) => redirect($r->filled('open') ? '/v2/s/hrm-payroll-run-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/hrm-payroll-run-form?new=1' : '/v2/s/hrm-payroll-run')))->name('hrm.payroll.batch-run')->middleware('payroll:process');
-            Route::livewire('/hrm/payroll/payslip', 'pages::hrm.payroll-payslip-list')->name('hrm.payroll.payslip-list')->middleware('payroll:payslip');
-            Route::livewire('/hrm/payroll/payslip/print-all/{run}', 'pages::hrm.payroll-payslip-print-all')->name('hrm.payroll.payslip-print-all')->middleware('payroll:payslip')->where('run', '[0-9]+');
-            Route::livewire('/hrm/payroll/payslip/{payslip}/print', 'pages::hrm.payroll-payslip-print')->name('hrm.payroll.payslip-print')->middleware('payroll:payslip')->where('payslip', '[0-9]+');
+            Route::get('/hrm/payroll/payslip', fn () => redirect('/v2/s/hrm-payslip'))->name('hrm.payroll.payslip-list')->middleware('payroll:payslip');
+            Route::get('/hrm/payroll/payslip/print-all/{run}', fn (int $run) => redirect('/v2/hrm/payslip/print-all/'.$run))->name('hrm.payroll.payslip-print-all')->middleware('payroll:payslip')->where('run', '[0-9]+');
+            Route::get('/hrm/payroll/payslip/{payslip}/print', fn (int $payslip) => redirect('/v2/print/payslip/'.$payslip))->name('hrm.payroll.payslip-print')->middleware('payroll:payslip')->where('payslip', '[0-9]+');
             Route::livewire('/hrm/payroll/bank-transfer', 'pages::hrm.payroll-bank-transfer')->name('hrm.payroll.bank-transfer')->middleware('payroll:process');
 
             // Recruitment (L1-L9 minus L8, lihat docs/recruitment_state.yaml) --

@@ -47,6 +47,10 @@
         @if ($st === 'VERIFIED')
             <x-dl::button variant="primary" icon="fa-lock" label="Confirm (Lock Attendance)" type="submit" name="action" value="confirm" formnovalidate data-dl-confirm="{{ t('Lock the attendance of this period? It cannot be recalculated afterwards.') }}" />
         @endif
+        @if (! $new && $st !== 'DRAFT')
+            {{-- Slip periode ini dibuat saat perhitungan; cetak massal hanya untuk slip dengan kanal Print menyala. --}}
+            <x-dl::button variant="secondary" icon="fa-print" label="Print all payslips" :href="route('v2.hrm.payslip.printall', $r->id_run)" />
+        @endif
         @if ($st === 'CONFIRMED')
             <x-dl::button variant="success" icon="fa-money-bill-transfer" label="Mark as Paid" type="submit" name="action" value="paid" formnovalidate data-dl-confirm="{{ t('Confirm that the payment has been executed (bank transfer/cash)?') }}" />
         @endif

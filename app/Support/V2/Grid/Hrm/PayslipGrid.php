@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Cetak & Kirim Slip Gaji (v1: pages::hrm.payroll-payslip-list). Semua slip periode yang sudah dihitung; buka = cetak slip.
+/*
+ * REMARK
+ * Tujuan       : Grid Print & Send Payslips: semua slip periode yang sudah dihitung (dalam cakupan payroll user) dengan kanal Print dan WhatsApp serta waktu cetak / kirim; Open membuka form v2 hrm-payslip-form (cetak satu slip dan toggle kanal). Slip dibuat oleh perhitungan periode, tanpa + New Record.
+ * Sumber hulu  : tm2pyr.pyr_payslip + pyr_payroll_run (nominal terenkripsi), tm2mst.emp_employee.
+ * Input        : Pencarian, filter Period / Department, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu HRM > Payroll (v2:hrm-payslip), layar hrm-payslip-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::hrm.payroll-payslip-list, print dan print-all sudah dipindah ke tmerp_unused (aturan D.25, T8 Payroll).
+ */
 class PayslipGrid extends HrmGrid
 {
     private array $employees = [];
@@ -35,11 +43,6 @@ class PayslipGrid extends HrmGrid
         return 'Payroll';
     }
 
-    protected function v1Route(): ?string
-    {
-        return 'hrm.payroll.payslip-list';
-    }
-
     protected function canCreate(): bool
     {
         return false;
@@ -47,7 +50,7 @@ class PayslipGrid extends HrmGrid
 
     public function openUrl(): ?string
     {
-        return str_replace('999999999', '{id}', route('hrm.payroll.payslip-print', ['payslip' => 999999999]));
+        return route('v2.screen', 'hrm-payslip-form').'?id={id}';
     }
 
     protected function models(): array
@@ -81,8 +84,8 @@ class PayslipGrid extends HrmGrid
             ['key' => 'period', 'label' => 'Period'],
             ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'net', 'label' => 'Net Salary', 'type' => 'money'],
-            ['key' => 'printed', 'label' => 'Printout', 'type' => 'badge', 'tones' => [t('Printed') => 'success', t('Not printed') => 'neutral']],
-            ['key' => 'wa', 'label' => 'Send WhatsApp', 'type' => 'badge', 'tones' => [t('Sent') => 'success', t('Not sent') => 'neutral']],
+            ['key' => 'printed', 'label' => 'Print channel', 'type' => 'badge', 'tones' => [t('Printed') => 'success', t('Waiting') => 'warn', t('Off') => 'neutral']],
+            ['key' => 'wa', 'label' => 'WhatsApp channel', 'type' => 'badge', 'tones' => [t('Sent') => 'success', t('Waiting') => 'warn', t('Off') => 'neutral']],
             ['key' => 'anomaly', 'label' => 'Anomaly', 'type' => 'badge', 'tones' => [t('Yes') => 'danger']],
         ];
     }
@@ -95,7 +98,9 @@ class PayslipGrid extends HrmGrid
         return [
             'period' => $run ? $run->period_type.' '.tf(':from to :to', ['from' => substr((string) $run->period_start, 0, 10), 'to' => substr((string) $run->period_end, 0, 10)]) : null,
             'name' => $e?->full_name, 'code' => $e?->employee_code, 'dept' => $e?->position?->department?->department_name,
-            'net' => (float) $m->total_gaji_bersih, 'printed' => t($m->print_flag ? 'Printed' : 'Not printed'), 'wa' => t($m->wa_flag ? 'Sent' : 'Not sent'),
+            'net' => (float) $m->total_gaji_bersih,
+            // Kanal: Off = tidak dipilih, Waiting = dipilih tapi belum dicetak / dikirim, Printed / Sent = sudah (ada stempel waktunya).
+            'printed' => t($m->print_flag ? ($m->printed_at ? 'Printed' : 'Waiting') : 'Off'), 'wa' => t($m->wa_flag ? ($m->wa_sent_at ? 'Sent' : 'Waiting') : 'Off'),
             'anomaly' => $m->has_anomaly ? t('Yes') : null,
         ];
     }
@@ -104,8 +109,8 @@ class PayslipGrid extends HrmGrid
     {
         return [
             ['label' => 'All slips'],
-            ['label' => 'Not printed', 'where' => ['printed' => t('Not printed')], 'tone' => 'warn'],
-            ['label' => 'WhatsApp not sent', 'where' => ['wa' => t('Not sent')], 'tone' => 'info'],
+            ['label' => 'Waiting to print', 'where' => ['printed' => t('Waiting')], 'tone' => 'warn'],
+            ['label' => 'WhatsApp waiting', 'where' => ['wa' => t('Waiting')], 'tone' => 'info'],
             ['label' => 'Anomaly', 'where' => ['anomaly' => t('Yes')], 'tone' => 'danger'],
         ];
     }

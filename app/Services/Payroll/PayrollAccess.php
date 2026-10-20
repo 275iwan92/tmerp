@@ -67,7 +67,7 @@ final class PayrollAccess
     // Layar v2 (slug) dan item menu yang masuk payroll. Layar lain selalu lolos.
     private const PROCESS_SCREENS = ['hrm-salary', 'hrm-salary-form', 'hrm-payroll-run', 'hrm-payroll-run-form', 'hrm-bank', 'hrm-bank-transfer', 'hrm-cash-roster'];
 
-    private const PAYSLIP_SCREENS = ['hrm-payslip'];
+    private const PAYSLIP_SCREENS = ['hrm-payslip', 'hrm-payslip-form'];
 
     private const PROCESS_MENU = ['HRM_PAYROLL_CALC', 'HRM_PAYROLL_BANKXFER', 'HRM_PAYROLL_CASHROSTER', 'HRM_PAYROLL_SALARY', 'HRM_PAYROLL_BANK'];
 

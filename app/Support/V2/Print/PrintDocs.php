@@ -45,7 +45,7 @@ final class PrintDocs
         'customer-complaint' => [CustomerComplaintPrint::class, 'crm-complaint', 'CCR'],
         'stock-transfer' => [StockTransferPrint::class, 'stock-transfer', 'TF'],
         'pick-list' => [PickListPrint::class, 'wh-pick-list', 'PK'],
-        'cash-roster' => [CashRosterPrint::class, 'hrm-cash-roster', null],
+        'cash-roster' => [CashRosterPrint::class, 'hrm-cash-roster', null], 'payslip' => [PayslipPrint::class, 'hrm-payslip-form', null],
     ];
 
     // Dokumen yang dicetak dari sumber yang sama (id sama): halaman cetak menampilkan tombol pindah di antara keduanya.

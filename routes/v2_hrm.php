@@ -2,12 +2,12 @@
 
 /*
  * REMARK
- * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) provisioning pegawai baru (hrm-rcr-provision-form) jadwal interview (hrm-rcr-interview-form) permohonan tenaga kerja (hrm-rcr-requisition-form) penawaran kerja (hrm-rcr-offer-form) master gaji pegawai (hrm-salary-form) dan siklus periode payroll (hrm-payroll-run-form).
- * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService dan Recruitment\InterviewScheduleService dan Recruitment\RequisitionService dan Recruitment\OfferService dan Payroll\EmployeeSalarySettingService dan Payroll\PayrollRunService (dan layanan HRM berikutnya).
+ * Tujuan       : Route layar HRM v2 yang menggantikan halaman v1: keputusan HR atas presensi GPS di luar radius (hrm-gps-form) atas pengajuan koreksi data pegawai (hrm-correction-form) dan atas pengajuan cuti / sakit / izin (hrm-leave-form), koreksi presensi harian (hrm-attendance-form, kartu Recalculate di hrm-attendance-upload) register SOP / WI perusahaan (hrm-sop-form) lowongan kerja (hrm-rcr-vacancy-form) undangan Talent Pool (rcr-talent-pool-form) hasil Psikotes / Interview (hrm-rcr-assessment-form) provisioning pegawai baru (hrm-rcr-provision-form) jadwal interview (hrm-rcr-interview-form) permohonan tenaga kerja (hrm-rcr-requisition-form) penawaran kerja (hrm-rcr-offer-form) master gaji pegawai (hrm-salary-form) siklus periode payroll (hrm-payroll-run-form) dan slip gaji (hrm-payslip-form, cetak massal).
+ * Sumber hulu  : App\Services\Hrm\GpsApprovalService, CorrectionRequestService dan LeaveRequestService, AttendanceOverrideService dan Maintenance\MntDocumentService dan Recruitment\RecruitmentVacancyService dan Recruitment\RecruitmentInviteService dan Recruitment\AssessmentResultService dan Recruitment\HireProvisionService dan Recruitment\InterviewScheduleService dan Recruitment\RequisitionService dan Recruitment\OfferService dan Payroll\EmployeeSalarySettingService dan Payroll\PayrollRunService dan Payroll\PayslipService (dan layanan HRM berikutnya).
  * Input        : POST form (id, action approve atau reject, _reason dari dialog Reject).
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors.
- * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form, hrm-rcr-provision-form, hrm-rcr-interview-form, hrm-rcr-requisition-form, hrm-rcr-offer-form, hrm-salary-form dan hrm-payroll-run-form.
- * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result, recruitment.hire-provision, recruitment.interview-schedule dan recruitment.requisition (list, entry) dan recruitment.offer (list, entry), payroll-employee-salary dan payroll-batch-run.
+ * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar hrm-gps-form, hrm-correction-form, hrm-leave-form, hrm-attendance-form, hrm-attendance-upload, hrm-sop-form, hrm-rcr-vacancy-form, rcr-talent-pool-form, hrm-rcr-assessment-form, hrm-rcr-provision-form, hrm-rcr-interview-form, hrm-rcr-requisition-form, hrm-rcr-offer-form, hrm-salary-form, hrm-payroll-run-form dan hrm-payslip-form.
+ * Status       : Aktif. Dibuat 2026-10-19 (T7 HRM, Jo): menggantikan halaman v1 pages::hrm.gps-approval, correction-requests, leave-requests, attendance-daily, sop-documents, recruitment.vacancy, recruitment.talent-pool, recruitment.assessment-result, recruitment.hire-provision, recruitment.interview-schedule dan recruitment.requisition (list, entry) dan recruitment.offer (list, entry), payroll-employee-salary, payroll-batch-run dan payroll-payslip (list, print, print-all).
  */
 
 use App\Models\Hrr\AppApplication;
@@ -23,6 +23,7 @@ use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpLeaveRequest;
 use App\Models\Mnt\MntDocument;
 use App\Models\Pyr\PyrPayrollRun;
+use App\Models\Pyr\PyrPayslip;
 use App\Services\Hrm\AttendanceOverrideService;
 use App\Services\Hrm\CorrectionRequestService;
 use App\Services\Hrm\GpsApprovalService;
@@ -31,6 +32,7 @@ use App\Services\Maintenance\MntDocumentService;
 use App\Services\Payroll\EmployeeSalarySettingService;
 use App\Services\Payroll\PayrollAccess;
 use App\Services\Payroll\PayrollRunService;
+use App\Services\Payroll\PayslipService;
 use App\Services\Recruitment\AssessmentResultService;
 use App\Services\Recruitment\HireProvisionService;
 use App\Services\Recruitment\InterviewScheduleService;
@@ -38,6 +40,8 @@ use App\Services\Recruitment\OfferService;
 use App\Services\Recruitment\RecruitmentInviteService;
 use App\Services\Recruitment\RecruitmentVacancyService;
 use App\Services\Recruitment\RequisitionService;
+use App\Support\V2\Print\PayslipPrint;
+use App\Support\V2\Print\PrintDocs;
 use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -340,4 +344,30 @@ Route::prefix('v2/hrm/payroll-run')->name('v2.hrm.payrollrun.')->middleware(['mo
 
         return redirect(route('v2.screen', 'hrm-payroll-run-form').'?id='.$run->id_run)->with('v2_flash', $msg);
     })->name('save');
+});
+
+// Slip gaji: toggle kanal (print atau wa) per slip, cetak massal satu periode dan tombol Mark as printed. Aturan = PayslipService; lembar slip = PayslipPrint (dipindah dari v1 pages::hrm.payroll-payslip-*).
+Route::prefix('v2/hrm/payslip')->name('v2.hrm.payslip.')->middleware(['module:HRM', 'payroll:payslip'])->group(function () {
+    Route::post('/channel', function (Request $r, PayslipService $svc) {
+        $p = PyrPayslip::findOrFail((int) $r->input('id'));
+        $svc->toggleChannel($p, (string) $r->input('channel'), Auth::user());
+
+        return redirect(route('v2.screen', 'hrm-payslip-form').'?id='.$p->id_payslip)->with('v2_flash', t('Payslip channel updated.'));
+    })->name('channel');
+
+    // Cetak massal: satu x-dl::print-doc per slip yang print_flag-nya menyala (bukan anomali, dalam cakupan user); tanpa stempel sampai Mark as printed.
+    Route::get('/print-all/{run}', function (int $run) {
+        $run = PyrPayrollRun::findOrFail($run);
+        abort_unless(in_array($run->run_status, PayslipService::RUN_STATUSES, true), 404);
+        PrintDocs::boot();
+        $docs = PayslipService::printable($run, Auth::user())->map(fn (PyrPayslip $p) => PayslipPrint::load($p->id_payslip, ['bulk' => true, 'printedBy' => PrintDocs::me()]))->all();
+
+        return view('v2.print-payslips', ['run' => $run, 'docs' => $docs, 'back' => route('v2.screen', 'hrm-payslip')]);
+    })->whereNumber('run')->name('printall');
+
+    Route::post('/print-all/{run}/printed', function (int $run, PayslipService $svc) {
+        $n = $svc->markRunPrinted(PyrPayrollRun::findOrFail($run), Auth::user());
+
+        return redirect(route('v2.screen', 'hrm-payslip'))->with('v2_flash', tf(':n payslips marked as printed.', ['n' => $n]));
+    })->whereNumber('run')->name('printed');
 });

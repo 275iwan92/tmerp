@@ -322,18 +322,18 @@
     },
     "keywords": "slip gaji, payslip, cetak slip, kirim slip, whatsapp, wa, print slip, gaji bersih, anomali slip",
     "steps": [
-      {"en": "Pick the period in the period list. Only periods already calculated are offered.", "id": "Pilih periode di daftar periode. Hanya periode yang sudah dihitung yang tersedia."},
-      {"en": "Search by employee name or code, or use the status boxes (Not printed, WhatsApp not sent, Anomaly).", "id": "Cari berdasarkan nama atau kode karyawan, atau pakai kotak status (Not printed, WhatsApp not sent, Anomaly)."},
-      {"en": "Tick or untick the Printout and Kirim WA marks per slip. WhatsApp can only be ticked when the employee has a phone number.", "id": "Centang atau hilangkan centang Printout dan Kirim WA pada tiap slip. WhatsApp hanya bisa dicentang bila karyawan punya nomor HP."},
-      {"en": "Click Print All to print all slips that are ticked for printing and have no anomaly. The button shows how many.", "id": "Klik Print All untuk mencetak semua slip yang dicentang cetak dan tanpa anomali. Tombol menunjukkan jumlahnya."},
-      {"en": "Or open one row to print that single slip. Opening a slip stamps its print time.", "id": "Atau buka satu baris untuk mencetak slip itu saja. Membuka slip mencatat waktu cetaknya."},
-      {"en": "Slips with an anomaly (no active salary setting) cannot be printed. Fix them in Salary & Tax Master and recalculate the period.", "id": "Slip yang anomali (tanpa pengaturan gaji aktif) tidak bisa dicetak. Perbaiki di Master Gaji & Pajak lalu hitung ulang periodenya."}
+      {"en": "The grid lists the payslips of calculated periods. Search by employee name or code, filter by Period or Department, or use the status boxes (Waiting to print, WhatsApp waiting, Anomaly).", "id": "Grid menampilkan slip gaji periode yang sudah dihitung. Cari berdasarkan nama atau kode karyawan, saring dengan Period atau Department, atau pakai kotak status (Waiting to print, WhatsApp waiting, Anomaly)."},
+      {"en": "Open a row to see the Payslip Form: earnings, deductions, payment method, attendance and net salary.", "id": "Buka baris untuk melihat Payslip Form: pendapatan, potongan, cara bayar, kehadiran dan gaji bersih."},
+      {"en": "Click Print Payslip to print that single slip. Opening the print stamps its print time.", "id": "Klik Print Payslip untuk mencetak slip itu saja. Membuka cetakan mencatat waktu cetaknya."},
+      {"en": "Switch the Print channel and the WhatsApp channel ON or OFF per slip. WhatsApp can only be switched on when the employee has a phone number.", "id": "Nyalakan atau matikan kanal Print dan kanal WhatsApp per slip. WhatsApp hanya bisa dinyalakan bila karyawan punya nomor telepon."},
+      {"en": "To print a whole period open the period in Payroll Calculation and click Print all payslips. It prints every slip with the Print channel ON and no anomaly; then click Mark as printed.", "id": "Untuk mencetak satu periode penuh buka periodenya di Payroll Calculation lalu klik Print all payslips. Isinya semua slip dengan kanal Print menyala dan tanpa anomali; lalu klik Mark as printed."},
+      {"en": "Slips with an anomaly (no active salary setting) cannot be printed and their channels are locked. Fix them in Salary & Tax Master and recalculate the period.", "id": "Slip yang anomali (tanpa pengaturan gaji aktif) tidak bisa dicetak dan kanalnya terkunci. Perbaiki di Master Gaji & Pajak lalu hitung ulang periode."}
     ],
     "fields": [
-      {"label": "Period", "en": "Selects the payroll period whose slips are listed.", "id": "Memilih periode gaji yang slipnya ditampilkan."},
-      {"label": "Printout", "en": "Tick to include the slip when printing all. The time it was printed appears under the tick once the slip was opened or printed.", "id": "Centang agar slip ikut saat cetak semua. Waktu cetaknya tampil di bawah centang setelah slip dibuka atau dicetak."},
-      {"label": "Send WhatsApp", "en": "Tick to mark the slip for WhatsApp. Disabled when the employee has no phone number. The WhatsApp channel itself is not built yet; Send All via WhatsApp is disabled.", "id": "Centang untuk menandai slip dikirim lewat WhatsApp. Nonaktif bila karyawan tak punya nomor HP. Kanal WhatsApp-nya belum dibangun; Send All via WhatsApp dinonaktifkan."},
-      {"label": "Print All", "en": "Opens the print of every slip of the period that is ticked for printing and has no anomaly.", "id": "Membuka cetakan semua slip periode yang dicentang cetak dan tanpa anomali."}
+      {"label": "Print channel", "en": "ON = the slip is included when printing the whole period. Shows Printed once a print time exists, Waiting when ON but not printed yet.", "id": "ON = slip ikut saat cetak satu periode penuh. Tampil Printed bila sudah ada waktu cetak, Waiting bila ON tapi belum dicetak."},
+      {"label": "WhatsApp channel", "en": "ON = the slip is marked for WhatsApp. Disabled when the employee has no phone number. The WhatsApp sending itself is not built yet.", "id": "ON = slip ditandai dikirim lewat WhatsApp. Nonaktif bila karyawan tidak punya nomor telepon. Pengiriman WhatsApp-nya sendiri belum dibangun."},
+      {"label": "Print Payslip", "en": "Opens the printable payslip of this employee and stamps the print time.", "id": "Membuka slip gaji siap cetak karyawan ini dan mencatat waktu cetak."},
+      {"label": "Print all payslips", "en": "In Payroll Calculation: opens the print of every slip of the period with the Print channel ON and no anomaly.", "id": "Di Payroll Calculation: membuka cetakan semua slip periode dengan kanal Print menyala dan tanpa anomali."}
     ]
   },
   {
