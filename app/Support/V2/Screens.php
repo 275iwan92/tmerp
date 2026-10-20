@@ -221,7 +221,7 @@ final class Screens
             ]],
             ['code' => 'MGMT', 'short' => 'MGT', 'label' => 'Management Reports', 'icon' => 'fa-solid fa-chart-line', 'groups' => [
                 ['label' => 'Summary', 'items' => [
-                    $it('mgmt-executive', ['Executive Summary', 'fa-solid fa-gauge-high', 'v2: App\Support\V2\Data\ExecutiveSummary (App\Services\Report\ManagementReportService)', null, true]),
+                    $it('mgmt-executive', ['Executive Summary', 'fa-solid fa-gauge-high', 'v2: App\Support\V2\Data\ExecutiveSummary (App\Services\Report\ManagementReportService)', null, true]), $it('mgmt-sales', ['Sales Details', 'fa-solid fa-chart-line', 'v2: App\Support\V2\Data\Mgmt\SalesDetail', null, true]), $it('mgmt-purchase', ['Purchase Details', 'fa-solid fa-cart-shopping', 'v2: App\Support\V2\Data\Mgmt\PurchaseDetail', null, true]), $it('mgmt-customer', ['Customer 360', 'fa-solid fa-address-card', 'v2: App\Support\V2\Data\Mgmt\CustomerProfile', null, true]), $it('mgmt-accounting', ['Accounting & Finance', 'fa-solid fa-scale-balanced', 'v2: App\Support\V2\Data\Mgmt\AccountingReport', null, true]), $it('mgmt-production', ['Production & Manufacturing', 'fa-solid fa-industry', 'v2: App\Support\V2\Data\Mgmt\ProductionReport', null, true]), $it('mgmt-hr', ['HR & Payroll', 'fa-solid fa-users', 'v2: App\Support\V2\Data\Mgmt\HrReport', null]), $it('mgmt-warehouse', ['Warehouse & Inventory', 'fa-solid fa-warehouse', 'v2: App\Support\V2\Data\Mgmt\WarehouseReport', null]),
                 ]],
             ]],
             ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [

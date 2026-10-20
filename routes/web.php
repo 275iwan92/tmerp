@@ -345,17 +345,17 @@ Route::middleware(['auth', 'locale'])->group(function () {
         // lihat migration 2026_09_13_000009). Sebelum ini grup route TIDAK
         // digate sama sekali -- siapa saja yang login bisa membuka /laporan/*.
         Route::prefix('laporan')->middleware('module:MGMT')->group(function () {
-            Route::livewire('/eksekutif', 'pages::report.executive')->name('report.executive');
-            Route::livewire('/penjualan', 'pages::report.sales')->name('report.sales');
-            Route::livewire('/pembelian', 'pages::report.purchase')->name('report.purchase');
-            Route::livewire('/customer/{customer}', 'pages::report.customer')->name('report.customer')->where('customer', '[0-9]+');
+            Route::get('/eksekutif', fn (Illuminate\Http\Request $r) => redirect('/v2/s/mgmt-executive'.($r->query() ? '?'.http_build_query($r->query()) : '')))->name('report.executive');
+            Route::get('/penjualan', fn (Illuminate\Http\Request $r) => redirect('/v2/s/mgmt-sales'.($r->query() ? '?'.http_build_query($r->query()) : '')))->name('report.sales');
+            Route::get('/pembelian', fn (Illuminate\Http\Request $r) => redirect('/v2/s/mgmt-purchase'.($r->query() ? '?'.http_build_query($r->query()) : '')))->name('report.purchase');
+            Route::get('/customer/{customer}', fn (Illuminate\Http\Request $r, int $customer) => redirect('/v2/s/mgmt-customer?'.http_build_query(['customer' => $customer] + $r->query())))->name('report.customer')->where('customer', '[0-9]+');
             // 4 "macam laporan" tambahan (keputusan user 2026-09-13, lihat
             // migration 2026_09_13_000004_add_report_menu_items.php) -- semua
             // data nyata, sama pola dgn 4 di atas.
-            Route::livewire('/akuntansi', 'pages::report.accounting')->name('report.accounting');
-            Route::livewire('/produksi', 'pages::report.production')->name('report.production');
-            Route::livewire('/sdm', 'pages::report.hr')->name('report.hr');
-            Route::livewire('/gudang', 'pages::report.warehouse')->name('report.warehouse');
+            Route::get('/akuntansi', fn (Illuminate\Http\Request $r) => redirect('/v2/s/mgmt-accounting'.($r->query() ? '?'.http_build_query($r->query()) : '')))->name('report.accounting');
+            Route::get('/produksi', fn (Illuminate\Http\Request $r) => redirect('/v2/s/mgmt-production'.($r->query() ? '?'.http_build_query($r->query()) : '')))->name('report.production');
+            Route::get('/sdm', fn (Illuminate\Http\Request $r) => redirect('/v2/s/mgmt-hr'.($r->query() ? '?'.http_build_query($r->query()) : '')))->name('report.hr');
+            Route::get('/gudang', fn (Illuminate\Http\Request $r) => redirect('/v2/s/mgmt-warehouse'.($r->query() ? '?'.http_build_query($r->query()) : '')))->name('report.warehouse');
         });
     });
 });

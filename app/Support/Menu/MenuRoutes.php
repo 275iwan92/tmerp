@@ -148,13 +148,13 @@ final class MenuRoutes
             // ada menu di panel kiri" -- menunya tampil tapi klik ke mana pun
             // tidak jalan/placeholder kosong). MGMT_ACCOUNTING/PRODUCTION/HR/
             // WAREHOUSE = 4 laporan baru (migration 2026_09_13_000004).
-            'MGMT_EXEC' => route('report.executive'),
-            'MGMT_SALES' => route('report.sales'),
-            'MGMT_PURCHASE' => route('report.purchase'),
-            'MGMT_ACCOUNTING' => route('report.accounting'),
-            'MGMT_PRODUCTION' => route('report.production'),
-            'MGMT_HR' => route('report.hr'),
-            'MGMT_WAREHOUSE' => route('report.warehouse'),
+            'MGMT_EXEC' => route('v2.screen', 'mgmt-executive'),
+            'MGMT_SALES' => route('v2.screen', 'mgmt-sales'),
+            'MGMT_PURCHASE' => route('v2.screen', 'mgmt-purchase'),
+            'MGMT_ACCOUNTING' => route('v2.screen', 'mgmt-accounting'),
+            'MGMT_PRODUCTION' => route('v2.screen', 'mgmt-production'),
+            'MGMT_HR' => route('v2.screen', 'mgmt-hr'),
+            'MGMT_WAREHOUSE' => route('v2.screen', 'mgmt-warehouse'),
             // 2026-08-22: Laporan Inventory dipecah 3 menu per kelas stok
             // (RM/FG/SFG) -- 1 route param'd, 6 menu code beda category.
             'INV_RAW_RM' => route('v2.screen', 'inv-rm-rpt-balance'),

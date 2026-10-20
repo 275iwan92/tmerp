@@ -3,7 +3,7 @@
  Tujuan       : Ringkasan eksekutif manajemen: penjualan, pembelian, invoice dan utang usaha terintegrasi untuk seluruh perusahaan, per tahun dan basis pendapatan.
  Sumber hulu  : App\Support\V2\Data\ExecutiveSummary (App\Services\Report\ManagementReportService, sama dengan layar v1 report.executive); co_order_legacy, co_delivery_legacy, po_order_legacy, po_invoice_legacy.
  Input        : Query th (tahun), basis (basis pendapatan), confirmed (hanya CO Confirmed).
- Output       : Kartu filter x-dl::card + x-dl::action-form (GET), lalu tren bulanan, bauran customer, kuartal, tren pembelian dan perhatian; rincian lewat tautan ke laporan v1.
+ Output       : Kartu filter x-dl::card + x-dl::action-form (GET), lalu tren bulanan, bauran customer, kuartal, tren pembelian dan perhatian; rincian lewat tautan ke layar v2 mgmt-sales / mgmt-purchase.
  Dipakai oleh : Layar v2 slug mgmt-executive lewat rute v2.screen (view v2.screen memuat berkas ini)
  Status       : Aktif
 --}}
@@ -54,7 +54,7 @@
 <x-dl::card title="Top Customers">
     <x-dl::table :columns="['name' => 'Customer', 'docs' => ['Documents', 'num' => true], 'value' => ['Revenue', 'num' => true]]"
         :rows="array_map(fn ($c) => ['name' => raw($c['name']), 'docs' => Locale::number($c['docs']), 'value' => Locale::money($c['value'])], $es->topCustomers())" :source="$src" />
-    <x-dl::button variant="secondary" size="sm" icon="fa-arrow-right" label="All customers" :href="route('report.sales', ['th' => $es->year, 'tab' => 'customer'])" />
+    <x-dl::button variant="secondary" size="sm" icon="fa-arrow-right" label="All customers" :href="route('v2.screen', 'mgmt-sales').'?th='.$es->year.'&tab=customer'" />
 </x-dl::card>
 
 <x-dl::card title="Document Chain Health" description="Purchasing, all periods">
@@ -79,5 +79,5 @@
     <x-dl::field.display label="Purchase Requisitions (PR)" :value="raw(tf(':n documents', ['n' => Locale::number($docs['pr'])]))" :source="$src" />
     <x-dl::field.display label="Purchase Orders" :value="raw(tf(':n documents', ['n' => Locale::number($docs['po'])]))" :source="$src" />
     <x-dl::field.display label="Goods Receipts" :value="raw(tf(':n documents', ['n' => Locale::number($docs['receive'])]))" :source="$src" />
-    <x-dl::button variant="secondary" size="sm" icon="fa-arrow-right" label="Purchase details" :href="route('report.purchase', ['th' => $es->year])" />
+    <x-dl::button variant="secondary" size="sm" icon="fa-arrow-right" label="Purchase details" :href="route('v2.screen', 'mgmt-purchase').'?th='.$es->year" />
 </x-dl::card>

@@ -46,6 +46,14 @@ class V1ArchiveRedirectTest extends TestCase
             '/quotation' => '/v2/s/quotation',
             '/co' => '/v2/s/customer-order',
             '/production/prodev-list' => '/v2/s/prodev',
+            '/laporan/eksekutif' => '/v2/s/mgmt-executive',
+            '/laporan/penjualan?th=2025&tab=customer' => '/v2/s/mgmt-sales?th=2025&tab=customer',
+            '/laporan/pembelian' => '/v2/s/mgmt-purchase',
+            '/laporan/customer/7?th=2024' => '/v2/s/mgmt-customer?customer=7&th=2024',
+            '/laporan/akuntansi' => '/v2/s/mgmt-accounting',
+            '/laporan/produksi' => '/v2/s/mgmt-production',
+            '/laporan/sdm' => '/v2/s/mgmt-hr',
+            '/laporan/gudang' => '/v2/s/mgmt-warehouse',
         ] as $old => $new) {
             $this->get($old)->assertRedirect($new);
         }

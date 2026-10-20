@@ -157,6 +157,7 @@ Alamat lama tetap hidup sebagai redirect ke layar v2 (tes `V1ArchiveRedirectTest
 | `/sales/win-rate`, `/hrm/org-chart`, `/hrm/payroll/bank-transfer` | `v2:sales-win-rate`, `v2:hrm-org-chart`, `v2:hrm-bank-transfer` | v1 diarsipkan penuh |
 | `/setup/identification`, `/language`, `/constants`, `/data-origin` | `v2:setup-identification`, `v2:languages`, `v2:setup-constants`, `v2:setup-data-origin` | `/setup/localization` (sys_translations) tetap v1: belum ada layar v2 |
 | `/bantuan` | `v2.help` (laci Help & support) | Help Center v1 diarsipkan |
+| `/laporan/eksekutif`, `/penjualan`, `/pembelian`, `/customer/{id}`, `/akuntansi`, `/produksi`, `/sdm`, `/gudang` | `v2:mgmt-executive`, `v2:mgmt-sales`, `v2:mgmt-purchase`, `v2:mgmt-customer`, `v2:mgmt-accounting`, `v2:mgmt-production`, `v2:mgmt-hr`, `v2:mgmt-warehouse` | Management Reports v2 (kelas `App\Support\V2\Data\Mgmt\*`); layout dan komponen `x-report.*` v1 ikut diarsipkan; migration `2026_10_20_000001_menu_v2_management_reports` |
 | `/inquiry`, `/inquiry/recalc`, `/inquiry/revise`, `/quotation`, `/co`, `/production/prodev-list` | `v2:inquiry`, `v2:inquiry-recalc`, `v2:inquiry-revise`, `v2:quotation`, `v2:customer-order`, `v2:prodev` | zona beku: hanya halaman daftar yang mati diarsipkan; alur v2 tidak diubah |
 
 ## English label pass (Jo 2026-10-18)
