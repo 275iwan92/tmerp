@@ -353,20 +353,19 @@
     },
     "keywords": "permohonan tenaga kerja, requisition, manpower, mpr, kebutuhan karyawan, rekrutmen, headcount, ajukan approval, tambah karyawan",
     "steps": [
-      {"en": "Click + New Record. A draft requisition with a number like RCR26 plus five digits is created and opened.", "id": "Klik + New Record. Draft permohonan dengan nomor seperti RCR26 plus lima digit dibuat dan dibuka."},
-      {"en": "Fill Track, Department, Position Needed, Headcount, Qualification and Requisition Reason. Changes are saved as you leave each field while the status is Draft.", "id": "Isi Track, Department, Position Needed, Headcount, Qualification dan Requisition Reason. Perubahan tersimpan saat Anda meninggalkan tiap kolom selama status Draft."},
-      {"en": "Click Submit for Approval. Position, qualification and reason must be filled. The approval steps of the track are created.", "id": "Klik Submit for Approval. Posisi, kualifikasi dan alasan harus terisi. Langkah approval sesuai track dibuat."},
-      {"en": "The approver of the current step sees Approval Decision. They add a Notes and click Approve or Reject; Reject needs a note.", "id": "Approver pada langkah berjalan melihat Approval Decision. Ia mengisi Notes lalu klik Approve atau Reject; Reject wajib memakai catatan."},
-      {"en": "When all steps are approved the status becomes Approved. A rejection makes it Rejected. A Draft can be removed with Delete.", "id": "Bila semua langkah disetujui, status menjadi Approved. Bila ditolak, menjadi Rejected. Draft dapat dihapus dengan Delete."}
+      {"en": "The grid lists all requisitions with their status. Click + New Record to start one, or open a row to read it.", "id": "Grid menampilkan semua permohonan beserta statusnya. Klik + New Record untuk membuat baru, atau buka baris untuk membacanya."},
+      {"en": "Choose the Track and Department, type the Position needed and the Headcount, then Save. The draft gets its number (RCR plus year and five digits) only when you save.", "id": "Pilih Track dan Department, ketik Position needed dan Headcount, lalu Save. Draft baru mendapat nomor (RCR plus tahun dan lima digit) saat disimpan."},
+      {"en": "Fill Qualification and Requisition reason, then click Submit for Approval. It is refused if the track has no approval steps or a step has no assigned approver.", "id": "Isi Qualification dan Requisition reason, lalu klik Submit for Approval. Ditolak bila track tidak punya langkah approval atau ada langkah tanpa approver yang ditugaskan."},
+      {"en": "The approval steps (role and approver) are shown on the form. Only the assigned approver of the current step sees Approve and Reject; Reject needs a reason.", "id": "Langkah approval (peran dan approver) tampil di form. Hanya approver yang ditugaskan pada langkah berjalan yang melihat Approve dan Reject; Reject wajib beralasan."},
+      {"en": "When the last step approves the requisition becomes Approved and can be chosen in the Vacancy Form. A rejected requisition stops.", "id": "Bila langkah terakhir menyetujui, permohonan menjadi Approved dan bisa dipilih di Vacancy Form. Permohonan yang ditolak berhenti."},
+      {"en": "Only the creator or the HR Officer can change or delete a draft. Use Delete only on a draft.", "id": "Hanya pembuat atau HR Officer yang bisa mengubah atau menghapus draft. Delete hanya untuk draft."}
     ],
     "fields": [
-      {"label": "Track", "en": "Recruitment track, picked from the active tracks. It decides the approval steps and the candidate pipeline stages. Required.", "id": "Track rekrutmen, dipilih dari track aktif. Menentukan langkah approval dan tahap pipeline kandidat. Wajib diisi."},
-      {"label": "Department", "en": "Department that needs the staff, picked from active departments. It also decides who approves. Required.", "id": "Department yang membutuhkan tenaga kerja, dipilih dari departemen aktif. Juga menentukan siapa yang menyetujui. Wajib diisi."},
-      {"label": "Position Needed", "en": "Free-text name of the position needed. Required to submit.", "id": "Nama posisi yang dibutuhkan, teks bebas. Wajib untuk mengajukan."},
-      {"label": "Headcount", "en": "Number of people needed, at least 1.", "id": "Jumlah orang yang dibutuhkan, minimal 1."},
-      {"label": "Qualification", "en": "Required qualifications of the candidates. Required to submit.", "id": "Kualifikasi yang dibutuhkan dari kandidat. Wajib untuk mengajukan."},
-      {"label": "Requisition Reason", "en": "Why the staff is needed, such as replacement or expansion. Required to submit.", "id": "Alasan butuh tenaga kerja, misalnya pengganti atau penambahan. Wajib untuk mengajukan."},
-      {"label": "Notes", "en": "Note of the approver. Optional when approving, required when rejecting.", "id": "Catatan approver. Boleh kosong saat menyetujui, wajib saat menolak."}
+      {"label": "Track", "en": "Recruitment track of the position (for example Staff or Non-staff). It decides the approval steps and the pipeline stages. Required.", "id": "Jalur rekrutmen posisi (misalnya Staff atau Non-staff). Menentukan langkah approval dan tahap pipeline. Wajib diisi."},
+      {"label": "Department", "en": "Department that needs the person. Required.", "id": "Departemen yang membutuhkan orangnya. Wajib diisi."},
+      {"label": "Position needed", "en": "Free-text position title, up to 150 characters. Required.", "id": "Judul posisi teks bebas, maksimal 150 karakter. Wajib diisi."},
+      {"label": "Headcount", "en": "How many people are needed, 1 to 999. Required.", "id": "Berapa orang yang dibutuhkan, 1 sampai 999. Wajib diisi."},
+      {"label": "Qualification and Requisition reason", "en": "Required qualification and the reason for the request. Both are required before Submit for Approval.", "id": "Kualifikasi yang dibutuhkan dan alasan permohonan. Keduanya wajib sebelum Submit for Approval."}
     ]
   },
   {

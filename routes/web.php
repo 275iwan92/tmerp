@@ -296,8 +296,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // Livewire lama (pages::recruitment.portal) masih ada di repo
             // (tak dihapus, cuma tak lagi ada route yang menunjuknya) --
             // lihat docs/recruitmentportal_web_tier1.md kenapa dipertahankan.
-            Route::livewire('/hrm/recruitment/requisition', 'pages::recruitment.requisition.list')->name('hrm.recruitment.requisition.list');
-            Route::livewire('/hrm/recruitment/requisition/{requisition}', 'pages::recruitment.requisition.entry')->name('hrm.recruitment.requisition.entry')->where('requisition', '[0-9]+');
+            Route::get('/hrm/recruitment/requisition', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/hrm-rcr-requisition-form?new=1' : '/v2/s/hrm-rcr-requisition'))->name('hrm.recruitment.requisition.list');
+            Route::get('/hrm/recruitment/requisition/{requisition}', fn (int $requisition) => redirect('/v2/s/hrm-rcr-requisition-form?id='.$requisition))->name('hrm.recruitment.requisition.entry')->where('requisition', '[0-9]+');
             Route::get('/hrm/recruitment/vacancy', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/hrm-rcr-vacancy-form?new=1' : '/v2/s/hrm-rcr-vacancy'))->name('hrm.recruitment.vacancy');
             Route::get('/hrm/recruitment/talent-pool', fn (Illuminate\Http\Request $r) => redirect($r->filled('open') ? '/v2/s/rcr-talent-pool-form?id='.(int) $r->query('open') : '/v2/s/rcr-talent-pool'))->name('hrm.recruitment.talent-pool');
             Route::livewire('/hrm/recruitment/candidate-review', 'pages::recruitment.candidate-review.list')->name('hrm.recruitment.candidate-review.list');

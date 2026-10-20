@@ -201,7 +201,6 @@ final class MenuRoutes
             'HRM_DISCIPLINE_REPORT' => route('v2.screen', 'hrm-discipline'),
             // Recruitment (L1-L9, L8 dibangun 2026-09-02 + Portal Candidate
             // simulasi) -- lihat docs/recruitment_state.yaml.
-            'HRM_RCR_REQUISITION' => route('hrm.recruitment.requisition.list'),
             'HRM_RCR_REVIEW' => route('hrm.recruitment.candidate-review.list'),
             'HRM_RCR_PIPELINE' => route('hrm.recruitment.pipeline-board'),
             'HRM_RCR_OFFER' => route('hrm.recruitment.offer.list'),

@@ -9,8 +9,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Permohonan Tenaga Kerja (v1: recruitment.requisition.list -> entry). New = daftar v1 (tombol Baru di sana langsung
-// membuat draft, jadi tidak dipicu lewat alamat GET).
+/*
+ * REMARK
+ * Tujuan       : Grid Manpower Requisition (permohonan tenaga kerja); Open membuka form v2 hrm-rcr-requisition-form, + New Record membuka form kosong (baris lahir saat Save, bukan saat New).
+ * Sumber hulu  : tm2hrr.rcr_requisition + rcr_track + vac_vacancy, tm2mst.org_department, tm2sys.sec_user.
+ * Input        : Pencarian, filter Department / Track / Status, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu HRM > Recruitment (v2:hrm-rcr-requisition), layar hrm-rcr-requisition-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::recruitment.requisition.list dan entry sudah dipindah ke tmerp_unused (aturan D.25, T7l HRM).
+ */
 class RequisitionGrid extends RcrGrid
 {
     private array $departments = [];
@@ -29,12 +36,12 @@ class RequisitionGrid extends RcrGrid
 
     public function openUrl(): ?string
     {
-        return $this->routeUrl('hrm.recruitment.requisition.entry', 'requisition');
+        return route('v2.screen', 'hrm-rcr-requisition-form').'?id={id}';
     }
 
     public function newUrl(): ?string
     {
-        return route('hrm.recruitment.requisition.list');
+        return route('v2.screen', 'hrm-rcr-requisition-form').'?new=1';
     }
 
     protected function models(): array

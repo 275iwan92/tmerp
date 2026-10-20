@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-19 22:37",
+    "generated": "2026-10-20 07:43",
     "database": "ddtsys",
     "totals": {
         "objects": 175,
@@ -23,10 +23,10 @@
         "databases": 10,
         "models": 380,
         "migrations": 645,
-        "tests": 237,
-        "dictionary": 16355,
+        "tests": 238,
+        "dictionary": 16382,
         "languages": 4,
-        "commits": 1467,
+        "commits": 1468,
         "since": "2026-08-06"
     },
     "modules": [
@@ -143,13 +143,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 98,
+            "commits": 99,
             "days": 4,
             "last": "2026-10-19",
-            "screens": 128,
+            "screens": 130,
             "objects": 176,
             "engines": 2,
-            "tests": 32
+            "tests": 33
         },
         {
             "key": "jo",
@@ -165,12 +165,6 @@
     ],
     "untracked": 1224,
     "days": [
-        {
-            "date": "2026-10-06",
-            "iwan": 0,
-            "jo": 0,
-            "other": 0
-        },
         {
             "date": "2026-10-07",
             "iwan": 38,
@@ -245,9 +239,15 @@
         },
         {
             "date": "2026-10-19",
-            "iwan": 7,
+            "iwan": 8,
             "jo": 0,
             "other": 28
+        },
+        {
+            "date": "2026-10-20",
+            "iwan": 0,
+            "jo": 0,
+            "other": 0
         }
     ],
     "weeks": [
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W43",
-            "iwan": 7,
+            "iwan": 8,
             "jo": 0,
             "other": 28
         }
@@ -3094,8 +3094,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-01",
-            "changed_by": null
+            "changed_at": "2026-10-19",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
