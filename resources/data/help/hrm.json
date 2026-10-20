@@ -401,22 +401,20 @@
     "keywords": "review kandidat, formulir kandidat, lamaran, pelamar, candidate, application, data calon karyawan, cv, screening",
     "steps": [
       {"en": "In the grid, search by candidate or vacancy, or use the status boxes and the Vacancy and Status filters.", "id": "Di grid, cari berdasarkan kandidat atau lowongan, atau pakai kotak status dan filter Vacancy serta Status."},
-      {"en": "Open a row to read the whole form, from personal data to documents. The top shows the status and the current pipeline stage.", "id": "Buka satu baris untuk membaca seluruh formulir, dari data pribadi sampai dokumen. Bagian atas menampilkan status dan tahap pipeline saat ini."},
+      {"en": "Open a row to read the whole form in tabs, from Personal data to Agreement. The top shows the status and the current pipeline stage.", "id": "Buka satu baris untuk membaca seluruh formulir dalam tab, dari data pribadi sampai persetujuan. Bagian atas menampilkan status dan tahap pipeline saat ini."},
       {"en": "Nothing is saved on this screen. Use Back to return to the grid.", "id": "Tidak ada yang disimpan di layar ini. Pakai Back untuk kembali ke grid."},
-      {"en": "Decide in the Pipeline Board: move the candidate to the next stage, reject or withdraw the application.", "id": "Putuskan di Pipeline Board: pindahkan kandidat ke tahap berikutnya, tolak atau tarik lamaran."}
+      {"en": "Decide in the Pipeline Board: click Open Pipeline Board to move the candidate to the next stage, reject or withdraw the application.", "id": "Putuskan di Pipeline Board: klik Open Pipeline Board untuk memindahkan kandidat ke tahap berikutnya, menolak atau menarik lamaran."}
     ],
     "fields": [
-      {"label": "1. Data Pribadi", "en": "Name, nickname, national ID, gender, religion, email, phone, birth date, addresses, vehicle and driving licence types, marital status.", "id": "Nama, panggilan, NIK, jenis kelamin, agama, email, telepon, tanggal lahir, alamat, jenis kendaraan dan SIM, status perkawinan."},
-      {"label": "2. Data Keluarga", "en": "Family members of the candidate.", "id": "Anggota keluarga kandidat."},
-      {"label": "3. Riwayat Pendidikan", "en": "Formal education and non-formal courses.", "id": "Pendidikan formal dan kursus nonformal."},
-      {"label": "4. Pengalaman Organisasi", "en": "Organization experience of the candidate.", "id": "Pengalaman organisasi kandidat."},
-      {"label": "5. Pengalaman Kerja", "en": "Work history, latest first, with positions and dates.", "id": "Riwayat kerja, terbaru dulu, dengan posisi dan tanggal."},
-      {"label": "6. Aktivitas Sosial, Kegiatan & Referensi", "en": "Hobbies, leisure, acquaintances in the company, emergency contacts and professional references.", "id": "Hobi, kegiatan luang, kenalan di perusahaan, kontak darurat dan referensi profesional."},
-      {"label": "7. Minat & Konsep Pribadi", "en": "The candidate's own answers: reasons to join, expectations, work preferences, strengths and weaknesses.", "id": "Jawaban kandidat sendiri: alasan bergabung, harapan, preferensi kerja, kekuatan dan kelemahan."},
-      {"label": "8. Riwayat Kesehatan", "en": "Height, weight, blood type, illness and hospital history, smoking, disability.", "id": "Tinggi, berat, golongan darah, riwayat sakit dan rawat inap, merokok, disabilitas."},
-      {"label": "9. Bahasa, Komputer & Info Lowongan", "en": "Language and computer skills, source of vacancy information, expected salary and facilities, availability date.", "id": "Kemampuan bahasa dan komputer, sumber info lowongan, gaji dan fasilitas yang diharapkan, tanggal siap bekerja."},
-      {"label": "10. Kesediaan & Pernyataan", "en": "Willingness checklist, agreement and the signature name of the candidate.", "id": "Daftar kesediaan, persetujuan dan nama tanda tangan kandidat."},
-      {"label": "11. Dokumen", "en": "Documents uploaded by the candidate.", "id": "Dokumen yang diunggah kandidat."}
+      {"label": "Personal", "en": "Name, nickname, national ID, gender, religion, birth date, email, phone, addresses, vehicle, driving licences and marital status.", "id": "Nama, panggilan, NIK, jenis kelamin, agama, tanggal lahir, email, telepon, alamat, kendaraan, SIM dan status pernikahan."},
+      {"label": "Family", "en": "Family members of the candidate.", "id": "Anggota keluarga kandidat."},
+      {"label": "Education", "en": "Formal education and non-formal courses.", "id": "Pendidikan formal dan kursus nonformal."},
+      {"label": "Experience", "en": "Work history and organization experience of the candidate.", "id": "Riwayat kerja dan pengalaman organisasi kandidat."},
+      {"label": "Motivation", "en": "The candidate's own answers: reasons to join, expectations, work preferences, strengths and weaknesses, hobbies and acquaintances in the company.", "id": "Jawaban kandidat sendiri: alasan bergabung, harapan, preferensi kerja, kekuatan dan kelemahan, hobi dan kenalan di perusahaan."},
+      {"label": "Health", "en": "Height, weight, blood type, illness and hospital history, smoking, disability, dependents.", "id": "Tinggi, berat, golongan darah, riwayat sakit dan rawat inap, merokok, disabilitas, tanggungan."},
+      {"label": "Skills", "en": "Language and computer skills, expected salary and facilities, availability date, source of vacancy information.", "id": "Kemampuan bahasa dan komputer, gaji dan fasilitas yang diharapkan, tanggal tersedia, sumber info lowongan."},
+      {"label": "Contacts", "en": "Emergency contacts, professional references and the documents uploaded by the candidate.", "id": "Kontak darurat, referensi profesional dan dokumen yang diunggah kandidat."},
+      {"label": "Agreement", "en": "Willingness checklist, agreement and the signature name of the candidate.", "id": "Daftar kesediaan, persetujuan dan nama tanda tangan kandidat."}
     ]
   },
   {

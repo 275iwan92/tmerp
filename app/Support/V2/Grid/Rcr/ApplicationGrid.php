@@ -8,7 +8,15 @@ use App\Models\Hrr\VacVacancy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Review Formulir Kandidat (v1: recruitment.candidate-review.list -> detail). Lamaran lahir dari sync portal, tanpa New.
+/*
+ * REMARK
+ * Tujuan       : Grid Candidate Form Review: semua lamaran (lahir dari sync portal karir, tanpa New); Open membuka tampilan baca-saja formulir kandidat di layar v2 hrm-rcr-review-form.
+ * Sumber hulu  : tm2hrr.app_application + cnd_candidate + vac_vacancy.
+ * Input        : Pencarian, filter Vacancy / Status, kotak status.
+ * Output       : Baris grid (hanya baca).
+ * Dipakai oleh : Menu HRM > Recruitment (v2:hrm-rcr-review), layar hrm-rcr-review-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::recruitment.candidate-review.list dan detail sudah dipindah ke tmerp_unused (aturan D.25, T7n HRM).
+ */
 class ApplicationGrid extends RcrGrid
 {
     public function slug(): string
@@ -23,7 +31,7 @@ class ApplicationGrid extends RcrGrid
 
     public function openUrl(): ?string
     {
-        return $this->routeUrl('hrm.recruitment.candidate-review.detail', 'application');
+        return route('v2.screen', 'hrm-rcr-review-form').'?application={id}';
     }
 
     public function newUrl(): ?string

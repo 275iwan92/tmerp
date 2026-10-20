@@ -300,9 +300,9 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::get('/hrm/recruitment/requisition/{requisition}', fn (int $requisition) => redirect('/v2/s/hrm-rcr-requisition-form?id='.$requisition))->name('hrm.recruitment.requisition.entry')->where('requisition', '[0-9]+');
             Route::get('/hrm/recruitment/vacancy', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/hrm-rcr-vacancy-form?new=1' : '/v2/s/hrm-rcr-vacancy'))->name('hrm.recruitment.vacancy');
             Route::get('/hrm/recruitment/talent-pool', fn (Illuminate\Http\Request $r) => redirect($r->filled('open') ? '/v2/s/rcr-talent-pool-form?id='.(int) $r->query('open') : '/v2/s/rcr-talent-pool'))->name('hrm.recruitment.talent-pool');
-            Route::livewire('/hrm/recruitment/candidate-review', 'pages::recruitment.candidate-review.list')->name('hrm.recruitment.candidate-review.list');
-            Route::livewire('/hrm/recruitment/candidate-review/{application}', 'pages::recruitment.candidate-review.detail')->name('hrm.recruitment.candidate-review.detail')->where('application', '[0-9]+');
-            Route::livewire('/hrm/recruitment/pipeline-board', 'pages::recruitment.pipeline-board')->name('hrm.recruitment.pipeline-board');
+            Route::get('/hrm/recruitment/candidate-review', fn () => redirect('/v2/s/hrm-rcr-review'))->name('hrm.recruitment.candidate-review.list');
+            Route::get('/hrm/recruitment/candidate-review/{application}', fn (int $application) => redirect('/v2/s/hrm-rcr-review-form?application='.$application))->name('hrm.recruitment.candidate-review.detail')->where('application', '[0-9]+');
+            Route::get('/hrm/recruitment/pipeline-board', fn (Illuminate\Http\Request $r) => redirect('/v2/s/hrm-pipeline-board'.($r->filled('vacancy') ? '?vacancy='.(int) $r->query('vacancy') : '')))->name('hrm.recruitment.pipeline-board');
             Route::get('/hrm/recruitment/interview-schedule', fn (Illuminate\Http\Request $r) => redirect($r->filled('open') ? '/v2/s/hrm-rcr-interview-form?id='.(int) $r->query('open') : '/v2/s/hrm-rcr-interview'))->name('hrm.recruitment.interview-schedule');
             Route::get('/hrm/recruitment/assessment-result', fn (Illuminate\Http\Request $r) => redirect($r->boolean('new') ? '/v2/s/hrm-rcr-assessment-form?new=1' : '/v2/s/hrm-rcr-assessment'))->name('hrm.recruitment.assessment-result');
             Route::get('/hrm/recruitment/offer', fn () => redirect('/v2/s/hrm-rcr-offer'))->name('hrm.recruitment.offer.list');
