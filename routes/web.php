@@ -188,7 +188,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::get('/security', fn (Illuminate\Http\Request $r) => redirect(match ($r->query('tab')) { 'groups' => $r->filled('open') ? '/v2/s/security-group-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/security-group-form?new=1' : '/v2/s/security-groups'), 'perms' => '/v2/s/security-permissions', 'migration' => '/v2/s/setup-migration', default => $r->filled('open') ? '/v2/s/security-account-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/security-account-form?new=1' : '/v2/s/security-accounts') }))->name('security.index')->middleware('admin');
         Route::redirect('/setup/identification', '/v2/s/setup-identification')->name('setup.identification')->middleware('admin');
         Route::redirect('/setup/language', '/v2/s/languages')->name('setup.language')->middleware('admin');
-        Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
+        Route::redirect('/setup/localization', '/v2/s/localization')->name('setup.localization')->middleware('admin');
         Route::redirect('/setup/constants', '/v2/s/setup-constants')->name('setup.constants')->middleware('admin');
         Route::redirect('/setup/data-origin', '/v2/s/setup-data-origin')->name('setup.data-origin')->middleware('admin');
         Route::get('/setup/support-tickets', fn (Illuminate\Http\Request $r) => redirect($r->filled('open') ? '/v2/s/support-ticket-form?id='.(int) $r->query('open') : '/v2/s/support-tickets'))->name('setup.support-tickets')->middleware('admin');
@@ -204,7 +204,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::get('/self-service', fn (\Illuminate\Http\Request $r) => redirect()->route('v2.profile', $r->query()));
 
         // Personal, bukan modul administratif -- sama pola dgn self-service (tanpa module: gate).
-        Route::livewire('/notifications', 'pages::notification.index')->name('notifications.index');
+        Route::redirect('/notifications', '/v2/notifications')->name('notifications.index');
 
         Route::middleware('module:MDATA')->group(function () {
             Route::redirect('/master/customer', '/v2/s/md-customer');

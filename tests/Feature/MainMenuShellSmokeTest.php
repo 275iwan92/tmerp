@@ -69,7 +69,7 @@ class MainMenuShellSmokeTest extends TestCase
 
         $this->get('/setup/identification')->assertRedirect('/v2/s/setup-identification');
         $this->get('/setup/language')->assertRedirect('/v2/s/languages');
-        $this->get('/setup/localization')->assertOk()->assertSee('Terjemahan Teks UI');
+        $this->get('/setup/localization')->assertRedirect('/v2/s/localization');
         $this->get('/setup/constants')->assertRedirect('/v2/s/setup-constants');
     }
 

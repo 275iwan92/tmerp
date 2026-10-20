@@ -205,7 +205,7 @@ final class MenuRoutes
             'HRM_RCR_PORTAL' => route('careers.landing'),
             'SET_CONFIG' => route('v2.screen', 'setup-identification'),
             'SET_LANG' => route('v2.screen', 'languages'),
-            'SET_LOCALIZATION' => route('setup.localization'),
+            'SET_LOCALIZATION' => route('v2.screen', 'localization'),
             'SET_CONSTANTS' => route('v2.screen', 'setup-constants'),
             'SET_DATA_ORIGIN' => route('v2.screen', 'setup-data-origin'),
             'SET_USER' => route('v2.screen', 'security-accounts'),

@@ -36,6 +36,25 @@ Route::prefix('v2')->name('v2.')->middleware(['auth', 'locale', 'force.password'
         return view('v2.screen', ['screen' => $screen, 'built' => true, 'code' => file_get_contents(resource_path('views/v2/screens/help.blade.php'))]);
     })->name('help');
 
+    // Notification Center (riwayat lengkap, pindahan layar v1 /notifications): grid NotificationGrid; klik baris = tandai terbaca + buka tautan.
+    Route::get('/notifications', function () {
+        $screen = ['slug' => 'notification-center', 'label' => 'Notification Center', 'icon' => 'fa-solid fa-bell', 'module' => 'Account', 'group' => 'Notifications',
+            'url' => route('v2.notifications'), 'filters' => [], 'side' => true, 'view' => 'v2.screens.notification-center', 'ref' => 'v2: App\Support\V2\Grid\Personal\NotificationGrid (v1 notification/index diarsipkan)', 'mockup' => null];
+
+        return view('v2.screen', ['screen' => $screen, 'built' => true, 'code' => file_get_contents(resource_path('views/v2/screens/notification-center.blade.php'))]);
+    })->name('notifications');
+    Route::get('/notifications/{id}/open', function (int $id) {
+        $n = \App\Models\Sys\SysNotification::forUser(Auth::user()->login)->findOrFail($id);
+        $n->update(['is_read' => true]);
+
+        return redirect($n->link && str_starts_with($n->link, '/') && ! str_starts_with($n->link, '//') ? $n->link : route('v2.notifications'));
+    })->whereNumber('id')->name('notifications.open');
+    Route::post('/notifications/read-all', function () {
+        Account::markRead(Auth::user(), null);
+
+        return redirect()->route('v2.notifications');
+    })->name('notifications.read-all');
+
     // Halaman cabang menu (klik Modul / Grup di breadcrumb): daftar layar di dalam cabang itu; 404 bila bukan modul / grup atau tidak ada hak.
     Route::get('/branch/{code}', function (string $code) {
         $b = AppMenu::branch(Auth::user(), $code) ?? abort(404);

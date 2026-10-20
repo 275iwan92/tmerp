@@ -91,7 +91,7 @@ abstract class DbLookup extends DbGrid
     public function props(): array
     {
         return ['rows' => $this->rows(), 'columns' => $this->typedColumns(), 'saveUrl' => route('v2.lookup.save', $this->slug()),
-            'stats' => $this->stats(), 'source' => $this->sourceText()];
+            'stats' => $this->stats(), 'source' => $this->sourceText(), 'addRows' => $this->addRows()];
     }
 
     // Simpan baris yang berubah dari layar. Semua atau tidak sama sekali (satu transaksi); kembalian = isi terbaru.
@@ -130,5 +130,11 @@ abstract class DbLookup extends DbGrid
         });
 
         return $this->rows();
+    }
+
+    // Boleh menambah baris dari layar? Lookup yang kuncinya datang dari tempat lain (mis. kunci terjemahan) mematikannya.
+    protected function addRows(): bool
+    {
+        return true;
     }
 }

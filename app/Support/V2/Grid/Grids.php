@@ -144,7 +144,7 @@ final class Grids
         Setup\GuidesLookup::class,
         Setup\DesignNotesLookup::class,
         Setup\TechGuideLookup::class,
-        Setup\LanguageLookup::class,
+        Setup\LanguageLookup::class, Setup\LocalizationLookup::class,
         Setup\DictionaryGroupLookup::class,
         Inv\RmStockInGrid::class,
         Inv\RmStockOutGrid::class,
