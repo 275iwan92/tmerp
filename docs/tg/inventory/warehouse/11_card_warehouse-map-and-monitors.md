@@ -1,9 +1,9 @@
 # Concept card: Warehouse Map, Stack Monitor, Stock by Location
 
-> Written 2026-10-16 (group Inventory-Warehouse). Verified: 2026-10-16. FACT = mockup DB (`ddt*` through `tm2*`, `--env=mockup`) and code with line numbers, seen this session. FROM DOCUMENT = not checked. No screenshots were taken and tests were NOT run (brief: no DB writes); screens are described from the blade, route and data-class code.
+> Written 2026-10-16 (group Inventory-Warehouse). Verified: 2026-10-20 (class note re-checked against code; the rest as of 2026-10-16). FACT = mockup DB (`ddt*` through `tm2*`, `--env=mockup`) and code with line numbers, seen this session. FROM DOCUMENT = not checked. No screenshots were taken and tests were NOT run (brief: no DB writes); screens are described from the blade, route and data-class code.
 
 - **Document type**: concept card (three read screens over the same stock numbers, no table of their own). **Module/sub-module**: Inventory > Warehouse > Map & Monitor (`WH_MAP`): Warehouse Map `v2:warehouse-map`, Stack Monitor `v2:stack-monitor`, Stock by Location `v2:inv-rpt-location` (FACT `sys_app_menu`, all active, status READY_FOR_QC).
-- **Canonical name**: Warehouse Map = object `x-mp::inv.warehouse-desk` (class `packages/mockup-parts/src/Components/Inv/WarehouseDesk.php`) filled by `App\Support\V2\Data\Warehouse::desk()`. Stack Monitor = `StackMonitorReport`. Stock by Location = `StockByLocationReport`.
+- **Canonical name**: Warehouse Map = object `x-mp::inv.warehouse-desk` (class `packages/mockup-parts/src/Components/Inv/WarehouseDesk.php`) filled by `App\Support\V2\Data\Warehouse::desk()`. The class inherits `Devlib\Components\WarehouseDesk` and overrides `sources()` (the data-source tooltip tables, `tm2mst.*`/`tm2inv.*`) and `src()` (translates them through `App\Support\V2\Src`). Stack Monitor = `StackMonitorReport`. Stock by Location = `StockByLocationReport`.
 - **Synonyms**: peta gudang, denah, layout; pemantau tumpukan; stok per lokasi, "Stock by Location", item per gudang.
 - **NOT the same as**: Stock Card / Stock Summary (value reports of the Stock group, written elsewhere), Stock Opname (counting, card `16_card_count-task.md`).
 

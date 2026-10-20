@@ -14,6 +14,17 @@ class WarehouseDesk extends BaseDesk
         return 'x-mp::inv.warehouse-desk';
     }
 
+    // Peran sumber data pada tooltip (dibaca kelas dasar lewat srcFor()); nilainya tabel tm2mst/tm2inv yang diterjemahkan Src.
+    protected function sources(): array
+    {
+        return [
+            'building' => ['tm2mst.wh_warehouse'],
+            'map' => ['tm2mst.wh_warehouse', 'tm2mst.wh_zone', 'tm2mst.wh_loc', 'tm2inv.v_rm_onhand', 'tm2inv.v_sfg_onhand', 'tm2inv.v_fg_onhand', 'tm2inv.inv_pallet (stack_no, unit_kind)'],
+            'capacity' => ['tm2mst.wh_warehouse (length, width, height per floor)', 'tm2mst.wh_zone (size, stack height)', 'tm2mst.wh_loc.capacity_kg'],
+            'zone' => ['tm2mst.wh_zone'],
+        ];
+    }
+
     public function src(string ...$tables): ?string
     {
         return $tables ? Src::of(...$tables) : null;
