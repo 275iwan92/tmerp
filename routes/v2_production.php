@@ -127,3 +127,10 @@ Route::prefix('v2/prod/machine')->name('v2.prod.machine.')->middleware('module:P
         return $form($m)->with('v2_flash', tf(':name saved.', ['name' => $m->machine_code]));
     })->name('save');
 });
+
+// Cetak Work Order untuk lapangan (formulir kerja, lembar berbagian x-dl::print-sheet). Isi = WorkOrderPrint (dipindah dari v1 pages::production.wo-print).
+Route::get('v2/production/wo/{wo}/print', function (int $wo) {
+    \App\Support\V2\Print\PrintDocs::boot();
+
+    return view('v2.print-wo', ['data' => new \App\Support\V2\Data\WorkOrderPrint($wo), 'back' => route('v2.screen', 'production-wo').'?id='.$wo]);
+})->middleware('module:PROD')->whereNumber('wo')->name('v2.production.wo.print');

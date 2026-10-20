@@ -60,7 +60,7 @@ final class Grids
         Prod\CrewMachineGrid::class,
         Prod\ScrapTypeGrid::class,
         Prod\ToolingLookup::class,
-        Prod\WaitRuleLookup::class,
+        Prod\WaitRuleLookup::class, Prod\MachineRateLookup::class, Prod\EmployeeRateLookup::class,
         Prod\ChangeoverLookup::class,
         Sales\ProductMarketGrid::class,
         Sales\InquiryNewGrid::class,

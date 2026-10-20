@@ -58,7 +58,7 @@
                 <x-dl::button icon="fa-lock" label="Publish & Lock" data-dl-confirm="{{ t('Publish this week and lock the roster? Save the board first.') }}" />
             </x-dl::action-form>
         @endif
-        <x-dl::button variant="secondary" icon="fa-print" label="Print" :href="route('hrm.shift-roster.print')" />
+        <x-dl::button variant="secondary" icon="fa-print" label="Print" :href="route('v2.hrm.roster.print')" />
         <x-dl::button variant="secondary" icon="fa-clock" label="Master Shift" :href="route('v2.screen', 'md-shift')" />
         <x-dl::button variant="secondary" icon="fa-rotate" label="Rotate / Swap Weeks" :href="$home.'?'.$query.'&panel=rotate'" />
         <x-dl::button variant="secondary" icon="fa-plus" label="New Schedule" :href="$home.'?'.$query.'&panel=schedule-new'" />

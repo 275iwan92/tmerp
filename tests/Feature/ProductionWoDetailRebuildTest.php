@@ -10,6 +10,7 @@ use App\Models\Master\ProdProduct;
 use App\Models\Prd\PrdCrewAssignment;
 use App\Models\Prd\PrdWo;
 use App\Models\Sys\SecUser;
+use App\Support\V2\Grid\Prod\MachineRateLookup;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\Support\WoFixture;
@@ -136,23 +137,24 @@ class ProductionWoDetailRebuildTest extends TestCase
         $process = ProdProcess::firstOrFail();
         $machine = ProdMachine::firstOrFail();
 
-        $test = Livewire::test('pages::production.process-rate')
-            ->assertSee('Total Rate')
-            ->call('openNew')
-            ->set('product_id', $product->id_product)
-            ->set('part_code', 'RATETEST')
-            ->set('process_id', $process->id_process)
-            ->set('machine_id', $machine->machine_id)
-            ->set('target_qty_per_hour', 999)
-            ->call('save');
+        $this->get('/v2/s/production-process-rate')->assertOk();
+        $grid = new MachineRateLookup;
+        $grid->save([['product_id' => $product->id_product, 'part_code' => 'RATETEST', 'process_id' => $process->id_process, 'machine_id' => $machine->machine_id, 'target_qty_per_hour' => 999, 'activate' => true]]);
 
         $rate = ProdPartProcessMachineRate::where('part_code', 'RATETEST')->first();
         $this->assertNotNull($rate);
         $this->assertEquals(999, (float) $rate->target_qty_per_hour);
 
-        $test->call('toggleActive', $rate->rate_id);
+        $grid->save([['id' => $rate->rate_id, 'product_id' => $product->id_product, 'part_code' => 'RATETEST', 'process_id' => $process->id_process, 'machine_id' => $machine->machine_id, 'target_qty_per_hour' => 999, 'activate' => false]]);
         $rate->refresh();
         $this->assertFalse($rate->activate);
+
+        try {
+            $grid->save([['product_id' => $product->id_product, 'part_code' => 'RATETEST2', 'process_id' => $process->id_process, 'machine_id' => $machine->machine_id, 'target_qty_per_hour' => 0]]);
+            $this->fail('target 0 harus ditolak');
+        } catch (\Illuminate\Validation\ValidationException) {
+            $this->assertNull(ProdPartProcessMachineRate::where('part_code', 'RATETEST2')->first());
+        }
 
         $rate->delete();
     }

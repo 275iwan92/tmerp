@@ -371,3 +371,10 @@ Route::prefix('v2/hrm/payslip')->name('v2.hrm.payslip.')->middleware(['module:HR
         return redirect(route('v2.screen', 'hrm-payslip'))->with('v2_flash', tf(':n payslips marked as printed.', ['n' => $n]));
     })->whereNumber('run')->name('printed');
 });
+
+// Cetak Roster Shift (mode roster / shift / formasi, kertas A4 lembar berbagian x-dl::print-sheet). Isi = RosterPrint (dipindah dari v1 pages::hrm.shift-roster-print).
+Route::get('v2/hrm/roster/print', function (Request $r) {
+    PrintDocs::boot();
+
+    return view('v2.print-roster', ['data' => new \App\Support\V2\Data\RosterPrint($r->query()), 'back' => route('v2.screen', 'hrm-roster')]);
+})->middleware('module:HRM')->name('v2.hrm.roster.print');

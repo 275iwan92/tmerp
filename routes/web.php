@@ -272,7 +272,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::redirect('/hrm/org-chart', '/v2/s/hrm-org-chart')->name('hrm.org-chart');
             // Layar v1 Master Employee dipensiunkan 2026-10-16: alamat lama (bookmark, tautan v1) -> grid v2; nama rute dipertahankan.
             Route::redirect('/hrm/employee', '/v2/s/hrm-employee')->name('hrm.employee');
-            Route::livewire('/hrm/shift-roster/print', 'pages::hrm.shift-roster-print')->name('hrm.shift-roster.print');
+            Route::get('/hrm/shift-roster/print', fn (Illuminate\Http\Request $r) => redirect('/v2/hrm/roster/print'.($r->query() ? '?'.http_build_query($r->query()) : '')))->name('hrm.shift-roster.print');
             Route::get('/hrm/correction-requests', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-correction-form?id='.(int) $r->query('open') : '/v2/s/hrm-correction'))->name('hrm.correction-requests');
             Route::get('/hrm/leave-requests', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-leave-form?id='.(int) $r->query('open') : '/v2/s/hrm-leave'))->name('hrm.leave-requests');
             Route::get('/hrm/attendance-daily', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/hrm-attendance-form?id='.(int) $r->query('open') : '/v2/s/hrm-attendance'))->name('hrm.attendance-daily');
@@ -313,10 +313,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::middleware('module:PROD')->group(function () {
             Route::livewire('/production/wo', 'pages::production.wo-list')->name('production.wo.list');
             Route::livewire('/production/wo/new', 'pages::production.wo-entry')->name('production.wo.new');
-            Route::livewire('/production/wo/{wo}/print', 'pages::production.wo-print')->name('production.wo.print')->where('wo', '[0-9]+');
+            Route::get('/production/wo/{wo}/print', fn (int $wo) => redirect('/v2/production/wo/'.$wo.'/print'))->name('production.wo.print')->where('wo', '[0-9]+');
             Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
             Route::get('/production/scrap-type', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-scrap-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-scrap-form?new=1' : '/v2/s/prod-scrap')))->name('production.scrap-type');
-            Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
+            Route::redirect('/production/process-rate', '/v2/s/production-process-rate')->name('production.process-rate');
             Route::get('/production/master-process', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-process-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-process-form?new=1' : '/v2/s/prod-process')))->name('production.master-process');
             Route::get('/production/routing-template', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-routing-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-routing-form?new=1' : '/v2/s/prod-routing')))->name('production.routing-template');
             Route::get('/production/bop-rule', fn (Illuminate\Http\Request $r) => redirect($r->query('open') ? '/v2/s/prod-bop-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/prod-bop-form?new=1' : '/v2/s/prod-bop-rule')))->name('production.bop-rule');

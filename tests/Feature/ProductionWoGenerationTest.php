@@ -110,9 +110,10 @@ class ProductionWoGenerationTest extends TestCase
         $this->actingAs($this->admin());
         $wo = $this->seedWo('GEN5');
 
-        Livewire::test('pages::production.wo-print', ['wo' => $wo->wo_id])
+        $this->get(route('v2.production.wo.print', $wo->wo_id))->assertOk()
             ->assertSee($wo->wo_no)
             ->assertSee('Bill of Process')
             ->assertSee('Bill of Material');
+        $this->get('/production/wo/'.$wo->wo_id.'/print')->assertRedirect(route('v2.production.wo.print', $wo->wo_id));
     }
 }

@@ -181,7 +181,7 @@ Status       : Aktif di mockup (ddt*). Simulation: strip ML (x-dl::suggestion-st
         @endif
         <x-dl::action-form action="{{ route('v2.ppic.wo.refresh', $wo->wo_id) }}"><x-dl::button variant="secondary" size="sm" icon="fa-rotate" label="Refresh from ProDev" type="submit" /></x-dl::action-form>
         @endif
-        <x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$back" />
+        <x-dl::button variant="secondary" size="sm" icon="print" label="Print" :href="route('v2.production.wo.print', $wo->wo_id)" /> <x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$back" />
         @php
             // Document status (Jo 2026-10-13): Draft until it is applied to the live schedule, then APPLIED; other states as they are.
             $docStatus = ['DRAFT' => 'DRAFT', 'SIMULATED' => 'DRAFT', 'SCHEDULED' => 'APPLIED'][$wo->wo_status] ?? str_replace('_', ' ', $wo->wo_status);
