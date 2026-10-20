@@ -77,6 +77,7 @@ final class AppMenu
                         ['code' => 'V2-dummy-mastercard', 'label' => t('Master Card Dummy (PDF)'), 'icon' => 'fa-solid fa-file-pdf', 'url' => route('v2.dummy.mastercard'), 'type' => 'form']] : [])]],
                 // Daftar engine: input, output, cara kerja (App\Support\Engines\EngineRegistry; sama dengan devlib.test > Engines).
                 ['label' => t('Engines'), 'items' => [['code' => 'V2-engines', 'label' => t('Engine Catalog'), 'icon' => 'fa-solid fa-gears', 'url' => route('v2.engines'), 'type' => 'report']]],
+                ...($user->is_admin ? [['label' => t('Comparison · Special Forms'), 'items' => Compare::menuItems()]] : []), // layar pembanding sf-* (admin, sama dengan rutenya)
             ]];
         }
 

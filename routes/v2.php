@@ -1193,7 +1193,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     })->whereNumber('id')->middleware('module:PROD')->name('qc.complaint-review.save');
 
     // Inventory > Batch & Quality (v2.01): keputusan mutu batch, first article, tanda URGENT penerimaan, permintaan kirim kekurangan.
-    require __DIR__.'/v2_quality.php';
+    require __DIR__.'/v2_quality.php'; require __DIR__.'/v2_compare.php'; // v2_compare: layar pembanding Special Forms (admin); satu baris supaya nomor baris yang dikutip kartu TG tidak bergeser
 
     // Customer Order v2 (App\Support\V2\Data\CustomerOrder = aturan CoEntryService). Tombol "+" menyimpan isian dulu.
     Route::prefix('co')->name('co.')->middleware('module:SALES')->group(function () {
