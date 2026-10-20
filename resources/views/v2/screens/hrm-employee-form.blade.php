@@ -4,7 +4,7 @@
  Sumber hulu  : App\Support\V2\Data\EmployeeProfile (KPI, kelengkapan, opsi); tabel tm2mst.emp_employee dan tab anak emp_contract, emp_family, emp_education, emp_disciplinary, emp_bank_account.
  Input        : Query id (pegawai) atau new=1; session v2_flash dan errors.
  Output       : POST v2.hrm.employee.save (Save / Activate / Deactivate / Remove Photo) -> EmployeeProfileService. POST v2.hrm.employee.contract / family / deceased / education / discipline -> EmployeeRecordService (tiap dialog menyimpan sendiri; tanpa edit / hapus baris).
- Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record), kembali dari dialog lewat ?tab=; flash v2_login_card = kartu login pegawai baru (sekali tampil). Documents = unggah dokumen HR (EmployeeRecordService::addDocument); BPJS ikut Save utama; Account = EmployeeAccountService (buat login, reset password, aktif / nonaktif), kartu login sekali tampil.
+ Dipakai oleh : Dibuka dari grid hrm-employee (Open dan + New Record), kembali dari dialog lewat ?tab=; flash v2_login_card = kartu login pegawai baru (sekali tampil, dialog bersama v2/partials/login-card). Documents = unggah dokumen HR (EmployeeRecordService::addDocument); BPJS ikut Save utama; Account = EmployeeAccountService (buat login, reset password, aktif / nonaktif), kartu login sekali tampil.
  Status       : Aktif (mockup.test dulu, keputusan Jo 2026-10-16). Gaji kontrak tersembunyi mengikuti aturan v1 (admin, posisi salary_hidden_from_hr, tipe KONTRAK / BORONGAN). Tab Bank (rekening gaji) hanya tampil bila EmployeeProfileService::canEditBank (hak payroll atas pegawai itu; T7b), dibuka langsung lewat ?tab=bank dari grid hrm-bank.
 --}}
 @php
@@ -400,7 +400,7 @@
                     <x-dl::action-bar>
                         <x-dl::button type="button" size="sm" variant="secondary" icon="fa-key" label="Reset Password" data-dl-open="emp-account-reset" />
                         <x-dl::button type="button" size="sm" variant="secondary" :icon="$acct->activate ? 'fa-user-lock' : 'fa-user-check'" :label="$acct->activate ? 'Deactivate Account' : 'Activate Account'" data-dl-open="emp-account-toggle" />
-                        <x-dl::button size="sm" variant="secondary" icon="fa-up-right-from-square" label="Open in Security" :href="route('security.index').'?tab=users&open='.$acct->id_user" />
+                        <x-dl::button size="sm" variant="secondary" icon="fa-up-right-from-square" label="Open in Security" :href="route('v2.screen', 'security-account-form').'?id='.$acct->id_user" />
                     </x-dl::action-bar>
                 @endif
             </x-slot:account>
@@ -613,11 +613,5 @@
     @endif
 @endunless
 
-{{-- Kartu login pegawai baru: kredensial dititipkan flash session, tampil sekali. --}}
-@if ($card = session('v2_login_card'))
-    <x-dl::modal id="emp-login-card" :title="$card['title'] ?? 'Login Card'" icon="fa-id-card" :open="true">
-        <x-dl::login-card :title="$card['title'] ?? 'Login card'" :name="raw($card['name'])" :code="$card['code']" :login="raw($card['login'])" :password="raw($card['password'])">
-            <x-dl::button type="button" variant="secondary" label="Close" data-dl-close-modal />
-        </x-dl::login-card>
-    </x-dl::modal>
-@endif
+{{-- Kartu login: kredensial dititipkan flash session, tampil sekali (dialog bersama v2/partials/login-card). --}}
+@include('v2.partials.login-card')

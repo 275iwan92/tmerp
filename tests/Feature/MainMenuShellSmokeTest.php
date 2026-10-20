@@ -47,7 +47,7 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $this->get('/security?tab=groups')->assertOk()->assertSee('Group');
+        $this->get('/security?tab=groups')->assertRedirect('/v2/s/security-groups');
     }
 
     // Settings dipecah 2026-09-07 dari 1 layar gado-gado (setup.configuration)

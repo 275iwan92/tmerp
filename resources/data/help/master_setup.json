@@ -541,17 +541,17 @@
     "keywords": "akun, account, user, pengguna, login, username, password, reset password, grup user, nonaktifkan akun, wajib ganti password, security",
     "steps": [
       {"en": "Open Account and search by login, name or e-mail, or filter by Group or Administrator.", "id": "Buka Account dan cari berdasarkan login, nama atau e-mail, atau saring dengan Group atau Administrator."},
-      {"en": "Click + New Record to create an account. Fill Username, Full Name, Email, Initial Password and Group, then click Save.", "id": "Klik + New Record untuk membuat akun. Isi Username, Full Name, Email, Initial Password dan Group, lalu klik Save."},
-      {"en": "To change an account, double-click its row or use Edit. Username cannot be changed and the password is not edited here.", "id": "Untuk mengubah akun, klik dua kali barisnya atau pakai Edit. Username tidak bisa diganti dan password tidak diubah di sini."},
-      {"en": "Use Reset Password on the row to issue a new default password. It is shown once on the screen, and the user must change it at next login.", "id": "Pakai Reset Password pada baris untuk membuat password default baru. Password tampil satu kali di layar, dan user wajib menggantinya saat login berikutnya."},
-      {"en": "Use the active toggle to switch an account off or on. You cannot switch off your own account.", "id": "Pakai tombol aktif/nonaktif untuk mematikan atau menghidupkan akun. Akun sendiri tidak bisa dinonaktifkan."}
+      {"en": "Click + New Record. Fill Login, Name, E-mail, Initial password and Group, then click Save. Only active groups can be chosen.", "id": "Klik + New Record. Isi Login, Name, E-mail, Initial password dan Group, lalu klik Save. Hanya grup aktif yang bisa dipilih."},
+      {"en": "To change an account open its row. The login cannot be changed and the password is not edited here; change Name, E-mail or Group and click Save.", "id": "Untuk mengubah akun buka barisnya. Login tidak bisa diubah dan password tidak diubah di sini; ubah Name, E-mail atau Group lalu klik Save."},
+      {"en": "Click Reset Password to issue a new default password. It is shown once in a login card, and the user must change it at next login. View Password shows the stored default password again without changing it.", "id": "Klik Reset Password untuk membuat password bawaan baru. Tampil sekali di kartu login, dan user wajib menggantinya saat login berikutnya. View Password menampilkan lagi password bawaan tersimpan tanpa mengubahnya."},
+      {"en": "Click Deactivate Account or Activate Account to switch an account off or on. You cannot switch off your own account.", "id": "Klik Deactivate Account atau Activate Account untuk mematikan atau menghidupkan akun. Akun sendiri tidak bisa dimatikan."}
     ],
     "fields": [
-      {"label": "Username", "en": "Login name, up to 190 characters. Required and unique. Fixed once the account exists.", "id": "Nama login, maksimal 190 karakter. Wajib dan unik. Tidak bisa diubah setelah akun dibuat."},
-      {"label": "Full Name", "en": "Full name of the user, shown in the ERP. Required.", "id": "Full Name user, tampil di ERP. Wajib."},
-      {"label": "Email", "en": "E-mail address, optional but it must be valid. Changing it makes the user verify the address again.", "id": "Alamat e-mail, opsional tetapi harus sah. Bila diubah, user harus memverifikasi alamat itu lagi."},
-      {"label": "Initial Password", "en": "Initial password, at least 8 characters. Asked only for a new account.", "id": "Initial Password, minimal 8 karakter. Hanya diminta untuk akun baru."},
-      {"label": "Group", "en": "The group of the user. Required. The group sets what the user can open: see Group.", "id": "Group milik user. Wajib. Group menentukan apa yang boleh dibuka user: lihat Group."}
+      {"label": "Login", "en": "Login name in lowercase letters, digits, dot, underscore or minus, up to 190 characters. Required and unique. Fixed once the account exists.", "id": "Nama login berupa huruf kecil, angka, titik, garis bawah atau minus, maksimal 190 karakter. Wajib dan unik. Tidak bisa diubah setelah akun ada."},
+      {"label": "Name", "en": "Full name of the user, shown in the ERP. Required.", "id": "Nama lengkap user, tampil di ERP. Wajib."},
+      {"label": "E-mail", "en": "E-mail address, optional but it must be valid. Changing it makes the user verify the address again.", "id": "Alamat e-mail, opsional tetapi harus sah. Bila diubah, user harus memverifikasi ulang alamatnya."},
+      {"label": "Initial password", "en": "Initial password, at least 8 characters. Asked only for a new account.", "id": "Password awal, minimal 8 karakter. Hanya diminta untuk akun baru."},
+      {"label": "Group", "en": "The active group of the user. Required. The group sets what the user can open.", "id": "Grup aktif milik user. Wajib. Grup menentukan apa yang boleh dibuka user."}
     ]
   },
   {
@@ -567,15 +567,15 @@
     "keywords": "grup, group, level akses, hak akses, level manajemen, security group, staf, supervisor, manager, direksi, anggota grup",
     "steps": [
       {"en": "Open Group and search by group code or name. The grid shows the level and how many members each group has.", "id": "Buka Group dan cari berdasarkan kode atau nama grup. Grid menampilkan level dan jumlah anggota tiap grup."},
-      {"en": "Click + New Record. Type the Group Code and Group Name and pick the Level manajemen.", "id": "Klik + New Record. Ketik Group Code dan Group Name lalu pilih Level manajemen."},
-      {"en": "Click Save. On an existing group only the name and level can be changed.", "id": "Klik Save. Pada grup yang sudah ada hanya nama dan level yang bisa diubah."},
-      {"en": "Per-module rights (access, input, approve, export) are set per group in the security setup rights panel, not in this form.", "id": "Hak per modul (akses, input, approve, export) diatur per grup di panel hak akses pengaturan keamanan, bukan di form ini."},
-      {"en": "Use the active toggle to switch a group off.", "id": "Pakai tombol aktif/nonaktif untuk menonaktifkan grup."}
+      {"en": "Click + New Record. Type the Group code and Group name and pick the Access level.", "id": "Klik + New Record. Ketik Group code dan Group name lalu pilih Access level."},
+      {"en": "Click Save. On an existing group only the name and level can be changed. The tab Members lists the users of the group.", "id": "Klik Save. Pada grup yang sudah ada hanya nama dan level yang bisa diubah. Tab Members menampilkan user dalam grup."},
+      {"en": "Per-module rights (access, input, approve, export) are set per group in Groups on Modules, not in this form.", "id": "Hak per modul (akses, input, approve, export) diatur per grup di Groups on Modules, bukan di form ini."},
+      {"en": "Click Deactivate Group to switch a group off. A group that still has active members cannot be switched off; move the members to another group first.", "id": "Klik Deactivate Group untuk menonaktifkan grup. Grup yang masih punya anggota aktif tidak bisa dinonaktifkan; pindahkan anggotanya ke grup lain dulu."}
     ],
     "fields": [
-      {"label": "Group Code", "en": "Group code, up to 40 characters, for example PRODUKSI_SPV. Required and unique. Saved in capitals with spaces turned into underscores. Fixed once saved.", "id": "Group Code, maksimal 40 karakter, misalnya PRODUKSI_SPV. Wajib dan unik. Disimpan huruf besar, spasi jadi garis bawah. Tetap setelah disimpan."},
-      {"label": "Group Name", "en": "Name of the group, up to 100 characters. Required.", "id": "Group Name, maksimal 100 karakter. Wajib."},
-      {"label": "Management Level (1=Staff .. 5=Director)", "en": "Access level 1 Staf, 2 Supervisor, 3 Manager, 4 GM or 5 Direksi. Modules need a minimum level, so a higher level opens more screens.", "id": "Level akses 1 Staf, 2 Supervisor, 3 Manager, 4 GM atau 5 Direksi. Modul punya level minimum, jadi level lebih tinggi membuka lebih banyak layar."}
+      {"label": "Group code", "en": "Group code, up to 40 characters, letters, digits, spaces and underscores, for example PRODUKSI_SPV. Required and unique. Saved in capitals with spaces turned into underscores. Fixed once saved.", "id": "Kode grup, maksimal 40 karakter, huruf, angka, spasi dan garis bawah, misalnya PRODUKSI_SPV. Wajib dan unik. Disimpan kapital dengan spasi menjadi garis bawah. Tidak bisa diubah."},
+      {"label": "Group name", "en": "Name of the group, up to 100 characters. Required and unique.", "id": "Nama grup, maksimal 100 karakter. Wajib dan unik."},
+      {"label": "Access level", "en": "Level 1 Staff, 2 Supervisor, 3 Manager, 4 General Manager or 5 Director. Modules need a minimum level, so a higher level opens more screens.", "id": "Level 1 Staff, 2 Supervisor, 3 Manager, 4 General Manager atau 5 Director. Modul butuh level minimum, jadi level lebih tinggi membuka lebih banyak layar."}
     ]
   },
   {

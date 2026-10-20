@@ -133,7 +133,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_planning.php';
         require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
-        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php'; require __DIR__.'/v2_production.php'; require __DIR__.'/v2_hrm.php';
+        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php'; require __DIR__.'/v2_production.php'; require __DIR__.'/v2_hrm.php'; require __DIR__.'/v2_setup.php';
         require __DIR__.'/v2_warehouse.php';
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
@@ -185,7 +185,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/costing/instant/{costing}', 'pages::inquiry.costing-instant')->name('inquiry.costing.instant');
         });
 
-        Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
+        Route::get('/security', fn (Illuminate\Http\Request $r) => redirect(match ($r->query('tab')) { 'groups' => $r->filled('open') ? '/v2/s/security-group-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/security-group-form?new=1' : '/v2/s/security-groups'), 'perms' => '/v2/s/security-permissions', 'migration' => '/v2/s/setup-migration', default => $r->filled('open') ? '/v2/s/security-account-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/security-account-form?new=1' : '/v2/s/security-accounts') }))->name('security.index')->middleware('admin');
         Route::livewire('/setup/identification', 'pages::setup.identification')->name('setup.identification')->middleware('admin');
         Route::livewire('/setup/language', 'pages::setup.language')->name('setup.language')->middleware('admin');
         Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');

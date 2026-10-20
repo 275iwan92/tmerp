@@ -7,8 +7,15 @@ use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Setup > Security > Account (v1: pages::security.index tab users): akun login. Edit / New = form v1 (grup, reset password);
-// Aktif / Nonaktif di sini memakai aturan v1: admin tidak bisa menonaktifkan akunnya sendiri.
+/*
+ * REMARK
+ * Tujuan       : Grid Setup > Security > Account: akun login (sec_user) beserta grup, status administrator dan status password; Open / + New Record membuka form v2 security-account-form (ubah akun, reset password, aktif / nonaktif; admin tidak bisa menonaktifkan akunnya sendiri).
+ * Sumber hulu  : tm2sys.sec_user + sec_user_group + sec_group.
+ * Input        : Pencarian, filter, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu Setup > Security (v2:security-accounts), layar security-account-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::security.index (tab users dan groups) sudah dipindah ke tmerp_unused (aturan D.25, T8 Setup).
+ */
 class AccountGrid extends DbGrid
 {
     public function slug(): string
@@ -48,12 +55,12 @@ class AccountGrid extends DbGrid
 
     public function openUrl(): ?string
     {
-        return route('security.index').'?tab=users&open={id}';
+        return route('v2.screen', 'security-account-form').'?id={id}';
     }
 
     public function newUrl(): ?string
     {
-        return route('security.index').'?tab=users&new=1';
+        return route('v2.screen', 'security-account-form').'?new=1';
     }
 
     public function search(): string

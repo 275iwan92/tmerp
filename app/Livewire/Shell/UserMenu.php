@@ -6,7 +6,6 @@ use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
 use App\Models\Sys\SysNotification;
 use App\Models\Sys\SysUserMenu;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -45,11 +44,11 @@ class UserMenu extends Component
 
         return $item->action_type === 'menu'
             ? match ($item->action_target) {
-                'SET_USER' => route('security.index', ['tab' => 'users']),
-                'SET_GROUP' => route('security.index', ['tab' => 'groups']),
+                'SET_USER' => route('v2.screen', 'security-accounts'),
+                'SET_GROUP' => route('v2.screen', 'security-groups'),
                 default => null,
             }
-            : null;
+        : null;
     }
 
     #[Computed]

@@ -7,7 +7,15 @@ use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Setup > Security > Group (v1: pages::security.index tab groups): grup = level akses, bukan jabatan (rulebook C.14).
+/*
+ * REMARK
+ * Tujuan       : Grid Setup > Security > Group: grup akses (sec_group) dengan level dan jumlah anggota (grup = level akses, bukan jabatan, rulebook C.14); Open / + New Record membuka form v2 security-group-form.
+ * Sumber hulu  : tm2sys.sec_group + sec_user_group.
+ * Input        : Pencarian, filter, kotak status.
+ * Output       : Baris grid (hanya baca; perubahan lewat form).
+ * Dipakai oleh : Menu Setup > Security (v2:security-groups), layar security-group-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::security.index (tab users dan groups) sudah dipindah ke tmerp_unused (aturan D.25, T8 Setup).
+ */
 // Edit / New = form v1; hak per modul diatur di Group per Submodule (v1).
 class GroupGrid extends DbGrid
 {
@@ -51,12 +59,12 @@ class GroupGrid extends DbGrid
 
     public function openUrl(): ?string
     {
-        return route('security.index').'?tab=groups&open={id}';
+        return route('v2.screen', 'security-group-form').'?id={id}';
     }
 
     public function newUrl(): ?string
     {
-        return route('security.index').'?tab=groups&new=1';
+        return route('v2.screen', 'security-group-form').'?new=1';
     }
 
     public function search(): string

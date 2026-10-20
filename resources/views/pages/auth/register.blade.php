@@ -217,7 +217,7 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
                 'title' => 'Pendaftaran baru menunggu approval',
                 'message' => "{$user->name} ({$user->login}) mendaftar sebagai {$user->reg_type}.",
                 'type' => 'info',
-                'link' => route('security.index', ['tab' => 'users']),
+                'link' => route('v2.screen', 'security-accounts'),
             ])
         );
 
