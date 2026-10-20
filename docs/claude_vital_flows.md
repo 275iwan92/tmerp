@@ -88,7 +88,7 @@
     masuk quotation (via `availableInquiries` — inquiry customer sama, costing
     `published_flag=true`, belum ditarik ke quotation ini); sisanya (header,
     harga, qty, diskon per baris) **AUTO** dari snapshot InqProd tapi **BOLEH
-    diedit** sebelum publish. **SUDAH ADA & jalan**: `quotation/entry.blade.php`
+    diedit** sebelum publish. **SUDAH ADA & jalan**: `QuotationEntryService`
     + `App\Services\Sales\QuotationBuilder`.
   - **Langkah 2 — Customer OK → CUSTOMER ORDER Mode #1 (auto dari Quotation)**:
     1 CO = 1 Quotation (locked 2026-08-20, FK `co_order.quotation_id` NOT
@@ -125,7 +125,7 @@
     tambahan 2026-09-03, `itemsMissingDueDate` — tombol Confirm CO disabled +
     warning kalau ada yang kosong) — jadi **TIDAK ADA lagi CO CONFIRMED
     dengan due_date kosong**. **SUDAH ADA & jalan**:
-    `co/entry.blade.php::confirmCo()`. Grid CPDEL
+    `CoOrderBuilder::confirm()`. Grid CPDEL
     (`co/delivery-plan.blade.php`) sendiri **sudah live sejak 2026-08-20**
     dan punya 3 aksi per baris: **Split** (pecah qty+tanggal), **Gabung/Join**
     (baris item+CO sama → baris tanggal-paling-awal), atau **biarkan** hasil

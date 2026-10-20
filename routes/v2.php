@@ -525,7 +525,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('part')->name('delete');
     });
 
-    // Quotation v2 (App\Support\V2\Data\Quotation = aturan komponen v1 pages::quotation.entry). Customer tidak diketik: dari inquiry.
+    // Quotation v2 (App\Support\V2\Data\Quotation = aturan QuotationEntryService). Customer tidak diketik: dari inquiry.
     Route::prefix('quotation')->name('quotation.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'quotation').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
@@ -1195,7 +1195,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     // Inventory > Batch & Quality (v2.01): keputusan mutu batch, first article, tanda URGENT penerimaan, permintaan kirim kekurangan.
     require __DIR__.'/v2_quality.php';
 
-    // Customer Order v2 (App\Support\V2\Data\CustomerOrder = aturan komponen v1 pages::co.entry). Tombol "+" menyimpan isian dulu.
+    // Customer Order v2 (App\Support\V2\Data\CustomerOrder = aturan CoEntryService). Tombol "+" menyimpan isian dulu.
     Route::prefix('co')->name('co.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'customer-order').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {

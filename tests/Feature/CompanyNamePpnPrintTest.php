@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\CoOrderItem;
 use App\Models\Sdi\DoDelivery;
 use App\Models\Sdi\DoLine;
 use App\Models\Sys\SecUser;
 use App\Services\Dispatch\DispatchService;
+use App\Services\Sales\CoEntryService;
 use App\Support\Branding\Brand;
 use App\Support\V2\Data\Identification;
 use Illuminate\Support\Facades\DB;
@@ -116,12 +118,11 @@ class CompanyNamePpnPrintTest extends TestCase
         $coId = end($this->coIds);
         DB::connection('tm2sdi')->table('co_order')->where('id_order', $coId)->update(['doc_status' => 'DRAFT']);
 
-        $c = Livewire::test('pages::co.entry', ['order' => $coId])->assertSee('Non PPN');
-        $c->call('updateHeader', 'is_ppn', '0');
+        CoEntryService::updateHeader(CoOrder::findOrFail($coId), 'is_ppn', '0');
         $this->assertSame(0, (int) DB::connection('tm2sdi')->table('co_order')->where('id_order', $coId)->value('is_ppn'));
 
         DB::connection('tm2sdi')->table('co_order')->where('id_order', $coId)->update(['doc_status' => 'CONFIRMED']);
-        Livewire::test('pages::co.entry', ['order' => $coId])->call('updateHeader', 'is_ppn', '1');
+        CoEntryService::updateHeader(CoOrder::findOrFail($coId), 'is_ppn', '1');
         $this->assertSame(0, (int) DB::connection('tm2sdi')->table('co_order')->where('id_order', $coId)->value('is_ppn'), 'CO non-DRAFT terkunci.');
     }
 
@@ -130,10 +131,10 @@ class CompanyNamePpnPrintTest extends TestCase
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
         $quotationId = DB::connection('tm2sdi')->table('quo_quotation')->where('doc_status', 'PUBLISHED')->value('id_quotation');
 
-        $html = Livewire::test('pages::quotation.print', ['quotation' => $quotationId])->html();
+        $html = $this->get('/v2/print/quotation/'.$quotationId)->assertOk()->getContent();
 
-        $this->assertStringContainsString('Telasih Makmur', $html);
-        $this->assertStringNotContainsString('CV. Langgeng', $html);
+        // Cetak Quotation v2 selalu kop badan hukum (quotation selalu ber-PPN, user 2026-10-02), tanpa pilihan kop.
+        $this->assertStringContainsStringIgnoringCase(Brand::companyLegalName(), $html);
         $this->assertStringNotContainsString('class="kop-choice"', $html);
         $this->assertStringNotContainsString('PT Telasih', $html);
     }

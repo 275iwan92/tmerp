@@ -9,17 +9,17 @@
 Searched in `routes/console.php` (no CO schedule), `app/Observers` (only 2, unrelated to CO), Jobs, and all callers. FACT: called only by screen actions, seeders, and migrations.
 | Method | Trigger | File:line |
 |---|---|---|
-| `findOrCreateFromQuotation` | Quotation WIN button (v2) | `app/Support/V2/Data/Quotation.php:284`; route `routes/v2.php:442-445` |
-| | Pick a Quotation on the Customer Order screen (v2) | `app/Support/V2/Data/CustomerOrder.php:83` |
-| | v1 screens | `tmerp_unused/co_list_v1_2026-10-20.blade.php:149`, `pages/quotation/entry.blade.php:502` |
+| `findOrCreateFromQuotation` | Quotation WIN button (v2) | `app/Support/V2/Data/Quotation.php:273`; route `routes/v2.php:442-445` |
+| | Pick a Quotation on the Customer Order screen (v2) | `app/Support/V2/Data/CustomerOrder.php:74` |
+| | v1 screens | `tmerp_unused/co_list_v1_2026-10-20.blade.php:149`, `tmerp_unused/quotation_entry_v1_2026-10-20.blade.php:502` |
 | | Dummy seeder/migration | `database/seeders/UatQuotationInquirySeeder.php:127`, `database/migrations/2026_09_21_000007_seed_inquiry_to_co_win_chain.php:139` |
-| `createInstant` | Create an INSTANT CO from a customer choice (v2) and Duplicate of a rejected/cancelled CO | `CustomerOrder.php:88`, `CustomerOrder.php:241` |
+| `createInstant` | Create an INSTANT CO from a customer choice (v2) and Duplicate of a rejected/cancelled CO | `CustomerOrder.php:79`, `CustomerOrder.php:228` |
 | | v1, PPIC dummy, migration | `tmerp_unused/co_list_v1_2026-10-20.blade.php:160`, `app/Console/Commands/PpicSeedDummy.php:77`, migration `…000007…:202` |
-| `addProductLine` | Pick a Master Product on an INSTANT CO (v1, called from a component that v2 also uses) | `pages/co/entry.blade.php:219`, `PpicSeedDummy.php:78`, migration `…:210` |
-| `submit` | CO Confirm button (v2) | `CustomerOrder.php:192` |
-| `confirm` | Last approval passes | `CustomerOrder.php:223` (inside `decide`) |
-| | v1 path without approval, and seeders | `pages/co/entry.blade.php:414`, `tmerp_unused/co_list_v1_2026-10-20.blade.php:180`, migration `…:158,215` |
-| `cancel` / `cancelBlocker` | CO Cancel button (v2) | `CustomerOrder.php:267` |
+| `addProductLine` | Pick a Master Product on an INSTANT CO (v1, called from a component that v2 also uses) | `app/Services/Sales/CoEntryService.php:88`, `PpicSeedDummy.php:78`, migration `…:210` |
+| `submit` | CO Confirm button (v2) | `CustomerOrder.php:179` |
+| `confirm` | Last approval passes | `CustomerOrder.php:210` (inside `decide`) |
+| | v1 path without approval, and seeders | `tmerp_unused/co_entry_v1_2026-10-20.blade.php:414`, `tmerp_unused/co_list_v1_2026-10-20.blade.php:180`, migration `…:158,215` |
+| `cancel` / `cancelBlocker` | CO Cancel button (v2) | `CustomerOrder.php:254` |
 
 ## Input / Output
 - **Input**: `QuoQuotation` PUBLISHED + items + inquiries; `CustCustomer` (tax profile, terms, default address); `ProdProduct` (INSTANT); `IqpCostingPriceTier.tolerance_pct`; `sales_person`; flow config `CO`; constant `CO_LEAD_WORKDAYS`; product ACC Digital (via `CoDueDate`).
@@ -55,7 +55,7 @@ Searched in `routes/console.php` (no CO schedule), `app/Observers` (only 2, unre
 - A Quotation whose CO is already CANCELLED or REJECTED still returns that old CO (lines 33-37), it does not create a new one.
 - The transaction is only on connection `tm2sdi`; `ProductMasterSync` opens its own transaction on `tm2mst` (`ProductMasterSync.php`, `DB::connection('tm2mst')->transaction`). A failure midway does not roll back both together (FROM CODE, not tested).
 - Approval with `total net_receivable` as `amount_snapshot`; the figure is read at submit and is not updated if the CO is changed afterwards (a DRAFT can no longer be changed after SUBMITTED, `CustomerOrder::save`, `abort_unless` DRAFT, line 94).
-- `confirm` silently returns false (no message) when the conditions are not met; the v1 caller ignores it (`entry.blade.php:414`).
+- `confirm` silently returns false (no message) when the conditions are not met; the v1 caller (archived) ignored it (`tmerp_unused/co_entry_v1_2026-10-20.blade.php:414`).
 - `confirm` does not recheck the one-qty rule (A.15) and does not check approval; only `submit` checks A.15.
 
 ## Used by
@@ -82,3 +82,4 @@ Update 2026-10-18: `CoListExpandRowTest` no longer relies on the old dummy CO; i
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: keys `duplex-price` and `corrugated-sheet-price` (Procurement) were added after the lines cited here; nothing in this card changed.
 
 - Re-checked 2026-10-18 after the duplicate-module cleanup (v1 Scheduling Board, Rule Library and Master Crew removed): the registry entry that uses `CoOrderBuilder` (key `cpdel`) is now `EngineRegistry.php:386-414`; `engines.json` lost the 3 removed engines only; nothing else in this card changed.
+- Re-checked 2026-10-20 after the Quotation and Customer Order entry rules moved from the v1 components to services (rule D.25, T10): `routes/web.php` replaced the v1 routes `/quotation/new`, `/quotation/{quotation}/edit`, `/quotation/{quotation}/print`, `/co/{order}/edit` and `/co/{order}/print` by redirects on the same lines (no line added or removed), `routes/v2.php` changed only two comment lines, `app/Support/V2/Screens.php` changed the description text of the `quotation` and `customer-order` rows on the same lines, and `app/Support/V2/Data/Quotation.php` and `CustomerOrder.php` now call `QuotationEntryService` and `CoEntryService` instead of the v1 Livewire components (the `component()` helper is gone; cards that cite lines of those two files were remapped from the diff). The v1 pages `pages::quotation.entry`, `pages::co.entry` and the two v1 prints are archived in `tmerp_unused/`. Every other cited line number is unchanged and this card's content is still true.

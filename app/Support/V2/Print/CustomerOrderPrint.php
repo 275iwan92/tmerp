@@ -52,6 +52,7 @@ class CustomerOrderPrint extends Document
     {
         $o = CoOrder::with(['customer', 'quotation:id_quotation,quotation_no', 'paymentTermRef', 'externalCosts',
             'items' => fn ($q) => $q->orderBy('line_seq'), 'items.inquiry.parts' => fn ($q) => $q->orderBy('part_seq')])->findOrFail($id);
+        abort_unless($o->doc_status === 'CONFIRMED', 403, t('Print is available once the Customer Order is confirmed.'));
         $prices = ($opt['prices'] ?? true) && (Auth::user()?->canViewSalesPrice() ?? true);
         $class = $prices ? self::class : CustomerOrderNoPricePrint::class;
         $c = $o->customer;

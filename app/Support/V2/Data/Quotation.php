@@ -9,27 +9,19 @@ use App\Models\Sdi\QuoActivity;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Sales\CoOrderBuilder;
 use App\Services\Sales\QuotationBuilder;
+use App\Services\Sales\QuotationEntryService;
 use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Livewire\Component;
 
-// Layar Quotation v2. Aturan & tulis = komponen v1 pages::quotation.entry yang SAMA (updateHeader/updateItem/publish/markLost/
-// saveActivity/...), dipanggil per field supaya perilaku otomatis v1 (Berlaku s/d & Deadline ikut tanggal dokumen, CC tanpa Attn,
+// Layar Quotation v2. Aturan & tulis = App\Services\Sales\QuotationEntryService (updateHeader/updateItem/publish/markLost/
+// saveActivity/...), dipanggil per field supaya perilaku otomatis (Berlaku s/d & Deadline ikut tanggal dokumen, CC tanpa Attn,
 // subtotal ulang) tetap satu sumber. Tambahan v2: Hapus draft & Cancel (quotation PUBLISHED yang belum WIN/LOST).
 final class Quotation
 {
     public const STATUS_TONES = ['DRAFT' => 'neutral', 'PUBLISHED' => 'warn', 'WON' => 'success', 'LOST' => 'danger', 'CANCELLED' => 'neutral'];
 
-    public const HEADER = ['issued_date', 'valid_until', 'deadline_date', 'payment_term', 'tax_scheme', 'currency_code', 'attn_contact', 'sales_pic', 'notes'];
-
-    public static function component(?int $id): Component
-    {
-        $c = app('livewire')->new('pages::quotation.entry');
-        $c->quotationId = $id;
-
-        return $c;
-    }
+    public const HEADER = QuotationEntryService::HEADER_FIELDS;
 
     // DRAFT | PUBLISHED | WON | LOST | CANCELLED
     public static function status(QuoQuotation $q): string
@@ -203,21 +195,20 @@ final class Quotation
     public static function save(QuoQuotation $q, array $header, ?array $cc, array $items, array $remove = []): void
     {
         abort_unless($q->doc_status === 'DRAFT', 422, t('The Quotation can no longer be changed.'));
-        $c = self::component($q->id_quotation);
         $orig = collect(self::HEADER)->mapWithKeys(fn ($f) => [$f => self::str($q->{$f})])->all();
 
         foreach (self::HEADER as $f) {
             if (array_key_exists($f, $header) && self::str($header[$f]) !== $orig[$f]) {
-                $c->updateHeader($f, self::str($header[$f]));
+                QuotationEntryService::updateHeader($q, $f, self::str($header[$f]));
             }
         }
 
         if ($cc !== null) {
-            $c->updateCc(json_encode(array_values($cc)));
+            QuotationEntryService::updateCc($q, array_values($cc));
         }
 
         foreach ($remove as $id) {
-            $c->removeItem((int) $id);
+            QuotationEntryService::removeItem($q, (int) $id);
         }
 
         $current = $q->items()->get()->keyBy('id_item');
@@ -232,7 +223,7 @@ final class Quotation
                 }
                 $v = in_array($f, ['qty', 'unit_price', 'discount_pct'], true) ? self::num($row[$f]) : trim((string) $row[$f]);
                 if ((string) $v !== self::str($item->{$f}) && ! (is_numeric($v) && is_numeric($item->{$f}) && (float) $v === (float) $item->{$f})) {
-                    $c->updateItem((int) $id, $f, $v);
+                    QuotationEntryService::updateItem($q, (int) $id, $f, $v);
                 }
             }
         }
@@ -240,14 +231,14 @@ final class Quotation
 
     public static function addLine(QuoQuotation $q): void
     {
-        self::component($q->id_quotation)->addFreeform();
+        QuotationEntryService::addFreeform($q);
     }
 
     public static function confirm(QuoQuotation $q): void
     {
         abort_unless($q->doc_status === 'DRAFT', 422, t('Only a DRAFT can be confirmed.'));
         abort_if($q->items()->doesntExist(), 422, t('The Quotation has no lines yet.'));
-        self::component($q->id_quotation)->publish();
+        QuotationEntryService::publish($q);
     }
 
     // Draft belum pernah dikirim ke customer -> boleh dihapus; inquiry-nya kembali Ready to Quote.
@@ -271,9 +262,7 @@ final class Quotation
     public static function lost(QuoQuotation $q, string $reason): void
     {
         abort_unless(self::status($q) === 'PUBLISHED', 422, t('This quotation is already closed.'));
-        $c = self::component($q->id_quotation);
-        $c->lostReason = $reason;
-        $c->markLost();
+        QuotationEntryService::markLost($q, $reason);
     }
 
     // WIN = Customer Order lahir (1 CO = 1 Quotation), inquiry CONVERTED -> Master Product.
@@ -286,14 +275,12 @@ final class Quotation
 
     public static function addActivity(QuoQuotation $q, array $act): void
     {
-        $c = self::component($q->id_quotation);
-        $c->act = $act + ['contact_person' => null, 'result' => '', 'notes' => '', 'next_action_date' => '', 'next_action' => ''];
-        $c->saveActivity();
+        QuotationEntryService::saveActivity($q, $act + ['contact_person' => null, 'result' => '', 'notes' => '', 'next_action_date' => '', 'next_action' => '']);
     }
 
     public static function deleteActivity(QuoQuotation $q, int $id): void
     {
-        self::component($q->id_quotation)->deleteActivity($id);
+        QuotationEntryService::deleteActivity($q, $id);
     }
 
     private static function str(mixed $v): string

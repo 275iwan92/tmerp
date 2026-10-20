@@ -5,7 +5,7 @@
  Input        : Query id (quotation), inq (inquiry terpilih), pick (daftar inquiry siap ditawarkan); session v2_flash dan errors.
  Output       : Daftar grid transaksional, pemilih inquiry, form draft/terbit; POST ke v2.quotation.create/save/win/lost/cancel/activity; x-dl::form, x-dl::grid, x-dl::alert.
  Dipakai oleh : route v2.screen (routes/v2.php), slug quotation (menu Sales > Quotation); dirujuk dari quotation-outstanding.
- Status       : Aktif; flow mengikuti pages/quotation/entry v1.
+ Status       : Aktif; aturan di QuotationEntryService (v1 diarsipkan).
 --}}
 @php
     use App\Models\Master\FinCurrency;
@@ -13,6 +13,7 @@
     use App\Models\Sdi\IqpInquiry;
     use App\Models\Sdi\QuoActivity;
     use App\Models\Sdi\QuoQuotation;
+    use App\Services\Sales\QuotationEntryService;
     use App\Support\V2\Data\Quotation;
     use App\Support\V2\Src;
 
@@ -66,10 +67,9 @@
     </x-dl::action-form>
 @else
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30): panel aksi + tahapan -> ringkasan -> tab header -> Details di tengah
-         -> footer (Tax + Summary + terbilang). Data & simpan = v1 quotation/entry lewat Quotation::save() (items[id][..], remove[id],
+         -> footer (Tax + Summary + terbilang). Data & simpan = QuotationEntryService lewat Quotation::save() (items[id][..], remove[id],
          action=save|confirm|add_line|delete); Cancel / LOST / WIN tetap lewat modal & rute masing-masing. Total = QuoQuotation::totals(). --}}
     @php
-        $c = Quotation::component($q->id_quotation);
         $status = Quotation::status($q);
         $draft = $q->doc_status === 'DRAFT';
         $totals = $q->totals();
@@ -94,7 +94,7 @@
     <x-dl::form id="quotation-form" :title="'Quotation · '.raw($q->quotation_no)" :subtitle="raw(($q->customer?->customer_name ?? '—').' · '.$status)"
         panel="top" kind="document" :status="$formStatus" :pipeline="true"
         :action="route('v2.quotation.save', $q->id_quotation)" action-field="action" :back="$home" :new-url="$home.'?pick=1'"
-        :print-url="\App\Support\V2\Print\PrintDocs::url('quotation', $q->id_quotation)" :hide="['cancel']"
+        :print-url="$q->doc_status === 'PUBLISHED' ? \App\Support\V2\Print\PrintDocs::url('quotation', $q->id_quotation) : null" :hide="['cancel']"
         :tabs="['general' => 'General', 'finance' => 'Finance', 'notes' => 'Notes']"
         :created-by="$q->created_by" :created-at="$q->created_at?->toDateTimeString()" :updated-by="$q->updated_by" :updated-at="$q->updated_at?->toDateTimeString()">
         <x-slot:special>
@@ -114,9 +114,9 @@
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">
-                <x-dl::field.select name="attn_contact" label="Attn (contact)" :options="$c->contactOptions()" :value="old('attn_contact', $q->attn_contact)" :source="Src::of('tm2mst.cust_customer_contact', 'tm2sdi.quo_quotation.attn_contact')" />
-                <x-dl::field.multi-select name="cc" label="CC" :options="collect($c->ccOptions())->pluck('label', 'value')->all()" :value="$q->ccs->pluck('contact_name')->all()" :source="Src::of('tm2sdi.quo_quotation_cc')" />
-                <x-dl::field.select name="sales_pic" label="Sales PIC" :options="$c->salesOptions()" :value="old('sales_pic', $q->sales_pic)" :source="Src::of('tm2mst.sales_person', 'tm2sdi.quo_quotation.sales_pic')" />
+                <x-dl::field.select name="attn_contact" label="Attn (contact)" :options="QuotationEntryService::contactOptions($q)" :value="old('attn_contact', $q->attn_contact)" :source="Src::of('tm2mst.cust_customer_contact', 'tm2sdi.quo_quotation.attn_contact')" />
+                <x-dl::field.multi-select name="cc" label="CC" :options="collect(QuotationEntryService::ccOptions($q))->pluck('label', 'value')->all()" :value="$q->ccs->pluck('contact_name')->all()" :source="Src::of('tm2sdi.quo_quotation_cc')" />
+                <x-dl::field.select name="sales_pic" label="Sales PIC" :options="QuotationEntryService::salesOptions($q)" :value="old('sales_pic', $q->sales_pic)" :source="Src::of('tm2mst.sales_person', 'tm2sdi.quo_quotation.sales_pic')" />
             </x-dl::form.row>
             <input type="hidden" name="cc_present" value="1">
             <x-dl::form.row :cols="3">
@@ -209,7 +209,7 @@
                 <x-dl::field.date name="act[activity_date]" label="Date" required :value="now()->toDateString()" />
             </x-dl::form.row>
             <x-dl::form.row cols="2">
-                <x-dl::field.select name="act[contact_person]" label="Contact" :options="$c->contactOptions()" :value="$q->attn_contact" />
+                <x-dl::field.select name="act[contact_person]" label="Contact" :options="QuotationEntryService::contactOptions($q)" :value="$q->attn_contact" />
                 <x-dl::field.select name="act[result]" label="Result" :options="array_map(fn ($r) => t($r), QuoActivity::RESULTS)" />
             </x-dl::form.row>
             <x-dl::field.text name="act[notes]" label="Notes" multiline />

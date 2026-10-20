@@ -11,6 +11,7 @@
     use App\Models\Master\FinPaymentTerm;
     use App\Models\Master\SalesPerson;
     use App\Models\Sdi\CoOrder;
+    use App\Services\Sales\CoEntryService;
     use App\Support\V2\Data\CustomerOrder;
     use App\Support\V2\Src;
 
@@ -55,10 +56,9 @@
     </x-dl::card>
 @else
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30): panel aksi + tahapan -> ringkasan -> tab header -> Details di tengah
-         -> footer (Discount / Tax / Other Costs + Summary + terbilang). Data & simpan = v1 co/entry lewat CustomerOrder::save()
+         -> footer (Discount / Tax / Other Costs + Summary + terbilang). Data & simpan = CoEntryService lewat CustomerOrder::save()
          (field items[id][..], deliveries[id][..], costs[id][..], remove*[id], action=...); total dari CoOrder::totals() (server). --}}
     @php
-        $c = CustomerOrder::component($o->id_order);
         $draft = $o->doc_status === 'DRAFT';
         $totals = $o->totals();
         $missingDue = $o->items->where('line_kind', 'PRODUCT')->whereNull('due_date');
@@ -78,7 +78,7 @@
             'source' => $it->quotation_item_id !== null ? t('Quotation snapshot (locked)') : t('Manual'), 'spec_note' => $it->spec_note ?? '—',
             'product_label' => $it->product_id ? ($it->product?->product_name ?? '#'.$it->product_id) : ($it->line_kind === 'PRODUCT' ? t('not linked yet') : '—'),
         ])->values()->all();
-        $log = collect($c->historyTimeline())->map(fn ($r) => ['at' => $r['date'], 'by' => '', 'action' => $r['type'].(! empty($r['current']) ? ' '.t('(this one)') : ''), 'note' => $r['label']])->reverse()->values()->all();
+        $log = collect(CoEntryService::historyTimeline($o))->map(fn ($r) => ['at' => $r['date'], 'by' => '', 'action' => $r['type'].(! empty($r['current']) ? ' '.t('(this one)') : ''), 'note' => $r['label']])->reverse()->values()->all();
         // Approval CO (user 2026-09-30): F&A SPV (cek harga) -> Operational Manager; log keputusan flow_log di atas History.
         $appr = CustomerOrder::approvalState('CO', $o->id_order, (float) $totals['net_receivable']);
         $pending = CustomerOrder::pending($o);
@@ -94,7 +94,7 @@
         panel="top" kind="document" :status="CustomerOrder::formStatus($o, $appr['held'])" :pipeline="true"
         :approval-levels="$appr['levels']" :approval-at="$appr['at'] ?: ($o->doc_status === 'SUBMITTED' ? 1 : $appr['levels'])" :can-approve="(bool) $pending"
         :action="route('v2.co.save', $o->id_order)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
-        :print-url="\App\Support\V2\Print\PrintDocs::url('customer-order', $o->id_order)" :hide="array_merge([], $o->isInstant() ? [] : ['delete'])"
+        :print-url="$o->doc_status === 'CONFIRMED' ? \App\Support\V2\Print\PrintDocs::url('customer-order', $o->id_order) : null" :hide="array_merge([], $o->isInstant() ? [] : ['delete'])"
         :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'material' => 'Customer Material'] + ($draft ? [] : ['billing' => 'Billing']) + ['notes' => 'Notes']"
         :created-by="$o->created_by" :created-at="$o->created_at?->toDateTimeString()" :updated-by="$o->updated_by" :updated-at="$o->updated_at?->toDateTimeString()" :log="$log">
         <x-slot:special>
@@ -110,7 +110,7 @@
             <x-dl::form.row :cols="4">
                 <x-dl::field.display label="Ref. Quotation" :value="$o->quotation?->quotation_no ?? t('— (Instant, without Quotation)')" :source="Src::of('tm2sdi.co_order.quotation_id')" />
                 <x-dl::field.text name="customer_po_no" label="Cust. PO No." :case-toggle="false" placeholder="PO/customer/..." :value="old('customer_po_no', $o->customer_po_no)" :source="Src::of('tm2sdi.co_order.customer_po_no')" />
-                <x-dl::field.display label="Order Type" :value="t($c->orderType())" :source="Src::calc('jenis baris', 'tm2sdi.co_order_item.line_kind')" />
+                <x-dl::field.display label="Order Type" :value="t(CoEntryService::orderType($o))" :source="Src::calc('jenis baris', 'tm2sdi.co_order_item.line_kind')" />
                 <x-dl::field.select name="sales_person_id" label="PIC Sales" placeholder="— choose —" :options="SalesPerson::where('activate', true)->orderBy('sales_name')->pluck('sales_name', 'id_sales_person')->all()" :value="old('sales_person_id', $o->sales_person_id)" :source="Src::of('tm2mst.sales_person')" />
             </x-dl::form.row>
         </x-slot:general>

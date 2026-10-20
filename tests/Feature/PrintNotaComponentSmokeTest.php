@@ -13,24 +13,20 @@ use Tests\TestCase;
 // tidak menghilangkan konten kunci (kop, parties, section, tanda tangan, footer).
 class PrintNotaComponentSmokeTest extends TestCase
 {
-    public function test_quotation_print_renders_shared_print_components(): void
+    // Cetak Quotation sekarang v2 (x-dl::print-doc); v1 pages::quotation.print diarsipkan 2026-10-20.
+    public function test_quotation_print_renders_v2_print_doc(): void
     {
-        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
-        $this->actingAs($admin);
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
 
         $quotation = QuoQuotation::where('doc_status', 'PUBLISHED')->firstOrFail();
 
-        $html = Livewire::test('pages::quotation.print', ['quotation' => $quotation->id_quotation])->html();
+        $html = $this->get('/v2/print/quotation/'.$quotation->id_quotation)->assertOk()->getContent();
 
-        $this->assertStringContainsString('print-doc', $html);
-        $this->assertStringContainsString('print-kop', $html);
-        $this->assertStringContainsString('SURAT PENAWARAN HARGA', $html);
+        $this->assertStringContainsString('dl-pdoc', $html);
+        $this->assertStringContainsString('dl-pdoc__kop', $html);
         $this->assertStringContainsString($quotation->quotation_no, $html);
-        $this->assertStringContainsString('print-parties', $html);
-        $this->assertStringContainsString('KEPADA YTH.', $html);
-        $this->assertStringContainsString('print-sign', $html);
-        $this->assertStringContainsString('PENGESAHAN', $html);
-        $this->assertStringContainsString('print-foot', $html);
+        $this->assertStringContainsString('dl-pdoc__sign', $html);
+        $this->assertStringContainsString('dl-pdoc__foot', $html);
     }
 
     public function test_inquiry_nota_renders_shared_print_components_with_bw_toggle(): void

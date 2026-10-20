@@ -152,13 +152,13 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::redirect('/sales/win-rate', '/v2/s/sales-win-rate')->name('sales.win-rate');
 
             Route::redirect('/quotation', '/v2/s/quotation')->name('quotation.list');
-            Route::livewire('/quotation/new', 'pages::quotation.entry')->name('quotation.create');
-            Route::livewire('/quotation/{quotation}/edit', 'pages::quotation.entry')->name('quotation.entry');
-            Route::livewire('/quotation/{quotation}/print', 'pages::quotation.print')->name('quotation.print');
+            Route::redirect('/quotation/new', '/v2/s/quotation?pick=1')->name('quotation.create');
+            Route::get('/quotation/{quotation}/edit', fn (int $quotation) => redirect('/v2/s/quotation?id='.$quotation))->name('quotation.entry');
+            Route::get('/quotation/{quotation}/print', fn (int $quotation) => redirect('/v2/print/quotation/'.$quotation))->name('quotation.print');
 
             Route::redirect('/co', '/v2/s/customer-order')->name('co.list');
-            Route::livewire('/co/{order}/edit', 'pages::co.entry')->name('co.entry');
-            Route::livewire('/co/{order}/print', 'pages::co.print')->name('co.print');
+            Route::get('/co/{order}/edit', fn (int $order) => redirect('/v2/s/customer-order?id='.$order))->name('co.entry');
+            Route::get('/co/{order}/print', fn (int $order) => redirect('/v2/print/customer-order/'.$order))->name('co.print');
             Route::redirect('/co/delivery-plan', '/v2/s/cpdel')->name('co.delivery-plan');
 
             // Delivery (DO/Surat Jalan) -- sebelumnya modul "Dispatch" berdiri sendiri,

@@ -38,11 +38,11 @@ final class Screens
                     $it('prodev'),
                     $it('master-card-collection', ['Master Card Collection', 'fa-solid fa-id-card', 'v2 baru: upload master card lama (Excel/foto) -> Master Product / Inquiry', 'master_card_collection_v2.jpg']),
                     $it('sales-price', ['Prices from Pro-Cost (tiers & prices)', 'fa-solid fa-tags', 'inquiry/costing.blade.php (hanya tier & harga terpublish)', null]),
-                    $it('quotation', ['Quotation', 'fa-solid fa-file-signature', 'quotation/entry.blade.php (aturan; list v1 diarsipkan)', 'mockup_sales_quotation_entry.html']),
+                    $it('quotation', ['Quotation', 'fa-solid fa-file-signature', 'Services/Sales/QuotationEntryService (aturan; v1 diarsipkan)', 'mockup_sales_quotation_entry.html']),
                     $it('nota-inquiry', ['Inquiry Note', 'fa-solid fa-receipt', 'inquiry/nota.blade.php', 'nota_inquiry_mockup.html']),
                 ]],
                 ['label' => 'Order', 'items' => [
-                    $it('customer-order', ['Customer Order', 'fa-solid fa-bag-shopping', 'co/entry.blade.php (aturan; list v1 diarsipkan)', 'mockup_co_entry.html']),
+                    $it('customer-order', ['Customer Order', 'fa-solid fa-bag-shopping', 'Services/Sales/CoEntryService (aturan; v1 diarsipkan)', 'mockup_co_entry.html']),
                     $it('cpdel', ['Customer Plan Delivery', 'fa-solid fa-truck-ramp-box', 'v2: App\Support\V2\Data\Cpdel (aturan: pages::co.delivery-plan)', 'co_delivery_plan_mockup.html']),
                     $it('approval-co', ['CO Approval Center', 'fa-solid fa-stamp', 'v2 baru: DevLib Form Approval + flow engine CO (F&A SPV -> Operational Manager)', null]),
                 ]],

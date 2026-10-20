@@ -6,15 +6,15 @@ use App\Models\Master\CustCustomer;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Flow\FlowEngineService;
+use App\Services\Sales\CoEntryService;
 use App\Services\Sales\CoOrderBuilder;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use App\Support\V2\Lookups;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
-use Livewire\Component;
 
-// Layar Customer Order v2. Aturan & tulis = komponen v1 pages::co.entry yang SAMA (updateHeader/updateItem/addDelivery/
-// confirmCo/...), dipanggil per field. 2 jalur masuk (CLAUDE.md §4): INTEGRATED dari Quotation terbit, INSTANT = pilih customer,
+// Layar Customer Order v2. Aturan & tulis = App\Services\Sales\CoEntryService (updateHeader/updateItem/addDelivery/...),
+// dipanggil per field. 2 jalur masuk (CLAUDE.md §4): INTEGRATED dari Quotation terbit, INSTANT = pilih customer,
 // baris PRODUCT wajib Master Product. Confirm v2 = ajukan approval; approval terakhir -> engine CPDEL (CoOrderBuilder::confirm).
 // Tambahan v2: Hapus draft INSTANT.
 final class CustomerOrder
@@ -26,16 +26,7 @@ final class CustomerOrder
 
     public const MODE_TONES = ['INTEGRATED' => 'info', 'INSTANT' => 'violet'];
 
-    public const HEADER = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes', 'sales_person_id', 'payment_term', 'is_ppn',
-        'shipment_method', 'recipient_customer_id', 'shipper_customer_id', 'forwarder_customer_id'];
-
-    public static function component(int $id): Component
-    {
-        $c = app('livewire')->new('pages::co.entry');
-        $c->orderId = $id;
-
-        return $c;
-    }
+    public const HEADER = CoEntryService::HEADER_FIELDS;
 
     public static function rows(): array
     {
@@ -92,7 +83,6 @@ final class CustomerOrder
     public static function save(CoOrder $o, array $in): void
     {
         abort_unless($o->doc_status === 'DRAFT', 422, t('The Customer Order is already confirmed and cannot be changed.'));
-        $c = self::component($o->id_order);
 
         foreach (self::HEADER as $f) {
             if (! array_key_exists($f, $in)) {
@@ -101,7 +91,7 @@ final class CustomerOrder
             $v = $f === 'discount_qty_pct' ? self::num($in[$f]) : self::str($in[$f]);
             $cur = $f === 'is_ppn' ? ($o->is_ppn ? '1' : '0') : self::str($o->{$f});
             if ($v !== $cur && ! (is_numeric($v) && is_numeric($cur) && (float) $v === (float) $cur)) {
-                $c->updateHeader($f, $v);
+                CoEntryService::updateHeader($o, $f, $v);
             }
         }
 
@@ -110,18 +100,18 @@ final class CustomerOrder
             $cur = $o->ship_area_id ? $o->ship_area_level.':'.$o->ship_area_id : '';
             if ((string) $in['ship_area'] !== $cur) {
                 $g = Lookups::geoFind((string) $in['ship_area']);
-                $c->onAddressPicked('co-ship-address', $g['id'] ?? null, $g['level'] ?? null, $g['full_label'] ?? null, $g['postal_code'] ?? null);
+                CoEntryService::setShipArea($o, $g['id'] ?? null, $g['level'] ?? null, $g['full_label'] ?? null, $g['postal_code'] ?? null);
             }
         }
 
         foreach (array_keys((array) ($in['remove'] ?? [])) as $id) {
-            $c->removeItem((int) $id);
+            CoEntryService::removeItem($o, (int) $id);
         }
         foreach (array_keys((array) ($in['remove_delivery'] ?? [])) as $id) {
-            $c->removeDelivery((int) $id);
+            CoEntryService::removeDelivery($o, (int) $id);
         }
         foreach (array_keys((array) ($in['remove_cost'] ?? [])) as $id) {
-            $c->removeExternalCost((int) $id);
+            CoEntryService::removeExternalCost($o, (int) $id);
         }
 
         $o->load(['items.deliveries', 'externalCosts']);
@@ -129,8 +119,7 @@ final class CustomerOrder
         foreach ((array) ($in['items'] ?? []) as $id => $row) {
             $item = $o->items->firstWhere('id_item', (int) $id);
             if ($item && $item->line_kind === 'PRODUCT' && ! empty($row['product_id']) && (int) $row['product_id'] !== (int) $item->product_id) {
-                $c->openProductPicker((int) $id);
-                $c->pickProduct((int) $row['product_id']);
+                CoEntryService::pickProduct($o, (int) $row['product_id'], (int) $id);
             }
         }
         $o->load(['items.deliveries', 'externalCosts']);
@@ -138,22 +127,20 @@ final class CustomerOrder
         foreach ((array) ($in['items'] ?? []) as $id => $row) {
             $item = $o->items->firstWhere('id_item', (int) $id);
             if ($item && array_key_exists('qty_minim', $row) && filter_var($row['qty_minim'], FILTER_VALIDATE_BOOLEAN) !== (bool) $item->qty_minim) {
-                $c->updateItem((int) $id, 'qty_minim', $row['qty_minim']);
+                CoEntryService::updateItem($o, (int) $id, 'qty_minim', $row['qty_minim']);
             }
         }
         self::diff($o->items->keyBy('id_item'), (array) ($in['items'] ?? []), ['description', 'qty', 'qty_unit', 'unit_price', 'discount_pct', 'due_date', 'due_note'],
-            ['qty', 'unit_price', 'discount_pct'], fn ($id, $f, $v) => $c->updateItem($id, $f, $v));
+            ['qty', 'unit_price', 'discount_pct'], fn ($id, $f, $v) => CoEntryService::updateItem($o, $id, $f, $v));
         self::diff($o->items->flatMap->deliveries->keyBy('id_delivery'), (array) ($in['deliveries'] ?? []), ['shipment_type', 'ship_date', 'ship_qty'],
-            ['ship_qty'], fn ($id, $f, $v) => $c->updateDelivery($id, $f, $v));
+            ['ship_qty'], fn ($id, $f, $v) => CoEntryService::updateDelivery($o, $id, $f, $v));
         self::diff($o->externalCosts->keyBy('id_cost'), (array) ($in['costs'] ?? []), ['category', 'description', 'nominal', 'tax_treatment'],
-            ['nominal'], fn ($id, $f, $v) => $c->updateExternalCost($id, $f, $v));
+            ['nominal'], fn ($id, $f, $v) => CoEntryService::updateExternalCost($o, $id, $f, $v));
     }
 
     public static function addProduct(CoOrder $o, int $productId): void
     {
-        $c = self::component($o->id_order);
-        $c->openProductPicker();
-        $c->pickProduct($productId);
+        CoEntryService::pickProduct($o, $productId);
     }
 
     // Quotation menawarkan beberapa pilihan qty (tier) per product; customer memilih SATU di CO. Baris quotation lain untuk
@@ -173,17 +160,17 @@ final class CustomerOrder
 
     public static function addService(CoOrder $o): void
     {
-        self::component($o->id_order)->addItem('SERVICE');
+        CoEntryService::addItem($o, 'SERVICE');
     }
 
     public static function addDelivery(CoOrder $o, int $itemId): void
     {
-        self::component($o->id_order)->addDelivery($itemId);
+        CoEntryService::addDelivery($o, $itemId);
     }
 
     public static function addCost(CoOrder $o): void
     {
-        self::component($o->id_order)->addExternalCost();
+        CoEntryService::addExternalCost($o);
     }
 
     // Confirm v2 = ajukan approval (CPDEL menunggu approval terakhir). null = sukses, selain itu pesan.

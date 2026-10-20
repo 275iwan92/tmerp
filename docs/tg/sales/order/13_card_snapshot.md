@@ -21,7 +21,7 @@
 | Inquiry -> Master Product | part, dieline, artwork, finishing, name, dimensions; product becomes `ACTIVE` + `stat_confirm` | WIN | FACT, `ProductMasterSync.php:25-60`; called by `CoOrderBuilder.php:104-109` |
 
 ## What is NOT frozen (read live)
-- Customer name on CO/DO: `co_order` and `do_delivery` store only `customer_id`; the name is read from the master each time it is shown (`CustomerOrder::rows` maps `customer_name` from the master, `CustomerOrder.php:42-43`; there is no customer name column in `co_order`/`do_delivery`). FACT.
+- Customer name on CO/DO: `co_order` and `do_delivery` store only `customer_id`; the name is read from the master each time it is shown (`CustomerOrder::rows` maps `customer_name` from the master, `CustomerOrder.php:33-34`; there is no customer name column in `co_order`/`do_delivery`). FACT.
 - `co_order_item.product_id`, `inquiry_id`, `quotation_item_id`: live logical links; the product name in the line (`description`) is frozen, but other master attributes are read live.
 - INTEGRATED CO ship-to address: NOT copied at all (13 of 13 empty, CO card finding 6), so neither frozen nor live.
 
@@ -40,3 +40,4 @@
 
 ## Already exists? Searched where, result
 Searched: the word "snapshot" in `app/Services/Sales`, `app/Models/Sdi`, `CoOrderBuilder`, `DispatchService`; columns `original_*`, `*_snapshot`, `amount_snapshot` (exists in `flow_log`, not Sales). Result: the pattern ALREADY EXISTS as value copying inside services; there is no dedicated snapshot table or column, and none is needed.
+- Re-checked 2026-10-20 after the Quotation and Customer Order entry rules moved from the v1 components to services (rule D.25, T10): `routes/web.php` replaced the v1 routes `/quotation/new`, `/quotation/{quotation}/edit`, `/quotation/{quotation}/print`, `/co/{order}/edit` and `/co/{order}/print` by redirects on the same lines (no line added or removed), `routes/v2.php` changed only two comment lines, `app/Support/V2/Screens.php` changed the description text of the `quotation` and `customer-order` rows on the same lines, and `app/Support/V2/Data/Quotation.php` and `CustomerOrder.php` now call `QuotationEntryService` and `CoEntryService` instead of the v1 Livewire components (the `component()` helper is gone; cards that cite lines of those two files were remapped from the diff). The v1 pages `pages::quotation.entry`, `pages::co.entry` and the two v1 prints are archived in `tmerp_unused/`. Every other cited line number is unchanged and this card's content is still true.
