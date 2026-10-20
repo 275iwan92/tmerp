@@ -72,7 +72,7 @@
             </x-dl::card>
         </x-dl::action-form>
     @else
-        <x-dl::alert tone="info" message="Only Quality Assurance or an operations manager can record the decision." />
+        <x-dl::alert tone="info" message="Only Quality Assurance or an operations manager can record the decision." /> <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
     @endif
 
     <x-dl::card title="Decision History" icon="fa-solid fa-clock-rotate-left">

@@ -38,3 +38,4 @@
 
 ## Already exists? Searched where
 Searched `is_urgent`, `urgent_*`, `UrgentReceiptService`, `ConditionalStockListGrid`, menu `INV_BQ_COND`/`INV_BQ_URG`, EngineRegistry key `urgent-receipt`. Result: ALREADY EXISTS. Rulebook A.26 / D16 (FROM DOCUMENT, `docs/globaluserrules.md` lines 261, 269) agree with the code on who may mark URGENT and the FSC approval.
+- Re-checked 2026-10-20 after the Back button was added to the batch page of `resources/views/v2/screens/conditional-stock.blade.php` for users who cannot record the decision: it sits on the same line as the existing info alert (line 75), so no line was added or removed and every cited line number is unchanged; content still true.

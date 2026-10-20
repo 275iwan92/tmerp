@@ -41,3 +41,4 @@ Age example: status set Monday 15:00, now Tuesday 02:30 = 11.5 h -> OVERDUE. The
 
 ## Used by
 Conditional Stock, Batch form, First Article, receipt posting (dock decision), supplier history (sampling engine), URGENT Usage report.
+- Re-checked 2026-10-20 after the Back button was added to the batch page of `resources/views/v2/screens/conditional-stock.blade.php` for users who cannot record the decision: it sits on the same line as the existing info alert (line 75), so no line was added or removed and every cited line number is unchanged; content still true.

@@ -38,3 +38,4 @@
 
 ## Already exists? Searched where
 Searched `inv_qc_decision`, `inv_qc_first_article`, `QcDecisionService`, EngineRegistry key `qc-decision`, menu `INV_BQ_FA`. Result: ALREADY EXISTS. Production's own QC gate (`prd_wo_operation`) is a different mechanism and was not read.
+- Re-checked 2026-10-20 after the Back button was added to the batch page of `resources/views/v2/screens/conditional-stock.blade.php` for users who cannot record the decision: it sits on the same line as the existing info alert (line 75), so no line was added or removed and every cited line number is unchanged; content still true.

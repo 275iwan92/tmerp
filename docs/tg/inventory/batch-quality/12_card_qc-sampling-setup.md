@@ -36,3 +36,4 @@
 
 ## Already exists? Searched where
 Searched `inv_qc_*`, `QcSamplingService`, `Qc*Lookup`, menu `INV_BQ_PLAN/RULES/RISK`, EngineRegistry key `qc-sampling`. Result: ALREADY EXISTS; no new table is needed. An older "QC widget" exists on the dashboard (not read).
+- Re-checked 2026-10-20 after the Back button was added to the batch page of `resources/views/v2/screens/conditional-stock.blade.php` for users who cannot record the decision: it sits on the same line as the existing info alert (line 75), so no line was added or removed and every cited line number is unchanged; content still true.
