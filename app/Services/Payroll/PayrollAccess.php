@@ -8,12 +8,9 @@ use App\Models\Sys\SecUser;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 
-// Siapa boleh melihat payroll siapa (user 2026-10-07). Default tolak; is_admin TIDAK otomatis lolos (Dinul / developer
-// tidak boleh menyentuh payroll, hanya Direksi/GM).
-//   ALL          grup DIREKSI (GM dan Direksi, akun Pak Iwan): semua pegawai, semua layar payroll
-//   NON_STAFF    grup HR_OFFICER (Sania): lihat dan proses payroll pegawai bertipe NON_STAFF saja
-//   SUBORDINATES grup OPS_MGR (Annisa): hanya slip gaji (take-home pay) bawahan di struktur organisasinya
-//   NONE         selain itu
+// REMARK Tujuan: satu pintu "siapa boleh melihat payroll siapa" (user 2026-10-07). Default tolak; is_admin TIDAK otomatis lolos (developer tidak menyentuh payroll, hanya Direksi/GM). Sumber hulu: grup sec_user_group + emp_employee.staff_type.
+//   ALL = grup DIREKSI (semua pegawai dan layar payroll); NON_STAFF = HR_OFFICER (hanya pegawai NON_STAFF); SUBORDINATES = OPS_MGR (hanya slip bawahan); NONE = selain itu. Input: user, id pegawai, slug layar / kode menu.
+// Output: scope, canProcess / canViewPayslips / canSeeEmployee, restrict() untuk query, screenAllowed() / menuAllowed(). Dipakai oleh: middleware payroll:*, layar dan layanan Payroll (Salary, Run, Payslip), AppMenu, grid payroll. Status: aktif; slug form baru (hrm-salary-form, hrm-payroll-run-form, hrm-payslip-form) masuk daftar layar di bawah.
 final class PayrollAccess
 {
     public const ALL = 'ALL';

@@ -2,9 +2,9 @@
 
 namespace App\Support\V2;
 
-// Menu mockup.test: satu modul = lengkap sendiri (transaksi + master penyertanya), supaya hak akses per modul
-// cukup membuka satu menu. Master yang dipakai beberapa modul = SATU layar, tampil di menu tiap modul.
-// Layar: 'ref' = acuan tmerp sekarang (alur & field), 'mockup' = mockup HTML asli (tampilan), 'status' todo|review.
+// REMARK Tujuan: katalog layar v2 (slug => judul, ikon, acuan, mockup) per modul menu mockup.test; satu modul = lengkap sendiri, master bersama = SATU layar yang tampil di menu tiap modul. Sumber hulu: sys_app_menu (target v2:<slug>), 'ref' = acuan alur dan field, 'mockup' = tampilan asli, 'status' todo|review.
+// Input: slug layar. Output: definisi layar untuk route v2.screen dan menu. Dipakai oleh: App\Support\V2\AppMenu, routes/v2.php (v2.screen), katalog build.
+// Status: aktif; layar form baru ditambahkan di akhir baris item induknya (nomor baris yang dikutip kartu TG tidak bergeser).
 final class Screens
 {
     // Layar bersama (dipakai beberapa modul).

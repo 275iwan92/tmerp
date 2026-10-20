@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Halaman pendaftaran akun internal (guest layout) dengan persetujuan administrator; notifikasi ke administrator memuat tautan ke daftar akun.
+ * Sumber hulu  : tm2sys.sec_user (reg_type, approval_status) dan sys_notification.
+ * Input        : Isian pendaftaran pengguna baru.
+ * Output       : Akun menunggu approval + notifikasi ke setiap administrator (link = layar v2 security-accounts, sejak T8 Setup).
+ * Dipakai oleh : Route register (routes/web.php, middleware guest).
+ * Status       : Aktif (halaman auth v1, belum diganti v2).
+ */
+
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysNotification;
 use App\Models\Sys\SysQuote;

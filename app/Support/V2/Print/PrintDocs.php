@@ -13,9 +13,9 @@ use Devlib\PrintDoc\Document;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 
-// Daftar cetakan dokumen transaksi v2 (user 2026-10-01: semua entry transaksional punya cetakan A5 landscape / A4 portrait).
-// Satu jenis = satu kelas turunan Devlib\PrintDoc\Document yang membaca dokumennya dari database (load) -- tata letak
-// seluruhnya milik objek DevLib. Halaman: route v2.print (resources/views/v2/print-doc.blade.php).
+// REMARK Tujuan: daftar cetakan dokumen transaksi v2 (A5 landscape / A4 portrait; satu jenis = satu kelas turunan Devlib\PrintDoc\Document, tata letak milik DevLib). Sumber hulu: kelas App\Support\V2\Print\* yang membaca dokumennya dari database (load).
+// Input: type + id (+ opsi prices, printedBy). Output: objek Document. Dipakai oleh: route v2.print (resources/views/v2/print-doc.blade.php), tombol Print grid dan form, halaman cetak massal (payslip).
+// Status: aktif; jenis baru = satu entri MAP (+ kelas Print); 'payslip' ditambah 2026-10-20 (T8 Payroll, slip gaji, hak lewat PayslipService::can).
 final class PrintDocs
 {
     use FlowDocument;

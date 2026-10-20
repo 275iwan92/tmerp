@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Tes asap shell menu utama: administrator melihat menu penuh, staf Sales hanya modul yang diizinkan, item menu Setup membuka layar v2 (route /security kini redirect per tab ke layar v2), daftar leaf grup Settings, layar konfigurasi terpisah.
+ * Sumber hulu  : routes/web.php (/menu, /security redirect), App\Support\V2\AppMenu, MenuRoutes.
+ * Input        : User johiwan (administrator) dan akun uji staf Sales.
+ * Output       : Lulus bila shell dan redirect sesuai.
+ * Dipakai oleh : php artisan test --filter=MainMenuShellSmokeTest
+ * Status       : Aktif. Catatan 2026-10-20: tiga tes (menu penuh dan staf Sales menerima 302 dari /menu, daftar leaf Settings) gagal sebelum T8 dan tidak terkait perubahan Security; menunggu pemeriksaan.
+ */
+
 namespace Tests\Feature;
 
 use App\Models\Sys\SecUser;
