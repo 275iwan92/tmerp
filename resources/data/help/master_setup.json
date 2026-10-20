@@ -589,19 +589,16 @@
     },
     "keywords": "tiket, support ticket, bantuan, laporan masalah, bug, helpdesk, balas tiket, dukungan, keluhan user, spt",
     "steps": [
-      {"en": "Open Support Tickets and search by ticket number, sender or problem, or filter by Screen or Status. New tickets are not created here; users send them from the Help window.", "id": "Buka Support Tickets dan cari berdasarkan nomor tiket, pengirim atau masalah, atau saring dengan Screen atau Status. Tiket baru tidak dibuat di sini; user mengirimnya dari jendela Bantuan."},
-      {"en": "Open a ticket to read the description, the screen it came from, any pictures and the earlier replies.", "id": "Buka tiket untuk membaca deskripsi, layar asalnya, gambar lampiran dan balasan sebelumnya."},
-      {"en": "Type an answer and click Send. The reply reaches the sender, and a ticket that was Open moves to In progress.", "id": "Ketik jawaban lalu klik Send. Balasan sampai ke pengirim, dan tiket yang tadinya Open berpindah ke In progress."},
-      {"en": "Write what was fixed in Resolution note, then click Mark done, or Not a bug (close) if it is not a fault.", "id": "Tulis apa yang diperbaiki di Resolution note, lalu klik Mark done, atau Not a bug (close) bila bukan kerusakan."},
-      {"en": "Use In progress to mark a ticket as being handled, and Close to leave the ticket window without changing the status.", "id": "Pakai In progress untuk menandai tiket sedang ditangani, dan Close untuk keluar dari jendela tiket tanpa mengubah status."}
+      {"en": "Open Support Tickets and search by ticket number, sender or problem, or filter by Screen or Status. The status boxes show Open, In Progress and Done.", "id": "Buka Support Tickets dan cari berdasarkan nomor tiket, pengirim atau masalah, atau saring dengan Screen atau Status. Kotak status menampilkan Open, In Progress dan Done."},
+      {"en": "Open a row to see the ticket: sender, screen, problem, attachments and the conversation so far.", "id": "Buka satu baris untuk melihat tiket: pengirim, layar, masalah, lampiran dan percakapan sejauh ini."},
+      {"en": "Type your answer in the reply box and click Send reply. The sender sees it in Help & support. A reply moves an Open ticket to In progress.", "id": "Ketik jawaban di kolom balasan lalu klik Send reply. Pengirim melihatnya di Bantuan & dukungan. Balasan memindahkan tiket Open ke In progress."},
+      {"en": "Write what was fixed in the Resolution note, then click Mark done, or Not a bug (close) if nothing needs fixing. Done and Closed record who resolved it and when.", "id": "Tulis apa yang diperbaiki di Resolution note, lalu klik Mark done, atau Not a bug (close) bila tidak ada yang perlu diperbaiki. Done dan Closed mencatat siapa dan kapan menyelesaikannya."},
+      {"en": "A closed ticket cannot be replied to. Click Reopen to bring a Done or Closed ticket back to Open.", "id": "Tiket yang ditutup tidak bisa dibalas. Klik Reopen untuk mengembalikan tiket Done atau Closed ke Open."}
     ],
     "fields": [
-      {"label": "Ticket No. / Sender", "en": "Ticket number made by the system (SPT, year, month and a running number) and the name of the user who sent it.", "id": "Nomor tiket buatan sistem (SPT, tahun, bulan dan nomor urut) dan nama user pengirim."},
-      {"label": "Screen", "en": "The screen context the user typed or the system gave when sending the ticket.", "id": "Konteks layar yang diisi user atau sistem saat tiket dikirim."},
-      {"label": "Problem", "en": "The description the user wrote. It is required when the ticket is sent.", "id": "Deskripsi yang ditulis user. Wajib diisi saat tiket dikirim."},
-      {"label": "Replies", "en": "Number of replies in the thread between support and the sender.", "id": "Jumlah balasan pada percakapan antara tim support dan pengirim."},
-      {"label": "Status", "en": "OPEN, IN_PROGRESS, DONE or CLOSED. Done and Closed record who resolved it and when.", "id": "OPEN, IN_PROGRESS, DONE atau CLOSED. Done dan Closed mencatat siapa yang menyelesaikan dan kapan."},
-      {"label": "Resolution note", "en": "What was fixed or why the ticket was closed.", "id": "Apa yang diperbaiki atau alasan tiket ditutup."}
+      {"label": "Reply to the reporter", "en": "Your answer, 1 to 5000 characters. It is stored in the conversation and shown to the sender.", "id": "Jawaban Anda, 1 sampai 5000 karakter. Tersimpan di percakapan dan tampil ke pengirim."},
+      {"label": "Resolution note", "en": "What was fixed or why the ticket was closed, up to 2000 characters. Saved with the status buttons.", "id": "Apa yang diperbaiki atau mengapa tiket ditutup, maksimal 2000 karakter. Tersimpan bersama tombol status."},
+      {"label": "Status", "en": "Open, In progress, Done or Closed. Done and Closed fill the resolver and time; Reopen clears them.", "id": "Open, In progress, Done atau Closed. Done dan Closed mengisi penyelesai dan waktunya; Reopen mengosongkannya."}
     ]
   },
   {

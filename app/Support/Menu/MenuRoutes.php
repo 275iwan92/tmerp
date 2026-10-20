@@ -212,7 +212,7 @@ final class MenuRoutes
             'SET_GROUP' => route('v2.screen', 'security-groups'),
             'SET_PERM' => route('v2.screen', 'security-permissions'),
             'SET_MIGRATION' => route('v2.screen', 'setup-migration'),
-            'SET_TICKETS' => route('setup.support-tickets'),
+            'SET_TICKETS' => route('v2.screen', 'support-tickets'),
             // Menu Setup hanya punya layar v2 (Grid Lookup atas sys_app_menu).
             'SET_MENU' => route('v2.screen', 'menu-setup'),
             'SET_CONSTANT_CAT' => route('v2.screen', 'setup-constant-categories'),

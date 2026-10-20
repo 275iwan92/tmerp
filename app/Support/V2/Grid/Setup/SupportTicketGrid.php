@@ -9,8 +9,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-// Support Tickets (v1: pages::setup.support-tickets): tiket yang dikirim user dari Bantuan & dukungan (F1). Buka = layar v1
-// (jawab, ubah status). Tiket baru hanya dibuat dari halaman profil user, bukan dari sini.
+/*
+ * REMARK
+ * Tujuan       : Grid Setup > Support Tickets: tiket yang dikirim user dari Bantuan & dukungan (F1) dengan status, jumlah balasan dan lampiran; Open membuka form v2 support-ticket-form (balas, ubah status). Tiket baru dibuat pelapor dari menu akun, bukan dari sini.
+ * Sumber hulu  : tm2sys.sys_support_ticket + sys_support_replies + sys_support_ticket_attachment + sec_user.
+ * Input        : Pencarian, filter Screen / Status, kotak status.
+ * Output       : Baris grid (hanya baca; penanganan lewat form).
+ * Dipakai oleh : Menu Setup > Support & Ticket (v2:support-tickets), layar support-ticket-form (kembali ke daftar).
+ * Status       : Aktif. Halaman v1 pages::setup.support-tickets sudah dipindah ke tmerp_unused (aturan D.25, T8 Setup).
+ */
 class SupportTicketGrid extends DbGrid
 {
     private const STATUS_TONES = ['OPEN' => 'warn', 'IN_PROGRESS' => 'info', 'DONE' => 'success', 'CLOSED' => 'neutral'];
@@ -52,7 +59,7 @@ class SupportTicketGrid extends DbGrid
 
     public function openUrl(): ?string
     {
-        return route('setup.support-tickets').'?open={id}';
+        return route('v2.screen', 'support-ticket-form').'?id={id}';
     }
 
     public function newUrl(): ?string

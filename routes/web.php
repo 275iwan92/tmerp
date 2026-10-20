@@ -191,7 +191,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
         Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
         Route::livewire('/setup/data-origin', 'pages::setup.data-origin')->name('setup.data-origin')->middleware('admin');
-        Route::livewire('/setup/support-tickets', 'pages::setup.support-tickets')->name('setup.support-tickets')->middleware('admin');
+        Route::get('/setup/support-tickets', fn (Illuminate\Http\Request $r) => redirect($r->filled('open') ? '/v2/s/support-ticket-form?id='.(int) $r->query('open') : '/v2/s/support-tickets'))->name('setup.support-tickets')->middleware('admin');
 
         // Help Center -- panduan pakai aplikasi (bukan tiket support, itu modal
         // "Help & Support" terpisah di profile dropdown). SEMUA user login boleh
