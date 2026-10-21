@@ -78,7 +78,7 @@ class ArchiveZip extends Command
     private function entryName(string $file, string $batch): string
     {
         $root = str_replace('\\', '/', base_path());
-        $rel = ltrim(str_replace([$root, '\\'], ['', '/'], $file), '/');
+        $rel = ltrim(str_replace($root, '', str_replace('\\', '/', $file)), '/');
         $date = preg_match('/(\d{4}-\d{2}-\d{2})$/', $batch, $m) ? $m[1] : date('Y-m-d');
         $rel = match (true) {
             str_starts_with($rel, 'resources/views/pages/') => substr($rel, 22),

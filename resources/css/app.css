@@ -74,14 +74,6 @@
 
 html, body { @apply h-full m-0; }
 [x-cloak] { display: none !important; }
-
-/* layouts/guest.blade.php (login/register/forgot-password) — halaman penuh
- * layar, TIDAK boleh mewarisi padding-bottom 40px dari body generik di bawah
- * (itu untuk halaman Inquiry non-shell). Varian ".hero" (login/register)
- * mengunci overflow lewat .authpage.hero sendiri (lihat bawah); ".center"
- * (forgot-password) sengaja dibiarkan boleh scroll wajar bila layar pendek. */
-body.guestpage { @apply p-0 h-full; }
-
 /* layouts/shell.blade.php (main_menu) — app shell full-viewport, tak pernah
  * scroll di level body (.shell sendiri yang scroll per-panel/pane). */
 body.shellpage { @apply p-0 h-full overflow-hidden; }
@@ -652,150 +644,6 @@ body:has(.actionbar) { @apply pb-[74px]; }
     .shell.mini aside { @apply w-0; }
     .shell .main { @apply w-full; }
 }
-
- * docs/mockups/login.html & forgot-password.html. Di-scope di bawah
- * .authpage (nama generik .btn/.field/.input/.row dipakai mockup ini
- * akan bentrok kalau tidak di-scope).
- * ============================================================ */
-.authpage {
-    --ap-navy: #34406b; --ap-navy-dark: #2b3560; --ap-bg: #eef1f6; --ap-border: #e3e7f0;
-    --ap-ink: #3a4568; --ap-ink-strong: #2f3a5e; --ap-muted: #9aa3bd; --ap-blue: #2f6fed;
-    --ap-blue-dark: #255bd4; --ap-danger: #d0453f; --ap-ok: #2e9e5b;
-    font-family: var(--brand-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
-    @apply bg-[var(--ap-bg)] text-[var(--ap-ink)] min-h-screen;
-}
-.authpage.center { @apply flex items-center justify-center p-6; }
-/* Reset eksplisit max-width/margin/padding: nama class "wrap" bentrok dengan
- * .wrap generik (inquiry form/hub, max-width:1180px;margin:18px auto) di atas
- * — tanpa reset ini, aturan generik itu tetap kepakai (properti yang tak
- * disentuh selector lebih spesifik manapun tetap menang) dan wrap login/
- * register jadi kotak 1180px mengambang di tengah, makin lebar jarak kiri-
- * kanan saat window melebar. */
-.authpage .wrap { @apply flex w-full max-w-none m-0 p-0 min-h-screen; }
-.authpage .brand-panel { @apply flex-none basis-[44%] text-white py-12 px-[52px] flex flex-col justify-between relative overflow-hidden; background: linear-gradient(160deg, var(--ap-navy), var(--ap-navy-dark)); }
-.authpage .brand-panel::after { content: ""; @apply absolute -right-[90px] -bottom-[90px] w-[320px] h-[320px] rounded-full; background: rgba(255, 255, 255, .05); }
-.authpage .brand-top { @apply flex items-center gap-3 text-xl font-bold tracking-[.3px]; }
-.authpage .brand-top .logo { @apply text-[30px]; }
-.authpage .clock { @apply relative z-10; }
-.authpage .clock .time { @apply text-[56px] font-bold tracking-wide leading-none; font-variant-numeric: tabular-nums; }
-.authpage .clock .date { @apply text-[#b7bfdc] text-base mt-2.5 capitalize; }
-.authpage .clock .tagline { @apply text-[#8f98bd] text-sm mt-[22px]; }
-.authpage .brand-foot { @apply text-[#8b93b8] text-[12.5px] relative z-10; }
-.authpage .form-panel { @apply flex-1 flex flex-col pt-[26px] px-10 pb-10; }
-.authpage .lang-bar { @apply flex justify-end; }
-.authpage .lang { @apply relative; }
-.authpage .lang-btn { @apply flex items-center gap-[7px] bg-white border-[1.5px] border-[var(--ap-border)] rounded-lg px-3 py-1.5 text-[13.5px] font-semibold text-[var(--ap-ink)] cursor-pointer; font-family: inherit; }
-.authpage .lang-btn:hover { @apply border-[#cfd6e6]; }
-.authpage .lang-menu { @apply hidden absolute right-0 top-11 bg-white border border-[var(--ap-border)] rounded-[9px] overflow-hidden min-w-[170px] z-20; box-shadow: 0 10px 30px rgba(30, 40, 80, .15); }
-.authpage .lang-menu.open { @apply block; }
-.authpage .lang-menu button { @apply flex items-center gap-2.5 w-full text-left bg-transparent border-none px-3.5 py-2.5 text-[13.5px] text-[var(--ap-ink)] cursor-pointer; font-family: inherit; }
-.authpage .lang-menu button:hover { @apply bg-[#f2f5fb]; }
-.authpage .lang-menu button.active { @apply text-[var(--ap-blue)] font-bold; }
-.authpage .form-center { @apply flex-1 flex items-center justify-center; }
-.authpage .login-box { @apply w-full max-w-[380px]; }
-.authpage .login-box h2 { @apply text-2xl text-[var(--ap-ink-strong)] font-bold mb-1.5; }
-.authpage .login-box .sub { @apply text-[var(--ap-muted)] text-sm mb-7; }
-.authpage .field { @apply mb-[18px]; }
-.authpage .field label { @apply block text-[13px] font-semibold text-[var(--ap-ink)] mb-[7px]; }
-.authpage .input { @apply flex items-center border-[1.5px] border-[var(--ap-border)] rounded-[9px] bg-white; transition: border-color .15s, box-shadow .15s; }
-.authpage .input:focus-within { @apply border-[var(--ap-blue)]; box-shadow: 0 0 0 3px rgba(47, 111, 237, .12); }
-.authpage .input .fld-i { @apply text-[var(--ap-muted)] text-[13px] pl-3.5 shrink-0; }
-.authpage .input input { @apply flex-1 min-w-0 border-none outline-none bg-transparent px-3.5 py-3 text-[14.5px] text-[var(--ap-ink-strong)]; font-family: inherit; }
-.authpage .input .fld-i + input { @apply pl-2.5; }
-.authpage .input .toggle-pw { @apply bg-transparent border-none cursor-pointer px-3.5 py-0 text-[var(--ap-muted)] text-[13px] font-semibold; }
-.authpage .input.error { @apply border-[var(--ap-danger)]; }
-.authpage .row { @apply flex items-center justify-end mb-6 text-[13.5px]; }
-.authpage .row a { @apply text-[var(--ap-blue)] no-underline font-semibold; }
-.authpage .row a:hover { @apply underline; }
-.authpage .btn { @apply w-full text-white border-none rounded-[9px] p-[13px] text-[15px] font-bold cursor-pointer; background: var(--ap-blue); transition: background .15s; font-family: inherit; }
-.authpage .btn:hover { background: var(--ap-blue-dark); }
-.authpage .alert { @apply hidden bg-[#fdeceb] text-[var(--ap-danger)] border border-[#f6cfcd] rounded-lg px-3.5 py-3 text-[13.5px] mb-5; }
-.authpage .alert.show { @apply block; }
-.authpage .card { @apply bg-white w-full max-w-[420px] rounded-2xl overflow-hidden; box-shadow: 0 16px 50px rgba(30, 40, 80, .14); }
-.authpage .top { @apply text-white py-[26px] px-[30px] flex items-center gap-[11px] font-bold text-lg; background: linear-gradient(160deg, var(--ap-navy), var(--ap-navy-dark)); }
-.authpage .top .logo { @apply text-[26px]; }
-.authpage .body { @apply p-[30px]; }
-.authpage .body h2 { @apply text-[22px] text-[var(--ap-ink-strong)] mb-2; }
-.authpage .body .sub { @apply text-[var(--ap-muted)] text-sm leading-[1.55] mb-6; }
-.authpage label { @apply block text-[13px] font-semibold text-[var(--ap-ink)] mb-[7px]; }
-.authpage .card input { @apply w-full border-[1.5px] border-[var(--ap-border)] rounded-[9px] px-3.5 py-3 text-[14.5px] text-[var(--ap-ink-strong)] outline-none; transition: border-color .15s, box-shadow .15s; font-family: inherit; }
-.authpage .card input:focus { @apply border-[var(--ap-blue)]; box-shadow: 0 0 0 3px rgba(47, 111, 237, .12); }
-.authpage .card .btn { @apply mt-[22px]; }
-.authpage .back { @apply inline-flex items-center gap-1.5 mt-[22px] text-[var(--ap-blue)] no-underline text-sm font-semibold; }
-.authpage .back:hover { @apply underline; }
-.authpage .done { @apply hidden bg-[#e9f7ef] text-[var(--ap-ok)] border border-[#bfe6cd] rounded-[9px] p-3.5 text-sm text-center mb-2; }
-.authpage .done.show { @apply block; }
-@media (max-width: 820px) { .authpage .brand-panel { @apply basis-[40%] py-9 px-8; } .authpage .clock .time { @apply text-[44px]; } }
-
-/* ---- Hero-photo login (login.html/register.html v2) — panel resizable via grip ---- */
-.authpage.hero { @apply min-h-0 h-screen w-screen overflow-hidden; }
-.authpage.hero .wrap { @apply min-h-0 h-screen max-w-none m-0 p-0 overflow-hidden w-full; }
-.authpage.resizing { @apply select-none cursor-col-resize; }
-.authpage .hero-panel { @apply flex-1 relative overflow-hidden min-w-0; background: linear-gradient(150deg, var(--ap-navy), var(--ap-navy-dark)); }
-.authpage .hero-panel img { @apply absolute inset-0 w-full h-full object-cover opacity-0; transition: opacity .6s; }
-.authpage .hero-panel img.on { @apply opacity-100; }
-.authpage .hero-veil { @apply absolute inset-0; background: linear-gradient(180deg, rgba(18, 25, 46, .55), rgba(18, 25, 46, .1) 34%, rgba(18, 25, 46, .8)); }
-.authpage .hero-brand { @apply absolute top-[26px] left-8 flex items-center gap-3 text-white z-20; }
-.authpage .hero-brand .logo-badge { @apply w-[42px] h-[42px] rounded-xl shrink-0; background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d); }
-.authpage .hero-brand b { @apply text-lg tracking-[.4px] block leading-[1.1]; }
-.authpage .hero-brand span { @apply text-[10px] tracking-[2px] text-[#b7c0dd] uppercase; }
-.authpage .hero-clock { @apply absolute top-7 right-8 text-right text-[#dbe1f2] z-20; }
-.authpage .hero-clock .t { @apply text-2xl font-bold tracking-wide; font-variant-numeric: tabular-nums; }
-.authpage .hero-clock .d { @apply text-[13px] text-[#aeb7d6] mt-0.5 capitalize; }
-.authpage .hero-quote { @apply absolute left-9 right-9 bottom-9 text-white z-20; }
-.authpage .hero-quote .qi { @apply text-[34px] leading-none; color: rgba(255, 255, 255, .35); font-family: Georgia, serif; }
-.authpage .hero-quote .q { @apply text-xl italic leading-[1.55] max-w-[620px] mt-1; }
-.authpage .hero-quote .a { @apply mt-2.5 text-[#c7cfe8] font-semibold text-sm; }
-.authpage .hero-quote .a::before { content: "— "; }
-.authpage .grip { @apply w-2 shrink-0 relative cursor-col-resize; background: var(--ap-border); transition: background .15s; }
-.authpage .grip:hover { @apply bg-[#cdd4e4]; }
-.authpage .grip::before { content: ""; @apply absolute top-1/2 left-1/2 w-[3px] h-9 rounded-[3px] bg-[#aeb6ce]; transform: translate(-50%, -50%); }
-.authpage .hero-side { @apply w-[15vw] min-w-[260px] max-w-[40vw] shrink-0 flex flex-col py-[18px] px-[22px] pb-[26px] overflow-y-auto; }
-.authpage .flagbar { @apply flex justify-end gap-[7px] shrink-0; }
-.authpage .flag { @apply bg-white border-[1.5px] border-[var(--ap-border)] rounded-[9px] px-2.5 py-1.5 text-base cursor-pointer leading-none; }
-.authpage .flag.active { @apply border-[var(--ap-blue)]; box-shadow: 0 0 0 3px rgba(47, 111, 237, .12); }
-.authpage .divider { @apply flex items-center gap-2.5 text-[var(--ap-muted)] text-xs my-5; }
-.authpage .divider::before, .authpage .divider::after { content: ""; @apply flex-1 h-px bg-[var(--ap-border)]; }
-.authpage .reg { @apply text-center text-[13.5px] text-[var(--ap-ink)]; }
-.authpage .reg a { @apply text-[var(--ap-blue)] no-underline font-bold; }
-.authpage .reg a:hover { @apply underline; }
-
-/* Panel akun contoh UAT (login.blade.php, 2026-09-03) — sengaja terlihat
- * di layar login demi kemudahan tim UAT coba lintas level, HAPUS sebelum
- * rilis produksi sungguhan. */
-.authpage .uat-box { @apply mt-4 w-full; }
-.authpage .uat-toggle { @apply w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-[var(--ap-muted)] bg-transparent border border-dashed border-[var(--ap-border)] rounded-lg py-2 cursor-pointer; }
-.authpage .uat-toggle:hover { @apply text-[var(--ap-blue)] border-[var(--ap-blue)]; }
-.authpage .uat-panel { @apply mt-2 p-3 rounded-lg border border-[var(--ap-border)] bg-[#f8fafc]; }
-.authpage .uat-note { @apply text-[11.5px] text-[var(--ap-muted)] mb-2; }
-.authpage .uat-note code { @apply bg-[#e2e8f0] px-1.5 py-0.5 rounded font-mono text-[11px]; }
-.authpage .uat-table { @apply w-full text-[11.5px] border-collapse; }
-.authpage .uat-table td { @apply py-1 border-b border-[var(--ap-border)] text-[var(--ap-ink)]; }
-.authpage .uat-table td:first-child { @apply text-[var(--ap-muted)]; }
-.authpage .uat-table td:last-child { @apply text-right; }
-.authpage .uat-table td code { @apply bg-[#e2e8f0] px-1.5 py-0.5 rounded font-mono text-[11px] font-semibold; }
-@media (max-width: 860px) { .authpage .hero-panel, .authpage .grip { @apply hidden; } .authpage .hero-side { width: 100% !important; @apply max-w-none; } }
-
-/* ---- Register (register.html) — panel lebar tetap, tanpa grip ---- */
-.authpage .hero-side.fixed { @apply w-[520px] max-w-[46vw]; }
-.authpage .reg-box { @apply w-full max-w-[440px]; }
-.authpage .reg-box h2 { @apply text-[22px] text-[var(--ap-ink-strong)] font-bold mb-[5px]; }
-.authpage .reg-box .sub { @apply text-[var(--ap-muted)] text-[13.5px] mb-3; }
-.authpage .approval { @apply flex gap-[9px] bg-[#eef4fd] border border-[#d5e3fb] rounded-[10px] px-3 py-2.5 text-xs text-[#3a5a9b] mb-[18px]; }
-.authpage .grid2 { @apply grid grid-cols-2 gap-[13px]; }
-.authpage .field.full { @apply col-span-2; }
-.authpage .req { @apply text-[var(--ap-danger)]; }
-.authpage .input select { @apply flex-1 border-none outline-none bg-transparent px-3 py-2.5 text-[13.5px] text-[var(--ap-ink-strong)] cursor-pointer; font-family: inherit; }
-.authpage .input input[readonly] { @apply text-[var(--ap-muted)]; }
-.authpage .input .vbtn { @apply border-none bg-[#eef2fb] text-[var(--ap-blue)] text-xs font-bold px-3 self-stretch cursor-pointer whitespace-nowrap border-l border-[var(--ap-border)]; font-family: inherit; }
-.authpage .input .vbtn:hover { @apply bg-[#e2e9fa]; }
-.authpage .input .vbtn.wa { @apply bg-[#e6f8ee] text-[#128a3e]; }
-.authpage .input.ok { @apply border-[var(--ap-ok)]; }
-.authpage .hint { @apply text-[11.5px] text-[var(--ap-muted)] mt-[5px]; }
-.authpage .hint.bad { @apply text-[var(--ap-danger)]; } .authpage .hint.ok { @apply text-[var(--ap-ok)]; }
-.authpage .badge-ok { @apply text-[var(--ap-ok)] text-xs font-bold px-[11px] flex items-center gap-1.5 whitespace-nowrap; }
-.authpage .otp-row { @apply mt-2; }
-
 /* ============================================================
  * Security/Setup — dipindah verbatim dari docs/mockups/security.html.
  * Di-scope di bawah .secpage (mockup ini pakai selector polos
@@ -929,7 +777,6 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .secpage .toast { @apply fixed left-1/2 bottom-[26px] text-white px-4.5 py-2.5 rounded-lg text-[13px] opacity-0 z-[99] pointer-events-none; background: #2f3a5e; transform: translateX(-50%); transition: opacity .25s; }
 .secpage .toast.show { @apply opacity-100; }
 @media (max-width: 820px) { .secpage .side { @apply w-16; } .secpage .side .cap, .secpage .nav-item span.t { @apply hidden; } .secpage .nav-item { @apply justify-center; } .secpage .form-grid { @apply grid-cols-1; } .secpage .htitle { @apply hidden; } }
-@media (max-width: 640px) { .authpage .wrap { @apply flex-col; } .authpage .brand-panel { @apply flex-none py-[26px] px-6; } .authpage .clock .tagline { @apply hidden; } .authpage .form-panel { @apply pt-5 px-6 pb-8; } }
 
 /* x-ui.table (App\View\Components\Ui\Table) -- gaya th/td baku, di @layer
  * components: class utilitas per sel (lebar, text-right) tetap menang.

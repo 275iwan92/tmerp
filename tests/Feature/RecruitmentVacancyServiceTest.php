@@ -140,7 +140,7 @@ class RecruitmentVacancyServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-rcr-vacancy-form?id={id}', $grid->openUrl());
         $this->assertStringContainsString('/v2/s/hrm-rcr-vacancy-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/vacancy.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/recruitment_vacancy_v1_2026-10-19.blade.php'));
+        $this->assertArchived('recruitment_vacancy_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_RCR_VACANCY', MenuRoutes::map());
         $this->get('/hrm/recruitment/vacancy')->assertRedirect('/v2/s/hrm-rcr-vacancy');
         $this->get('/hrm/recruitment/vacancy?new=1')->assertRedirect('/v2/s/hrm-rcr-vacancy-form?new=1');

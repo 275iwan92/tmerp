@@ -127,7 +127,7 @@ class RecruitmentInviteServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/rcr-talent-pool-form?id={id}', Grids::find('rcr-talent-pool')->openUrl());
         $this->assertNull(Grids::find('rcr-talent-pool')->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/talent-pool.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/recruitment_talent_pool_v1_2026-10-19.blade.php'));
+        $this->assertArchived('recruitment_talent_pool_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_RCR_TALENTPOOL', MenuRoutes::map());
         $this->get('/hrm/recruitment/talent-pool')->assertRedirect('/v2/s/rcr-talent-pool');
         $this->get('/hrm/recruitment/talent-pool?open=7')->assertRedirect('/v2/s/rcr-talent-pool-form?id=7');

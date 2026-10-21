@@ -162,7 +162,7 @@ class ScrapTypeServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/prod-scrap-form?id={id}', $grid->openUrl());
         $this->assertStringContainsString('/v2/s/prod-scrap-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/production/scrap-type.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/production_scrap_type_v1_2026-10-19.blade.php'));
+        $this->assertArchived('production_scrap_type_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('PROD_SCRAP_TYPE', MenuRoutes::map());
         $this->get('/production/scrap-type')->assertRedirect('/v2/s/prod-scrap');
         $this->get('/production/scrap-type?new=1')->assertRedirect('/v2/s/prod-scrap-form?new=1');

@@ -264,7 +264,7 @@ class MachineMasterServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/prod-machine-form?id={id}', $grid->openUrl());
         $this->assertStringContainsString('/v2/s/prod-machine-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/master/machine.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/master_machine_v1_2026-10-19.blade.php'));
+        $this->assertArchived('master_machine_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('PRE_MD_MACHINE', MenuRoutes::map());
         $this->assertArrayNotHasKey('MD_MACHINE', MenuRoutes::map());
         $this->get('/master/machine')->assertRedirect('/v2/s/prod-machine');

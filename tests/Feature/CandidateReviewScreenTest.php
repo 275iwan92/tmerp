@@ -67,7 +67,7 @@ class CandidateReviewScreenTest extends TestCase
         $this->assertNull($grid->newUrl());
         foreach (['list', 'detail'] as $f) {
             $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/candidate-review/'.$f.'.blade.php'));
-            $this->assertFileExists(base_path('tmerp_unused/recruitment_candidate_review_'.$f.'_v1_2026-10-20.blade.php'));
+            $this->assertArchived('recruitment_candidate_review_'.$f.'_v1_2026-10-20.blade.php');
         }
         $this->assertArrayNotHasKey('HRM_RCR_REVIEW', MenuRoutes::map());
         $this->assertArrayNotHasKey('HRM_RCR_PIPELINE', MenuRoutes::map());

@@ -174,7 +174,7 @@ class RoutingTemplateEntryServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/prod-routing-form?id={id}', $grid->openUrl());
         $this->assertStringContainsString('/v2/s/prod-routing-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/production/routing-template.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/production_routing_template_v1_2026-10-19.blade.php'));
+        $this->assertArchived('production_routing_template_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('PROD_ROUTING_TPL', MenuRoutes::map());
         $this->get('/production/routing-template')->assertRedirect('/v2/s/prod-routing');
         $this->get('/production/routing-template?new=1')->assertRedirect('/v2/s/prod-routing-form?new=1');

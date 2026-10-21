@@ -188,7 +188,7 @@ class HireProvisionServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-rcr-provision-form?id={id}', Grids::find('hrm-rcr-provision')->openUrl());
         $this->assertNull(Grids::find('hrm-rcr-provision')->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/hire-provision.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/recruitment_hire_provision_v1_2026-10-19.blade.php'));
+        $this->assertArchived('recruitment_hire_provision_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_RCR_PROVISION', MenuRoutes::map());
         $this->get('/hrm/recruitment/hire-provision')->assertRedirect('/v2/s/hrm-rcr-provision');
         $this->get('/hrm/recruitment/hire-provision?open=5')->assertRedirect('/v2/s/hrm-rcr-provision-form?id=5');

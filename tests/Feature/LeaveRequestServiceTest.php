@@ -157,7 +157,7 @@ class LeaveRequestServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-leave-form?id={id}', $grid->openUrl());
         $this->assertNull($grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/hrm/leave-requests.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/hrm_leave_requests_v1_2026-10-19.blade.php'));
+        $this->assertArchived('hrm_leave_requests_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_LEAVE_APPROVAL', MenuRoutes::map());
         $this->get('/hrm/leave-requests')->assertRedirect('/v2/s/hrm-leave');
         $this->get('/hrm/leave-requests?open=5')->assertRedirect('/v2/s/hrm-leave-form?id=5');

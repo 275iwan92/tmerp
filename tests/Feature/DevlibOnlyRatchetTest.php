@@ -47,7 +47,7 @@ class DevlibOnlyRatchetTest extends TestCase
     private const CSS_BASELINE = [
         'packages/mockup-parts/resources/assets/css/mockup-parts.css' => 27,
         'packages/mockup-parts/resources/assets/css/prodev.css' => 214,
-        'resources/css/app.css' => 82,
+        'resources/css/app.css' => 67,
         'resources/css/ledger.css' => 42,
     ];
 

@@ -217,7 +217,7 @@ class ProcessMasterServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/prod-process-form?id={id}', $grid->openUrl());
         $this->assertStringContainsString('/v2/s/prod-process-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/production/master-process.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/production_master_process_v1_2026-10-19.blade.php'));
+        $this->assertArchived('production_master_process_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('PROD_MST_PROCESS', MenuRoutes::map());
         $this->assertArrayNotHasKey('PRE_MD_PROCESS', MenuRoutes::map());
         $this->get('/production/master-process')->assertRedirect('/v2/s/prod-process');

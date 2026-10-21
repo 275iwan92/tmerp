@@ -128,7 +128,7 @@ class SupportTicketServiceTest extends TestCase
 
         $this->assertStringContainsString('/v2/s/support-ticket-form?id={id}', Grids::find('support-tickets')->openUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/setup/support-tickets.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/setup_support_tickets_v1_2026-10-20.blade.php'));
+        $this->assertArchived('setup_support_tickets_v1_2026-10-20.blade.php');
         $this->assertStringContainsString('support-tickets', MenuRoutes::map()['SET_TICKETS']);
         $this->get('/setup/support-tickets')->assertRedirect('/v2/s/support-tickets');
         $this->get('/setup/support-tickets?open=7')->assertRedirect('/v2/s/support-ticket-form?id=7');

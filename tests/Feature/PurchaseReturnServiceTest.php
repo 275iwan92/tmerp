@@ -325,7 +325,7 @@ class PurchaseReturnServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/pur-return-form?new=1', $grid->newUrl());
         foreach (['entry', 'index'] as $v1) {
             $this->assertFileDoesNotExist(resource_path('views/pages/pur/prt/'.$v1.'.blade.php'));
-            $this->assertFileExists(base_path('tmerp_unused/pur_prt_'.$v1.'_v1_2026-10-19.blade.php'));
+            $this->assertArchived('pur_prt_'.$v1.'_v1_2026-10-19.blade.php');
         }
         $this->assertArrayNotHasKey('PROC_RET', MenuRoutes::map());
         $this->get('/purchasing/prt')->assertRedirect('/v2/s/purchase-return');

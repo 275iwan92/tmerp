@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-21 13:21",
+    "generated": "2026-10-21 14:28",
     "database": "ddtsys",
     "totals": {
         "objects": 173,
@@ -22,11 +22,11 @@
         "tables": 428,
         "databases": 10,
         "models": 383,
-        "migrations": 650,
+        "migrations": 651,
         "tests": 252,
-        "dictionary": 17170,
+        "dictionary": 17190,
         "languages": 4,
-        "commits": 1602,
+        "commits": 1605,
         "since": "2026-08-06"
     },
     "modules": [
@@ -143,13 +143,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 122,
+            "commits": 124,
             "days": 6,
             "last": "2026-10-21",
-            "screens": 192,
+            "screens": 193,
             "objects": 177,
-            "engines": 3,
-            "tests": 70
+            "engines": 4,
+            "tests": 74
         },
         {
             "key": "jo",
@@ -163,7 +163,7 @@
             "tests": 90
         }
     ],
-    "untracked": 1335,
+    "untracked": 1336,
     "days": [
         {
             "date": "2026-10-08",
@@ -245,9 +245,9 @@
         },
         {
             "date": "2026-10-21",
-            "iwan": 3,
+            "iwan": 5,
             "jo": 0,
-            "other": 53
+            "other": 54
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W43",
-            "iwan": 31,
+            "iwan": 33,
             "jo": 0,
-            "other": 139
+            "other": 140
         }
     ],
     "items": [
@@ -4260,8 +4260,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-14",
             "built_by": "jo",
-            "changed_at": "2026-10-18",
-            "changed_by": "jo"
+            "changed_at": "2026-10-21",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5162,8 +5162,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
-            "changed_by": null
+            "changed_at": "2026-10-21",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -5448,8 +5448,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
-            "changed_by": null
+            "changed_at": "2026-10-21",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -6064,8 +6064,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
-            "changed_by": null
+            "changed_at": "2026-10-21",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",

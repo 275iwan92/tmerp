@@ -288,7 +288,7 @@ class StockReturnEntryTest extends TestCase
         }
         $this->assertNull(Grids::find('inv-fg-stock-return')->newUrl(), 'FG tidak punya Return');
         $this->assertFileDoesNotExist(resource_path('views/pages/inventory/stock-return.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/inventory_stock_return_v1_2026-10-19.blade.php'));
+        $this->assertArchived('inventory_stock_return_v1_2026-10-19.blade.php');
         foreach (['INV_RM_ITEM3', 'INV_SFG_ITEM3'] as $code) {
             $this->assertArrayNotHasKey($code, MenuRoutes::map());
         }

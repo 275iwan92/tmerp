@@ -137,7 +137,7 @@ class GpsApprovalServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-gps-form?id={id}', $grid->openUrl());
         $this->assertNull($grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/hrm/gps-approval.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/hrm_gps_approval_v1_2026-10-19.blade.php'));
+        $this->assertArchived('hrm_gps_approval_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_GPS_APPROVAL', MenuRoutes::map());
         $this->get('/hrm/gps-approval')->assertRedirect('/v2/s/hrm-gps');
         $this->get('/hrm/gps-approval?open=7')->assertRedirect('/v2/s/hrm-gps-form?id=7');

@@ -169,7 +169,7 @@ class EmployeeSalarySettingServiceTest extends TestCase
         $grid = Grids::find('hrm-salary');
         $this->assertStringContainsString('/v2/s/hrm-salary-form?id={id}', $grid->openUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/hrm/payroll-employee-salary.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/payroll_employee_salary_v1_2026-10-20.blade.php'));
+        $this->assertArchived('payroll_employee_salary_v1_2026-10-20.blade.php');
         $this->assertArrayNotHasKey('HRM_PAYROLL_SALARY', MenuRoutes::map());
         $this->get('/hrm/payroll/employee-salary')->assertRedirect('/v2/s/hrm-salary');
         $this->get('/hrm/payroll/employee-salary?open=7')->assertRedirect('/v2/s/hrm-salary-form?id=7');

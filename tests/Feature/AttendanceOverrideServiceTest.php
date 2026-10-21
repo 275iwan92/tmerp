@@ -148,7 +148,7 @@ class AttendanceOverrideServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-attendance-form?id={id}', $grid->openUrl());
         $this->assertNull($grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/hrm/attendance-daily.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/hrm_attendance_daily_v1_2026-10-19.blade.php'));
+        $this->assertArchived('hrm_attendance_daily_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_ATTENDANCE', MenuRoutes::map());
         $this->get('/hrm/attendance-daily')->assertRedirect('/v2/s/hrm-attendance');
         $this->get('/hrm/attendance-daily?open=1000')->assertRedirect('/v2/s/hrm-attendance-form?id=1000');

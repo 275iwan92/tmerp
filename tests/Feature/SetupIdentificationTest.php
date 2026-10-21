@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Sys\SysConstant;
-use App\Support\Localization\AuthText;
 use App\Support\V2\Data\Identification;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -30,13 +29,5 @@ class SetupIdentificationTest extends TestCase
     {
         $this->expectException(ValidationException::class);
         Identification::saveCompany(['name' => '', 'legal_name' => 'X'], null, null, 'test');
-    }
-
-    public function test_login_texts_are_english_by_default_and_translated_by_dictionary(): void
-    {
-        $en = AuthText::forLang('en');
-        $this->assertSame(array_keys(AuthText::TEXTS), array_keys($en));
-        $this->assertSame('Sign in', $en['btn_login']);
-        $this->assertNotSame('Sign in', AuthText::forLang('id')['btn_login']);
     }
 }

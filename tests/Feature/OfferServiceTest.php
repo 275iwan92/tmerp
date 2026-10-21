@@ -276,7 +276,7 @@ class OfferServiceTest extends TestCase
         $this->assertNull($grid->newUrl());
         foreach (['list', 'entry'] as $f) {
             $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/offer/'.$f.'.blade.php'));
-            $this->assertFileExists(base_path('tmerp_unused/recruitment_offer_'.$f.'_v1_2026-10-20.blade.php'));
+            $this->assertArchived('recruitment_offer_'.$f.'_v1_2026-10-20.blade.php');
         }
         $this->assertArrayNotHasKey('HRM_RCR_OFFER', MenuRoutes::map());
         $this->get('/hrm/recruitment/offer')->assertRedirect('/v2/s/hrm-rcr-offer');

@@ -149,7 +149,7 @@ class AssessmentResultServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-rcr-assessment-form?new=1', $grid->newUrl());
         $this->assertSame('warn', collect($grid->columns())->firstWhere('key', 'recommendation')['tones']['PERTIMBANGAN']);
         $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/assessment-result.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/recruitment_assessment_result_v1_2026-10-19.blade.php'));
+        $this->assertArchived('recruitment_assessment_result_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_RCR_ASSESSMENT', MenuRoutes::map());
         $this->get('/hrm/recruitment/assessment-result')->assertRedirect('/v2/s/hrm-rcr-assessment');
         $this->get('/hrm/recruitment/assessment-result?new=1')->assertRedirect('/v2/s/hrm-rcr-assessment-form?new=1');

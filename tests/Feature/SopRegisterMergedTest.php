@@ -135,7 +135,7 @@ class SopRegisterMergedTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-sop-form?new=1', $grid->newUrl());
         $this->get(route('v2.screen', 'hrm-sop'))->assertOk();
         $this->assertFileDoesNotExist(resource_path('views/pages/hrm/sop-documents.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/hrm_sop_documents_v1_2026-10-19.blade.php'));
+        $this->assertArchived('hrm_sop_documents_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_SOP', MenuRoutes::map());
         $this->get('/hrm/sop')->assertRedirect('/v2/s/hrm-sop');
         $this->get('/hrm/sop?open=111')->assertRedirect('/v2/s/hrm-sop-form?id=111');

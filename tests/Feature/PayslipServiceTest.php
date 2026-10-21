@@ -169,7 +169,7 @@ class PayslipServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-payslip-form?id={id}', $grid->openUrl());
         foreach (['list', 'print', 'print-all'] as $f) {
             $this->assertFileDoesNotExist(resource_path('views/pages/hrm/payroll-payslip-'.$f.'.blade.php'));
-            $this->assertFileExists(base_path('tmerp_unused/payroll_payslip_'.str_replace('-', '_', $f).'_v1_2026-10-20.blade.php'));
+            $this->assertArchived('payroll_payslip_'.str_replace('-', '_', $f).'_v1_2026-10-20.blade.php');
         }
         $this->assertFileDoesNotExist(resource_path('views/pages/hrm/_payslip-sheet.blade.php'));
         $this->assertArrayNotHasKey('HRM_PAYROLL_PAYSLIP', MenuRoutes::map());

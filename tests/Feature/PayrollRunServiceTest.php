@@ -162,7 +162,7 @@ class PayrollRunServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-payroll-run-form?id={id}', $grid->openUrl());
         $this->assertStringContainsString('/v2/s/hrm-payroll-run-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/hrm/payroll-batch-run.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/payroll_batch_run_v1_2026-10-20.blade.php'));
+        $this->assertArchived('payroll_batch_run_v1_2026-10-20.blade.php');
         $this->assertArrayNotHasKey('HRM_PAYROLL_CALC', MenuRoutes::map());
         $this->assertFalse(PayrollAccess::screenAllowed('hrm-payroll-run-form', null));
         $this->get('/hrm/payroll/batch-run')->assertRedirect('/v2/s/hrm-payroll-run');

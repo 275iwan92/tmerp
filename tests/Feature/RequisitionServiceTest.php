@@ -248,8 +248,8 @@ class RequisitionServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-rcr-requisition-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/requisition/list.blade.php'));
         $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/requisition/entry.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/recruitment_requisition_list_v1_2026-10-19.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/recruitment_requisition_entry_v1_2026-10-19.blade.php'));
+        $this->assertArchived('recruitment_requisition_list_v1_2026-10-19.blade.php');
+        $this->assertArchived('recruitment_requisition_entry_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_RCR_REQUISITION', MenuRoutes::map());
         $this->get('/hrm/recruitment/requisition')->assertRedirect('/v2/s/hrm-rcr-requisition');
         $this->get('/hrm/recruitment/requisition?new=1')->assertRedirect('/v2/s/hrm-rcr-requisition-form?new=1');

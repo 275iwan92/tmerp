@@ -91,20 +91,20 @@ Route::prefix('hrm/recruitment/portal')->name('careers.')->group(function () {
     });
 });
 
-Route::middleware('guest')->group(function () {
-    Route::livewire('/login', 'pages::auth.login')->name('login');
-    Route::livewire('/register', 'pages::auth.register')->name('register');
-    Route::livewire('/forgot-password', 'pages::auth.forgot-password')->name('password.request');
+Route::middleware(['guest', 'locale'])->group(function () {
+    Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login'); Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'attempt'])->name('login.attempt');
+    Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'show'])->name('register'); Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'store'])->name('register.store');
+    Route::controller(App\Http\Controllers\Auth\ForgotPasswordController::class)->group(function () { Route::get('/forgot-password', 'show')->name('password.request'); Route::post('/forgot-password', 'find')->name('password.find'); Route::post('/forgot-password/verify', 'verify')->name('password.verify'); Route::post('/forgot-password/restart', 'restart')->name('password.restart'); });
 });
 
 Route::middleware(['auth', 'locale'])->group(function () {
     // Di luar force.password: halaman paksa-ganti-password sendiri, tak boleh
     // ikut digate olehnya (redirect loop) — security_defaultpassword_spec.md §6.
-    Route::livewire('/password/change', 'pages::auth.password-change')->name('password.change');
+    Route::get('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'show'])->name('password.change'); Route::post('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'update'])->name('password.update');
 
     // Sama alasannya dgn password.change — halaman setup 4 pertanyaan keamanan
     // sendiri juga di luar force.password (redirect loop kalau ikut digate).
-    Route::livewire('/security/setup', 'pages::auth.security-setup')->name('security.setup');
+    Route::get('/security/setup', [App\Http\Controllers\Auth\SecuritySetupController::class, 'show'])->name('security.setup'); Route::post('/security/setup', [App\Http\Controllers\Auth\SecuritySetupController::class, 'store'])->name('security.store');
 
     // Route logout GLOBAL, di luar shell lama -- sebelumnya logout HANYA
     // method Livewire di dalam main-menu.blade.php (wire:click="logout"),

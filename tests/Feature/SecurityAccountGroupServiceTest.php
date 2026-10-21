@@ -191,7 +191,7 @@ class SecurityAccountGroupServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/security-group-form?id={id}', Grids::find('security-groups')->openUrl());
         $this->assertStringContainsString('/v2/s/security-group-form?new=1', Grids::find('security-groups')->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/security/index.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/security_index_v1_2026-10-20.blade.php'));
+        $this->assertArchived('security_index_v1_2026-10-20.blade.php');
         $this->assertStringContainsString('security-accounts', MenuRoutes::map()['SET_USER']);
         $this->get('/security')->assertRedirect('/v2/s/security-accounts');
         $this->get('/security?tab=users&open=7')->assertRedirect('/v2/s/security-account-form?id=7');

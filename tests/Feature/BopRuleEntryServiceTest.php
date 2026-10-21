@@ -186,7 +186,7 @@ class BopRuleEntryServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/prod-bop-form?id={id}', $grid->openUrl());
         $this->assertStringContainsString('/v2/s/prod-bop-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/production/bop-rule.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/production_bop_rule_v1_2026-10-19.blade.php'));
+        $this->assertArchived('production_bop_rule_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('PROD_MST_BOP_RULE', MenuRoutes::map());
         $this->get('/production/bop-rule')->assertRedirect('/v2/s/prod-bop-rule');
         $this->get('/production/bop-rule?new=1')->assertRedirect('/v2/s/prod-bop-form?new=1');

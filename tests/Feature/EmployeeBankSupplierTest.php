@@ -126,7 +126,7 @@ class EmployeeBankSupplierTest extends TestCase
         $this->get('/hrm/payroll/employee-bank')->assertRedirect('/v2/s/hrm-bank');
         $this->get('/hrm/payroll/employee-bank?open='.$emp)->assertRedirect('/v2/s/hrm-employee-form?id='.$emp.'&tab=bank');
         $this->assertFileDoesNotExist(resource_path('views/pages/hrm/payroll-employee-bank.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/hrm_payroll_employee_bank_v1_2026-10-19.blade.php'));
+        $this->assertArchived('hrm_payroll_employee_bank_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_PAYROLL_BANK', MenuRoutes::map());
     }
 

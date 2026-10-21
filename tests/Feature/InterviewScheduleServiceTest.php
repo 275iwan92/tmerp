@@ -173,7 +173,7 @@ class InterviewScheduleServiceTest extends TestCase
         $this->assertStringContainsString('/v2/s/hrm-rcr-interview-form?id={id}', $grid->openUrl());
         $this->assertStringContainsString('/v2/s/hrm-rcr-interview-form?new=1', $grid->newUrl());
         $this->assertFileDoesNotExist(resource_path('views/pages/recruitment/interview-schedule.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/recruitment_interview_schedule_v1_2026-10-19.blade.php'));
+        $this->assertArchived('recruitment_interview_schedule_v1_2026-10-19.blade.php');
         $this->assertArrayNotHasKey('HRM_RCR_INTERVIEW', MenuRoutes::map());
         $this->get('/hrm/recruitment/interview-schedule')->assertRedirect('/v2/s/hrm-rcr-interview');
         $this->get('/hrm/recruitment/interview-schedule?open=2')->assertRedirect('/v2/s/hrm-rcr-interview-form?id=2');

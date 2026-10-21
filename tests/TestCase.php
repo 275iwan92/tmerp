@@ -3,6 +3,7 @@
 /*
  * REMARK
  * Tujuan       : Kelas dasar semua tes: CSRF dimatikan supaya tes POST berjalan di lingkungan mockup (--env=mockup) tanpa 419.
+ *                assertArchived(): berkas usang harus ada di salah satu ZIP tmerp_unused (aturan D.26).
  *                Setelah tiap tes, saran ProCost (iqp_costing_recommendation) milik costing yang sudah dihapus tes ikut dibersihkan.
  * Sumber hulu  : bootstrap/app.php (middleware PreventRequestForgery aktif di semua lingkungan).
  * Input        : -
@@ -23,6 +24,22 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         $this->withoutMiddleware(PreventRequestForgery::class);
+    }
+
+    // Berkas v1 yang diarsipkan ada sebagai entri di tmerp_unused/*.zip, bukan berkas lepas (aturan D.26).
+    protected function assertArchived(string $entry): void
+    {
+        foreach (glob(base_path('tmerp_unused/*.zip')) ?: [] as $file) {
+            $zip = new \ZipArchive;
+            if ($zip->open($file) === true && $zip->locateName($entry) !== false) {
+                $zip->close();
+                $this->assertFileDoesNotExist(base_path('tmerp_unused/'.$entry));
+
+                return;
+            }
+        }
+
+        $this->fail('Tidak ada di ZIP arsip: '.$entry);
     }
 
     protected function tearDown(): void

@@ -320,7 +320,7 @@ class StockAdjustmentServiceTest extends TestCase
             $this->assertStringContainsString('/v2/s/inv-stock-adj-form?class='.$class.'&new=1', $grid->newUrl());
         }
         $this->assertFileDoesNotExist(resource_path('views/pages/inventory/stock-adjustment.blade.php'));
-        $this->assertFileExists(base_path('tmerp_unused/inventory_stock_adjustment_v1_2026-10-19.blade.php'));
+        $this->assertArchived('inventory_stock_adjustment_v1_2026-10-19.blade.php');
         foreach (['INV_RM_ITEM4', 'INV_FG_ITEM4', 'INV_SFG_ITEM4'] as $code) {
             $this->assertArrayNotHasKey($code, MenuRoutes::map());
         }
