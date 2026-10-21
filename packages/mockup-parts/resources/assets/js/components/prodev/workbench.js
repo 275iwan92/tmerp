@@ -1,4 +1,4 @@
-/* MockupParts · ProDev · ProdevWorkbench — Imposition Plano Optimizer (tmerp pages/production/prodev.blade.php).
+/* MockupParts · ProDev · ProdevWorkbench — Imposition Plano Optimizer (port mockup_prodev_imposition; aturan server di ProdevWorkbenchService).
    Isi run() = salinan PERSIS skrip tmerp (zona beku: esensi & flow tidak diubah). Yang dijadikan method kelas
    hanya titik sambung ke luar, supaya turunan cukup meng-override:
      data           : data awal (jobs, machines, dieCutters, planos, lookups, gripper/margin) dari data-config

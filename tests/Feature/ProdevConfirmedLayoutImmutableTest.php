@@ -9,10 +9,10 @@ use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
+use App\Services\ProDev\ProdevWorkbenchService;
 use Tests\TestCase;
 
-// ProDev baru tidak punya unlock (lihat ProdevUnlockLayoutGuardTest utk old_prodev):
+// ProDev baru tidak punya unlock (workbench lama old_prodev diarsipkan ke ZIP 2026-10-21):
 // layout CONFIRMED yang sudah ditarik Costing tidak boleh ikut berubah saat job
 // disimpan lagi -- saveLayout() wajib bikin layout DRAFT baru.
 class ProdevConfirmedLayoutImmutableTest extends TestCase
@@ -76,7 +76,7 @@ class ProdevConfirmedLayoutImmutableTest extends TestCase
         $this->costingPartId = $costingPart->id_costing_part;
 
         $state = ['partId' => $part->id_part, 'upCount' => 6, 'canvasL' => 70, 'canvasW' => 100, 'efficiencyPct' => 75, 'method' => 'AUTO_GRID'];
-        Livewire::test('pages::production.prodev', ['part' => $part->id_part])->call('saveLayout', $state);
+        (new ProdevWorkbenchService($part->id_part))->saveLayout($state);
 
         $confirmed->refresh();
         $this->assertSame('CONFIRMED', $confirmed->status);

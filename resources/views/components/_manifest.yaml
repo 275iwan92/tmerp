@@ -122,7 +122,6 @@ board: # baca kanbanboardstandard.md sebelum pakai
 domain: # khusus modul, jangan dipakai lintas modul tanpa alasan
   - x-costing.field
   - x-costing.imposition-svg
-  - x-prodev.wizard-bar
   - x-org-chart.node
   - x-auth.hero-brand
   - x-auth.top-brand

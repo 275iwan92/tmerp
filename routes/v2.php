@@ -1814,7 +1814,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
             : redirect()->route('v2.screen', 'prodev-'.strtolower($inq->inquiry_type))->withErrors(['part' => tf('Inquiry :no has no part yet.', ['no' => $inq->inquiry_no])]);
     })->whereNumber('inquiry')->middleware('module:PROD')->name('prodev.open');
 
-    // ProDev workbench: panggilan server = method komponen v1 pages::production.prodev (App\Support\V2\Data\Prodev).
+    // ProDev workbench: panggilan server = method App\Services\ProDev\ProdevWorkbenchService (lewat App\Support\V2\Data\Prodev).
     Route::prefix('prodev/{part}')->name('prodev.')->whereNumber('part')->middleware('module:PROD')->group(function () {
         Route::post('/call', function (Request $r, int $part) {
             $d = $r->validate(['method' => ['required', 'in:'.implode(',', Prodev::CALLS)], 'args' => ['array']]);

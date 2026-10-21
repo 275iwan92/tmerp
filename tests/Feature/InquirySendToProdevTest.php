@@ -10,7 +10,6 @@ use App\Models\Sys\SecUser;
 use App\Services\Sales\InquiryWriter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Livewire\Livewire;
 use Tests\Support\InquiryDriver;
 use Tests\TestCase;
 
@@ -73,13 +72,6 @@ class InquirySendToProdevTest extends TestCase
         $writer->sendToProDev($inquiry->refresh(), $iqpPart);
         $iqpPart->refresh();
         $this->assertSame($prodPart->id_part, $iqpPart->prod_part_id, 'Panggil 2x tidak boleh bikin ProdPart baru');
-
-        // Panel referensi hanya ada di ProDev lama (old_prodev, diarsipkan 2026-09-14 tapi
-        // route-nya tetap hidup); ProDev baru (Imposition) tidak punya panel ini.
-        $prodevTest = Livewire::test('pages::production.old_prodev', ['part' => $prodPart->id_part]);
-        $prodevHtml = $prodevTest->html();
-        $this->assertStringContainsString('Referensi Inquiry Asal', $prodevHtml);
-        $this->assertStringContainsString('Test Part SendToProDev', $prodevHtml);
     }
 
     // Jo 2026-10-18: part_type, join_type_id, dieline_spec ikut ke prod_part hanya bila masih kosong (hasil edit officer tidak ditimpa).
@@ -109,30 +101,5 @@ class InquirySendToProdevTest extends TestCase
         $prodPart->refresh();
         $this->assertSame('DC+SF', $prodPart->part_type);
         $this->assertSame(4, (int) $prodPart->join_type_id);
-    }
-
-    public function test_prodev_reference_panel_hides_draft_and_cancelled_inquiries(): void
-    {
-        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
-        $this->actingAs($admin);
-
-        $inquiry = InquiryDriver::create('Test SendToProDev Product', ['parts' => [['part_name' => 'Test Part SendToProDev', 'part_type' => 'DC', 'qty_per_sku' => 1, 'cfg_color' => '4/4']]]);
-        $this->inquiryId = $inquiry->id_inquiry;
-        $inquiry = InquiryDriver::confirm($inquiry);
-        $iqpPart = $inquiry->parts()->firstOrFail();
-        InquiryDriver::writer()->sendToProDev($inquiry, $iqpPart);
-        $iqpPart->refresh();
-        $prodevTest = Livewire::test('pages::production.old_prodev', ['part' => $iqpPart->prod_part_id]);
-        $this->assertStringContainsString('Referensi Inquiry Asal', $prodevTest->html(), 'Inquiry CONFIRMED biasa harus tampil di panel referensi');
-
-        // Cancel Inquiry -- panel referensi HARUS hilang (stat_confirm tetap
-        // true selamanya, jadi sub_state yg jadi penentu -- gap yg sempat
-        // kelewat & diperbaiki 2026-09-03).
-        InquiryDriver::writer()->cancel($inquiry->refresh(), 'Test cancel utk verifikasi panel referensi');
-        $inquiry = IqpInquiry::findOrFail($this->inquiryId);
-        $this->assertSame('CANCELLED', $inquiry->sub_state);
-
-        $prodevTest2 = Livewire::test('pages::production.old_prodev', ['part' => $iqpPart->prod_part_id]);
-        $this->assertStringNotContainsString('Referensi Inquiry Asal', $prodevTest2->html(), 'Inquiry CANCELLED tidak boleh tampil di panel referensi ProDev');
     }
 }

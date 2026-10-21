@@ -6,29 +6,29 @@ use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
 use App\Services\ProDev\PartDieline;
+use App\Services\ProDev\ProdevWorkbenchService;
 use Devlib\Locale;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use Livewire\Component;
 use MockupParts\Components\Sales\InquiryPart;
 
-// Data layar ProDev v2 = komponen tmerp v1 `pages::production.prodev` yang SAMA (zona beku: flow & rumus tidak disalin,
-// dipanggil langsung). Daftar part = query prodev-list v1. Panggilan server workbench (Save/Confirm, BOM/Ink/BOP,
-// PR, subkon, warna artwork, upload artwork) lewat route v2.prodev.* ke method komponen yang sama.
+// Data layar ProDev v2. Aturan workbench = App\Services\ProDev\ProdevWorkbenchService (dipindah apa adanya dari komponen v1
+// `pages::production.prodev`, diarsipkan 2026-10-21; zona beku: flow & rumus tidak berubah). Panggilan server workbench (Save/Confirm,
+// BOM/Ink/BOP, PR, subkon, warna artwork, upload artwork) lewat route v2.prodev.* ke method service yang sama.
 final class Prodev
 {
-    // Method komponen v1 yang boleh dipanggil dari workbench.js (server(m, ...a)).
+    // Method service yang boleh dipanggil dari workbench.js (server(m, ...a)).
     public const CALLS = ['saveLayout', 'generateSpec', 'saveArtworkColors', 'searchMaterials', 'createPurchase', 'subcontract'];
 
-    public static function component(int $partId): Component
+    public static function service(int $partId): ProdevWorkbenchService
     {
-        $c = app('livewire')->new('pages::production.prodev');
-        $c->partId = $partId;
-        $c->activeJobPartId = $partId;
+        // Satu instance per part; daftar job di-cache selama instance hidup.
+        // Pemakai lain: StageBuilder dan MasterCardDummyEngine (saveLayout).
+        // Tidak ada status Livewire lagi: semua panggilan lewat route v2.prodev.*.
 
-        return $c;
+        return new ProdevWorkbenchService($partId);
     }
 
     // Pro-Dev > Manual (Mode #2): part master yang TIDAK lahir dari Inquiry. Part dari Inquiry dikerjakan lewat grid
@@ -77,7 +77,7 @@ final class Prodev
     // $accUrl = layar cetak ACC Digital product part ini (null = belum ada product) -> pilihan kedua Print / Email di panel atas.
     public static function workbench(int $id, string $backUrl, ?string $costingUrl, ?string $accUrl = null): array
     {
-        $c = self::component($id);
+        $c = self::service($id);
 
         return [
             'jobs' => $c->jobs(),
@@ -139,30 +139,16 @@ final class Prodev
     {
         abort_unless(in_array($method, self::CALLS, true), 404);
 
-        return self::component($partId)->{$method}(...array_values($args));
+        return self::service($partId)->{$method}(...array_values($args));
     }
 
-    // Upload artwork = updatedArtworkUpload() v1 (disk public, iqp_part.artwork_path + analisa warna).
+    // Upload artwork = ProdevWorkbenchService::storeArtwork (disk public, iqp_part.artwork_path + analisa warna).
     public static function uploadArtwork(int $partId, UploadedFile $file): array
     {
-        $c = self::component($partId);
-        $c->artworkUpload = $file;
-
         try {
-            $c->updatedArtworkUpload();
+            return self::service($partId)->storeArtwork($file);
         } catch (ValidationException $e) {
             return ['ok' => false, 'message' => collect($e->errors())->flatten()->first()];
         }
-
-        if ($c->artworkError !== '') {
-            return ['ok' => false, 'message' => $c->artworkError];
-        }
-
-        $iqp = IqpPart::where('prod_part_id', $partId)->first();
-        $path = $iqp->artwork_path;
-        $preview = Storage::disk('public')->exists($path.'.preview.png') ? $path.'.preview.png' : $path;
-
-        return ['ok' => true, 'partId' => $partId, 'url' => asset('storage/'.$preview),
-            'name' => $iqp->artwork_original_filename, 'colors' => $iqp->artwork_colors];
     }
 }

@@ -18,8 +18,8 @@ final class Screens
             'master-matcat' => ['Raw Material Categories', 'fa-solid fa-sitemap', 'v2: md-matcat (App\Support\V2\Grid\Master\MatCategoryGrid)', null],
             'master-uom' => ['Units of Measure', 'fa-solid fa-ruler', 'master/uom.blade.php', 'mockup_master_uom_v4.html'],
             'master-currency' => ['Currencies & Exchange Rates', 'fa-solid fa-coins', 'master/currency.blade.php', null],
-            'master-card' => ['Master Card', 'fa-solid fa-id-card', 'production/prodev.blade.php (Master Card)', 'mockup_mastercard_ver2.jpg'],
-            'prodev' => ['Pro-Dev (Product Development)', 'fa-solid fa-table-cells', 'production/prodev.blade.php (aturan; prodev-list v1 diarsipkan)', 'mockup_prodev_imposition.html'],
+            'master-card' => ['Master Card', 'fa-solid fa-id-card', 'v2: Master Card di workbench ProDev (v1 diarsipkan 2026-10-21)', 'mockup_mastercard_ver2.jpg'],
+            'prodev' => ['Pro-Dev (Product Development)', 'fa-solid fa-table-cells', 'v2: ProdevWorkbenchService (aturan; v1 diarsipkan 2026-10-21)', 'mockup_prodev_imposition.html'],
         ];
     }
 

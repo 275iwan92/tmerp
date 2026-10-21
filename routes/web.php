@@ -323,7 +323,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // ProDev BARU (2026-09-14) -- Imposition Plano Optimizer, port dari
             // docs/mockups/mockup_prodev_imposition.html. Ini yang dipasang di
             // menu (SALES_IMPO). Layar ProDev LAMA (workbench 3-kolom +
-            // grid + Master Card print) diarsipkan jadi old_prodev* di bawah:
+            // grid + Master Card print) diarsipkan ke ZIP 2026-10-21; rute di bawah = redirect:
             // route-nya SENGAJA dipertahankan supaya data/alur lama tidak
             // putus (ProCost Mode #1 masih baca prod_layout_group yang cuma
             // bisa dibuat di sana), tapi TIDAK muncul di menu mana pun.
@@ -333,10 +333,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::redirect('/lookup/product-market', '/v2/s/sales-product-market');
             Route::redirect('/lookup/product-market/new', '/v2/s/sales-market-form?new=1');
             Route::get('/lookup/product-market/{market}/edit', fn (int $market) => redirect('/v2/s/sales-market-form?id='.$market));
-            Route::livewire('/production/prodev/{part?}', 'pages::production.prodev')->name('production.prodev')->where('part', '[0-9]+');
-            Route::livewire('/production/old-prodev-list', 'pages::production.old_prodev_list')->name('production.old-prodev.list');
-            Route::livewire('/production/old-prodev/{part?}', 'pages::production.old_prodev')->name('production.old-prodev')->where('part', '[0-9]+');
-            Route::livewire('/production/old-prodev/{part}/print', 'pages::production.old_prodev_print')->name('production.old-prodev.print')->where('part', '[0-9]+');
+            Route::get('/production/prodev/{part?}', fn (?int $part = null) => redirect('/v2/s/prodev'.($part ? '?part='.$part : '')))->name('production.prodev')->where('part', '[0-9]+');
+            Route::redirect('/production/old-prodev-list', '/v2/s/prodev')->name('production.old-prodev.list');
+            Route::get('/production/old-prodev/{part?}', fn (?int $part = null) => redirect('/v2/s/prodev'.($part ? '?part='.$part : '')))->name('production.old-prodev')->where('part', '[0-9]+');
+            Route::get('/production/old-prodev/{part}/print', fn (int $part) => redirect('/v2/s/prodev?part='.$part))->name('production.old-prodev.print')->where('part', '[0-9]+');
         });
 
         // Laporan Manajemen -- lintas modul (penjualan + pembelian + master),

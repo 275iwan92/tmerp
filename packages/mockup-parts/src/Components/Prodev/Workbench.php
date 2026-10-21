@@ -4,7 +4,7 @@ namespace MockupParts\Components\Prodev;
 
 use Devlib\Components\DevlibComponent;
 
-// ProDev "Imposition Plano Optimizer" (tmerp pages/production/prodev.blade.php, zona beku: flow & data SAMA).
+// ProDev "Imposition Plano Optimizer" (aturan server = ProdevWorkbenchService, zona beku: flow & data SAMA).
 // Satu part per layar: nesting manual (drag/putar/cermin), Auto Up, gap, canvas, Suggestion, mesin cetak & plong,
 // optimasi & ranking plano, kalkulator PCS<->PLANO, BOM / Ink / BOP (SpecEngine), Save All, Confirm -> Product Costing,
 // pratinjau & cetak Master Card (A4 landscape).

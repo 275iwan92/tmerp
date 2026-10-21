@@ -11,7 +11,7 @@
 Searched in `routes/console.php` (none), `app/Jobs` (none), Observers (none). FACT, all callers:
 | Trigger | Method | File:line |
 |---|---|---|
-| ProDev: BOM/Ink/BOP panel recomputed (JS `w.call('generateSpec', ...)`) | `generate` | `resources/views/pages/production/prodev.blade.php:347` (JS `:2279`); route v2 `routes/v2.php:1667-1675` (`Prodev::CALLS`: `generateSpec`, `saveLayout`) |
+| ProDev: BOM/Ink/BOP panel recomputed (JS `w.call('generateSpec', ...)`) | `generate` | `app/Services/ProDev/ProdevWorkbenchService.php:257` (JS `workbench.js` `w.call('generateSpec')`); route v2 `routes/v2.php:1667-1675` (`Prodev::CALLS`: `generateSpec`, `saveLayout`) |
 | ProDev: Save / Confirm button (`saveLayout`) | `generate` then `persist` | `prodev.blade.php:316-318` |
 | ProDev: material search dropdown | `stockFor` | `prodev.blade.php:373` |
 | ProDev: initial screen data | `saved`, `tierQty` | `prodev.blade.php:673-674` |

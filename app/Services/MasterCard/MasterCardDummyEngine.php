@@ -481,7 +481,7 @@ final class MasterCardDummyEngine
         InquiryStage::openInProdev($inquiry, $officer->login);
         $cards = ProdMasterCard::where('inquiry_id', $inquiry->id_inquiry)->get();
         foreach (IqpPart::where('inquiry_id', $inquiry->id_inquiry)->where('part_kind', 'COMPONENT')->orderBy('part_seq')->get() as $part) {
-            $out = Prodev::component((int) $part->refresh()->prod_part_id)->saveLayout($this->layout((int) $part->prod_part_id, $this->cardOf($part, $cards)), true);
+            $out = Prodev::service((int) $part->refresh()->prod_part_id)->saveLayout($this->layout((int) $part->prod_part_id, $this->cardOf($part, $cards)), true);
             if (! ($out['ok'] ?? false)) {
                 throw new RuntimeException("ProDev {$inquiry->inquiry_no} {$part->part_code}: ".($out['message'] ?? 'gagal'));
             }

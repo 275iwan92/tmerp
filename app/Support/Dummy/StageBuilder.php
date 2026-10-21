@@ -283,7 +283,7 @@ final class StageBuilder
         foreach (IqpInquiry::withoutGlobalScopes()->where('stat_confirm_sales', true)->orderBy('id_inquiry')->get() as $inq) {
             InquiryStage::openInProdev($inq, $officer->login);
             foreach (IqpPart::where('inquiry_id', $inq->id_inquiry)->whereNotNull('prod_part_id')->orderBy('part_seq')->pluck('prod_part_id') as $partId) {
-                $c = Prodev::component((int) $partId);
+                $c = Prodev::service((int) $partId);
                 $job = $c->jobs()[0] ?? throw new RuntimeException("Pro-Dev: part {$partId} of {$inq->inquiry_no} has no blank size, a layout cannot be made.");
                 $out = $c->saveLayout($this->gridLayout($job, $c->machines()[0], $c->dieCutters()[0] ?? null, $c->planos()), true);
                 if (! ($out['ok'] ?? false)) {

@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-21 11:27",
+    "generated": "2026-10-21 13:21",
     "database": "ddtsys",
     "totals": {
         "objects": 173,
@@ -23,10 +23,10 @@
         "databases": 10,
         "models": 383,
         "migrations": 650,
-        "tests": 253,
-        "dictionary": 17169,
+        "tests": 252,
+        "dictionary": 17170,
         "languages": 4,
-        "commits": 1580,
+        "commits": 1602,
         "since": "2026-08-06"
     },
     "modules": [
@@ -143,13 +143,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 120,
+            "commits": 122,
             "days": 6,
             "last": "2026-10-21",
             "screens": 192,
             "objects": 177,
             "engines": 3,
-            "tests": 65
+            "tests": 70
         },
         {
             "key": "jo",
@@ -163,7 +163,7 @@
             "tests": 90
         }
     ],
-    "untracked": 1315,
+    "untracked": 1335,
     "days": [
         {
             "date": "2026-10-08",
@@ -245,9 +245,9 @@
         },
         {
             "date": "2026-10-21",
-            "iwan": 1,
+            "iwan": 3,
             "jo": 0,
-            "other": 33
+            "other": 53
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W43",
-            "iwan": 29,
+            "iwan": 31,
             "jo": 0,
-            "other": 119
+            "other": 139
         }
     ],
     "items": [
@@ -4755,7 +4755,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -4810,7 +4810,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -4821,7 +4821,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -4843,7 +4843,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -4854,7 +4854,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -4865,7 +4865,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -4931,7 +4931,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -4975,7 +4975,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -4986,7 +4986,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -5030,7 +5030,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
@@ -5085,7 +5085,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-20",
+            "changed_at": "2026-10-21",
             "changed_by": null
         },
         {
