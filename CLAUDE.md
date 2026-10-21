@@ -73,6 +73,7 @@ php artisan engine:catalog               # setelah daftar engine berubah
 - Grid: `DbGrid` + kelas turunan di `App\Support\V2\Grid`; objek DevLib di `../devlib` (repo git sendiri `Herd\devlib`, setara tmerp, dipasang lewat Composer path repository `jo/devlib` (tautan `vendor/jo/devlib`); dipindah dari `packages/devlib` 2026-10-19; situs acuan devlib.test = `../devlib/site`; **perubahan DevLib di-commit di repo itu, bukan di git tmerp**), bagian khusus di `packages/mockup-parts`.
 - `DataOriginScope` (web) menyembunyikan DUMMY/LEGACY sesuai setelan admin; console/test melihat semua.
 - Peta lengkap dokumen: `docs/index_master.md`, `docs/md_for_systems/uistandardindex.md`, `docs/claude_docs_reference.md`; alur vital Inquiry/ProDev/ProCost/Quotation/CO/CPDEL: `docs/claude_vital_flows.md` (WAJIB dibaca sebelum menyentuhnya).
+- **"Usang" / "arsipkan" (Jo 2026-10-21, D.26) = masuk ZIP di `tmerp_unused/` lewat `php artisan archive:zip <batch> <path>...`, berkas dihapus dari situs; jangan ditanyakan lagi.**
 - Dokumen usang dicari per topik (isi lengkap tersimpan di `sys_md_library`): `php artisan md:library search "kata kunci" --env=mockup`, baca dengan `md:library show <id>`; tambah arsip baru: `md:library add` setelah memindah berkas ke `tmerp_unused`.
 
 ## 7. Cara kerja

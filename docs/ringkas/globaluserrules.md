@@ -1,4 +1,5 @@
 # Indeks aturan user (bernomor), ERP CV. Telasih Makmur v2
+26. "Usang / arsipkan" dari Jo = masuk ZIP di `tmerp_unused/` (`php artisan archive:zip`), berkas dihapus dari situs; tidak ditanyakan lagi (Jo 2026-10-21)
 
 > Ringkasan `docs/globaluserrules.md` yang **memakai nomor asli** (A.n .. E.n), supaya rujukan dari CLAUDE.md, memori, skill, dan kode tetap berlaku. Satu baris per aturan; detail, kutipan user, dan angka lengkap ada di berkas asli pada nomor yang sama.
 > Dibuat ulang 2026-10-14. **[L]** = LOCKED, tidak diubah tanpa perintah eksplisit Jo. Aturan baru ditambahkan ke berkas asli (butir + Changelog), lalu indeks ini diperbarui.

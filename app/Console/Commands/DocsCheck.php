@@ -89,6 +89,27 @@ class DocsCheck extends Command
         return $this->report();
     }
 
+    // Jumlah baris berkas di dalam ZIP arsip tmerp_unused (null = tidak diarsipkan).
+    private function archivedLines(string $path): ?int
+    {
+        static $index;
+        if ($index === null) {
+            $index = [];
+            foreach (glob(base_path('tmerp_unused/*.zip')) ?: [] as $zipFile) {
+                $zip = new \ZipArchive;
+                if ($zip->open($zipFile) === true) {
+                    for ($i = 0; $i < $zip->numFiles; $i++) {
+                        $index['tmerp_unused/'.$zip->getNameIndex($i)] = substr_count((string) $zip->getFromIndex($i), "
+") + 1;
+                    }
+                    $zip->close();
+                }
+            }
+        }
+
+        return $index[$path] ?? null;
+    }
+
     private function checkToken(string $tok, string $rel, string $dir, array $index, array $tables, array $columns, array $anyColumn, array $allow, array $tests, array $engineKeys): void
     {
         if (in_array($tok, $allow, true)) {
@@ -98,6 +119,14 @@ class DocsCheck extends Command
             $this->stat['path']++;
             $path = str_replace('\\', '/', $p[1]);
             $full = file_exists(base_path($path)) ? base_path($path) : (file_exists("$dir/$path") ? "$dir/$path" : null);
+            // Berkas usang diarsipkan di ZIP tmerp_unused (aturan D.26): kutipan tmerp_unused/<nama>:baris dicek terhadap isi ZIP.
+            if (! $full && ($zipLines = $this->archivedLines($path)) !== null) {
+                if (! empty($p[2]) && (int) ($p[3] ?? $p[2]) > $zipLines) {
+                    $this->warns[] = "$rel: line beyond end of file $tok";
+                }
+
+                return;
+            }
             if (! $full) {
                 $hits = $index[basename($path)] ?? [];
                 if (count($hits) === 1) {
