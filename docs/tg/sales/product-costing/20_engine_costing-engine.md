@@ -11,8 +11,8 @@
 None in `routes/console.php`, Jobs, Observers. FACT, all callers of `new CostingEngine`:
 | Trigger | File:line |
 |---|---|
-| Mode 1 (Integrasi): the **Hitung** button | `resources/views/pages/inquiry/costing.blade.php:535` inside `hitung()` (`:529`), button `:816`; `hitung()` is also called automatically after a part is added from a layout (`:326`), after a layout change (`:371`) and `setPaperIndex` (`:525`). After `run`, `CostingAdvisor::learn` is called (`:536`). |
-| Mode 2 (Instant): every input change calls `recalc()` | `resources/views/pages/inquiry/costing-instant.blade.php:149` (`recalc`, called `:175, :185, :197, :218, :298, :334, :350, :369, :379` etc.); does not call `learn`. Does not run when there is no part. |
+| Mode 1 (Integrasi): the **Hitung** button | `app/Services/Costing/CostingEntryService.php:427-438` (`hitung()`, `run` at `:431`), button Calculate in `resources/views/v2/screens/procost.blade.php` (action hitung in `routes/v2_procost.php`); `hitung()` is also called automatically after a part is added from a layout (`:227-246`), after a layout change (`:260-284`) and `setPaperIndex` (`:419-425`). After `run`, `CostingAdvisor::learn` is called (`:432`). |
+| Mode 2 (Instant): every input change calls `recalc()` | `app/Services/Costing/InstantCostingService.php:71-85` (`recalc`, called by updateHeader, updateTier, addPart, removePart, updatePart, the coating methods and confirm, plus the Save action of `routes/v2_procost.php`); does not call `learn`. Does not run when there is no part. |
 | Dummy data filler at migration time | `database/migrations/2026_09_18_000007_seed_procost_dummy_data.php:127,180` |
 Not called by the Advisor, Quotation, or Reverse (FACT, grep).
 
@@ -105,7 +105,7 @@ Other cases guarded by tests (figures from the tests, not recalculated here): `C
 
 > Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): this card only names or links the changed cards; nothing in it needs to change.
 
-> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
 
-> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+> Checked 2026-10-16 after the ProCost Book button (tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php may be about 70 lines lower. Only the cited items were re-read.
 

@@ -20,7 +20,7 @@
 @if ($lines->isNotEmpty())
     <x-dl::card title="Material substitution" description="Material lines of the Product Development BOM (Inquiry snapshot). A substitution only replaces the displayed line after approval; the snapshot itself never changes.">
         <x-dl::table :source="$src" empty="No material lines."
-            :columns="['name' => 'Material & specification', 'need' => ['Required Qty', 'num' => true], 'have' => ['Available Qty (Warehouse)', 'num' => true], 'to_buy' => ['Qty to buy', 'num' => true]]"
+            :columns="['name' => 'Material & specification', 'need' => ['Required Qty', 'num' => true, 'raw' => true], 'have' => ['Available Qty (Warehouse)', 'num' => true, 'raw' => true], 'to_buy' => ['Qty to buy', 'num' => true, 'raw' => true]]"
             :rows="$lines->map(fn ($l) => ['name' => raw($l->name.($l->spec !== '' ? ' · '.$l->spec : '')), 'need' => Locale::number($l->need).' '.$l->unit, 'have' => Locale::number($l->have).' '.$l->unit, 'to_buy' => Locale::number($l->to_buy).' '.$l->unit])->all()" />
         @foreach ($lines as $l)
             <x-dl::action-bar align="start">

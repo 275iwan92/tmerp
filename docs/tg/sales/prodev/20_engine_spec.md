@@ -98,9 +98,9 @@ ATTENTION-ENGINE-01 (SpecEngine patch, DONE 14 Oct), ATTENTION-ENGINE-02 (two de
 ## Tests
 `tests/Feature/ProCostBomAvailabilityTest.php` (ink estimate, added 2026-10-16; 2 passed). `tests/Feature/WoBomFromInquiryTest.php` (1 test), `tests/Feature/WoRowsTest.php` (uses `forWorkOrder`, line 164). These tests clean up their own data.
 
-> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
 
-> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+> Checked 2026-10-16 after the ProCost Book button (tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php may be about 70 lines lower. Only the cited items were re-read.
 
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.

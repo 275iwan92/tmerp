@@ -390,7 +390,7 @@
     <text x="683" y="715" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="1008" y="700" width="26" height="22" fill="#bfdbfe"/>
     <text x="1021" y="715" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <text x="8" y="741" stroke="none" fill="#000">v1 Pro-Cost: Add to Quotation</text>
+    <text x="8" y="741" stroke="none" fill="#000">Pro-Cost: Add to Quotation</text>
     <rect x="0" y="724" width="1060" height="26" fill="none"/>
     <rect x="280" y="726" width="26" height="22" fill="#fdba74"/>
     <text x="293" y="741" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+C</text>

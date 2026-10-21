@@ -133,7 +133,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_planning.php';
         require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
-        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php'; require __DIR__.'/v2_production.php'; require __DIR__.'/v2_hrm.php'; require __DIR__.'/v2_setup.php';
+        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php'; require __DIR__.'/v2_production.php'; require __DIR__.'/v2_hrm.php'; require __DIR__.'/v2_setup.php'; require __DIR__.'/v2_procost.php';
         require __DIR__.'/v2_warehouse.php';
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
@@ -175,14 +175,14 @@ Route::middleware(['auth', 'locale'])->group(function () {
         });
 
         Route::middleware('module:COSTING')->group(function () {
-            Route::livewire('/inquiry/costing', 'pages::inquiry.costing-list')->name('inquiry.costing.list');
-            Route::livewire('/inquiry/{inquiry}/costing', 'pages::inquiry.costing')->name('inquiry.costing');
+            Route::redirect('/inquiry/costing', '/v2/s/sales-procost')->name('inquiry.costing.list');
+            Route::get('/inquiry/{inquiry}/costing', fn (Illuminate\Http\Request $r, int $inquiry) => redirect('/v2/s/procost?inquiry='.$inquiry.($r->filled('view') ? '&view=1' : '').($r->filled('part') ? '&part='.(int) $r->query('part') : '')))->name('inquiry.costing');
             // Mode Instant (standalone, keputusan user 2026-09-18): grid & form
             // sendiri. Form meniru program HPP lama + mockup Kalkulasi_HPP_UAT.html
             // (tata letak beda total dari Integrated). Rumus tetap 1 sumber:
             // App\Services\Costing\CostingEngine. iqp_costing.mode=INSTANT.
-            Route::livewire('/costing/instant', 'pages::inquiry.costing-instant-list')->name('inquiry.costing.instant.list');
-            Route::livewire('/costing/instant/{costing}', 'pages::inquiry.costing-instant')->name('inquiry.costing.instant');
+            Route::redirect('/costing/instant', '/v2/s/sales-procost-instant')->name('inquiry.costing.instant.list');
+            Route::get('/costing/instant/{costing}', fn (int $costing) => redirect('/v2/s/procost-instant?id='.$costing))->name('inquiry.costing.instant');
         });
 
         Route::get('/security', fn (Illuminate\Http\Request $r) => redirect(match ($r->query('tab')) { 'groups' => $r->filled('open') ? '/v2/s/security-group-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/security-group-form?new=1' : '/v2/s/security-groups'), 'perms' => '/v2/s/security-permissions', 'migration' => '/v2/s/setup-migration', default => $r->filled('open') ? '/v2/s/security-account-form?id='.(int) $r->query('open') : ($r->boolean('new') ? '/v2/s/security-account-form?new=1' : '/v2/s/security-accounts') }))->name('security.index')->middleware('admin');

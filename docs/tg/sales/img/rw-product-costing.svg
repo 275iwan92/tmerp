@@ -78,16 +78,8 @@
     <text x="475" y="193" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="488" y="178" width="26" height="22" fill="#bfdbfe"/>
     <text x="501" y="193" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <text x="8" y="219" stroke="none" fill="#000">Open old Pro-Cost worklist</text>
+    <text x="8" y="219" stroke="none" fill="#000">Open old Pro-Cost worklist URL</text>
     <rect x="0" y="202" width="1684" height="26" fill="none"/>
-    <rect x="280" y="204" width="26" height="22" fill="#bfdbfe"/>
-    <text x="293" y="219" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <rect x="306" y="204" width="26" height="22" fill="#bfdbfe"/>
-    <text x="319" y="219" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <rect x="358" y="204" width="26" height="22" fill="#bfdbfe"/>
-    <text x="371" y="219" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <rect x="384" y="204" width="26" height="22" fill="#bfdbfe"/>
-    <text x="397" y="219" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <text x="8" y="245" stroke="none" fill="#000">Open Pro-Cost Instant worklist</text>
     <rect x="0" y="228" width="1684" height="26" fill="none"/>
     <rect x="306" y="230" width="26" height="22" fill="#bfdbfe"/>
@@ -98,12 +90,8 @@
     <rect x="0" y="254" width="1684" height="26" fill="none"/>
     <rect x="384" y="256" width="26" height="22" fill="#fdba74"/>
     <text x="397" y="271" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+C</text>
-    <text x="8" y="297" stroke="none" fill="#000">Instant: New on the old list</text>
+    <text x="8" y="297" stroke="none" fill="#000">Instant: old New / list URL</text>
     <rect x="0" y="280" width="1684" height="26" fill="none"/>
-    <rect x="306" y="282" width="26" height="22" fill="#bfdbfe"/>
-    <text x="319" y="297" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <rect x="384" y="282" width="26" height="22" fill="#fdba74"/>
-    <text x="397" y="297" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="8">R+C</text>
     <text x="8" y="323" stroke="none" fill="#000">Open Pro-Cost screen read-only</text>
     <rect x="0" y="306" width="1684" height="26" fill="none"/>
     <rect x="384" y="308" width="26" height="22" fill="#bfdbfe"/>
@@ -180,7 +168,7 @@
     <text x="943" y="375" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
     <rect x="956" y="360" width="26" height="22" fill="#bfdbfe"/>
     <text x="969" y="375" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>
-    <text x="8" y="401" stroke="none" fill="#000">Render the Pro-Cost screen (every Livewire ...</text>
+    <text x="8" y="401" stroke="none" fill="#000">Render the Pro-Cost screen (every page requ...</text>
     <rect x="0" y="384" width="1684" height="26" fill="none"/>
     <rect x="280" y="386" width="26" height="22" fill="#bfdbfe"/>
     <text x="293" y="401" text-anchor="middle" stroke="none" fill="#000" font-weight="bold" font-size="10">R</text>

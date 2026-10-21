@@ -14,7 +14,7 @@ Searched in `routes/console.php` (none), `app/Jobs` (none), Observers (none), al
 | v1 Imposition screen per Inquiry opened / size changed | `run`, `cells` | `tmerp_unused/inquiry_imposition_v1_2026-10-20.blade.php:67` (recompute), `:118` (suggestion for all active planos) | route `inquiry.imposition` (`routes/web.php:150`); incoming link from v1 form `form.blade.php:2621`. Menu v2 `SALES_IMPO` points to `v2:prodev`, not this screen. |
 | Substitute material preview in Form WO | `run` | `tmerp_unused/production_wo_entry_v1_2026-10-20.blade.php:449` | display only, does not save |
 | Costing Advisor, when no ProDev layout exists yet | `run` | `app/Services/Costing/CostingAdvisor.php:276` | read-only, marked ESTIMATE (see the Costing Advisor card) |
-| Compute "effective cut" of a multi-part group | `applyFlap` | `app/Models/Master/ProdLayoutGroup.php:88` (from `ProCostContextService.php:139`, `costing.blade.php:268`) | flat size only, not `run` |
+| Compute "effective cut" of a multi-part group | `applyFlap` | `app/Models/Master/ProdLayoutGroup.php:88` (from `ProCostContextService.php:155`, `app/Services/Costing/CostingEntryService.php:182`) | flat size only, not `run` |
 | OLD ProDev (archived) | all tools (`run`, `sweepFlap` line 622, `sweepInterlock` 673, `bestSheet` 726, `dieRuleMeterLari` 771, `combinePair` 854, `cells`, `applyFlap`) | `resources/views/pages/production/old_prodev.blade.php` | route `production.old-prodev` (`routes/web.php:338`) is alive, but the comment in `MenuRoutes.php` and the content of mockup `sys_app_menu` do not link it |
 
 **Does not call this engine** (FACT, grep): the active ProDev screen `pages::production.prodev` (menu `v2:prodev`, `v2:prodev-new`, `v2:prodev-revise`): nesting is drawn and computed in JS on the client, the Save button only stores the result (`saveLayout`). `CostingEngine` does not call it either.
@@ -83,14 +83,14 @@ Unit: mm, except `up` (pieces per sheet) and percent. No rounding unless stated.
 ## Tests
 `tests/Unit/ImpositionEngineProDevToolsTest.php` (7 tests; `dieRuleMeterLari` x2, `bestSheet` x2, `combinePair` x3).
 
-> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
 
-> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+> Checked 2026-10-16 after the ProCost Book button (tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php may be about 70 lines lower. Only the cited items were re-read.
 
 
 > Checked 2026-10-16 after adding the Technical Guide diagram route (`routes/web.php`: one `require` appended to an existing line, no line numbers moved; `routes/web.php:150` and `:339` re-read and still correct). Content of this card is not affected.
 
-> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+> Checked 2026-10-16 after the ProCost Book button (tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php may be about 70 lines lower. Only the cited items were re-read.
 
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.

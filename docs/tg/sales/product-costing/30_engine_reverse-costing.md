@@ -8,7 +8,7 @@
 - **NOT the same as**: cancelling a costing or `reversed_at` on Stock Reversal (Inventory module, only a similar name).
 
 ## Trigger (no background / schedule)
-None in `routes/console.php`, Jobs, Observers. FACT: the only caller is the **Reverse** button in `resources/views/pages/inquiry/costing-instant.blade.php:467` (`wire:click="reverse"`, confirmation `wire:confirm`, disabled when the document is read-only) -> `reverse()` line 237 -> `ReverseCostingService::reverse` (line 240). Success redirects to `inquiry.costing` for the new Inquiry; failure shows `engineError`.
+None in `routes/console.php`, Jobs, Observers. FACT: the only caller is the **Reverse** button of the v2 screen `procost-instant` (`resources/views/v2/screens/procost-instant.blade.php:65`, JS confirm, disabled when the document is read-only) -> action reverse in `routes/v2_procost.php:112-118` -> `InstantCostingService::reverse` (`app/Services/Costing/InstantCostingService.php:163-166`) -> `ReverseCostingService::reverse`. Success redirects to the `procost` screen of the new Inquiry; failure shows the engine error.
 
 ## Flow (text twin, no diagram: one straight path with one transaction)
 1. Check prerequisites: mode INSTANT, `customer_id` filled, `product_name_draft` filled, at least one part. A failure = `RuntimeException` with an Indonesian message.
@@ -55,9 +55,9 @@ See `docs/ENGINE-ATTENTION.md`: no item specific to Reverse (read in full).
 
 > Checked 2026-10-16 after the SpecEngine / MaterialPlanningEngine change (Jo agreed): the content of this card is not affected; cited engine line numbers may be about 25 lines lower. Only the cited items were re-read, not the whole card.
 
-> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
 
-> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+> Checked 2026-10-16 after the ProCost Book button (tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php may be about 70 lines lower. Only the cited items were re-read.
 
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.

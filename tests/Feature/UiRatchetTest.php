@@ -12,10 +12,10 @@ use Tests\TestCase;
 class UiRatchetTest extends TestCase
 {
     private const BASELINE = [
-        'raw_button' => 236,
-        'hex_color' => 1232,
+        'raw_button' => 202,
+        'hex_color' => 803,
         'hand_modal' => 4,
-        'raw_table' => 56,
+        'raw_table' => 45,
         'inline_style_block' => 5,
     ];
 

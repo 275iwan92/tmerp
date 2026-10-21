@@ -10,6 +10,7 @@ use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
+use App\Services\Costing\CostingEntryService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -82,7 +83,7 @@ class CostingRoutingWarningTest extends TestCase
 
         $this->inquiry = IqpInquiry::where('product_draft_name', 'Test Routing Warn Inquiry')->latest('id_inquiry')->firstOrFail();
 
-        $test = Livewire::test('pages::inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry]);
+        CostingEntryService::open($this->inquiry->id_inquiry);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();
 
         $costingPart = IqpCostingPart::create([
@@ -91,27 +92,22 @@ class CostingRoutingWarningTest extends TestCase
             'i_ongkos_cetak_rim' => 0, 'i_ongkos_plong_lb' => 0, 'i_ongkos_lem_pc' => 0,
         ]);
 
-        $component = $test->instance();
-        // costingPart dibuat lewat Eloquent langsung, bukan aksi Livewire -- bust
-        // cache #[Computed] (costing + partRouting turunannya) spt pola updatePart()/dst.
-        unset($component->costing, $component->partRouting);
-
-        $names = $component->routingNamesFor($costingPart);
+        $names = CostingEntryService::routingNamesFor($costingPart);
         $this->assertTrue($names->contains('CETAK'));
 
-        $warnings = $component->routingWarningsFor($costingPart);
+        $warnings = CostingEntryService::routingWarningsFor($costingPart);
         $this->assertNotEmpty($warnings);
         $this->assertStringContainsString('CETAK', $warnings[0]);
         $this->assertStringContainsString('Ongkos Cetak', $warnings[0]);
 
         // Isi rate cetak -- warning utk CETAK harus hilang.
         $costingPart->update(['i_ongkos_cetak_rim' => 200000]);
-        $warningsAfterFill = $component->routingWarningsFor($costingPart->refresh());
+        $warningsAfterFill = CostingEntryService::routingWarningsFor($costingPart->refresh());
         $this->assertEmpty(array_filter($warningsAfterFill, fn ($w) => str_contains($w, 'CETAK')));
 
         // Sebaliknya: PLONG diisi manual tapi TIDAK ada di routing -> warning kebalikan.
         $costingPart->update(['i_ongkos_plong_lb' => 5000]);
-        $warningsMismatch = $component->routingWarningsFor($costingPart->refresh());
+        $warningsMismatch = CostingEntryService::routingWarningsFor($costingPart->refresh());
         $this->assertNotEmpty(array_filter($warningsMismatch, fn ($w) => str_contains($w, 'PLONG')));
     }
 }

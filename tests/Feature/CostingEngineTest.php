@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Master\MatGrammage;
+use App\Models\Master\MatSheetRate;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Tests\Support\ProCostDriver;
 use Tests\TestCase;
 
 class CostingEngineTest extends TestCase
@@ -52,7 +54,7 @@ class CostingEngineTest extends TestCase
         $grammage = MatGrammage::where('grammage_name', 'Duplex 300gsm')->firstOrFail();
 
         // 2) Buka layar costing (auto-create header + price tier dari inquiry).
-        $component = Livewire::test('pages::inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry]);
+        $component = ProCostDriver::open($this->inquiry->id_inquiry);
 
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();
         $this->assertSame('DRAFT', $costing->doc_status);
@@ -167,7 +169,7 @@ class CostingEngineTest extends TestCase
 
         $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Costing BOGUS')->latest('id_inquiry')->firstOrFail();
 
-        $component = Livewire::test('pages::inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry]);
+        $component = ProCostDriver::open($this->inquiry->id_inquiry);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();
 
         $component->call('addPart');
@@ -191,7 +193,7 @@ class CostingEngineTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $sheetRate = \App\Models\Master\MatSheetRate::where('substance_name', '200 KL / 125 / 200 KL')->where('flute_type', 'B/F')->firstOrFail();
+        $sheetRate = MatSheetRate::where('substance_name', '200 KL / 125 / 200 KL')->where('flute_type', 'B/F')->firstOrFail();
 
         Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
             ->set('inquiry_date', now()->toDateString())
@@ -205,7 +207,7 @@ class CostingEngineTest extends TestCase
 
         $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Costing COCO TOKYO')->latest('id_inquiry')->firstOrFail();
 
-        $component = Livewire::test('pages::inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry]);
+        $component = ProCostDriver::open($this->inquiry->id_inquiry);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();
         $costing->update(['ppn_mode' => 'NON_PPN']); // kolom "C" Excel = jalur NON PPN
 

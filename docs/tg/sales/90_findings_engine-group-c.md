@@ -21,7 +21,7 @@ FACT: `EngineRegistry` holds 62 keys (61 when written; `paper-price`, `single-fa
 | 12 | **`SpecEngine::saved('bop')` treats `source = INQUIRY` as a non-ENGINE row** (`:943`), while material filters INQUIRY out (`:950`). In `ddt*`: 104 `prod_part_process` rows have source INQUIRY. Intended or not: NOT known. | code; query |
 
 ## B. Sales upstream/downstream services that are NOT `*Engine` (not registered, no card in this group)
-FACT (partly read): `ProCostContextService` (maps the ProDev layout to costing boxes: cut, isi, print size; called by `costing.blade.php:150,262`, `CostingAdvisor.php:242`), `ArtworkAnalyzer` (server-side artwork color analysis, input for Ink Configuration), `ProcurementBridge` (short BOM -> PR; subcon BOP step -> PR + surat jalan), `PartDieline` (saves ProDev dieline and artwork), `ProductMasterSync`, `InquiryStage`, `InquiryWriter`, `QuotationBuilder`. Candidates for a "service" card if Jo wants; not written here.
+FACT (partly read): `ProCostContextService` (maps the ProDev layout to costing boxes: cut, isi, print size; called by `tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php:150,262`, `CostingAdvisor.php:242`), `ArtworkAnalyzer` (server-side artwork color analysis, input for Ink Configuration), `ProcurementBridge` (short BOM -> PR; subcon BOP step -> PR + surat jalan), `PartDieline` (saves ProDev dieline and artwork), `ProductMasterSync`, `InquiryStage`, `InquiryWriter`, `QuotationBuilder`. Candidates for a "service" card if Jo wants; not written here.
 
 ## C. Out-of-scope engines adjacent to Sales (links only)
 `cpdel`, `cpdel-promise` (cards `order/20_engine_co-order-builder.md`, `order/21_engine_cpdel-promise.md` by another group), `flow` (CO approval), `wo-generation` (CPDEL -> WO; calls `SpecEngine::forWorkOrder`), `booking-maintenance` (no card yet; mentioned in `order/30_engine_material-planning.md`).
@@ -35,9 +35,9 @@ FACT (partly read): `ProCostContextService` (maps the ProDev layout to costing b
 
 > Update 2026-10-16: `SpecEngine.php` (ink estimate, Stock -> Usage conversion in `toStockUom`/`stockFor`) and `MaterialPlanningEngine::availabilityFor` were changed with Jo's agreement; SpecEngine line numbers after ~690 shifted by about +25 (items 3, 11, 12 cite the old numbers). ATTENTION-ENGINE-04 is only partly addressed (conversion works only where the master has `conversion_to_usage`).
 
-> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
 
-> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+> Checked 2026-10-16 after the ProCost Book button (tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php may be about 70 lines lower. Only the cited items were re-read.
 
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `paper-price` (Procurement) was added after the lines cited here; nothing in this card changed.

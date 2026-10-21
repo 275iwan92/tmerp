@@ -8,6 +8,7 @@ use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Tests\Support\ProCostDriver;
 use Tests\TestCase;
 
 /*
@@ -57,7 +58,7 @@ class CostingAdvisorScreenTest extends TestCase
             ->assertHasNoErrors();
         $this->inquiry = IqpInquiry::where('product_draft_name', 'Kalender Test Advisor')->latest('id_inquiry')->firstOrFail();
 
-        $component = Livewire::test('pages::inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry]);
+        $component = ProCostDriver::open($this->inquiry->id_inquiry);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();
 
         // 1) dokumen DRAFT dibuka: margin default 18% terisi di semua tier
@@ -85,6 +86,9 @@ class CostingAdvisorScreenTest extends TestCase
         $component->call('updatePart', $part->id_costing_part, 'grammage_id', $grammage->id_grammage)->call('hitung');
         $this->assertSame('', $component->get('engineError'));
         $this->assertGreaterThan(0, DB::connection('tm2sdi')->table('iqp_costing_recommendation')->where('costing_id', $costing->id_costing)->whereNotNull('learned_at')->count());
-        $component->assertSee('Laporan Hitung')->assertSee('Rincian harga');
+        // Laporan Hitung (accordion di tab Result layar v2) hanya untuk login berhak (PROCOST_FORMULA_LOGINS): admin uji johiwan.
+        $html = $this->get('/v2/s/procost?inquiry='.$this->inquiry->id_inquiry)->assertOk()->getContent();
+        $this->assertStringContainsString('Calculation report', $html);
+        $this->assertStringContainsString('Price breakdown', $html);
     }
 }

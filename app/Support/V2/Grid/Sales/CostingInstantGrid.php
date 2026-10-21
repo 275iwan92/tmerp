@@ -8,7 +8,7 @@ use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Pro-Cost > Instant (v1: pages::inquiry.costing-instant-list, zona beku — buka = form Instant v1 apa adanya).
+// Pro-Cost > Instant (daftar v1 pages::inquiry.costing-instant-list diarsipkan T10; buka = form Instant v2 procost-instant).
 // Kalkulator HPP standalone: iqp_costing mode INSTANT tanpa Inquiry Product. + New Record membuat draft kosong lalu membuka formnya
 // (rute v2.procost-instant.new). Reverse (jadi mode Integrated) tetap di dalam form v1.
 class CostingInstantGrid extends DbGrid
@@ -92,7 +92,7 @@ class CostingInstantGrid extends DbGrid
 
     public function openUrl(): ?string
     {
-        return $this->routeUrl('inquiry.costing.instant', 'costing');
+        return route('v2.screen', 'procost-instant').'?id={id}';
     }
 
     public function newUrl(): ?string

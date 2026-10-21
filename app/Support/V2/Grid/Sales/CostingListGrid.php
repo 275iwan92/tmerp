@@ -6,7 +6,7 @@ use App\Models\Master\CustCustomer;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpInquiry;
 
-// Pro-Cost > New (v1: pages::inquiry.costing-list, zona beku — buka = Costing Hub v1 apa adanya).
+// Pro-Cost > New (daftar v1 pages::inquiry.costing-list diarsipkan T10; buka = Costing Hub v2 procost).
 // Isi = inquiry NEW yang sudah Confirm oleh ProDev (stat_confirm_prodev = 1). To Do = costing belum published.
 class CostingListGrid extends InquiryDeskGrid
 {
@@ -52,7 +52,7 @@ class CostingListGrid extends InquiryDeskGrid
 
     protected function rowUrl(array $r): string
     {
-        return route('inquiry.costing', ['inquiry' => $r['id']]);
+        return route('v2.screen', 'procost').'?inquiry='.$r['id'];
     }
 
     public function filters(): array

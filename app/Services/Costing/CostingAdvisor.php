@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Auth;
  *         dan diverifikasi sama dengan hasil tersimpan).
  * Sumber hulu: Inquiry (BOM, part), ProDev (layout, BOP waste), prod_part_template, sys_constant COSTING, riwayat iqp_costing_recommendation.
  * Input: IqpCosting beserta parts dan priceTiers. Output: nilai isian + baris iqp_costing_recommendation; array Laporan Hitung.
- * Dipakai oleh: pages::inquiry.costing (Mode #1), costing-instant (Mode #2, belum disambung).
+ * Dipakai oleh: CostingEntryService / layar v2 procost (Mode #1); Mode #2 Instant belum disambung.
  * Status: BARU 2026-10-16, tahap 1. Mode Instant dan layar master template belum dibuat (butir terbuka).
  */
 class CostingAdvisor

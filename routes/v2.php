@@ -1283,14 +1283,14 @@ Route::prefix('v2')->name('v2.')->group(function () {
         return $err ? $back->withErrors(['approval' => $err]) : $back->with('v2_flash', ['approve' => t('Approved — recorded in the log.'), 'reject' => t('Rejected — recorded in the log.'), 'hold' => t('On hold — recorded in the log.')][$d['action']]);
     })->whereIn('screen', array_keys(ApprovalCenter::SCREENS))->name('approval.decide');
 
-    // Pro-Cost Instant: + New Record = draft kosong baru (atau draft kosong milik user yang belum diisi), lalu buka form Instant v1.
+    // Pro-Cost Instant: + New Record = draft kosong baru (atau draft kosong milik user yang belum diisi), lalu buka form Instant v2.
     Route::get('/procost-instant/new', function () {
         $by = Auth::user()->login;
         $draft = IqpCosting::query()->where('mode', IqpCosting::MODE_INSTANT)->where('doc_status', 'DRAFT')->where('created_by', $by)
             ->whereNull('customer_id')->whereNull('product_name_draft')->whereNull('reversed_at')->orderByDesc('id_costing')->first()
             ?? IqpCosting::create(['mode' => IqpCosting::MODE_INSTANT, 'calc_type' => 'NEW', 'doc_status' => 'DRAFT', 'created_by' => $by, 'updated_by' => $by]);
 
-        return redirect()->route('inquiry.costing.instant', ['costing' => $draft->id_costing]);
+        return redirect(route('v2.screen', 'procost-instant').'?id='.$draft->id_costing);
     })->middleware('module:COSTING')->name('procost-instant.new');
 
     // HRM > Time Attendance > GPS Clock-In (App\Support\V2\Data\GpsClock): JSON untuk x-dl::geo-clock. Milik sendiri (semua karyawan), tanpa gerbang modul.

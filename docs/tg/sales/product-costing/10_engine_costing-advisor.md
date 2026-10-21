@@ -6,7 +6,7 @@
 - **Frozen status**: ProCost = frozen zone (flow/data). This engine only suggests (A.7).
 
 ## Trigger (no background / schedule)
-Searched in `routes/console.php` (none), Jobs (no folder), Observers (only 2 others), and all callers. FACT: only from the screen `pages::inquiry.costing` (`resources/views/pages/inquiry/costing.blade.php`):
+Searched in `routes/console.php` (none), Jobs (no folder), Observers (only 2 others), and all callers. FACT: only from the Pro-Cost v2 screen, through `CostingEntryService` (`app/Services/Costing/CostingEntryService.php:136` prefill on open, `:145` advise after an edit, `:432` learn after Calculate):
 | Trigger | Method | Line |
 |---|---|---|
 | DRAFT/CALCULATED document opened | `prefill` | 118 |
@@ -49,7 +49,7 @@ Searched in `routes/console.php` (none), Jobs (no folder), Observers (only 2 oth
 - Only the DC family (`DC`, `DC+SF`, `DC+SHEET`, `KRAFT`) gets automatic grammage/geometry.
 
 ## Used by
-`pages::inquiry.costing` (Mode 1), components `x-costing.src` and `x-costing.field` (source marker). Instant mode: FROM DOCUMENT (code REMARK: "costing-instant belum disambung"), not rechecked.
+screen `procost` (Mode 1; the box source marker is drawn by `ProCostFields` + `procost.blade.php`, the old components `x-costing.src` and `x-costing.field` were archived 2026-10-21). Instant mode: FROM DOCUMENT (code REMARK: "costing-instant belum disambung"), not rechecked.
 
 ## Open items
 See `docs/ENGINE-ATTENTION.md` (status stays there, not copied). New finding: the REMARK writes Mode #2 as "belum disambung", while the registry text says Mode 2 is "typed by the officer"; one of them is outdated.
@@ -70,7 +70,7 @@ All figures below are test asserts, not guesses.
 Per part: `gross = c_total_part_cost_pc x qty_per_set + c_tooling_cost_order / qty`; if PPN: `net = gross - inputBahan x credit`, `credit = 1 - 1/PPN_INPUT_MATERIAL_DIVISOR`; tolerance `tt` = % of the part or tier: normal part `tolNet += net + gross x tt`, SHEET part `tolNet += net / (1 - tt)`. Base = rounding (`rounding_mode`, `rounding_step`) of `tolNet`; `dpp = dasar / (1 - margin)`; final price = `dpp x (1 + ppn%)` if PPN.
 Chain worked example from ddt* data: NOT written yet (needs one new test case; proposed for Phase 4, awaiting Jo's approval).
 
-> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
 
-> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+> Checked 2026-10-16 after the ProCost Book button (tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php may be about 70 lines lower. Only the cited items were re-read.
 

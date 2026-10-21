@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  *         dan nilai akhir saat Hitung (bahan belajar statistik/ML).
  * Sumber hulu: CostingAdvisor (Inquiry, ProDev, template, konstanta, master, riwayat).
  * Input: CostingAdvisor::prefill / markTouched / learn. Output: penanda sumber di layar dan Laporan Hitung.
- * Dipakai oleh: App\Services\Costing\CostingAdvisor, pages::inquiry.costing.
+ * Dipakai oleh: App\Services\Costing\CostingAdvisor, CostingEntryService, layar v2 procost.
  * Status: BARU 2026-10-16.
  */
 class IqpCostingRecommendation extends Model

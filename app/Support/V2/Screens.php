@@ -89,8 +89,8 @@ final class Screens
             ]],
             ['code' => 'COSTING', 'short' => 'PCO', 'label' => 'Product Costing', 'icon' => 'fa-solid fa-scale-balanced', 'groups' => [
                 ['label' => 'Costing', 'items' => [
-                    $it('procost', ['Pro-Cost (Costing Hub)', 'fa-solid fa-scale-balanced', 'inquiry/costing.blade.php + costing-list', 'inquiry_costing_hub.html']),
-                    $it('procost-instant', ['Pro-Cost Instant (manual)', 'fa-solid fa-bolt', 'inquiry/costing-instant.blade.php + list', 'inquiry_costing_manual.html']),
+                    $it('procost', ['Pro-Cost (Costing Hub)', 'fa-solid fa-scale-balanced', 'v2: ProCost Costing Hub (CostingEntryService; v1 diarsipkan)', 'inquiry_costing_hub.html']),
+                    $it('procost-instant', ['Pro-Cost Instant (manual)', 'fa-solid fa-bolt', 'v2: ProCost Instant (InstantCostingService; v1 diarsipkan)', 'inquiry_costing_manual.html']),
                 ]],
                 ['label' => 'Master', 'items' => [$it('master-product'), $it('master-raw'), $it('prodev')]],
                 ['label' => t('Flow'), 'items' => [self::flowItem('COSTING', 'Costing Flow: ProDev → ProCost → Publish')]],

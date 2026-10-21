@@ -23,7 +23,7 @@
 | Assembly | Via `InquiryAssembly::create` (>= 2 children, join type `mat_join_type`), not via the part form. `persistParts` does not delete assemblies. | FACT, `routes/v2.php:354-374`, `InquiryWriter.php:307-308` |
 | Duplicate | `InquiryDuplicator`: born as NEW DRAFT, structure copied, qty tier and price are NOT copied. | FACT, `InquiryDuplicator.php:8-10 (komentar), 13-45` |
 | Flag distribution (mockup) | NEW CONVERTED (sales=1, prodev=1, procost=1): 13; NEW SUBMITTED prodev=1: 2; NEW SUBMITTED prodev=0: 3; REVISE SUBMITTED prodev=0: 2; NEW DRAFT: 2; NEW LOST: 1. No inquiry has `stat_confirm_procost=1` without a PUBLISHED costing, and vice versa (0 rows). | FACT, query 2026-10-16 |
-| Statuses written by code | Writers of `sub_state`: DRAFT (DB default), SUBMITTED (Confirm), CANCELLED, LOST (`InquiryWriter.php`, `app/Services/Sales/QuotationEntryService.php:209-211`), CONVERTED (`CoOrderBuilder.php:101`), PRICE_CALCULATED (`ReverseCostingService.php:93` and costing Publish `pages/inquiry/costing.blade.php:582`). | FACT, grep `app/`, `resources/`, `routes/`, `packages/` |
+| Statuses written by code | Writers of `sub_state`: DRAFT (DB default), SUBMITTED (Confirm), CANCELLED, LOST (`InquiryWriter.php`, `app/Services/Sales/QuotationEntryService.php:209-211`), CONVERTED (`CoOrderBuilder.php:101`), PRICE_CALCULATED (`ReverseCostingService.php:93` and costing Publish `app/Services/Costing/CostingEntryService.php:457`). | FACT, grep `app/`, `resources/`, `routes/`, `packages/` |
 
 ## Relations
 - **source**: Sales screen (`inquiry-new`), INSTANT Reverse costing (`ReverseCostingService`, see the ProCost interface card), Master Card Collection (old card becomes source Inquiry `MASTER CARD`, `MasterCardService.php:329`), Duplicate, Revise/Recalc from Master Product.
@@ -49,9 +49,9 @@ Searched: `show columns` + `information_schema` tm2sdi/tm2mst/tm2sys; `grep` `ap
 ## User's Guide (UG) already existing
 `docs/guides/sales/01_inquiry_product.md` (FROM DOCUMENT, not opened in this session).
 
-> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `costing.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
+> Checked 2026-10-16 after the ProCost BOM panel change (`ProCostContextService`, `tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php`; Jo agreed): the content of this card is not affected; cited line numbers of those two files may be about 30 lines lower. Only the cited items were re-read, not the whole card.
 
-> Checked 2026-10-16 after the ProCost Book button (costing.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of costing.blade.php may be about 70 lines lower. Only the cited items were re-read.
+> Checked 2026-10-16 after the ProCost Book button (tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php; Jo agreed): the content of this card is not affected; cited line numbers of tmerp_unused/inquiry_costing_v1_2026-10-21.blade.php may be about 70 lines lower. Only the cited items were re-read.
 
 
 > Re-checked 2026-10-17: `MasterCardService` now sets the default `ppn_percent` with `TaxRate::ppn()` and the Inquiry nota print falls back to `TaxRate::ppn(inquiry_date)` instead of a fixed 11; nothing else in this card changed.

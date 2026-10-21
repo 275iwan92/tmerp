@@ -22,7 +22,7 @@ use App\Services\Planning\MaterialPlanningEngine;
 use App\Services\ProDev\SpecEngine;
 use App\Support\V2\Data\MaterialPlanning;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
+use Tests\Support\ProCostDriver;
 use Tests\TestCase;
 
 class ProCostBomAvailabilityTest extends TestCase
@@ -58,7 +58,7 @@ class ProCostBomAvailabilityTest extends TestCase
         }
 
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
-        $html = Livewire::test('pages::inquiry.costing', ['inquiry' => $costing->inquiry_id])->html();
+        $html = $this->get('/v2/s/procost?inquiry='.$costing->inquiry_id)->assertOk()->getContent();
 
         $this->assertStringContainsString('BOM and availability', $html);
         $this->assertMatchesRegularExpression('/Enough|Short|No stock|Need item|Check unit|Covered by PO\/PR/', $html);
@@ -96,7 +96,7 @@ class ProCostBomAvailabilityTest extends TestCase
 
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
         try {
-            $c = Livewire::test('pages::inquiry.costing', ['inquiry' => (int) $inv])->call('book');
+            $c = ProCostDriver::open((int) $inv)->call('book');
             $b = RmBooking::where('chain_key', (string) $inv)->whereNull('co_id')->where('stat_cancel', 0)->orderByDesc('booking_id')->first();
             $this->assertSame('HELD', $b->doc_status);
             $this->assertNotNull($b->hold_until);
