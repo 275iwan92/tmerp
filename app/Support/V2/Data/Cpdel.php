@@ -6,8 +6,8 @@
  * Sumber hulu  : co_order_delivery, co_order, WoGenerationService.
  * Input        : Id baris pengiriman.
  * Output       : WO (prd_wo + operasi + bahan) dan penanda posted_at; WO dibatalkan tidak menghalangi posting ulang.
- * Dipakai oleh : Layar CPDEL, PpicController::createWo.
- * Status       : Aktif di mockup.
+ * Dipakai oleh : Layar CPDEL, PpicController::createWo, CpdelPromiseService (split / merge), StageBuilder.
+ * Status       : Aktif di mockup (T10 tahap 7c, 2026-10-22: Split / Gabung memanggil CpdelEntryService, bukan komponen v1).
  */
 
 namespace App\Support\V2\Data;
@@ -16,6 +16,7 @@ use App\Models\Master\CustCustomer;
 use App\Models\Prd\PrdWo;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sys\SysConstant;
+use App\Services\Sales\CpdelEntryService;
 use App\Services\Sales\CpdelPromiseService as Promise;
 use App\Services\Sales\DeliveryPromiseService;
 use App\Services\Scheduling\Plan\PlanEvents;
@@ -25,18 +26,12 @@ use App\Support\WorkCalendar;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 
-// Customer Plan Delivery v2. Aturan Split/Pindah tanggal & Gabung = komponen v1 pages::co.delivery-plan yang SAMA
-// (confirmSplit/confirmMerge). Hanya CO CONFIRMED; tidak menyentuh stok (itu Delivery Order).
+// Customer Plan Delivery v2. Aturan Split/Pindah tanggal & Gabung = App\Services\Sales\CpdelEntryService (confirmSplit/confirmMerge).
+// Hanya CO CONFIRMED; tidak menyentuh stok (itu Delivery Order).
 // Dua janji (slot customer vs siap produksi), negosiasi & log = App\Services\Sales\CpdelPromiseService.
 final class Cpdel
 {
-    public static function component(): Component
-    {
-        return app('livewire')->new('pages::co.delivery-plan');
-    }
-
     public static function query()
     {
         return CoOrderDelivery::with(['order', 'item'])->whereHas('order', fn ($q) => $q->where('doc_status', 'CONFIRMED'));
@@ -115,13 +110,8 @@ final class Cpdel
         if (CoOrderDelivery::whereKey($id)->whereNotNull('posted_at')->exists()) {
             return t('Posted to Production (Work Order created): date and qty can no longer change here.');
         }
-        $c = self::component();
-        $c->splitDeliveryId = $id;
-        $c->splitQty = (string) $qty;
-        $c->splitDate = $date;
-        $c->confirmSplit();
 
-        return $c->splitError ?: null;
+        return CpdelEntryService::confirmSplit($id, (string) $qty, $date) ?: null;
     }
 
     public static function merge(array $ids): ?string
@@ -129,11 +119,8 @@ final class Cpdel
         if (CoOrderDelivery::whereIn('id_delivery', $ids)->whereNotNull('posted_at')->exists()) {
             return t('Lines Posted to Production cannot be joined.');
         }
-        $c = self::component();
-        $c->mergeSelectedIds = array_map('intval', $ids);
-        $c->confirmMerge();
 
-        return $c->mergeError ?: null;
+        return CpdelEntryService::confirmMerge(array_map('intval', $ids)) ?: null;
     }
 
     public const STATE_LABELS = ['WAITING_PPIC' => 'Waiting for PPIC', 'NEED_NEGOTIATION' => 'Need negotiation', 'ESCALATED' => 'Escalated', 'ALIGNED' => 'Aligned',

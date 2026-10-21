@@ -11,7 +11,7 @@
 Searched `routes/console.php` (none), jobs and observers (none), and all callers by grep of the four engine class names in `app/`, `resources/views`, `routes`, `tests`. FACT: two callers, both inside a Livewire / service action.
 | Trigger | Method | File:line |
 |---|---|---|
-| Add a master item to a PR (supplier = `mat_raw.suggest_supplier_id`; no date = today; no quantity) | `priceFor` | `resources/views/pages/pur/pr/entry.blade.php:205` |
+| Add a master item to a PR (supplier = `mat_raw.suggest_supplier_id`; no date = today; no quantity) | `priceFor` | `app/Services/Pur/PurchaseRequisitionEntryService.php:77` |
 | A PR allocation becomes a PO line (supplier = the PO supplier; date = the PO date; quantity = allocation qty) | `priceFor` | `app/Services/Pur/PoBuilderService.php:88` |
 The Material Planning Create PR / Buy buttons reach the first row through `addMasterItem`. A PQ line copied to a PO overwrites the result with the quoted price (`PurchaseQuotation.php:313`).
 

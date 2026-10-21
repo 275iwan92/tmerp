@@ -35,3 +35,4 @@
 
 ## Already exists? Searched where, result
 `concept:find "booking"`, `"forecast"`: Inventory cards (pick list, stock reports) and the Sales engine card exist; the Planning screens had no card of their own. Searched code: Available is defined twice (view and `AvailableStock`), see ATTENTION-ENGINE-02; no third definition. User's guide: `docs/guides/production/00_alur_data_dan_sistem.md` section 2.
+- Re-checked 2026-10-22 after the entry rules of PR, PO, receipt, Delivery Order and CPDEL moved from the v1 pages to services (rule D.25 and D.26, Master T10 stage 7a-7c): `routes/v2.php` and `app/Support/V2/Screens.php` only had comment and description text changed on their existing lines (no line added or removed), and `app/Support/V2/Data/DeliveryOrder.php` and `MaterialPlanning.php` changed in the lines their cards do not cite or were remapped from the diff; this card's content is still true.

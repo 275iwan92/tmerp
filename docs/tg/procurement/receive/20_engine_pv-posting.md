@@ -12,9 +12,9 @@ Searched `routes/console.php` (none), jobs and observers (none) and all callers 
 | Method | Trigger | File:line |
 |---|---|---|
 | `createFromLines`, `addLines`, `supplierWorklist`, `openLinesForSupplier` | Receive screen: new receipt, add PO lines, supplier and line pickers | `app/Support/V2/Data/PurchaseReceive.php` (`create`, `addLines`, `supplierOptions`, `openLineOptions`); route `routes/v2.php:851` |
-| `blockers` | Draft form shows what blocks Confirm; also checked inside `post` | `resources/views/v2/screens/purchase-receive.blade.php:182`; `resources/views/pages/pur/pv/entry.blade.php:46` |
-| `post` | Confirm (Post) of a PO-type receipt | `PurchaseReceive.php:167` (route `v2.pv.save` action `confirm`, `routes/v2.php:952`); v1 `resources/views/pages/pur/pv/entry.blade.php:205` |
-| `cancel` | Cancel on a POSTED receipt (all types, reason 10+ characters) | `PurchaseReceive.php:175` |
+| `blockers` | Draft form shows what blocks Confirm; also checked inside `post` | `resources/views/v2/screens/purchase-receive.blade.php:182`; `app/Services/Pur/PvPostingService.php:48-52` |
+| `post` | Confirm (Post) of a PO-type receipt | `PurchaseReceive.php:166` (route `v2.pv.save` action `confirm`, `routes/v2.php:952`); v1 `app/Support/V2/Data/PurchaseReceive.php:164-169` |
+| `cancel` | Cancel on a POSTED receipt (all types, reason 10+ characters) | `PurchaseReceive.php:174` |
 | `recalcPo` | inside `post` / `cancel`; also `ShortageRequestService.php:155,215` and `SpecialReceiptService.php:160,201` | as listed |
 | `postShortageJournal`, `correctStockForShortage` | Shortage Request Confirm | `ShortageRequestService.php:221` |
 

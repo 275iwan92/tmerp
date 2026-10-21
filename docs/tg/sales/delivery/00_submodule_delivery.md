@@ -27,3 +27,4 @@ Not yet made.
 
 ## Cross-card findings (short; details in the cards)
 CONFIRMED DO without lines in the dummy; POD does not change the DO status; the Post-to-Production gate exists only on the v2 screen; `price_change_approval_status` and `split_from_line_id` are unused; there is no test for `DeliveryPromiseService`.
+- Re-checked 2026-10-22 after the entry rules of PR, PO, receipt, Delivery Order and CPDEL moved from the v1 pages to services (rule D.25 and D.26, Master T10 stage 7a-7c): `routes/v2.php` and `app/Support/V2/Screens.php` only had comment and description text changed on their existing lines (no line added or removed), and `app/Support/V2/Data/DeliveryOrder.php` and `MaterialPlanning.php` changed in the lines their cards do not cite or were remapped from the diff; this card's content is still true.

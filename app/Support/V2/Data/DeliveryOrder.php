@@ -1,35 +1,37 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Data layar Delivery Order / Surat Jalan v2: daftar, pilihan, simpan header + baris, tarik jadwal kirim CO, confirm / ship / cancel.
+ * Sumber hulu  : do_delivery, do_line, v_co_delivery_outstanding, co_order_delivery; aturan tulis = DeliveryOrderEntryService -> DispatchService.
+ * Input        : DoDelivery + kiriman form v2 (header, alamat, qty / harga baris, id jadwal kirim, alasan batal).
+ * Output       : Pesan error (kosong = OK) dan status DO; data ditulis oleh service.
+ * Dipakai oleh : routes/v2.php (do.*), layar delivery-order dan delivery-notes, grid DeliveryOrderListGrid / DeliveryNoteListGrid, ProofOfDelivery, StageBuilder.
+ * Status       : Aktif (T10 tahap 7c, 2026-10-22: komponen v1 pages::dispatch.do.entry tidak dipanggil lagi).
+ */
+
 namespace App\Support\V2\Data;
 
 use App\Models\Master\CustCustomer;
 use App\Models\Sdi\DoDelivery;
+use App\Services\Dispatch\DeliveryOrderEntryService as Svc;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use App\Support\V2\Lookups;
 use Devlib\Locale;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Livewire\Component;
 
-// Delivery Order v2 = aturan & tulis data komponen v1 pages::dispatch.do.entry (updateHeader / onAddressPicked / pullSelected /
+// Delivery Order v2. Aturan & tulis data = App\Services\Dispatch\DeliveryOrderEntryService (updateHeader / onAddressPicked / pullSelected /
 // updateLineQty / updateLinePrice / removeLine / confirmDo / markShipped / cancelDo -> DispatchService). Baris DO ditarik dari
 // jadwal kirim CO (v_co_delivery_outstanding). Surat Jalan = DO CONFIRMED / SHIPPED tanpa harga (layar delivery-notes).
 final class DeliveryOrder
 {
     use FlowDocument;
 
-    public const HEADER = ['do_date', 'scheduled_ship_date', 'ship_address_detail'];
+    public const HEADER = Svc::HEADER_FIELDS;
 
     public const STATUS_TONES = ['DRAFT' => 'neutral', 'CONFIRMED' => 'success', 'SHIPPED' => 'info', 'CANCELLED' => 'danger'];
-
-    public static function component(int $id): Component
-    {
-        $c = app('livewire')->new('pages::dispatch.do.entry');
-        $c->doId = $id;
-
-        return $c;
-    }
 
     public static function rows(array $statuses = []): array
     {
@@ -75,21 +77,21 @@ final class DeliveryOrder
     public static function save(DoDelivery $do, array $in): string
     {
         abort_unless($do->status === 'DRAFT', 422, t('The DO is already confirmed and cannot be changed.'));
-        $c = self::component($do->id_delivery);
+        $doId = $do->id_delivery;
         foreach (self::HEADER as $f) {
             if (array_key_exists($f, $in) && self::changed(self::str($in[$f]), $do->{$f})) {
-                $c->updateHeader($f, self::str($in[$f]));
+                Svc::updateHeader($doId, $f, self::str($in[$f]));
             }
         }
         if (array_key_exists('ship_area', $in)) {
             $cur = $do->ship_area_id ? $do->ship_area_level.':'.$do->ship_area_id : '';
             if ((string) $in['ship_area'] !== $cur) {
                 $g = Lookups::geoFind((string) $in['ship_area']);
-                $c->onAddressPicked('do-ship-address', $g['id'] ?? null, $g['level'] ?? null, $g['full_label'] ?? null, $g['postal_code'] ?? null);
+                Svc::onAddressPicked($doId, 'do-ship-address', $g['id'] ?? null, $g['level'] ?? null, $g['full_label'] ?? null, $g['postal_code'] ?? null);
             }
         }
         foreach (array_keys((array) ($in['remove'] ?? [])) as $id) {
-            $c->removeLine((int) $id);
+            Svc::removeLine($doId, (int) $id);
         }
         $lines = $do->lines()->get()->keyBy('id_line');
         $err = '';
@@ -99,12 +101,12 @@ final class DeliveryOrder
                 continue;
             }
             if (array_key_exists('qty_do', (array) $row) && self::changed(self::num($row['qty_do']), $line->qty_do)) {
-                $c->updateLineQty((int) $id, self::num($row['qty_do']));
-                $err = $err ?: $c->pullMessage;
+                $message = Svc::updateLineQty($doId, (int) $id, self::num($row['qty_do']));
+                $err = $err ?: $message;
             }
             if (array_key_exists('unit_price', (array) $row) && self::changed(self::num($row['unit_price']), $line->unit_price)) {
-                $c->updateLinePrice((int) $id, self::num($row['unit_price']));
-                $err = $err ?: $c->pullMessage;
+                $message = Svc::updateLinePrice($doId, (int) $id, self::num($row['unit_price']));
+                $err = $err ?: $message;
             }
         }
 
@@ -123,29 +125,23 @@ final class DeliveryOrder
         if ($notPosted) {
             return t('The chosen delivery schedule is not Posted to Production yet in Customer Plan Delivery.');
         }
-        $c = self::component($do->id_delivery);
-        $c->checkedDeliveryIds = array_map('intval', $coDeliveryIds);
-        $c->pullSelected();
 
-        return $c->pullMessage;
+        return Svc::pullSelected($do->id_delivery, array_map('intval', $coDeliveryIds));
     }
 
     // confirm | ship | cancel -> [ok, pesan].
     public static function act(DoDelivery $do, string $action, string $reason = ''): array
     {
-        $c = self::component($do->id_delivery);
+        $message = '';
         match ($action) {
-            'confirm' => $c->confirmDo(),
-            'ship' => $c->markShipped(),
-            'cancel' => (function () use ($c, $reason) {
-                $c->cancelReason = $reason;
-                $c->cancelDo();
-            })(),
+            'confirm' => $message = Svc::confirmDo($do->id_delivery),
+            'ship' => Svc::markShipped($do->id_delivery),
+            'cancel' => $message = Svc::cancelDo($do->id_delivery, $reason),
         };
         $fresh = DoDelivery::find($do->id_delivery);
         $want = ['confirm' => 'CONFIRMED', 'ship' => 'SHIPPED', 'cancel' => 'CANCELLED'][$action];
 
-        return [$fresh?->status === $want, $c->pullMessage ?: t('The status did not change.')];
+        return [$fresh?->status === $want, $message ?: t('The status did not change.')];
     }
 
     // Draft > Confirmed > Closed (SHIPPED = barang sudah keluar).

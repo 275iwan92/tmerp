@@ -43,11 +43,11 @@ final class Screens
                 ]],
                 ['label' => 'Order', 'items' => [
                     $it('customer-order', ['Customer Order', 'fa-solid fa-bag-shopping', 'Services/Sales/CoEntryService (aturan; v1 diarsipkan)', 'mockup_co_entry.html']),
-                    $it('cpdel', ['Customer Plan Delivery', 'fa-solid fa-truck-ramp-box', 'v2: App\Support\V2\Data\Cpdel (aturan: pages::co.delivery-plan)', 'co_delivery_plan_mockup.html']),
+                    $it('cpdel', ['Customer Plan Delivery', 'fa-solid fa-truck-ramp-box', 'v2: App\Support\V2\Data\Cpdel (aturan: CpdelEntryService)', 'co_delivery_plan_mockup.html']),
                     $it('approval-co', ['CO Approval Center', 'fa-solid fa-stamp', 'v2 baru: DevLib Form Approval + flow engine CO (F&A SPV -> Operational Manager)', null]),
                 ]],
                 ['label' => 'Delivery', 'items' => [
-                    $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'v2: App\Support\V2\Data\DeliveryOrder (aturan: pages::dispatch.do.entry)', null]),
+                    $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'v2: App\Support\V2\Data\DeliveryOrder (aturan: DeliveryOrderEntryService)', null]),
                     $it('delivery-notes', ['Delivery Notes', 'fa-solid fa-file-lines', 'v2: cetak delivery-note (DeliveryNotePrint)', null]),
                     $it('proof-of-delivery', ['Proof of Delivery', 'fa-solid fa-clipboard-check', 'v2 baru: tm2sdi.do_delivery_pod (KPI janji kirim)', null]),
                     $it('subcon-delivery-note', ['Subcontract Delivery Note', 'fa-solid fa-dolly', 'v2 baru: tm2sdi.do_delivery do_type SUBCON (backlog02 19.1)', null]),
@@ -71,16 +71,16 @@ final class Screens
             ]],
             ['code' => 'PROC', 'short' => 'PRC', 'label' => 'Procurement', 'icon' => 'fa-solid fa-cart-flatbed', 'groups' => [
                 ['label' => 'Requisition', 'items' => [
-                    $it('purchase-requisition', ['Purchase Requisition (PR)', 'fa-solid fa-file-circle-plus', 'v2: App\Support\V2\Data\PurchaseRequisition (aturan: pages::pur.pr.entry)', 'mockup_purchase_requisition.html']),
+                    $it('purchase-requisition', ['Purchase Requisition (PR)', 'fa-solid fa-file-circle-plus', 'v2: App\Support\V2\Data\PurchaseRequisition (aturan: PurchaseRequisitionEntryService)', 'mockup_purchase_requisition.html']),
                     $it('approval-pr', ['PR Approval Center', 'fa-solid fa-stamp', 'pur/pr/approval.blade.php', 'mockup_pr_approval_center.html']),
                 ]],
                 ['label' => 'Order', 'items' => [
                     $it('purchase-quotation', ['Purchase Quotation (PQ)', 'fa-solid fa-file-import', 'pur/pq/index + entry.blade.php (v2: upload file penawaran)', null]),
-                    $it('purchase-order', ['Purchase Order (PO)', 'fa-solid fa-file-invoice-dollar', 'v2: App\Support\V2\Data\PurchaseOrder (aturan: pages::pur.po.entry)', null]),
+                    $it('purchase-order', ['Purchase Order (PO)', 'fa-solid fa-file-invoice-dollar', 'v2: App\Support\V2\Data\PurchaseOrder (aturan: PurchaseOrderEntryService)', null]),
                     $it('approval-po', ['PO Approval Center', 'fa-solid fa-stamp', 'pur/po/approval.blade.php', 'mockup_po_approval_center.html']),
                 ]],
                 ['label' => 'Receive', 'items' => [
-                    $it('purchase-receive', ['Goods Receipt (SPB)', 'fa-solid fa-truck-ramp-box', 'v2: App\Support\V2\Data\PurchaseReceive (aturan: pages::pur.pv.entry)', null]),
+                    $it('purchase-receive', ['Goods Receipt (SPB)', 'fa-solid fa-truck-ramp-box', 'v2: App\Support\V2\Data\PurchaseReceive (aturan: PurchaseReceiveEntryService)', null]),
                 ]],
                 ['label' => 'Return', 'items' => [
                     $it('approval-prt', ['Purchase Return Approval Center', 'fa-solid fa-stamp', 'pur/prt/approval.blade.php', null]), $it('pur-return-form', ['Purchase Return Form', 'fa-solid fa-reply', 'v2 baru: Purchase Return (NRB) di atas tm2pur.prt_return + prt_line; sumber penerimaan QC reject atau stok; Submit = flow approval PRT, keputusan di Approval Center; dibuka dari grid purchase-return', null]),

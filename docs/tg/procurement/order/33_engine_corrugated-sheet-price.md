@@ -8,7 +8,7 @@
 - **NOT the same as**: Single Face (card `31_engine_single-face-price.md`), the ProCost corrugated costing (Sales).
 
 ## Trigger (no background / schedule)
-Only `PaperPriceEngine::priceFor` calls it (`app/Services/Pur/PaperPriceEngine.php:73-75`) and passes the quantity. Of the two triggers of the router only the PO one has a quantity: allocation to PO line (`PoBuilderService.php:88`). The PR trigger (`resources/views/pages/pur/pr/entry.blade.php:205`) passes none, so `quote` answers reason `qty` and the PR line gets no price. Searched `routes/console.php`, jobs, observers: none. `quote()` (the breakdown with reason codes) has no caller other than `priceFor`.
+Only `PaperPriceEngine::priceFor` calls it (`app/Services/Pur/PaperPriceEngine.php:73-75`) and passes the quantity. Of the two triggers of the router only the PO one has a quantity: allocation to PO line (`PoBuilderService.php:88`). The PR trigger (`app/Services/Pur/PurchaseRequisitionEntryService.php:77`) passes none, so `quote` answers reason `qty` and the PR line gets no price. Searched `routes/console.php`, jobs, observers: none. `quote()` (the breakdown with reason codes) has no caller other than `priceFor`.
 
 ## Input / Output
 - **Input**: a `MatRaw` whose name **starts** with SH or SHEET and holds a substance key (`matches`), a supplier id, the order quantity (sheets; RIM x 500), a document date.

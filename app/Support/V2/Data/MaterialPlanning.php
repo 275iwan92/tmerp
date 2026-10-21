@@ -11,6 +11,7 @@ use App\Models\Sys\SysConstant;
 use App\Services\Planning\MaterialPlanningEngine;
 use App\Services\Pur\PoBuilderService;
 use App\Services\Pur\PrAllocationService;
+use App\Services\Pur\PurchaseRequisitionEntryService as PrEntry;
 use App\Support\V2\Print\PrintDocs;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
@@ -207,14 +208,13 @@ final class MaterialPlanning
             $supplier = $supplierId ? DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $supplierId)->value('supplier_name') : null;
             $pr->update(['i_source' => 'MRP', 'i_need_date' => $group->min('first_need'),
                 'i_notes' => mb_substr('Material Planning '.now()->toDateString().($supplier ? ' · suggested supplier: '.$supplier : ''), 0, 255)]);
-            $c = PurchaseRequisition::component($pr->pr_id);
             foreach ($group as $m) {
                 $item = $engine->material((int) $m['material_id']);
-                $c->addMasterItem((int) $m['material_id']);
+                PrEntry::addMasterItem($pr->pr_id, (int) $m['material_id']);
                 $line = PrLine::where('pr_id', $pr->pr_id)->orderByDesc('pr_line_id')->first();
-                $c->updateLine($line->pr_line_id, 'i_qty', (string) ceil($m['short'] / ((float) $item->conversion_to_stock ?: 1)));
-                $c->updateLine($line->pr_line_id, 'i_need_date', $m['first_need']);
-                $c->updateLine($line->pr_line_id, 'i_notes', mb_substr('For '.implode(', ', $m['orders']), 0, 255));
+                PrEntry::updateLine($pr->pr_id, $line->pr_line_id, 'i_qty', (string) ceil($m['short'] / ((float) $item->conversion_to_stock ?: 1)));
+                PrEntry::updateLine($pr->pr_id, $line->pr_line_id, 'i_need_date', $m['first_need']);
+                PrEntry::updateLine($pr->pr_id, $line->pr_line_id, 'i_notes', mb_substr('For '.implode(', ', $m['orders']), 0, 255));
                 PrLine::whereKey($line->pr_line_id)->update(['i_co_line_id' => $lines->where('material_id', $m['material_id'])->where('short', '>', 0)->pluck('co_item_id')->filter()->first()]);
             }
             $made[] = $pr->fresh();

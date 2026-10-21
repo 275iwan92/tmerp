@@ -8,7 +8,7 @@
 - **NOT the same as**: single wall / double wall corrugated sheets (card `33_engine_corrugated-sheet-price.md`).
 
 ## Trigger (no background / schedule)
-Not called by a screen directly. Only `PaperPriceEngine::priceFor` calls it (`app/Services/Pur/PaperPriceEngine.php:65-67`), so its triggers are the two of the paper-price engine: add a master item to a PR (`resources/views/pages/pur/pr/entry.blade.php:205`) and turn a PR allocation into a PO line (`PoBuilderService.php:88`). Searched `routes/console.php`, jobs, observers: none.
+Not called by a screen directly. Only `PaperPriceEngine::priceFor` calls it (`app/Services/Pur/PaperPriceEngine.php:65-67`), so its triggers are the two of the paper-price engine: add a master item to a PR (`app/Services/Pur/PurchaseRequisitionEntryService.php:77`) and turn a PR allocation into a PO line (`PoBuilderService.php:88`). Searched `routes/console.php`, jobs, observers: none.
 
 ## Input / Output
 - **Input**: a `MatRaw` whose **name** says SF, S FACE or SINGLE FACE as a whole word (`matches`), a supplier id, a document date.

@@ -11,16 +11,16 @@ use App\Models\Pur\PqLine;
 use App\Models\Pur\PrLine;
 use App\Models\Pur\PrLineAlloc;
 use App\Models\Sys\SysConstant;
-use App\Services\Flow\FlowEngineService;
 use App\Services\Pur\PoBuilderService;
+use App\Services\Pur\PurchaseOrderEntryService as Entry;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Livewire\Component;
 
-// Purchase Order v2 = aturan & tulis data komponen v1 pages::pur.po.entry (updateHeader / updateLine harga+diskon /
-// addAllocation dari PR approved / submit / approve / reject / hold / sendToSupplier). Baris PO lahir dari alokasi PR.
+// Purchase Order v2 = tulis data lewat App\Services\Pur\PurchaseOrderEntryService (updateHeader / updateLine harga+diskon /
+// addAllocation dari PR approved / submit / decide / sendToSupplier / delete), aturan yang dulu di komponen v1 pages::pur.po.entry
+// (diarsipkan T10 tahap 7a). Baris PO lahir dari alokasi PR.
 final class PurchaseOrder
 {
     use FlowDocument;
@@ -39,14 +39,6 @@ final class PurchaseOrder
 
     public const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'APPROVED' => 'success', 'SENT' => 'info', 'PARTIALLY_RECEIVED' => 'info',
         'RECEIVED' => 'success', 'CLOSED' => 'neutral', 'REJECTED' => 'danger', 'CANCELLED' => 'danger'];
-
-    public static function component(int $id): Component
-    {
-        $c = app('livewire')->new('pages::pur.po.entry');
-        $c->poId = $id;
-
-        return $c;
-    }
 
     // Baris anak grid (Expand) PO / Petty Cash: nama item selalu tampil, tanpa harga. Butuh relasi lines.
     public static function lineRows(PoOrder $p): array
@@ -148,10 +140,9 @@ final class PurchaseOrder
                 }
             }
         }
-        $c = self::component($po->po_id);
         foreach (self::HEADER as $f) {
             if (array_key_exists($f, $in) && self::changed(self::str($in[$f]), $po->{$f})) {
-                $c->updateHeader($f, self::str($in[$f]));
+                Entry::updateHeader($po->po_id, $f, self::str($in[$f]));
             }
         }
         $lines = $po->lines()->get()->keyBy('po_line_id');
@@ -159,7 +150,7 @@ final class PurchaseOrder
             $line = $lines->get((int) $id);
             foreach ($line ? self::LINE : [] as $f) {
                 if (array_key_exists($f, (array) $row) && self::changed(self::num($row[$f]), $line->{$f})) {
-                    $c->updateLine((int) $id, $f, self::num($row[$f]));
+                    Entry::updateLine($po->po_id, (int) $id, $f, self::num($row[$f]));
                 }
             }
         }
@@ -181,7 +172,7 @@ final class PurchaseOrder
 
     public static function addAllocation(PoOrder $po, int $allocId): void
     {
-        self::component($po->po_id)->addAllocation($allocId, app(PoBuilderService::class));
+        Entry::addAllocation($po->po_id, $allocId);
     }
 
     public static function submit(PoOrder $po): string
@@ -204,39 +195,24 @@ final class PurchaseOrder
             ->whereHas('requisition', fn ($q) => $q->where('status', '<>', 'APPROVED'))->exists()) {
             return t('A PR on this PO is not Approved yet.');
         }
-        $c = self::component($po->po_id);
-        $c->submit(app(FlowEngineService::class));
 
-        return $c->blockedMessage;
+        return Entry::submit($po->po_id);
     }
 
     public static function decide(PoOrder $po, string $action, string $note): string
     {
-        $c = self::component($po->po_id);
-        $c->approvalNote = $note;
-        match ($action) {
-            'approve' => $c->approveDoc(app(FlowEngineService::class)),
-            'reject' => $c->rejectDoc(app(FlowEngineService::class)),
-            'hold' => $c->holdDoc(app(FlowEngineService::class)),
-        };
-
-        return $c->approvalError;
+        return Entry::decide($po->po_id, $action, $note);
     }
 
     public static function send(PoOrder $po): void
     {
-        self::component($po->po_id)->sendToSupplier();
+        Entry::sendToSupplier($po->po_id);
     }
 
     public static function delete(PoOrder $po): void
     {
         abort_unless($po->status === 'DRAFT', 422, t('Only a DRAFT PO can be deleted.'));
-        $c = self::component($po->po_id);
-        try {
-            $c->delete();
-        } catch (\Throwable) {
-            // delete() v1 diakhiri redirect Livewire; hapusnya sendiri sudah terjadi.
-        }
+        Entry::delete($po->po_id);
     }
 
     // Draft > Confirmed > Approval > Approved (APPROVED / SENT / sebagian diterima) > Closed (RECEIVED / CLOSED).

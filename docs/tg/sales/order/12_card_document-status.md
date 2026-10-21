@@ -14,7 +14,7 @@
 | Quotation (`quo_quotation`, 20) | `doc_status` (DRAFT, PUBLISHED), `stat_cancel`; WON/LOST DERIVED, not stored | PUBLISHED 18, DRAFT 2, cancelled 0. `outcome()`: WON if any inquiry item is `CONVERTED`; LOST if all items are `LOST` | FACT, `QuoQuotation.php:71-80`; `Quotation.php:27-34` |
 | Customer Order (`co_order`, 25) | `doc_status` (DRAFT, SUBMITTED, CONFIRMED, REJECTED, CANCELLED), `stat_cancel`, `cancel_reason` | CONFIRMED 24 (1 of them `stat_cancel=1`), DRAFT 1 | FACT, `CustomerOrder.php:25`; query |
 | Delivery schedule (`co_order_delivery`, 29) | `status` PLANNED / SHIPPED / CANCELLED; `posted_at` | PLANNED 29, posted 25 | FACT, query |
-| Delivery Order (`do_delivery`, 3) | `status` DRAFT, CONFIRMED, SHIPPED, CANCELLED | DRAFT 1, CONFIRMED 2 | FACT, `DeliveryOrder.php:21`; query |
+| Delivery Order (`do_delivery`, 3) | `status` DRAFT, CONFIRMED, SHIPPED, CANCELLED | DRAFT 1, CONFIRMED 2 | FACT, `DeliveryOrder.php:31`; query |
 | DO lines (`do_line`, 0) | `status` PLANNED, SHIPPED, CANCELLED | empty | FACT, `DispatchService.php` |
 | Complaint (`crm_complaint`, 4) | `stat_confirm`, `stat_close`, `stat_cancel` (+ `confirmed_at/by`, `closed_at/by`) | Draft 1, Confirmed 2, Closed 1 | FACT, `CrmComplaint.php:59-62` |
 | POD, Activity | no document status (POD: `result`, `promise_kept`; Activity: `next_done`) | - | FACT, `show columns` |

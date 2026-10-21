@@ -149,11 +149,11 @@ Alamat lama tetap hidup sebagai redirect ke layar v2 (tes `V1ArchiveRedirectTest
 
 | Alamat lama | Layar v2 pengganti | Catatan |
 |---|---|---|
-| `/purchasing/pr`, `/pr/{id}/edit`, `/pr/{id}/print` | `v2:purchase-requisition`, `/v2/print/purchase-requisition/{id}` | komponen `pages::pur.pr.entry` tetap sebagai mesin aturan (`PurchaseRequisition::component`) |
-| `/purchasing/po`, `/po/{id}/edit`, `/po/{id}/print` | `v2:purchase-order`, `/v2/print/purchase-order/{id}` | `pages::pur.po.entry` = mesin aturan |
-| `/purchasing/pv`, `/pv/{id}/edit` | `v2:purchase-receive` | `pages::pur.pv.entry` = mesin aturan |
-| `/dispatch/do`, `/do/{id}`, `/print`, `/print-surat-jalan` | `v2:delivery-order`, `/v2/print/delivery-order/{id}`, `/v2/print/delivery-note/{id}` | `pages::dispatch.do.entry` = mesin aturan |
-| `/co/delivery-plan` | `v2:cpdel` | `pages::co.delivery-plan` = mesin aturan |
+| `/purchasing/pr`, `/pr/{id}/edit`, `/pr/{id}/print` | `v2:purchase-requisition`, `/v2/print/purchase-requisition/{id}` | aturan di `App\Services\Pur\PurchaseRequisitionEntryService` (T10 tahap 7a; halaman v1 `pages::pur.pr.entry` diarsipkan ke `tmerp_unused/arsip_v1_2026-10-21.zip`); Material Planning > Buy memakai service yang sama |
+| `/purchasing/po`, `/po/{id}/edit`, `/po/{id}/print` | `v2:purchase-order`, `/v2/print/purchase-order/{id}` | aturan di `App\Services\Pur\PurchaseOrderEntryService` (T10 tahap 7a; `pages::pur.po.entry` diarsipkan) |
+| `/purchasing/pv`, `/pv/{id}/edit` | `v2:purchase-receive` | aturan ubah header / baris / QC / override toleransi di `App\Services\Pur\PurchaseReceiveEntryService` (T10 tahap 7b; `pages::pur.pv.entry` diarsipkan), posting di `PvPostingService` |
+| `/dispatch/do`, `/do/{id}`, `/print`, `/print-surat-jalan` | `v2:delivery-order`, `/v2/print/delivery-order/{id}`, `/v2/print/delivery-note/{id}` | aturan di `App\Services\Dispatch\DeliveryOrderEntryService` di atas `DispatchService` (T10 tahap 7c; `pages::dispatch.do.entry` diarsipkan) |
+| `/co/delivery-plan` | `v2:cpdel` | aturan Split / Gabung di `App\Services\Sales\CpdelEntryService` (T10 tahap 7c; `pages::co.delivery-plan` diarsipkan) |
 | `/sales/win-rate`, `/hrm/org-chart`, `/hrm/payroll/bank-transfer` | `v2:sales-win-rate`, `v2:hrm-org-chart`, `v2:hrm-bank-transfer` | v1 diarsipkan penuh |
 | `/setup/identification`, `/language`, `/constants`, `/data-origin` | `v2:setup-identification`, `v2:languages`, `v2:setup-constants`, `v2:setup-data-origin` | `/setup/localization` (sys_translations) tetap v1: belum ada layar v2 |
 | `/bantuan` | `v2.help` (laci Help & support) | Help Center v1 diarsipkan |

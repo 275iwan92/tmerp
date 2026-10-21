@@ -1,18 +1,26 @@
 <?php
 
+/*
+ * REMARK
+ * Tujuan       : Penerimaan Barang (SPB / PV) v2: daftar opsi (supplier, PO terbuka, CO, subkon, gudang), buat SPB, simpan header + baris + QC dari satu form, Post (Confirm), Cancel, hapus DRAFT, status form. Aturan entri header/baris/QC ada di PurchaseReceiveEntryService (dipindah dari komponen v1 pages::pur.pv.entry). Sumber baris = PO SENT / PARTIALLY_RECEIVED.
+ * Sumber hulu  : PvReceipt, PvLine, PvBuilderService, PvPostingService, SpecialReceiptService, PurchaseReceiveEntryService.
+ * Input        : PvReceipt + isi form (array) dari rute v2.pv.*.
+ * Output       : pv_receipt, pv_line (tm2pur); posting stok + jurnal lewat PvPostingService.
+ * Dipakai oleh : routes/v2.php (prefix pv), PurchaseReceiveGrid, layar purchase-receive, tests/Feature/PurchaseReceiveEntryTest.
+ * Status       : Aktif (T10 tahap 7b, 2026-10-22: tidak lagi membuat komponen Livewire v1).
+ */
+
 namespace App\Support\V2\Data;
 
 use App\Models\Pur\PvReceipt;
+use App\Services\Pur\PurchaseReceiveEntryService;
 use App\Services\Pur\PvBuilderService;
 use App\Services\Pur\PvPostingService;
 use App\Services\Pur\SpecialReceiptService;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
-use Livewire\Component;
 
-// Penerimaan Barang (SPB / PV) v2 = aturan & tulis data komponen v1 pages::pur.pv.entry (updateHeader / updateLine / markQtyDone /
-// setQuality / updateQcQty / overrideTolerance / addSelectedLines / post). Sumber baris = PO SENT / PARTIALLY_RECEIVED.
 final class PurchaseReceive
 {
     use FlowDocument;
@@ -27,14 +35,6 @@ final class PurchaseReceive
     public const TYPES = ['PO' => 'From PO', 'CUSTOMER' => 'From Customer', 'SUBCON' => 'From Subcon'];
 
     public const TYPE_TONES = ['From PO' => 'neutral', 'From Customer' => 'info', 'From Subcon' => 'warn'];
-
-    public static function component(int $id): Component
-    {
-        $c = app('livewire')->new('pages::pur.pv.entry');
-        $c->pvId = $id;
-
-        return $c;
-    }
 
     // CO yang boleh menerima bahan customer: Confirmed / Submitted, belum batal. Label = No. CO · customer.
     public static function coOptions(): array
@@ -120,10 +120,9 @@ final class PurchaseReceive
     public static function save(PvReceipt $pv, array $in): void
     {
         abort_unless(in_array($pv->status, ['DRAFT', 'QC_PENDING'], true), 422, t('The receipt is already posted and cannot be changed.'));
-        $c = self::component($pv->pv_id);
         foreach (self::HEADER as $f) {
             if (array_key_exists($f, $in) && self::changed(self::str($in[$f]), $pv->{$f})) {
-                $c->updateHeader($f, self::str($in[$f]));
+                PurchaseReceiveEntryService::updateHeader($pv, $f, self::str($in[$f]));
             }
         }
         $lines = $pv->lines()->get()->keyBy('pv_line_id');
@@ -136,27 +135,27 @@ final class PurchaseReceive
                 if (array_key_exists($f, (array) $row)) {
                     $v = in_array($f, ['i_qty_purchase', 'i_qty_stock'], true) ? self::num($row[$f]) : self::str($row[$f]);
                     if (self::changed($v, $line->{$f})) {
-                        $c->updateLine((int) $id, $f, $v);
+                        PurchaseReceiveEntryService::updateLine($pv, (int) $id, $f, $v);
                     }
                 }
             }
             // QC qty selesai (centang) -> markQtyDone; QC kualitas PASS / FAIL / PARTIAL (+ qty diterima/ditolak bila PARTIAL).
             if (($row['qc_qty'] ?? '') === 'DONE' && $line->qc_qty_status !== 'DONE') {
-                $c->markQtyDone((int) $id);
+                PurchaseReceiveEntryService::markQtyDone($pv, (int) $id);
             }
             $q = (string) ($row['qc_quality_status'] ?? '');
             if ($q !== '' && $q !== (string) $line->qc_quality_status) {
-                $c->setQuality((int) $id, $q);
+                PurchaseReceiveEntryService::setQuality($pv, (int) $id, $q);
             }
             if ($q === 'PARTIAL') {
                 foreach (['c_qty_accepted', 'c_qty_rejected'] as $f) {
                     if (array_key_exists($f, (array) $row) && self::changed(self::num($row[$f]), $line->{$f})) {
-                        $c->updateQcQty((int) $id, $f, self::num($row[$f]));
+                        PurchaseReceiveEntryService::updateQcQty($pv, (int) $id, $f, self::num($row[$f]));
                     }
                 }
             }
             if (trim((string) ($row['tol_override_reason'] ?? '')) !== '' && $line->is_tol_exceeded && ! $line->tol_override_by) {
-                $c->overrideTolerance((int) $id, (string) $row['tol_override_reason']);
+                PurchaseReceiveEntryService::overrideTolerance($pv, (int) $id, (string) $row['tol_override_reason']);
             }
         }
     }

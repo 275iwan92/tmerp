@@ -9,14 +9,14 @@
 Searched in `routes/console.php` (none), observers, jobs, and all callers. FACT: only from the CPDEL screen.
 | Method | Trigger | File:line |
 |---|---|---|
-| `state`, `gapDays`, `due` | Screen renders the grid and form | `Cpdel.php:56,67,72` (grid), `Cpdel.php:156,163` (form) |
-| `slotProblems` | Row form, shows slot problems | `Cpdel.php:185` |
+| `state`, `gapDays`, `due` | Screen renders the grid and form | `Cpdel.php:51,67,72` (grid), `Cpdel.php:143,163` (form) |
+| `slotProblems` | Row form, shows slot problems | `Cpdel.php:172` |
 | `commitReady` | POST `v2.cpdel.ready` (PPIC) | `routes/v2.php:1614-1615` |
 | `reschedule` | POST `v2.cpdel.reschedule` (Sales) | `routes/v2.php:1620-1621` |
 | `customerRejected` | POST `v2.cpdel.reject` (Sales) | `routes/v2.php:1626-1627` |
 | `opsDecision` | POST `v2.cpdel.decide` (Ops Manager) | `routes/v2.php:1632-1633` |
 | `merge` | POST `v2.cpdel.merge` (Sales) | `routes/v2.php:1638-1641` |
-| `canPlan/canSell/canDecide` | Route gates and button display | `routes/v2.php:1614,1620,1626,1632,1638`; `Cpdel.php:167,186,201` |
+| `canPlan/canSell/canDecide` | Route gates and button display | `routes/v2.php:1614,1620,1626,1632,1638`; `Cpdel.php:154,186,201` |
 | `STATES` | Grid badge colors | `app/Support/V2/Grid/Sales/CpdelListGrid.php:65` |
 
 ## Input / Output
@@ -50,10 +50,10 @@ Rights (lines 84-98): `canPlan` = admin or module PROD `can_input`; `canSell` = 
 - Worked example from the test run (`CpdelDueColourTest`, today = Friday 02-Okt-2026, Saturday working, Sunday off, soon = 2): slot 29-Sep -> OVERDUE (red, text contains 3 days); slot 02-Okt -> TODAY (orange); 03-Okt and 05-Okt (Monday) -> SOON; 06-Okt -> LATER, but SOON if soon = 3; slot 15-Okt -> `week` 0; SHIPPED -> muted. `workdaysBetween(02-Okt, 05-Okt) = 2` and the public holiday 06-Okt is not counted.
 
 ## Edge cases
-- The server does not check the source status for `customerRejected`, `opsDecision`, and `commitReady`: all PLANNED rows are accepted even though the screen only offers their buttons at certain statuses (`Cpdel.php:199-202`). FROM CODE (lines 203-224), not tested.
+- The server does not check the source status for `customerRejected`, `opsDecision`, and `commitReady`: all PLANNED rows are accepted even though the screen only offers their buttons at certain statuses (`Cpdel.php:186-189`). FROM CODE (lines 203-224), not tested.
 - `reschedule` does not check that the new date >= today; only `slotProblems` (holiday/time).
-- `ESCALATED` loses to `LATE` (line 44 before 45): an escalated row whose slot has passed shows LATE and the Ops decision button does not appear (`Cpdel.php:201`). See CPDEL card finding 1.
-- Default PPIC form time 07:30, default slot time = customer opening time or 08:00 (`Cpdel.php:189,195`); only initial form values.
+- `ESCALATED` loses to `LATE` (line 44 before 45): an escalated row whose slot has passed shows LATE and the Ops decision button does not appear (`Cpdel.php:188`). See CPDEL card finding 1.
+- Default PPIC form time 07:30, default slot time = customer opening time or 08:00 (`Cpdel.php:176,195`); only initial form values.
 
 ## Used by
 CPDEL screen (grid + form `x-mp::sales.promise-book`), `CpdelListGrid`. The delivery promise-keeping KPI is separate in `DeliveryPromiseService` (card not written yet; see the Delivery sub-module).

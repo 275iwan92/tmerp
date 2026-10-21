@@ -11,7 +11,7 @@
 Searched `routes/console.php` (no entry for this class), callers in `app/`, `resources/views`, `routes/`. FACT:
 | Trigger | Method | File:line |
 |---|---|---|
-| CPDEL screen, button Post to Production | `generateFromDelivery` | `app/Support/V2/Data/Cpdel.php:93` |
+| CPDEL screen, button Post to Production | `generateFromDelivery` | `app/Support/V2/Data/Cpdel.php:88` |
 | Work Order screen, Create Work Order picker (calls the same `Cpdel::post`) | `generateFromDelivery` | `app/Http/Controllers/V2/PpicController.php:321` |
 | Work Order form, button PROCESS | `rebuildOperations`, `regenerateBom` | `app/Http/Controllers/V2/PpicController.php:455,457` |
 | Sheet RESET on the BOP / BOM tab | `rebuildOperations`, `regenerateBom`, `engineBomCount` | `app/Services/Scheduling/Plan/SheetReset.php:113,91,57` |
@@ -26,7 +26,7 @@ Searched `routes/console.php` (no entry for this class), callers in `app/`, `res
 6. When ProDev has no BOP yet: the routing snapshot of the inquiry part is copied (`:126-146`); the rate comes from `prod_part_process_machine_rate` (`lookupDefaultMachineRate`, `:401-413`).
 7. BOM lines are written as `prd_wo_material` (`writeBom`, `:336-374`): Required = Standar = `qty_need` of the engine; a line with area not yet computable keeps 0; `None` lines are dropped; officer-deleted lines (tombstones in `prd_plan_decision`) are not written again; if nothing is left, ONE placeholder line "Material belum ditentukan di Inquiry / ProDev" is written.
 8. Backward scheduling is persisted at creation (`BackwardSchedulingService::scheduleAndPersist`, `:157-164`); a `RuntimeException` (rate band incomplete) is swallowed.
-9. Afterwards (not inside this class): `PlanEvents::replan` asks the auto-planner for a Draft (`Cpdel.php:100`); `WoPlanningEnricher` and `GateService` fill planning facts and gates (`PpicController.php:327-328` or inside `AutoPlanRunner::prepare`).
+9. Afterwards (not inside this class): `PlanEvents::replan` asks the auto-planner for a Draft (`Cpdel.php:95`); `WoPlanningEnricher` and `GateService` fill planning facts and gates (`PpicController.php:327-328` or inside `AutoPlanRunner::prepare`).
 
 ### PROCESS side (same class, WO still DRAFT or SIMULATED)
 - `rebuildOperations` (`:182-256`): operations follow the BOP ProDev gives now. Same `process_id` stays (id, placement, target, progress kept; only `seq_no`/label renumbered when the officer has not re-ordered); new process gets a new operation; engine step that the officer deleted does not come back; an operation whose process left the BOP is removed ONLY when not CONFIRMED, not started, without output, and not added by the officer; else kept and counted. Nothing happens when the engine returns no BOP.

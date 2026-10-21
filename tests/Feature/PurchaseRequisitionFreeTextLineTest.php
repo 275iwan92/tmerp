@@ -6,10 +6,10 @@ use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PrLine;
 use App\Models\Pur\PrRequisition;
 use App\Models\Sys\SecUser;
+use App\Services\Pur\PurchaseRequisitionEntryService;
 use App\Support\V2\Data\PurchaseRequisition;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 // pr_line.i_coa_account_id NOT NULL, dan baris teks bebas tidak punya kategori yang menuntun ke akun: dulu addFreeText()
@@ -96,25 +96,21 @@ class PurchaseRequisitionFreeTextLineTest extends TestCase
         $this->assertSame($second, (int) $line->refresh()->i_coa_account_id);
     }
 
-    public function test_v1_entry_screen_asks_for_the_account_on_the_free_text_tab(): void
+    public function test_entry_service_asks_for_the_account_on_the_free_text_item(): void
     {
         $pr = $this->draft();
         [$account] = $this->accounts();
 
-        $screen = Livewire::test('pages::pur.pr.entry', ['pr' => $pr->pr_id])
-            ->assertSeeHtml('wire:model="freeAccountId"')
-            ->set('freeDescription', 'Renovasi kantin')
-            ->call('addFreeText');
-        $this->assertNotSame('', $screen->get('freeError'));
+        $this->assertNotSame('', PurchaseRequisitionEntryService::addFreeText($pr->pr_id, 'Renovasi kantin', '', ''));
         $this->assertSame(0, PrLine::where('pr_id', $pr->pr_id)->count());
 
-        $screen->set('freeAccountId', (string) $account)->call('addFreeText')
-            ->assertSet('freeError', '')->assertSet('freeAccountId', '')->assertSee('Renovasi kantin');
+        $this->assertSame('', PurchaseRequisitionEntryService::addFreeText($pr->pr_id, 'Renovasi kantin', '', $account));
         $line = PrLine::where('pr_id', $pr->pr_id)->sole();
         $this->assertSame($account, (int) $line->i_coa_account_id);
+        $this->assertSame('-', $line->i_uom);
 
         // Memilih "— pilih —" di kolom Akun COA baris tidak lagi menyimpan NULL.
-        $screen->call('updateLine', $line->pr_line_id, 'i_coa_account_id', '');
+        PurchaseRequisitionEntryService::updateLine($pr->pr_id, $line->pr_line_id, 'i_coa_account_id', '');
         $this->assertSame($account, (int) $line->refresh()->i_coa_account_id);
     }
 

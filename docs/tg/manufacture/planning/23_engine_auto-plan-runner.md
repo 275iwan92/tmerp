@@ -14,7 +14,7 @@ Searched `routes/console.php`, `app/Console`, `app/Observers`, `PlanEvents`, con
 | Background, nightly | `ppic:auto-plan --trigger=DAILY` at 02:00 | `routes/console.php:40` |
 | Background, each shift start | `--trigger=SHIFT` at `config('ppic.day_start')` + n x `config('ppic.default_hours_per_shift')` for n below `config('ppic.default_shifts')`: 07:00 and 15:00 with the config values | `routes/console.php:41-44` |
 | Condition for both | `$ppicReady` = table `prd_plan_run` exists in `tm2prd` | `routes/console.php:39` |
-| Event, WO created from a delivery line | `PlanEvents::replan` | `app/Support/V2/Data/Cpdel.php:100` |
+| Event, WO created from a delivery line | `PlanEvents::replan` | `app/Support/V2/Data/Cpdel.php:95` |
 | Event, machine goes down / comes back | observer on `prod_machine_downtime` | `app/Observers/MachineDowntimeObserver.php:15,22` |
 | Event, target per hour edited | `PlanEvents::replan` | `app/Http/Controllers/V2/PpicController.php:595` |
 | Officer: priority, move, unpin, die group, undo priority | `$this->runner->run('EVENT', ...)` | `app/Services/Scheduling/Plan/PlanChangeService.php:46,258,431,446,516` |

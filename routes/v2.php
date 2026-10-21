@@ -610,7 +610,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         });
     });
 
-    // Purchase Requisition v2 (App\Support\V2\Data\PurchaseRequisition = aturan komponen v1 pages::pur.pr.entry). Satu rute simpan:
+    // Purchase Requisition v2 (App\Support\V2\Data\PurchaseRequisition = aturan PurchaseRequisitionEntryService). Satu rute simpan:
     // action = save | confirm (Submit ke flow approval) | approve | reject | hold | delete | add_material | add_free.
     Route::prefix('pr')->name('pr.')->middleware('module:PROC')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'purchase-requisition').'?id='.$id);
@@ -781,7 +781,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->name('setup');
     });
 
-    // Purchase Order v2 (App\Support\V2\Data\PurchaseOrder = aturan komponen v1 pages::pur.po.entry). Satu rute simpan:
+    // Purchase Order v2 (App\Support\V2\Data\PurchaseOrder = aturan PurchaseOrderEntryService). Satu rute simpan:
     // action = save | confirm (Submit) | approve | reject | hold | send (Kirim ke Supplier) | delete | add_alloc.
     Route::prefix('po')->name('po.')->middleware('module:PROC')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'purchase-order').'?id='.$id);
@@ -852,7 +852,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('save');
     });
 
-    // Penerimaan Barang / SPB v2 (App\Support\V2\Data\PurchaseReceive = aturan komponen v1 pages::pur.pv.entry).
+    // Penerimaan Barang / SPB v2 (App\Support\V2\Data\PurchaseReceive = aturan PurchaseReceiveEntryService).
     // action = save | confirm (Post: stok masuk + jurnal) | cancel (balik Post) | delete | add_lines.
     Route::prefix('pv')->name('pv.')->middleware('module:PROC')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'purchase-receive').'?id='.$id);
@@ -1002,7 +1002,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('save');
     });
 
-    // Delivery Order v2 (App\Support\V2\Data\DeliveryOrder = aturan komponen v1 pages::dispatch.do.entry -> DispatchService).
+    // Delivery Order v2 (App\Support\V2\Data\DeliveryOrder = aturan DeliveryOrderEntryService -> DispatchService).
     // action = save | pull (tarik jadwal kirim CO) | confirm | ship (Shipped) | cancel (alasan wajib). Surat Jalan memakai rute yang sama.
     Route::prefix('do')->name('do.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id, string $slug = 'delivery-order') => redirect(route('v2.screen', $slug).'?id='.$id);
@@ -1756,7 +1756,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
             ->with('v2_flash', Dictionary::t($pod->promise_kept ? 'Arrival recorded: promise kept.' : 'Arrival recorded: promise missed.'));
     })->name('pod.save');
 
-    // Customer Plan Delivery v2 (App\Support\V2\Data\Cpdel = confirmSplit/confirmMerge v1 pages::co.delivery-plan).
+    // Customer Plan Delivery v2 (App\Support\V2\Data\Cpdel = CpdelEntryService confirmSplit/confirmMerge).
     Route::prefix('cpdel')->name('cpdel.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'cpdel').'?id='.$id);
         // Dua janji (App\Services\Sales\CpdelPromiseService): PPIC janji siap, Sales jadwal ulang / split setelah nego customer,

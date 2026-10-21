@@ -16,7 +16,7 @@ FACT, from code:
 | Nightly schedule 01:30 | `runAll` (then `runPre`) | `routes/console.php:29` -> command `planning:run` (`PlanningRun.php:22`) |
 | Nightly schedule 01:45 | `BookingMaintenance->run` -> `release` stale bookings | `routes/console.php:53` -> `inventory:booking-maintain` (`BookingMaintain.php:27`) |
 | Buttons on the v2 screens (Recalculate All, Recalculate one CO, Confirm, Back to Draft, Pick Item, Hold, Release Hold, Recalculate Pre-bookings) | `runAll`, `persist`, `confirm`, `unlock`, `pick`, `hold`, `releaseHold`, `runPre` | `routes/v2_planning.php:19, 31, 37, 41, 62` etc.; screens `material-booking`, `material-planning`, `material-prebooking` |
-| Screens read the result | `plan` | `app/Support/V2/Data/MaterialPlanning.php:110`, `PreBookings.php`, and `GateService` |
+| Screens read the result | `plan` | `app/Support/V2/Data/MaterialPlanning.php:111`, `PreBookings.php`, and `GateService` |
 Not triggered directly by the Costing Engine, Quotation, or Reverse (FACT, grep); a new pre-booking appears at the next `runAll`/`runPre` (nightly schedule or button).
 
 ## Flow (text twin of diagram `../img/material-planning.svg`)

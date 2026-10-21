@@ -8,7 +8,7 @@
 - **NOT the same as**: ivory board priced by kg (card `30_engine_paper-price.md`).
 
 ## Trigger (no background / schedule)
-Only `PaperPriceEngine::priceFor` calls it (`app/Services/Pur/PaperPriceEngine.php:69-71`); triggers = add a master item to a PR (`resources/views/pages/pur/pr/entry.blade.php:205`) and turn a PR allocation into a PO line (`PoBuilderService.php:88`). Searched `routes/console.php`, jobs, observers: none.
+Only `PaperPriceEngine::priceFor` calls it (`app/Services/Pur/PaperPriceEngine.php:69-71`); triggers = add a master item to a PR (`app/Services/Pur/PurchaseRequisitionEntryService.php:77`) and turn a PR allocation into a PO line (`PoBuilderService.php:88`). Searched `routes/console.php`, jobs, observers: none.
 
 ## Input / Output
 - **Input**: a `MatRaw` whose name has the whole word DUPLEX (`matches`), a supplier id, a document date. Grammage and size come from the master columns; if empty from the name (`PaperSpec::gsm`: the number before GR / GSM; `PaperSpec::sizeCm`).
