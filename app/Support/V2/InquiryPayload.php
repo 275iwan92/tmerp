@@ -6,11 +6,11 @@ use App\Models\Master\MatCategory;
 use App\Models\Sdi\IqpInquiry;
 use Illuminate\Http\Request;
 
-// Isian form Inquiry v2 (nama field objek DevLib) -> bentuk input App\Services\Sales\InquiryWriter
-// (= bentuk state v1). Validasi header = headerRules() tmerp.
+// Isian form Inquiry v2 (nama field objek DevLib) -> bentuk input App\Services\Sales\InquiryWriter.
+// Validasi header = headerRules() form v1; Inquiry lama berstatus prospek memakai prospect_name, bukan customer_id.
 final class InquiryPayload
 {
-    public static function rules(): array
+    public static function rules(?IqpInquiry $old = null): array
     {
         return [
             'inquiry_date' => ['required', 'date'],
@@ -21,7 +21,7 @@ final class InquiryPayload
             'sales_note' => ['nullable', 'string'],
             'cust_material_spec' => ['nullable', 'string', 'required_if:material_source,1'],
             'cust_material_eta' => ['nullable', 'date'],
-            'customer_id' => ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer'],
+            ...($old?->is_prospect ? ['prospect_name' => ['required', 'string', 'max:150']] : ['customer_id' => ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer']]),
             'type_code' => ['required', 'exists:tm2mst.prod_type,type_code'],
         ];
     }
@@ -37,9 +37,9 @@ final class InquiryPayload
                 'inquiry_date' => $r->input('inquiry_date'),
                 'source' => $r->input('source'),
                 'pic_sales' => (string) $r->input('pic_sales', ''),
-                'customer_id' => (int) $r->input('customer_id'),
-                'is_prospect' => false,
-                'prospect_name' => null,
+                'customer_id' => $old?->is_prospect ? null : (int) $r->input('customer_id'),
+                'is_prospect' => (bool) $old?->is_prospect,
+                'prospect_name' => $old?->is_prospect ? trim((string) $r->input('prospect_name')) : null,
                 'deadline_quotation' => (string) $r->input('deadline_quotation', ''),
                 'product_draft_name' => trim((string) $r->input('product_draft_name')),
                 'sales_note' => (string) $r->input('sales_note', ''),

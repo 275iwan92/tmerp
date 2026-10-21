@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Models\Sdi\IqpInquiry;
@@ -10,7 +9,9 @@ use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SecUser;
 use App\Services\Sales\InquiryWriter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
+use Tests\Support\InquiryDriver;
 use Tests\TestCase;
 
 // Mode #1 -- link Inquiry(BARU) -> ProDev yang sebelumnya tidak ada sama
@@ -40,31 +41,23 @@ class InquirySendToProdevTest extends TestCase
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
-        $customer = CustCustomer::firstOrFail();
+        $writer = InquiryDriver::writer();
 
-        $test = Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('customer_id', $customer->id_customer)
-            ->set('product_draft_name', 'Test SendToProDev Product')
-            ->set('parts.0.part_name', 'Test Part SendToProDev')
-            ->set('tiers.0.qty', 1000)
-            ->call('save');
+        $inquiry = InquiryDriver::create('Test SendToProDev Product', ['parts' => [['part_name' => 'Test Part SendToProDev', 'part_type' => 'DC', 'qty_per_sku' => 1, 'cfg_color' => '4/4']]]);
+        $this->inquiryId = $inquiry->id_inquiry;
+        $partId = $inquiry->parts()->firstOrFail()->id_part;
 
-        $test->assertHasNoErrors();
+        // Sebelum CONFIRM -- Kirim ke ProDev harus ditolak
+        // (guard: Inquiry draft tidak boleh mengalir ke ProDev).
+        try {
+            $writer->sendToProDev($inquiry, IqpPart::findOrFail($partId));
+            $this->fail('sendToProDev SEBELUM confirm harus ditolak');
+        } catch (ValidationException) {
+            $this->assertNull(IqpPart::find($partId)->prod_part_id, 'prod_part_id harus tetap null');
+        }
 
-        $this->inquiryId = $test->get('inquiry')->id_inquiry;
-        $partId = $test->get('parts.0')['id'];
-        $this->assertNotNull($partId, 'Part harus punya id setelah save()');
-
-        // Sebelum CONFIRM -- tombol/aksi Kirim ke ProDev harus ditolak
-        // (guard baru: Inquiry draft tidak boleh mengalir ke ProDev).
-        $test->call('sendToProDev', 0);
-        $iqpPartBeforeConfirm = IqpPart::find($partId);
-        $this->assertNull($iqpPartBeforeConfirm->prod_part_id, 'sendToProDev SEBELUM confirm() harus ditolak, prod_part_id harus tetap null');
-
-        $test->call('confirm')->assertHasNoErrors();
-
-        $test->call('sendToProDev', 0)->assertHasNoErrors();
+        $inquiry = InquiryDriver::confirm($inquiry);
+        $writer->sendToProDev($inquiry, IqpPart::findOrFail($partId));
 
         $iqpPart = IqpPart::findOrFail($partId);
         $this->assertNotNull($iqpPart->prod_part_id, 'iqp_part.prod_part_id harus terisi setelah sendToProDev');
@@ -77,7 +70,7 @@ class InquirySendToProdevTest extends TestCase
         $this->assertSame($inquiry->product_id, $prodPart->product_id);
 
         // Panggil lagi -- harus idempoten (tidak bikin ProdProduct/ProdPart dobel).
-        $test->call('sendToProDev', 0)->assertHasNoErrors();
+        $writer->sendToProDev($inquiry->refresh(), $iqpPart);
         $iqpPart->refresh();
         $this->assertSame($prodPart->id_part, $iqpPart->prod_part_id, 'Panggil 2x tidak boleh bikin ProdPart baru');
 
@@ -94,17 +87,11 @@ class InquirySendToProdevTest extends TestCase
     {
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
 
-        $test = Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('customer_id', CustCustomer::firstOrFail()->id_customer)
-            ->set('product_draft_name', 'Test SendToProDev Copy')
-            ->set('parts.0.part_name', 'Test Part Copy')
-            ->set('tiers.0.qty', 1000)
-            ->call('save');
-        $this->inquiryId = $test->get('inquiry')->id_inquiry;
-        $test->call('confirm');
+        $created = InquiryDriver::create('Test SendToProDev Copy', ['parts' => [['part_name' => 'Test Part Copy', 'part_type' => 'DC', 'qty_per_sku' => 1, 'cfg_color' => '4/4']]]);
+        $this->inquiryId = $created->id_inquiry;
+        InquiryDriver::confirm($created);
 
-        $part = IqpPart::findOrFail($test->get('parts.0')['id']);
+        $part = $created->parts()->firstOrFail();
         $spec = ['type_code' => 'RTE_BOX', 'dims' => ['product_length' => 230], 'elements' => [['t' => 'cut']]];
         $part->update(['part_type' => 'DC', 'join_type_id' => 3, 'dieline_spec' => $spec]);
         $inquiry = IqpInquiry::findOrFail($this->inquiryId);
@@ -128,30 +115,20 @@ class InquirySendToProdevTest extends TestCase
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
-        $customer = CustCustomer::firstOrFail();
 
-        $test = Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('customer_id', $customer->id_customer)
-            ->set('product_draft_name', 'Test SendToProDev Product')
-            ->set('parts.0.part_name', 'Test Part SendToProDev')
-            ->set('tiers.0.qty', 1000)
-            ->call('save');
-
-        $this->inquiryId = $test->get('inquiry')->id_inquiry;
-        $partId = $test->get('parts.0')['id'];
-
-        $test->call('confirm');
-        $test->call('sendToProDev', 0);
-
-        $iqpPart = IqpPart::findOrFail($partId);
+        $inquiry = InquiryDriver::create('Test SendToProDev Product', ['parts' => [['part_name' => 'Test Part SendToProDev', 'part_type' => 'DC', 'qty_per_sku' => 1, 'cfg_color' => '4/4']]]);
+        $this->inquiryId = $inquiry->id_inquiry;
+        $inquiry = InquiryDriver::confirm($inquiry);
+        $iqpPart = $inquiry->parts()->firstOrFail();
+        InquiryDriver::writer()->sendToProDev($inquiry, $iqpPart);
+        $iqpPart->refresh();
         $prodevTest = Livewire::test('pages::production.old_prodev', ['part' => $iqpPart->prod_part_id]);
         $this->assertStringContainsString('Referensi Inquiry Asal', $prodevTest->html(), 'Inquiry CONFIRMED biasa harus tampil di panel referensi');
 
         // Cancel Inquiry -- panel referensi HARUS hilang (stat_confirm tetap
         // true selamanya, jadi sub_state yg jadi penentu -- gap yg sempat
         // kelewat & diperbaiki 2026-09-03).
-        $test->set('cancel_reason', 'Test cancel utk verifikasi panel referensi')->call('cancel');
+        InquiryDriver::writer()->cancel($inquiry->refresh(), 'Test cancel utk verifikasi panel referensi');
         $inquiry = IqpInquiry::findOrFail($this->inquiryId);
         $this->assertSame('CANCELLED', $inquiry->sub_state);
 

@@ -19,15 +19,15 @@ use Illuminate\Validation\ValidationException;
 /* REMARK
    Tujuan      : menyimpan Inquiry Product BARU (layar v2) dan menyerahkan part ke ProDev (sendToProDev).
    Sumber hulu : state form Inquiry (header, tiers, parts, toolings, external_costs).
-   Input       : array state v1; IqpInquiry + IqpPart untuk sendToProDev.
+   Input       : array dari App\Support\V2\InquiryPayload::from() (header, tiers, parts{materials,finishings}, toolings, external_costs); IqpInquiry + IqpPart untuk sendToProDev.
    Output      : iqp_*; prod_product draf + prod_part (ukuran, pack, warna, finishing, artwork; sejak 2026-10-18 juga part_type, join_type_id, dieline_spec bila kolom prod_part masih kosong).
    Dipakai oleh: InquiryStage::openInProdev, layar Inquiry v2.
    Status      : aktif. */
 
-// Simpan Inquiry Product BARU. Isi = salinan baris-per-baris persist*() di
-// pages/inquiry/form.blade.php (v1, zona beku) supaya layar v2 menulis data yang
-// sama persis. v1 sendiri belum memakai kelas ini -- ubah keduanya bersamaan.
-// Input = bentuk array state v1 (header, tiers, parts{materials,finishings}, toolings, external_costs).
+// Simpan Inquiry Product BARU. Aturannya berasal dari persist*() form v1 (pages/inquiry/form,
+// diarsipkan 2026-10-21, T10 tahap 4); layar v2 adalah satu-satunya pemakainya sekarang.
+// Input = bentuk array InquiryPayload::from() (header, tiers, parts{materials,finishings},
+// toolings, external_costs).
 final class InquiryWriter
 {
     public function __construct(private string $login) {}
@@ -405,5 +405,20 @@ final class InquiryWriter
         $row ? $row->update($data) : $row = $rel->create($data + ['created_by' => $this->login]);
 
         return (int) $row->getKey();
+    }
+
+    // Hapus artwork tersimpan (removeArtwork() v1): hanya selama Inquiry belum Confirm; berkas ikut dihapus dari disk.
+    public function removeArtwork(IqpPart $part, bool $inner = false): void
+    {
+        if (IqpInquiry::whereKey($part->inquiry_id)->value('stat_confirm_sales')) {
+            throw ValidationException::withMessages(['part' => t('The inquiry is already confirmed — it cannot be changed.')]);
+        }
+
+        [$col, $name] = $inner ? ['artwork_inner_path', 'artwork_inner_original_filename'] : ['artwork_path', 'artwork_original_filename'];
+        if ($part->{$col}) {
+            Storage::disk('public')->delete($part->{$col});
+        }
+
+        $part->update([$col => null, $name => null, 'updated_by' => $this->login]);
     }
 }

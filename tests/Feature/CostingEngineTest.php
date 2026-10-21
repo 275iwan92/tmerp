@@ -8,7 +8,7 @@ use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
+use Tests\Support\InquiryDriver;
 use Tests\Support\ProCostDriver;
 use Tests\TestCase;
 
@@ -39,17 +39,7 @@ class CostingEngineTest extends TestCase
         $this->actingAs($admin);
 
         // 1) Buat inquiry dasar (1 tier qty=1000) via layar form yang sudah teruji.
-        Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Box Test Costing Engine')
-            ->call('setProspect', true)
-            ->set('prospect_name', 'Prospek Test Costing')
-            ->set('tiers.0.qty', 1000)
-            ->set('parts.0.part_name', 'Body')
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Costing Engine')->latest('id_inquiry')->firstOrFail();
+        $this->inquiry = InquiryDriver::create('Box Test Costing Engine');
 
         $grammage = MatGrammage::where('grammage_name', 'Duplex 300gsm')->firstOrFail();
 
@@ -157,17 +147,7 @@ class CostingEngineTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Box Test Costing BOGUS')
-            ->call('setProspect', true)
-            ->set('prospect_name', 'Prospek Test Costing BOGUS')
-            ->set('tiers.0.qty', 500)
-            ->set('parts.0.part_name', 'Body')
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Costing BOGUS')->latest('id_inquiry')->firstOrFail();
+        $this->inquiry = InquiryDriver::create('Box Test Costing BOGUS', ['qty' => 500]);
 
         $component = ProCostDriver::open($this->inquiry->id_inquiry);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();
@@ -195,17 +175,7 @@ class CostingEngineTest extends TestCase
 
         $sheetRate = MatSheetRate::where('substance_name', '200 KL / 125 / 200 KL')->where('flute_type', 'B/F')->firstOrFail();
 
-        Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Box Test Costing COCO TOKYO')
-            ->call('setProspect', true)
-            ->set('prospect_name', 'COCO TOKYO')
-            ->set('tiers.0.qty', 1800)
-            ->set('parts.0.part_name', 'Box')
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Costing COCO TOKYO')->latest('id_inquiry')->firstOrFail();
+        $this->inquiry = InquiryDriver::create('Box Test Costing COCO TOKYO', ['qty' => 1800, 'parts' => [['part_name' => 'Box', 'part_type' => 'DC', 'qty_per_sku' => 1, 'cfg_color' => '4/4']]]);
 
         $component = ProCostDriver::open($this->inquiry->id_inquiry);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();

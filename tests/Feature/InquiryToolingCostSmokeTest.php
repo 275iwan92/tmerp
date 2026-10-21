@@ -4,8 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
+use App\Support\V2\Data\Sales;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
+use Tests\Support\InquiryDriver;
 use Tests\TestCase;
 
 class InquiryToolingCostSmokeTest extends TestCase
@@ -33,30 +34,15 @@ class InquiryToolingCostSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Box Test Tooling')
-            ->call('setProspect', true)
-            ->set('prospect_name', 'Prospek Test Tooling')
-            ->set('tiers.0.qty', 1000)
-            ->set('parts.0.part_name', 'Body')
-            ->call('addTooling')
-            ->set('toolings.0.tooling_kind', 'PLATE')
-            ->call('setToolingNewCharge', 0, true)
-            ->set('toolings.0.cost', 2400000)
-            ->set('toolings.0.remark', 'CTP baru')
-            ->call('setDiscountDocType', 'PERCENT')
-            ->set('discount_doc_value', 2.5)
-            ->set('discount_qty_value', 3)
-            ->set('discount_qty_min_ton', 5)
-            ->call('addExternalCost')
-            ->set('externalCosts.0.description', 'Trucking ke gudang customer')
-            ->set('externalCosts.0.cost_kind', 'TRUCKING')
-            ->set('externalCosts.0.amount', 350000)
-            ->call('save')
-            ->assertHasNoErrors();
+        // Layar v2 belum punya isian diskon dokumen (dipertahankan dari dokumen lama), jadi diskon diset di payload; penulisnya tetap InquiryWriter.
+        $this->inquiry = InquiryDriver::create('Box Test Tooling', [
+            'toolings' => [['tooling_kind' => 'PLATE', 'tooling_status' => 'ADA', 'is_new_charge' => 1, 'cost' => 2400000, 'remark' => 'CTP baru']],
+            'external_costs' => [['description' => 'Trucking ke gudang customer', 'cost_kind' => 'TRUCKING', 'amount' => 350000, 'tax_treatment' => 'TAXABLE']],
+        ], function (array $p) {
+            $p['header'] = ['discount_doc_type' => 'PERCENT', 'discount_doc_value' => '2.5', 'discount_qty_value' => '3', 'discount_qty_min_ton' => '5'] + $p['header'];
 
-        $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Tooling')->latest('id_inquiry')->firstOrFail();
+            return $p;
+        });
 
         $this->assertSame('PERCENT', $this->inquiry->discount_doc_type);
         $this->assertEquals(2.5, $this->inquiry->discount_doc_value);
@@ -75,10 +61,9 @@ class InquiryToolingCostSmokeTest extends TestCase
         $this->assertSame('TAXABLE', $ext->tax_treatment);
 
         // Reload di layar edit: baris tooling/external cost harus ter-map balik.
-        Livewire::test('pages::inquiry.form', ['id' => $this->inquiry->id_inquiry, 'mode' => 'NEW'])
-            ->assertSet('toolings.0.tooling_kind', 'PLATE')
-            ->assertSet('toolings.0.cost', '2400000')
-            ->assertSet('externalCosts.0.description', 'Trucking ke gudang customer')
-            ->assertSet('discount_doc_type', 'PERCENT');
+        $doc = Sales::inquiryDoc($this->inquiry->id_inquiry);
+        $this->assertSame('PLATE', $doc['toolings'][0]['tooling_kind']);
+        $this->assertEquals(2400000, $doc['toolings'][0]['cost']);
+        $this->assertSame('Trucking ke gudang customer', $doc['external_costs'][0]['description']);
     }
 }

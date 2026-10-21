@@ -65,6 +65,7 @@
         }
       });
       this.el.dlDielineX = {get dims() { return {...self.dims}; }, setType: c => { this.code = c; this.dims = {}; this.fields(); this.redraw(); },
+        setFlat: (w, h) => { this.manual = true; this.q('[data-d-manual]').checked = true; this.fw.readOnly = this.fh.readOnly = false; this.fw.value = w; this.fh.value = h; this.redraw(); },
         setDims: d => { Object.assign(this.dims, d); $$(this.el, '[data-d-dim]').forEach(i => { i.value = this.dims[i.dataset.dDim] ?? ''; }); this.redraw(); }, redraw: this.redraw,
         // url gambar (object URL / storage) atau null = kembali ke artwork tersimpan.
         setArtwork: url => { this.outArt = url || this.saved; if (this.side === 'out') this.showSide('out'); },

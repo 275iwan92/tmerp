@@ -12,7 +12,7 @@ use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
 use App\Services\Costing\CostingEntryService;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
+use Tests\Support\InquiryDriver;
 use Tests\TestCase;
 
 // BACKLOG.md §3 "ProCost belum konsumsi urutan proses" -- costing.blade.php
@@ -71,17 +71,7 @@ class CostingRoutingWarningTest extends TestCase
             'process_id' => $cetak->id_process, 'created_by' => 'test',
         ]);
 
-        Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Test Routing Warn Inquiry')
-            ->call('setProspect', true)
-            ->set('prospect_name', 'Prospek Test Routing')
-            ->set('tiers.0.qty', 1000)
-            ->set('parts.0.part_name', 'Body')
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $this->inquiry = IqpInquiry::where('product_draft_name', 'Test Routing Warn Inquiry')->latest('id_inquiry')->firstOrFail();
+        $this->inquiry = InquiryDriver::create('Test Routing Warn Inquiry');
 
         CostingEntryService::open($this->inquiry->id_inquiry);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();

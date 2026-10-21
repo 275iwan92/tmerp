@@ -5,7 +5,7 @@ namespace MockupParts\Components\Sales;
 use Devlib\Components\DevlibComponent;
 use MockupParts\Src;
 
-// Bingkai dokumen Inquiry Product (tmerp pages/inquiry/form.blade.php — flow SAMA, hanya ditulis ulang sebagai objek):
+// Bingkai dokumen Inquiry Product (flow sama dengan form v1 yang diarsipkan 2026-10-21, ditulis ulang sebagai objek):
 // bar judul (jenis + no + status + Back) -> catatan -> kartu toolbar (Simpan, Confirm, Batalkan, Tandai Kalah,
 // Imposition, Cetak Nota, status) berisi slot "header" -> slot isi (tier, part, tooling, biaya eksternal).
 // Aturan (JS InquiryForm): Simpan = cek wajib + beri nomor; Confirm = simpan + SUBMITTED + form terkunci;

@@ -69,7 +69,7 @@ final class MenuRoutes
             'F-COSTING' => route('v2.flow', 'COSTING'),
             'G-PRODUCT' => route('v2.guide', 'product-master'),
             // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
-            // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
+            // tombol "🖨 Cetak Nota" di dalam Inquiry Product (toolbar form Inquiry New v2).
             // Quotation SEKARANG per-customer (redesain 2026-08-20, bukan lagi
             // per-inquiry) -> punya list sungguhan, tak perlu numpang Inquiry Hub.
             'SALES_QUOT' => route('v2.screen', 'quotation'),

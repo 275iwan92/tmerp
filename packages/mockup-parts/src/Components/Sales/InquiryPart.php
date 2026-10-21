@@ -5,7 +5,8 @@ namespace MockupParts\Components\Sales;
 use Devlib\Components\DevlibComponent;
 use MockupParts\Src;
 
-// Satu Part di Inquiry Product (tmerp pages/inquiry/form.blade.php, blok "Part & Dieline" — flow & field SAMA).
+// Satu Part di Inquiry Product (blok "Part & Dieline"; flow & field sama dengan form v1 yang diarsipkan 2026-10-21).
+// Strip saran (ukuran, bahan, warna, finishing) diisi JS InquiryForm dari route v2.inquiry.suggest.
 // Gerbang: Tipe Produk (header) belum dipilih -> catatan; tipe multi-part & Peran Part belum dipilih -> catatan;
 // selain itu isi part tampil: Dieline v3 (dimensi + ukuran pasaran + flat + preview), Bahan, Cetak/Warna, Finishing.
 // Perilaku (gerbang, peran, warna turunan, hapus) dijalankan JS InquiryForm di induknya.
@@ -22,7 +23,7 @@ class InquiryPart extends DevlibComponent
         public array $materialChains = [],
     ) {
         $this->part += ['id' => null, 'artwork_url' => null, 'artwork_name' => null, 'artwork_inner_url' => null, 'artwork_inner_name' => null, 'part_name' => '', 'part_role' => '', 'part_type' => 'DC', 'qty_per_sku' => 1, 'pack_qty' => '', 'dims' => [], 'cfg_color' => '4/4',
-            'cfg_ink' => '', 'material_rows' => [], 'finishings' => [], 'sent' => false, 'saved' => false, 'suggestions' => []];
+            'cfg_ink' => '', 'material_rows' => [], 'finishings' => [], 'sent' => false, 'saved' => false];
     }
 
     // Semua kombinasi sisiA/sisiB 1/0 .. 6/6 (user 2026-09-29).
@@ -117,6 +118,7 @@ class InquiryPart extends DevlibComponent
                             <x-dl::field.upload :name="$n('artwork')" label="Artwork / Design (outer)" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork
                                 :value="$p['artwork_url'] ? ['url' => $p['artwork_url'], 'name' => $p['artwork_name']] : null"
                                 :source="\MockupParts\Src::of('tm2sdi.iqp_part.artwork_path', 'tm2sdi.iqp_part.artwork_original_filename', 'tm2sdi.iqp_part.artwork_colors')" />
+                            @if ($p['artwork_url'])<div><x-dl::button size="sm" variant="danger" icon="✕" label="Remove artwork" type="button" data-inq-art-remove /></div>@endif
                             {{-- Sisi dalam (cetak 2 sisi, mis. mailer box) — tampil di tab "Sisi Dalam" pratinjau dieline (tidak di 3D). --}}
                             <x-dl::field.upload :name="$n('artwork_inner')" label="Inner Side Artwork (optional)" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork-inner
                                 :value="$p['artwork_inner_url'] ? ['url' => $p['artwork_inner_url'], 'name' => $p['artwork_inner_name']] : null"
@@ -129,14 +131,13 @@ class InquiryPart extends DevlibComponent
                         <x-dl::button size="sm" variant="secondary" label="Choose Part Role" data-inq-role-open /></x-dl::alert>
 
                     <div class="mp-part__main" data-inq-body>
-                        @foreach ($p['suggestions'] as $sug)
-                            <x-dl::alert :tone="$sug['tone'] ?? 'info'">{{ $sug['text'] }}<x-dl::button size="sm" variant="secondary" :label="$sug['action'] ?? 'Apply'" data-inq-suggest="{{ $sug['apply'] ?? '' }}" /></x-dl::alert>
-                        @endforeach
+                        <x-dl::box data-inq-sug="size"></x-dl::box>
                         <x-dl::hint note data-inq-dieline-name hidden></x-dl::hint>
                         <x-mp::dieline-v3 :data-artwork="$p['artwork_url']" :data-artwork-inner="$p['artwork_inner_url']" :types="$types" :type="$typeCode ?: array_key_first($types)" :dims="$p['dims']" :name="$n('dieline')" :picker="false" height="400px"
                             :source="\MockupParts\Src::of('tm2mst.prod_type.dieline_spec', 'tm2sdi.iqp_part.dieline_spec', 'tm2sdi.iqp_part.flat_w', 'tm2sdi.iqp_part.flat_h', 'tm2sdi.iqp_part.flat_area')" />
 
                         <x-dl::divider label="Materials" />
+                        <x-dl::box data-inq-sug="material"></x-dl::box>
                         <x-dl::hint note>{{ \Devlib\Lang::text('Choose only the Type & Grammage — the brand & plano size are decided by Purchasing/ProDev.') }}</x-dl::hint>
                         <div data-inq-mats data-seq="{{ count($rows()) }}">
                             @foreach ($rows() as $m => $row)
@@ -147,6 +148,8 @@ class InquiryPart extends DevlibComponent
                         <div><x-dl::button size="sm" variant="secondary" label="+ Add Material" :title="\Devlib\Lang::text('E.g. 2-layer Paper or 2-layer Sheet')" data-inq-mat-add /></div>
 
                         <x-dl::divider label="Print / Colour" />
+                        <x-dl::box data-inq-sug="color"></x-dl::box>
+                        <x-dl::box data-inq-sug="finishing"></x-dl::box>
                         <x-dl::form.row cols="3">
                             <x-dl::field.select :name="$n('cfg_color')" label="Colour Notation" :options="$colors()" :value="$p['cfg_color']" :placeholder="null" hint="Format sideA/sideB (1/0 to 6/6)" :source="$src('cfg_color')" data-inq-color />
                             <x-dl::field.display label="Derived (automatic)" :value="$cb ? 'front: '.$cb['front'].' · back: '.$cb['back'].' · total: '.$cb['total'].' · side: '.$cb['side'] : ''"

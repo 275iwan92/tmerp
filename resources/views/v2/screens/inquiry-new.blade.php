@@ -1,9 +1,9 @@
 {{--
  REMARK
- Tujuan       : Form Inquiry Baru (NEW) untuk Sales: isi header, customer, part, bahan, proses, tier qty; Save menyimpan DRAFT, Confirm mengunci lalu lanjut ke ProDev. Flow dan field sama dengan v1 pages/inquiry/form (tidak diubah).
+ Tujuan       : Form Inquiry Baru (NEW) untuk Sales: isi header, customer, part, bahan, proses, tier qty; Save menyimpan DRAFT, Confirm mengunci lalu lanjut ke ProDev. Flow dan field sama dengan form v1 (diarsipkan 2026-10-21, T10 tahap 4); saran part (warna/ukuran dari artwork, bahan/finishing dari histori) lewat InquirySuggestionService; Inquiry prospek lama tetap bisa disimpan dengan Nama Prospek.
  Sumber hulu  : Sales::inquiryDoc, Sales::masters, Sales::materialChains, Sales::dielineTypes, Sales::productMarkets; tabel tm2sdi.iqp_inquiry (+ part, tier) dan tm2mst.prod_market.
  Input        : Query id (dokumen tersimpan), view (paksa baca-saja); readonly otomatis bila stat_confirm_sales.
- Output       : Objek x-mp::sales.inquiry-form (slot header, part, tier) + x-dl::action-bar; posting ke route v2.inquiry.save, v2.inquiry.end, v2.inquiry.artwork, v2.inquiry.customer; tombol Print lewat PrintDocs inquiry.
+ Output       : Objek x-mp::sales.inquiry-form (slot header, part, tier) + x-dl::action-bar; posting ke route v2.inquiry.save, v2.inquiry.end, v2.inquiry.artwork, v2.inquiry.customer, v2.inquiry.suggest, v2.inquiry.artwork.remove; tombol Print lewat PrintDocs inquiry.
  Dipakai oleh : Route v2.screen slug inquiry-new (App\Support\V2\Screens, menu sys_app_menu target v2:inquiry-new); grid InquiryNewGrid dan worklist Inquiry membuka layar ini
  Status       : Aktif Teks tampilan English (Jo 2026-10-18).
 --}}
@@ -36,7 +36,7 @@
     :links="[t('🔀 Imposition') => route('v2.screen', 'prodev'), t('🖨 Print Note') => ($doc ? \App\Support\V2\Print\PrintDocs::url('inquiry-note', $doc['id'], ['from' => 'inquiry-new']) : route('v2.screen', 'nota-inquiry'))]"
     :prodev-url="route('v2.screen', 'prodev').'?part={part}&inquiry={inquiry}'"
     :urls="['save' => route('v2.inquiry.save'), 'end' => route('v2.inquiry.end', '__ID__'), 'artwork' => route('v2.inquiry.artwork', '__ID__'),
-        'customer' => route('v2.inquiry.customer')]">
+        'customer' => route('v2.inquiry.customer'), 'suggest' => route('v2.inquiry.suggest'), 'artworkRemove' => route('v2.inquiry.artwork.remove', '__ID__')]">
 
     <x-slot:header>
         <x-dl::divider label="Inquiry Header" />
@@ -48,8 +48,8 @@
             <x-dl::field.select name="source" label="Source" required :options="['EMAIL', 'WA', 'PHONE', 'VISIT', 'MARKETPLACE']" :value="$doc['source'] ?? 'EMAIL'" :source="$i('source')" />
         </x-dl::form.row>
         <x-dl::form.row cols="3">
-            <x-dl::field.lookup name="customer_id" label="Customer" lookup="customer" create required placeholder="Type to search, or scroll to pick…" :value="$doc['customer_id'] ?? null"
-                :source="Src::of('tm2sdi.iqp_inquiry.customer_id', 'tm2mst.cust_customer.customer_name')" />
+            @if ($doc['is_prospect'] ?? false)<x-dl::field.text name="prospect_name" label="Prospect Name (legacy data)" required :maxlength="150" placeholder="Prospect name…" :value="$doc['prospect_name'] ?? ''" :source="$i('prospect_name')" />@else<x-dl::field.lookup name="customer_id" label="Customer" lookup="customer" create required placeholder="Type to search, or scroll to pick…" :value="$doc['customer_id'] ?? null"
+                :source="Src::of('tm2sdi.iqp_inquiry.customer_id', 'tm2mst.cust_customer.customer_name')" />@endif
             <x-dl::field.text name="product_draft_name" label="Product Name (draft)" multiline required :maxlength="150" placeholder="e.g. Box Kosmetik Serum 30ml"
                 :hint="t('Temporary name during the quotation. Special characters (/@#%'.chr(34).chr(39).';) are not allowed.')" :value="$doc['product_draft_name'] ?? ''" :source="$i('product_draft_name')" />
         </x-dl::form.row>

@@ -7,7 +7,7 @@ use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
+use Tests\Support\InquiryDriver;
 use Tests\Support\ProCostDriver;
 use Tests\TestCase;
 
@@ -47,16 +47,7 @@ class CostingAdvisorScreenTest extends TestCase
     {
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
 
-        Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Kalender Test Advisor')
-            ->call('setProspect', true)
-            ->set('prospect_name', 'Prospek Test Advisor')
-            ->set('tiers.0.qty', 1000)
-            ->set('parts.0.part_name', 'Body')
-            ->call('save')
-            ->assertHasNoErrors();
-        $this->inquiry = IqpInquiry::where('product_draft_name', 'Kalender Test Advisor')->latest('id_inquiry')->firstOrFail();
+        $this->inquiry = InquiryDriver::create('Kalender Test Advisor');
 
         $component = ProCostDriver::open($this->inquiry->id_inquiry);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();

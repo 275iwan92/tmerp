@@ -12,10 +12,10 @@
 Not in `routes/console.php`, Jobs, Observers. Everything is triggered by the display in the browser (JS) or by server code (PHP). FACT, from grep:
 | Trigger | Method | File:line |
 |---|---|---|
-| Inquiry v2 form: dimension/type changed (component `x-mp::dieline-v3` in `x-mp::sales.inquiry-part`) | `flat`, `render`, `STROKE` | `packages/mockup-parts/resources/assets/js/components/dieline-x.js:116-119` (`redraw`); used by `Sales/InquiryPart.php:136`, `Sales/PartVisual.php:55` |
+| Inquiry v2 form: dimension/type changed (component `x-mp::dieline-v3` in `x-mp::sales.inquiry-part`) | `flat`, `render`, `STROKE` | `packages/mockup-parts/resources/assets/js/components/dieline-x.js:117-120` (`redraw`); used by `Sales/InquiryPart.php:136`, `Sales/PartVisual.php:55` |
 | ProDev: Part & Dieline panel | same | `packages/mockup-parts/src/Components/Prodev/PartDieline.php:75`; saved via `PartDieline::save` (`app/Services/ProDev/PartDieline.php`), route `routes/v2.php` (`prodev.dieline`) |
 | Master Card Collection | same | `resources/views/v2/screens/master-card-collection.blade.php:144` |
-| Inquiry v1 Form/Recalc/Nota/Hub, Quotation print | `svg`, `render` | `inquiry/form.blade.php:272`, `tmerp_unused/inquiry_recalc_v1_2026-10-20.blade.php:302`, `tmerp_unused/inquiry_nota_v1_2026-10-20.blade.php:472`, `tmerp_unused/inquiry_hub_v1_2026-10-20.blade.php:33`, `tmerp_unused/quotation_print_v1_2026-10-20.blade.php:80`, `components/inquiry/readonly-summary.blade.php:224` |
+| Inquiry v1 Form/Recalc/Nota/Hub, Quotation print | `svg`, `render` | `tmerp_unused/inquiry_form_v1_2026-10-21.blade.php:272`, `tmerp_unused/inquiry_recalc_v1_2026-10-20.blade.php:302`, `tmerp_unused/inquiry_nota_v1_2026-10-20.blade.php:472`, `tmerp_unused/inquiry_hub_v1_2026-10-20.blade.php:33`, `tmerp_unused/quotation_print_v1_2026-10-20.blade.php:80`, `tmerp_unused/component_inquiry_readonly_summary_v1_2026-10-21.blade.php:224` |
 | ProDev (nesting draws the blank) | `svg` | `production/prodev.blade.php:1593`, `:3695` |
 | 3D box | `STROKE` | `resources/js/tm-box3d.js:17` |
 | Bulk Master Card import (server) | `TmDieline::flat`, `::svg` | `app/Services/MasterCard/MasterCardShape.php:98`, `:133`, `:142` (called by `MasterCardService`, `MasterCardDummyEngine`) |

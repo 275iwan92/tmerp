@@ -1,4 +1,4 @@
-/* MockupParts · Sales · InquiryForm — aturan layar Inquiry Product (sama dengan tmerp pages/inquiry/form.blade.php).
+/* MockupParts · Sales · InquiryForm — aturan layar Inquiry Product (sama dengan form v1 yang diarsipkan 2026-10-21; saran part lewat route v2.inquiry.suggest).
    Simpan/Confirm/Batalkan/Tandai Kalah/Kirim ke ProDev/Customer baru/Artwork -> route v2.inquiry.* -> database situs
    (ddt* di mockup.test, tm2* live) lewat App\Services\Sales\InquiryWriter. Setelah simpan halaman dimuat ulang dari database. */
 (function (Devlib) {
@@ -28,7 +28,7 @@
       this.template();
       this.custMaterial();
       this.removable();
-      if (this.cfg.readonly || this.doc.stat_confirm_sales) this.lock();
+      if (this.cfg.readonly || this.doc.stat_confirm_sales) this.lock(); else this.parts().forEach(p => this.suggest(p));
       // Artwork part tersimpan pada dokumen terkunci langsung dikirim (tidak ada tombol Simpan lagi).
       // Artwork dipilih/ditarik/dihapus -> pratinjau transparan di dieline & 3D; dokumen terkunci -> langsung tersimpan.
       this.el.addEventListener('dl:upload', e => {
@@ -37,6 +37,7 @@
         const f = e.detail.files[0];
         this.artPreview(p, f, inner);
         if (f && this.locked()) this.uploadArtwork(p, f, inner);
+        if (!inner) this.suggest(p, f);
       });
       try { const m = sessionStorage.getItem('inq-flash'); if (m) { sessionStorage.removeItem('inq-flash'); this.flash(m); } } catch (err) { /* tanpa storage: pesan dilewati */ }
     }
@@ -126,6 +127,8 @@
       if (x.closest('[data-inq-mat-add]')) return this.addMaterial(part);
       if (x.closest('[data-inq-mat-del]')) return x.closest('[data-inq-mat]').remove();
       if (x.closest('[data-inq-template]')) return this.applyTemplate();
+      if (x.closest('[data-inq-art-remove]')) return this.removeArtwork(part);
+      const sug = x.closest('[data-inq-suggest]'); if (sug) return this.applySuggestion(part, part.dlSuggest[sug.dataset.inqSuggest]);
       if (x.closest('[data-inq-remove]')) return confirmBox({message: Devlib.h.t('Delete this part?'), tone: 'danger'}).then(ok => { if (ok) { part.remove(); this.removable(); this.template(); } });
       if (x.closest('[data-inq-role-open]')) { this.rolePart = part; return openLayer('inq-role'); }
       const pick = x.closest('[data-inq-role-pick]');
@@ -239,8 +242,48 @@
         const d = $(p, '[data-dl-dieline-x]'); if (code && d && d.dlDielineX) d.dlDielineX.setType(code);
         if (code && !this.needsRole(code)) this.applyRole(p, 'monoform'); else if (!p.dataset.saved) { $(p, '[data-inq-role]').value = ''; p.dataset.role = ''; }
         this.gate(p);
+        this.suggest(p);
       });
       this.template();
+    }
+
+    // Saran engine per part (artwork -> warna/ukuran, histori tipe -> bahan/finishing); hanya mengisi kotak, simpan tetap lewat Save.
+    async suggest(p, file) {
+      if (!this.cfg.urls.suggest || this.locked()) return;
+      const seq = p.dlSugSeq = (p.dlSugSeq || 0) + 1, id = $(p, '[data-inq-part-id]').value;
+      const art = file || $(p, '[data-inq-artwork] input[type=file]')?.files[0] || null;
+      const fd = new FormData(); fd.append('type_code', this.type || '');
+      if (art) fd.append('artwork', art); else if (id) fd.append('part_id', id);
+      let list = [];
+      try {
+        const res = await fetch(this.cfg.urls.suggest, {method: 'POST', body: fd, headers: {'X-CSRF-TOKEN': this.cfg.urls.csrf, Accept: 'application/json'}});
+        list = res.ok ? (await res.json()).suggestions || [] : [];
+      } catch (err) { /* tanpa saran: isian manual tetap jalan */ }
+      if (seq !== p.dlSugSeq) return;
+      p.dlSuggest = Object.fromEntries(list.map(s => [s.kind, s]));
+      $$(p, '[data-inq-sug]').forEach(box => {
+        const s = p.dlSuggest[box.dataset.inqSug], paper = $(p, '[data-inq-mat="0"] [name$="[jenis]"]');
+        box.innerHTML = '';
+        if (!s || (s.kind === 'material' && paper && paper.value)) return;
+        box.innerHTML = `<div class="dl-alert dl-alert--${esc(s.tone)} is-show">${esc(s.text)} <button type="button" class="dl-btn dl-btn--secondary dl-btn--sm" data-inq-suggest="${esc(s.kind)}">${esc(s.action)}</button></div>`;
+      });
+    }
+
+    applySuggestion(p, s) {
+      const a = s?.apply; if (!a) return;
+      if (s.kind === 'color') { const c = $(p, '[data-inq-color] [data-dl-value]'); if (c) { setField(p, c.name, a.code); c.dispatchEvent(new Event('change', {bubbles: true})); } }
+      if (s.kind === 'size') $(p, '[data-dl-dieline-x]')?.dlDielineX?.setFlat(a.w, a.h);
+      if (s.kind === 'material') {
+        const row = $(p, `[data-inq-mat="${a.chain}"]`); if (!row || !a.jenis) return;
+        setField(row, this.matField(row, 'jenis').name, a.jenis);
+        this.jenis(row, String(a.jenis));
+        if (a.gramatur) setField(row, this.matField(row, 'gramatur').name, a.gramatur);
+      }
+      if (s.kind === 'finishing') {
+        const l = $(p, '[data-dl-lines]')?.dlLines; if (!l || l.rows.some(r => +r.finishing_type_id === a.finishing_type_id)) return;
+        l.set([...l.rows, {id: null, finishing_type_id: a.finishing_type_id, attribute: ''}]);
+      }
+      $$(p, `[data-inq-sug] [data-inq-suggest="${s.kind}"]`).forEach(b => b.closest('.dl-alert').remove());
     }
 
     gate(p) {
@@ -289,7 +332,7 @@
       Devlib.mount(p);
       const d = $(p, '[data-dl-dieline-x]'); if (this.type && d && d.dlDielineX) d.dlDielineX.setType(this.type);
       if (this.type && !this.needsRole(this.type)) this.applyRole(p, 'monoform'); else this.gate(p);
-      this.title(p); this.removable(); this.showDielineName(this.type);
+      this.title(p); this.removable(); this.showDielineName(this.type); this.suggest(p);
       return p;
     }
 
@@ -316,7 +359,8 @@
       const name = this.value('product_draft_name'), date = this.value('inquiry_date'), dl = this.value('deadline_quotation');
       bad += this.err('inquiry_date', date ? '' : Devlib.h.t('Date is required.'));
       bad += this.err('source', this.value('source') ? '' : Devlib.h.t('Source must be selected.'));
-      bad += this.err('customer_id', this.value('customer_id') ? '' : Devlib.h.t('Customer must be selected.'));
+      bad += this.doc.is_prospect ? this.err('prospect_name', this.value('prospect_name') ? '' : Devlib.h.t('Prospect Name is required.'))
+        : this.err('customer_id', this.value('customer_id') ? '' : Devlib.h.t('Customer must be selected.'));
       bad += this.err('product_draft_name', !name ? Devlib.h.t('Product Name is required.') : /[/@#%"']/.test(name) ? Devlib.h.t('Special characters (/@#%"\') are not allowed.') : '');
       bad += this.err('deadline_quotation', dl && date && dl < date ? Devlib.h.t('Customer Need Date must not be before Date.') : '');
       // Kategori Produk wajib sampai Ukuran (dieline muncul); Custom = nama produk + Tipe Produk wajib.
@@ -360,6 +404,15 @@
       fd.append('part_id', $(p, '[data-inq-part-id]').value);
       fd.append('artwork', file);
       try { const j = await this.call(this.url('artwork'), fd); toast(j.message, 'success'); this.flash(j.message); } catch (err) { /* pesan sudah tampil */ }
+    }
+
+    // Artwork luar tersimpan dihapus langsung (hanya selama DRAFT; tombolnya mati saat form terkunci).
+    removeArtwork(p) {
+      confirmBox({message: Devlib.h.t('Remove the saved artwork of this part?'), tone: 'danger'}).then(ok => {
+        if (!ok) return;
+        const fd = new FormData(); fd.append('part_id', $(p, '[data-inq-part-id]').value);
+        this.call(this.url('artworkRemove'), fd).then(j => this.reload(j)).catch(() => {});
+      });
     }
 
     // Form terkunci (lihat-saja): semua isian & tombol mati kecuali yang bertanda data-inq-keep.

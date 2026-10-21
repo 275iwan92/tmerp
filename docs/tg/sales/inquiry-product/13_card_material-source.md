@@ -12,7 +12,7 @@
 |---|---|---|
 | Header columns | `material_source` varchar(10) default `OWN`; `job_nature` varchar(10) default `PRODUCT`; `cust_material_spec` text NULL; `cust_material_eta` date NULL; `pph_applicable` tinyint default 0. | FACT, `show columns` |
 | Per-material column | `iqp_part_material.material_source` varchar(10) default `OWN`. | FACT, `show columns` |
-| Screen | One checkbox "Material Source: Customer supplies its own raw material". When ticked, "Customer material description" (required) and "Material ETA" appear. | FACT, `inquiry-new.blade.php:85-95`; JS `inquiry-form.js:305,330` |
+| Screen | One checkbox "Material Source: Customer supplies its own raw material". When ticked, "Customer material description" (required) and "Material ETA" appear. | FACT, `inquiry-new.blade.php:85-95`; JS `inquiry-form.js:348,330` |
 | Header save | `CUSTOMER` -> `job_nature='JASA'`, `cust_material_spec/_eta` saved; otherwise `job_nature='PRODUCT'` and both NULL. | FACT, `InquiryWriter.php:221-238` |
 | PPh | New document: `pph_applicable = (bahan dari customer)`; old documents keep their value. | FACT, `InquiryPayload.php:48` |
 | Per-material save | The header value is copied to EVERY material row (`'material_source' => $materialSource`) with the comment "granularitas per-layer belum diputuskan". | FACT, `InquiryWriter.php:333-334` |

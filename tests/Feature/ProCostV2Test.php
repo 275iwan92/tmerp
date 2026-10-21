@@ -7,7 +7,7 @@ use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
 use App\Services\Costing\CostingEntryService as Entry;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
+use Tests\Support\InquiryDriver;
 use Tests\TestCase;
 
 // Layar ProCost v2 Mode Integrasi (procost): Save mengirim hanya field yang berubah ke CostingEntryService, tombol alur
@@ -38,17 +38,7 @@ class ProCostV2Test extends TestCase
     private function inquiry(): IqpInquiry
     {
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
-        Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Box Test ProCost V2')
-            ->call('setProspect', true)
-            ->set('prospect_name', 'Prospek Test ProCost V2')
-            ->set('tiers.0.qty', 1000)
-            ->set('parts.0.part_name', 'Body')
-            ->call('save')
-            ->assertHasNoErrors();
-
-        return $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test ProCost V2')->latest('id_inquiry')->firstOrFail();
+        return $this->inquiry = InquiryDriver::create('Box Test ProCost V2');
     }
 
     public function test_view_only_never_creates_a_costing_and_open_creates_one(): void

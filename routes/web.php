@@ -133,7 +133,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_planning.php';
         require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
-        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php'; require __DIR__.'/v2_production.php'; require __DIR__.'/v2_hrm.php'; require __DIR__.'/v2_setup.php'; require __DIR__.'/v2_procost.php';
+        require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php'; require __DIR__.'/v2_production.php'; require __DIR__.'/v2_hrm.php'; require __DIR__.'/v2_setup.php'; require __DIR__.'/v2_procost.php'; require __DIR__.'/v2_inquiry.php';
         require __DIR__.'/v2_warehouse.php';
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
@@ -143,7 +143,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::middleware('module:SALES')->group(function () {
             Route::redirect('/inquiry', '/v2/s/inquiry')->name('inquiry.hub');
-            Route::livewire('/inquiry/new', 'pages::inquiry.form')->name('inquiry.form');
+            Route::get('/inquiry/new', fn (Illuminate\Http\Request $r) => redirect($r->filled('id') ? '/v2/s/inquiry-new?id='.(int) $r->query('id').($r->boolean('view') ? '&view=1' : '') : ($r->boolean('view') ? '/v2/s/inquiry' : '/v2/s/inquiry-new')))->name('inquiry.form');
             Route::get('/inquiry/recalc', fn (Illuminate\Http\Request $r) => redirect('/v2/s/inquiry-recalc'.($r->filled('id') ? '?id='.(int) $r->query('id') : '')))->name('inquiry.recalc');
             Route::get('/inquiry/revise', fn (Illuminate\Http\Request $r) => redirect('/v2/s/inquiry-revise'.($r->filled('id') ? '?id='.(int) $r->query('id') : '')))->name('inquiry.revise');
             Route::redirect('/inquiry/imposition', '/v2/s/prodev-new')->name('inquiry.imposition.list');

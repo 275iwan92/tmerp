@@ -424,7 +424,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::post('/save', function (Request $r) use ($writer) {
             abort_unless(Auth::user()->canAccessModule('SALES'), 403);
             $old = $r->filled('id') ? IqpInquiry::findOrFail((int) $r->input('id')) : null;
-            $r->validate(InquiryPayload::rules(), [], ['customer_id' => t('Customer'), 'type_code' => t('Product Type'), 'product_draft_name' => t('Product name')]);
+            $r->validate(InquiryPayload::rules($old), [], ['customer_id' => t('Customer'), 'prospect_name' => t('Prospect Name'), 'type_code' => t('Product Type'), 'product_draft_name' => t('Product name')]);
             $img = ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)];
             $r->validate(['parts.*.artwork' => $img, 'parts.*.artwork_inner' => $img]);
             $inq = $writer()->save(InquiryPayload::from($r, $old), $old, InquiryPayload::artworks($r));

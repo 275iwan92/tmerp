@@ -6,7 +6,7 @@ use App\Models\Master\MatCategory;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
+use Tests\Support\InquiryDriver;
 use Tests\TestCase;
 
 // Bahan Inquiry = slot #1 Paper / #2 Sheet-SF, pilih Jenis -> Gramatur dari
@@ -35,7 +35,7 @@ class InquiryMaterialSmokeTest extends TestCase
         $this->actingAs($admin);
 
         // GET smoke: full initial render must not throw.
-        $this->get('/inquiry/new?mode=NEW')->assertOk();
+        $this->get('/v2/s/inquiry-new')->assertOk();
 
         $paperRoot = MatCategory::roots()->where('category_name', 'Paper')->value('id_category');
         $jenis = MatCategory::where('parent_id', $paperRoot)->where('level', 2)->where('activate', true)
@@ -44,25 +44,11 @@ class InquiryMaterialSmokeTest extends TestCase
         $gramatur = MatCategory::where('parent_id', $jenis->id_category)->where('level', 3)->where('activate', true)
             ->orderBy('category_name')->firstOrFail();
 
-        Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
-            ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Box Test Material')
-            ->set('is_prospect', true)
-            ->call('setProspect', true)
-            ->set('prospect_name', 'Prospek Test')
-            ->set('tiers.0.qty', 1000)
-            ->set('parts.0.part_name', 'Body')
-            ->set('parts.0.cfg_color', '4/1')
-            ->set('parts.0.cfg_ink', 'Pantone 485 C')
-            ->call('setMaterialJenis', 0, 0, (string) $jenis->id_category)
-            ->call('setMaterialGramatur', 0, 0, (string) $gramatur->id_category)
-            ->assertSet('parts.0.materials.0.category_id', $gramatur->id_category)
-            ->assertSet('parts.0.materials.0.rawmat_id', null)
-            ->assertCount('parts.0.materials', 2)
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Material')->latest('id_inquiry')->firstOrFail();
+        // Slot #1 Paper diisi Jenis + Gramatur, slot #2 Sheet/SF dibiarkan kosong.
+        $this->inquiry = InquiryDriver::create('Box Test Material', ['parts' => [[
+            'part_name' => 'Body', 'part_type' => 'DC', 'qty_per_sku' => 1, 'cfg_color' => '4/1', 'cfg_ink' => 'Pantone 485 C',
+            'materials' => [['chain' => 'P', 'jenis' => $jenis->id_category, 'gramatur' => $gramatur->id_category], ['chain' => 'S', 'jenis' => '', 'gramatur' => '']],
+        ]]]);
 
         $part = $this->inquiry->parts()->with('materials')->firstOrFail();
 

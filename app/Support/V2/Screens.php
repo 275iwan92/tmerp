@@ -32,7 +32,7 @@ final class Screens
             ['code' => 'SALES', 'short' => 'SLS', 'label' => 'Sales', 'icon' => 'fa-solid fa-cart-shopping', 'groups' => [
                 ['label' => 'Inquiry & Quotation', 'items' => [
                     $it('inquiry', ['Inquiry Product (worklist)', 'fa-solid fa-inbox', 'v2: worklist Inquiry (hub v1 diarsipkan 2026-10-20)', 'inquiry_main_hub.html']),
-                    $it('inquiry-new', ['New Inquiry', 'fa-solid fa-file-circle-plus', 'inquiry/form.blade.php', 'inquiry_new.html']),
+                    $it('inquiry-new', ['New Inquiry', 'fa-solid fa-file-circle-plus', 'v2: form Inquiry New (v1 diarsipkan 2026-10-21)', 'inquiry_new.html']),
                     $it('inquiry-revise', ['Inquiry Revise', 'fa-solid fa-file-pen', 'v2: Inquiry Revise (v1 diarsipkan 2026-10-20)', 'inquiry_revise_v2.html']),
                     $it('inquiry-recalc', ['Inquiry Recalc', 'fa-solid fa-calculator', 'v2: Inquiry Recalc (v1 diarsipkan 2026-10-20)', 'inquiry_recalc_v2.html']),
                     $it('prodev'),
