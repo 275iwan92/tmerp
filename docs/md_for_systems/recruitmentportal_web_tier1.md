@@ -174,18 +174,16 @@ app/Mail/Portal/CandidateEmailVerification.php
 app/Exceptions/Portal/CandidateAlreadyExistsException.php
 app/Console/Commands/SyncRecruitmentPortal.php  -- php artisan recruitment:sync-portal
 
-resources/views/layouts/portal.blade.php        -- layout publik (nav+footer sendiri)
-resources/views/pages/careers/landing.blade.php
-resources/views/pages/careers/vacancy-detail.blade.php
-resources/views/pages/careers/register.blade.php
-resources/views/pages/careers/login.blade.php
-resources/views/pages/careers/apply.blade.php
-resources/views/pages/careers/dashboard.blade.php
-resources/views/pages/careers/_apply-form-steps.blade.php  -- partial step 1-11
+resources/views/careers/*.blade.php            -- layout, landing, vacancy, register, login, dashboard, apply (v2, T10 tahap 6b; v1 Livewire di tmerp_unused/arsip_v1_2026-10-21.zip)
+resources/views/careers/layout.blade.php        -- x-mp::careers.shell (nav + footer)
+app/Http/Controllers/Portal/CareersController.php
+app/Services/Portal/CareersPortalService.php        -- lowongan, sesi, daftar, riwayat
+app/Services/Portal/CandidateApplicationService.php -- form lamar: nilai awal, validasi, payload
+packages/mockup-parts/src/Components/Careers/*  -- Shell, Page, Hero, VacancyList, VacancyCard, VacancyDetail
 resources/views/emails/portal/verify-email.blade.php
 
 routes/web.php          -- grup prefix 'hrm/recruitment/portal', name 'careers.*'
-tests/Feature/CareersPortalTest.php  -- 8 test, end-to-end termasuk sync+status-push
+tests/Feature/CareersPortalV2Test.php  -- 8 test, end-to-end termasuk sync+status-push
 ```
 
 Firestore collections (emulator lokal, `firebase/firebase.json`):

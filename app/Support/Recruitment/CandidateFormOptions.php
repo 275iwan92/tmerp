@@ -2,12 +2,15 @@
 
 namespace App\Support\Recruitment;
 
-// Sumber TUNGGAL definisi pilihan/label field "Data Calon Karyawan" -- dipakai
-// BERSAMA oleh form isian portal (careers/apply.blade.php lewat partial
-// _apply-form-steps.blade.php) dan layar review HR
-// (recruitment/candidate-review/detail.blade.php) lewat partial yang SAMA,
-// supaya keduanya selalu sinkron dari 1 tempat (keputusan user 2026-09-05:
-// ubah salah satu harus otomatis berlaku ke yang lain).
+/*
+ * REMARK
+ * Tujuan       : Sumber tunggal pilihan dan label field "Data Calon Karyawan" (jenis kelamin, kendaraan, status nikah, hubungan keluarga, level kemampuan, ya/tidak, daftar kesediaan), supaya form lamar dan layar review HR selalu sinkron.
+ * Sumber hulu  : Formulir LJM/HRD/P01/F02 (keputusan Jo 2026-09-05: ubah satu tempat berlaku ke keduanya).
+ * Input        : -
+ * Output       : Konstanta array kunci => label.
+ * Dipakai oleh : resources/views/careers/apply.blade.php, App\Services\Portal\CandidateApplicationService, resources/views/v2/screens/hrm-rcr-review-form.blade.php.
+ * Status       : Aktif.
+ */
 class CandidateFormOptions
 {
     public const GENDER = ['LAKI_LAKI' => 'Laki-laki', 'PEREMPUAN' => 'Perempuan'];

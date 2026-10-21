@@ -11,7 +11,7 @@
  */
 
 use App\Models\Sys\SysDocShare;
-use App\Services\Portal\CandidateAuthService;
+use App\Http\Controllers\Portal\CareersController;
 use App\Support\Branding\Brand;
 use App\Support\Branding\PwaIcon;
 use Illuminate\Support\Facades\Auth;
@@ -64,32 +64,32 @@ Route::get('/d/{token}', function (string $token) {
 // 2026-08-30) meski sekarang PUBLIK (bukan lagi di dalam grup 'auth'+'module:HRM'
 // -- baris registrasi lama di grup itu sudah DIHAPUS, lihat git blame). Guard
 // sesi sendiri 'portal.candidate' (BUKAN middleware 'auth' ERP internal).
-Route::prefix('hrm/recruitment/portal')->name('careers.')->group(function () {
-    Route::livewire('/', 'pages::careers.landing')->name('landing');
-    Route::livewire('/lowongan/{vacancy_code}', 'pages::careers.vacancy-detail')->name('vacancy-detail');
-    Route::livewire('/daftar', 'pages::careers.register')->name('register');
-    Route::livewire('/masuk', 'pages::careers.login')->name('login');
-    Route::get('/keluar', function () {
-        session()->forget('portal_candidate_uid');
-        session()->regenerate();
-
-        return redirect()->route('careers.landing');
-    })->name('logout');
-    Route::get('/verifikasi/{uid}', function (string $uid) {
-        if (! request()->hasValidSignature()) {
-            abort(403, 'Tautan verifikasi tidak valid atau sudah kedaluwarsa.');
-        }
-
-        app(CandidateAuthService::class)->markEmailVerified($uid);
-
-        return redirect()->route('careers.login')->with('verified', true);
-    })->name('verify-email')->middleware('signed');
+Route::prefix('hrm/recruitment/portal')->name('careers.')->controller(CareersController::class)->group(function () {
+    Route::get('/', 'landing')->name('landing');
+    Route::get('/lowongan/{code}', 'vacancy')->name('vacancy-detail');
+    Route::get('/daftar', 'registerForm')->name('register');
+    Route::post('/daftar', 'register')->name('register.store');
+    Route::get('/masuk', 'loginForm')->name('login');
+    Route::post('/masuk', 'login')->name('login.attempt');
+    Route::get('/keluar', 'logout')->name('logout');
+    Route::get('/verifikasi/{uid}', 'verifyEmail')->name('verify-email')->middleware('signed');
 
     Route::middleware('portal.candidate')->group(function () {
-        Route::livewire('/lamar/{vacancy_code}', 'pages::careers.apply')->name('apply');
-        Route::livewire('/lamaran-saya', 'pages::careers.dashboard')->name('dashboard');
+        Route::get('/lamar/{code}', 'apply')->name('apply');
+        Route::post('/lamar/{code}', 'submit')->name('apply.submit');
+        Route::get('/lamaran-saya', 'dashboard')->name('dashboard');
+        Route::post('/lamaran-saya/kirim-ulang', 'resendVerification')->name('resend');
     });
 });
+// Alur kandidat: daftar (surel verifikasi bertanda tangan 60 menit) -> masuk -> lamar (wajib surel terverifikasi) -> Lamaran Saya.
+// Akun kandidat di Firestore 'candidates' (sesi portal_candidate_uid, bukan sec_user); lamaran di Firestore 'submissions'.
+// Status lamaran = app_status yang ditulis balik AppApplicationObserver; belum disinkronkan = MENUNGGU SINKRONISASI.
+// Lamar = satu POST multipart: seksi berulang adalah baris x-dl::lines, CV dan Ijazah adalah x-dl::field.upload.
+// Semua isian wajib; galat dikumpulkan sekali supaya kandidat melihat seluruh kekurangan dalam satu kotak.
+// Aturan ada di App\Services\Portal\CareersPortalService dan CandidateApplicationService, bukan di controller.
+// Alamat /hrm/recruitment/portal dipertahankan sama dengan portal lama (dipakai menu dan tautan surel).
+// Layar HR yang membaca lamaran ini: hrm-rcr-review-form (v2) lewat PortalSyncService.
+// Halaman v2 (T10 tahap 6b, 2026-10-21): CareersController + objek x-mp::careers.*; Livewire v1 ada di tmerp_unused/arsip_v1_2026-10-21.zip.
 
 Route::middleware(['guest', 'locale'])->group(function () {
     Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login'); Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'attempt'])->name('login.attempt');
