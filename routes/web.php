@@ -359,3 +359,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
         });
     });
 });
+
+// T10 tahap 6e: panel Filament /admin dibuang; alamat lama ke Menu v2 (Master Employee / Master Posisi / Profil ada di v2).
+Route::redirect('/admin/{any?}', '/v2')->where('any', '.*');

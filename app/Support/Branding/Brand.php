@@ -2,13 +2,13 @@
 
 namespace App\Support\Branding;
 
+use App\Models\Master\OrgCompany;
 use App\Models\Sys\SysConstant;
 
 // Titik akses tunggal ke identitas aplikasi (docs/configurationstandard.md) --
 // dibaca dari tm2sys.sys_constant (APP_NAME/APP_TAGLINE/APP_LOGO_PATH/
-// APP_FONT_FAMILY), diedit lewat layar Configuration. Dipakai shell lama
-// (topbar, halaman auth) DAN AdminPanelProvider (Filament) -- sumber sama,
-// SATU tempat ganti nama/logo/font berlaku ke semua permukaan.
+// APP_FONT_FAMILY), diedit lewat layar Configuration. Dipakai shell v2
+// (topbar, halaman auth) -- SATU tempat ganti nama/logo/font berlaku ke semua permukaan.
 class Brand
 {
     public static function name(): string
@@ -30,7 +30,7 @@ class Brand
 
     public static function companyNpwp(): ?string
     {
-        return \App\Models\Master\OrgCompany::where('company_code', 'TM')->value('npwp_number');
+        return OrgCompany::where('company_code', 'TM')->value('npwp_number');
     }
 
     public static function tagline(): string

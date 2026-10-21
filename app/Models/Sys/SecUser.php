@@ -15,8 +15,6 @@ namespace App\Models\Sys;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\OrgPosition;
 use App\Services\Payroll\PayrollAccess;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,7 +27,7 @@ use Illuminate\Support\Facades\Crypt;
 // Model autentikasi UTAMA aplikasi (bukan tabel `users` bawaan Laravel — sudah
 // dibuang, lihat CLEANUP_tm2sys.sql). config/auth.php provider 'users' diarahkan
 // ke sini. username = kolom `login`, password = kolom `pswd` (bcrypt).
-class SecUser extends Authenticatable implements CanResetPasswordContract, FilamentUser
+class SecUser extends Authenticatable implements CanResetPasswordContract
 {
     use Notifiable;
 
@@ -225,16 +223,6 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
     public function canSetup(): bool
     {
         return (bool) $this->is_admin || $this->canAccessModule('SETUP');
-    }
-
-    // Interface FilamentUser (2026-08-30, migrasi Filament v5 bertahap) —
-    // gate MASUK ke panel /admin, bukan gate per-modul (itu tetap ditangani
-    // shouldRegisterNavigation()/getEloquentQuery() per Resource, cermin
-    // canAccessModule()/visibleAppMenuCodes() yang sudah ada). Akun nonaktif
-    // (activate=0) diblokir total, konsisten dgn shell lama.
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return (bool) $this->activate;
     }
 
     // Role gate PPIC/Production Scheduling (production_scheduling_tier1.md §9.7,

@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 /*
  * REMARK
- * Tujuan       : Menjaga alamat lama menuju Menu v2: /menu ke /v2, rute Setup / Security lama ke layar v2, dan pohon menu Setup (sepuluh grup tetap) yang disusun AppMenu dari sys_app_menu.
+ * Tujuan       : Menjaga alamat lama menuju Menu v2: /menu dan /admin/* (Filament dibuang) ke /v2, rute Setup / Security lama ke layar v2, dan pohon menu Setup (sepuluh grup tetap) yang disusun AppMenu dari sys_app_menu.
  * Sumber hulu  : routes/web.php (/menu, redirect /security, /setup/*), App\Support\V2\AppMenu::modules, tm2sys.sys_app_menu (ddtsys di mockup).
  * Input        : User johiwan (administrator), hanya dibaca.
  * Output       : Lulus bila pengalihan dan susunan grup Setup sesuai.
@@ -31,6 +31,14 @@ class MenuRedirectTest extends TestCase
         $this->admin();
 
         $this->get('/menu')->assertRedirect('/v2');
+    }
+
+    // Panel Filament /admin dibuang (T10 tahap 6e): semua alamat lamanya ke Menu v2.
+    public function test_old_filament_admin_urls_go_to_v2(): void
+    {
+        foreach (['/admin', '/admin/hrm/emp-employees', '/admin/hrm/org-positions/3/edit', '/admin/profile', '/admin/login'] as $url) {
+            $this->get($url)->assertRedirect('/v2');
+        }
     }
 
     public function test_old_security_and_setup_urls_open_v2_screens(): void
