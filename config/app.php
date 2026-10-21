@@ -15,9 +15,6 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
-    // Antarmuka situs: v1 (menu lama, top bar) | v2 (Menu v2 / layer-shell, objek DevLib). mockup.test = v2.
-    'ui' => env('APP_UI', 'v1'),
-
     /*
     |--------------------------------------------------------------------------
     | Application Environment

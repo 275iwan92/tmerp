@@ -2,11 +2,18 @@
 
 namespace Tests\Feature;
 
-use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
 use Tests\TestCase;
 
+/*
+ * REMARK
+ * Tujuan       : Menjaga grup Laporan terpisah tidak ada di modul Sales dan laporan Sales tetap di grup induknya (migration 2026_09_05_000009).
+ * Sumber hulu  : tm2sys.sys_app_menu.
+ * Input        : -
+ * Output       : Lulus bila parent_id sesuai.
+ * Dipakai oleh : php artisan test --filter=SalesMenuNoReportGroupTest.
+ * Status       : Aktif. Tes shell v1 (pages::main-menu) di sini dibuang T10 tahap 6c.
+ */
 // Permintaan user 2026-09-05 (screenshot sidebar Sales): "di menu sales ga
 // boleh ada menu group laporan, semua laporan masuk ke menu-menu group
 // atasnya" -- pola sama dgn Procurement (2026_09_05_000008). Migration
@@ -38,13 +45,5 @@ class SalesMenuNoReportGroupTest extends TestCase
             $actual = $db->table('sys_app_menu')->where('code', $code)->value('parent_id');
             $this->assertSame($expectedParent, $actual, "{$code} harus punya parent_id={$expectedParent}.");
         }
-    }
-
-    public function test_main_menu_still_renders_after_sales_regroup(): void
-    {
-        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
-        $this->actingAs($admin);
-
-        Livewire::test('pages::main-menu')->assertOk();
     }
 }

@@ -3,7 +3,7 @@
 /*
  * REMARK
  * Tujuan       : Pemeriksa satu perintah bahwa tmerp.test (tm2*) dan mockup.test (ddt*) tidak berdualisme; gagal (exit 1) bila berbeda.
- * Sumber hulu  : sys_app_menu (ddtsys vs tm2sys), tabel migrations kedua sisi, struktur kolom tabel master ProDev / ProCost / Inquiry (isi baris boleh beda), APP_UI di .env dan .env.mockup.
+ * Sumber hulu  : sys_app_menu (ddtsys vs tm2sys), tabel migrations kedua sisi, struktur kolom tabel master ProDev / ProCost / Inquiry (isi baris boleh beda).
  * Input        : -
  * Output       : Daftar selisih per bagian + exit code 0 (identik) / 1 (ada selisih). Baca-saja, tidak menulis ke database.
  * Dipakai oleh : Dijalankan setiap selesai batch kerja (aturan CLAUDE.md "Tanpa dualisme"); php artisan parity:check.
@@ -22,7 +22,7 @@ class ParityCheck extends Command
 {
     protected $signature = 'parity:check';
 
-    protected $description = 'Bandingkan tm2* dengan ddt*: menu, migrasi, master ProDev/ProCost/Inquiry, APP_UI (gagal bila berbeda)';
+    protected $description = 'Bandingkan tm2* dengan ddt*: menu, migrasi, master ProDev/ProCost/Inquiry (gagal bila berbeda)';
 
     // Selisih yang disengaja: data transaksi (dummy vs nyata). Tambah di sini hanya atas keputusan Jo.
     private const EXCEPTIONS = ['co_*', 'quo_*', 'do_*', 'prd_wo*', 'inv_*', 'fin_*', 'pr_*', 'po_*', 'pv_*'];
@@ -43,7 +43,6 @@ class ParityCheck extends Command
         $diff += $this->menu();
         $diff += $this->migrations();
         $diff += $this->master();
-        $diff += $this->appUi();
         $this->line($diff === 0 ? 'PARITY OK: tmerp.test = mockup.test (kecuali pengecualian: '.implode(', ', self::EXCEPTIONS).')' : "PARITY FAIL: $diff selisih");
 
         return $diff === 0 ? self::SUCCESS : self::FAILURE;
@@ -106,19 +105,6 @@ class ParityCheck extends Command
         }
 
         return $this->report('Master ProDev / ProCost / Inquiry (struktur kolom)', $bad);
-    }
-
-    private function appUi(): int
-    {
-        $read = function (string $file): ?string {
-            $p = base_path($file);
-
-            return is_file($p) && preg_match('/^APP_UI=(\S+)/m', file_get_contents($p), $m) ? trim($m[1], "\"'") : null;
-        };
-        $mock = $read('.env.mockup') ?? 'v2';
-        $live = $read('.env') ?? 'v2';
-
-        return $this->report("APP_UI (.env.mockup=$mock, .env=$live)", $mock === $live ? [] : ["APP_UI berbeda: mockup=$mock live=$live"]);
     }
 
     private function report(string $title, array $bad): int

@@ -53,12 +53,10 @@ class LoginService
     public function landing(SecUser $user): string
     {
         return match (true) {
-            // v2: yang punya papan widget (top management, user 2026-10-02) mendarat di layar pembukanya sendiri -- tanpa tab yang menutupinya.
-            config('app.ui') === 'v2' && Board::profile($user) !== null => route('v2.home'),
-            config('app.ui') === 'v2' => ($user->isDireksiOnly() || $user->canAccessModule('MGMT')) ? route('v2.home', ['open' => 'MGMT_EXEC']) : route('v2.home'),
-            $user->isDireksiOnly() => route('report.executive'),
-            $user->canAccessModule('MGMT') => route('report.executive'),
-            default => route('menu'),
+            // Yang punya papan widget (top management, user 2026-10-02) mendarat di layar pembukanya sendiri -- tanpa tab yang menutupinya.
+            Board::profile($user) !== null => route('v2.home'),
+            $user->isDireksiOnly() || $user->canAccessModule('MGMT') => route('v2.home', ['open' => 'MGMT_EXEC']),
+            default => route('v2.home'),
         };
     }
 

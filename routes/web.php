@@ -122,10 +122,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
     })->name('logout');
 
     Route::middleware('force.password')->group(function () {
-        // Situs v2 (mockup.test): menu lama tidak dipakai -> ke Menu v2.
-        config('app.ui') === 'v2'
-            ? Route::redirect('/menu', '/v2')->name('menu')
-            : Route::livewire('/menu', 'pages::main-menu')->name('menu');
+        // Alamat lama /menu (PWA start_url, tautan lama) selalu ke Menu v2; shell v1 sudah diarsipkan (T10 tahap 6c).
+        Route::redirect('/menu', '/v2')->name('menu');
+        // Rute /menu hanya pengalihan; layar tujuan = v2.home.
+        // Tes: tests/Feature/MenuRedirectTest.php.
 
         require __DIR__.'/v2.php';
         require __DIR__.'/v2_master_card.php';

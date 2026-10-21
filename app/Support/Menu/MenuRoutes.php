@@ -3,16 +3,15 @@
 namespace App\Support\Menu;
 
 /* REMARK
- * Tujuan       : Peta code sys_app_menu -> URL layar v1 untuk item yang belum punya layar v2.
- * Sumber hulu  : sys_app_menu (tm2sys), rute v1 di routes/web.php.
+ * Tujuan       : Cadangan peta code sys_app_menu -> URL layar untuk item menu yang barisnya belum punya target (kolom target kosong). Hanya rute v2 atau halaman publik; tidak ada rute v1.
+ * Sumber hulu  : sys_app_menu (tm2sys / ddtsys), rute v2 di routes/v2*.php.
  * Input        : -
- * Output       : array code => URL; HRM_SELFSERVICE dihapus 2026-10-18 (menu Employee Self-Service dihapus, jalur resmi Edit profile v2).
- * Dipakai oleh : pages/main-menu (v1), App\Support\V2\AppMenu.
- * Status       : Aktif; dikosongkan bertahap sampai semua layar v1 diganti v2.
+ * Output       : array code => URL. Pada 2026-10-21 hanya HRM_RCR_PORTAL dan PROD_PROCESS_RATE yang benar-benar memakainya (baris lain sudah punya target v2:).
+ * Dipakai oleh : App\Support\V2\AppMenu (resolve, lencana item), tes penjaga menu (MenuHasScreenTest dan tes retire per layar).
+ * Status       : Aktif; shell v1 (pages/main-menu) diarsipkan T10 tahap 6c, peta ini tinggal cadangan.
  */
 
-// code sys_app_menu -> URL layar v1 (Livewire tmerp). Dipakai menu v1 (pages/main-menu) DAN menu v2
-// (App\Support\V2\AppMenu) untuk item yang belum punya layar v2 -- satu peta, jangan dibuat dua.
+// Satu peta untuk item tanpa target; isi menu sebenarnya = kolom target sys_app_menu (menu = data).
 final class MenuRoutes
 {
     public static function map(): array
@@ -125,11 +124,6 @@ final class MenuRoutes
             'MD_CURRENCY' => route('v2.screen', 'md-currency'),
             'MD_EXCHRATE' => route('v2.screen', 'md-exchange-rate'),
             'MD_HOLIDAY' => route('v2.screen', 'holiday-calendar'),
-            // Dua item ini activate=0 di sys_app_menu (belum pernah tayang);
-            // dipetakan ke ProDev baru supaya tidak jadi link mati kalau nanti
-            // diaktifkan -- Master Card lama ada di production.old-prodev.print.
-            'PROD_CARD' => route('production.prodev'),
-            'PROD_LAYOUT' => route('production.prodev'),
             // Accounting Process Engine (mockup blueprint, 2026-09-19)
             'FIN_ENGINE' => route('v2.screen', 'acc-engine'),
             'FIN_DASH' => route('v2.screen', 'acc-dashboard'),
@@ -186,9 +180,7 @@ final class MenuRoutes
             'PROD_PROCESS_RATE' => route('v2.screen', 'production-process-rate'),
             'PROD_MTS_FORECAST' => route('v2.screen', 'demand-forecast'),
             'PROD_SHIFT_ROSTER' => route('v2.screen', 'hrm-roster'),
-            'HRM_ORG_STRUCTURE' => route('hrm.position'),
             'HRM_ORG_CHART' => route('v2.screen', 'hrm-org-chart'),
-            'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('v2.screen', 'hrm-roster'),
             'HRM_CONTACT_GAP' => route('v2.screen', 'hrm-contact-gap'),
             'HRM_CLOCKIN' => route('v2.screen', 'hrm-clockin'),

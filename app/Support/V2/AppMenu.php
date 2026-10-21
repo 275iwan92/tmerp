@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Schema;
 // Menu v2 (x-dl::layer-shell) dari sys_app_menu (di mockup.test = ddtsys). Isi menu = induk di database, bukan kode.
 // Hak akses: modul lewat SecUser::visibleAppMenuCodes() (sama dengan v1), PLUS required_object di grup/item
 // (mis. Pro-Cost hanya grup yang punya akses COSTING). Admin melihat semua.
-// Layar tiap item: target 'v2:<slug>' -> layar v2; selain itu layar v1 tmerp (MenuRoutes) supaya tetap bisa di-UAT.
+// Layar tiap item: target 'v2:<slug>' atau URL '/...'; kolom target kosong -> cadangan MenuRoutes (hanya rute v2 / halaman publik).
 final class AppMenu
 {
     // Lencana layar v2 (user 2026-10-01): A hijau = sudah di-approve user (status LOCKED, hanya user yang mengunci);

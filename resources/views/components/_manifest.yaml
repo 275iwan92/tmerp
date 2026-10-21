@@ -72,7 +72,6 @@ form: # dialek default Tailwind; legacy=true|'namaClass' untuk CSS lama (.f/.fld
 layout:
   x-back-button: {props: {fallback: "route grid (wajib)"}, attrs: "title, class", note: "Back = layar sebelumnya via dirty-guard.js"}
   x-alert.banner: {props: {type: "info|success|danger|warn", message: "null = tidak tampil"}}
-  x-alert.toast: {}
   x-ui.accordion: {props: {title: required, count: null, open: false, tone: slate}}
 
 grid: # pasangkan dengan trait App\Livewire\Concerns\HasCustomizableGrid

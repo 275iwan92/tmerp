@@ -119,7 +119,7 @@ use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 // Layar v2 (objek DevLib, Menu v2 tanpa top bar). Dimuat di dalam grup auth + force.password routes/web.php.
-// mockup.test (APP_UI=v2) mendarat di sini; tmerp.test tetap v1 sampai go-live.
+// Satu-satunya antarmuka (shell v1 diarsipkan T10 tahap 6c); mockup.test dan tmerp.test sama.
 Route::prefix('v2')->name('v2.')->group(function () {
     // ?open=<kode menu> = tab yang dibuka saat mulai (mis. Direksi -> MGMT_EXEC), bila belum ada tab yang dipulihkan.
     // Yang punya papan widget (top management, App\Support\V2\Board\Board) melihat papan itu sebagai layar pembuka.

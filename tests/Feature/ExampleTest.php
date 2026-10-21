@@ -7,10 +7,10 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    public function test_root_redirects_to_menu(): void
+    public function test_root_redirects_to_v2(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect('/menu');
+        $response->assertRedirect('/v2');
     }
 }
