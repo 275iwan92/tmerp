@@ -7,14 +7,17 @@ use App\Models\Sys\SecUser;
 use Illuminate\Http\Request;
 use Tests\TestCase;
 
-// Pelonggaran pertanyaan keamanan hanya untuk UAT (.env.mockup); tmerp.test tidak mengisinya -> gerbang tetap penuh.
+// Jo 2026-10-22: gerbang keamanan login (4 pertanyaan dan paksa ganti password) mati di SEMUA situs sampai Jo bilang UAT selesai (bawaan config/uat.php '*').
 class SecuritySetupSkipTest extends TestCase
 {
-    public function test_live_site_keeps_full_security_setup_and_no_uat_accounts(): void
+    public function test_security_gates_are_off_everywhere_until_uat_is_finished(): void
     {
-        $this->assertEmpty(config('uat.security_setup_skip'));
+        $this->assertSame('*', config('uat.security_setup_skip'));
         $this->assertEmpty(config('uat.accounts'));
-        $this->assertFalse(ForcePasswordChange::skipsSecuritySetup('johiwan'));
+        $this->assertTrue(ForcePasswordChange::skipsSecuritySetup('johiwan'));
+
+        config(['uat.security_setup_skip' => '']);
+        $this->assertFalse(ForcePasswordChange::skipsSecuritySetup('johiwan'), 'setelah UAT selesai: nilai kosong menyalakan gerbang lagi');
     }
 
     // Jo 2026-10-22: user tidak dipaksa ganti password (config uat.password_change_skip = '*' bawaan), walau must_change_password = 1.
