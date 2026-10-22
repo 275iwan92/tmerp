@@ -7,7 +7,7 @@
  * Input        : Kolom login/pswd, relasi grup dan modul.
  * Output       : Objek user, hasGroup(), isHrOfficer(), accessibleModules() dan gerbang peran lain.
  * Dipakai oleh : Seluruh aplikasi (auth, middleware modul, layar).
- * Status       : Aktif. isProdManagerOrAbove() dihapus 2026-10-18 (hanya dipakai layar Rule Library yang sudah dihapus).
+ * Status       : Aktif. isProdManagerOrAbove() dihapus 2026-10-18 (hanya dipakai layar Rule Library yang sudah dihapus). Kolom admin_theme_mode / admin_theme_accent dibuang 2026-10-22 (migration 2026_10_22_000200).
  */
 
 namespace App\Models\Sys;
@@ -60,8 +60,6 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         'approval_status',
         'theme_code',
         'lang_code',
-        'admin_theme_mode',
-        'admin_theme_accent',
         'pswd_last_updated',
         'birth_date',
         'mother_name_hash',

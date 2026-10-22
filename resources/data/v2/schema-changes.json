@@ -1,5 +1,24 @@
 [
     {
+        "at": "2026-10-22 12:29:42",
+        "items": [
+            {
+                "kind": "kolom dihapus",
+                "db": "tm2sys",
+                "table": "sec_user",
+                "column": "admin_theme_mode",
+                "detail": "enum('light','pastel','bright','dark','black')"
+            },
+            {
+                "kind": "kolom dihapus",
+                "db": "tm2sys",
+                "table": "sec_user",
+                "column": "admin_theme_accent",
+                "detail": "enum('blue','green','red','purple','amber','cyan','mono')"
+            }
+        ]
+    },
+    {
         "at": "2026-10-22 11:05:09",
         "items": [
             {
