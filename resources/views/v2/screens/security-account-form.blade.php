@@ -1,9 +1,9 @@
 {{--
  REMARK
- Tujuan       : Form Account (menggantikan form Pengguna halaman v1 pages::security.index tab users): akun baru (login, nama, e-mail, password awal, grup) atau ubah nama / e-mail / grup; tombol Reset Password, View Password (password bawaan yang tersimpan, untuk spot-check) dan Deactivate / Activate; kartu login tampil sekali. Hanya administrator.
+ Tujuan       : Form Account (menggantikan form Pengguna halaman v1 pages::security.index tab users): akun baru (login, nama, e-mail, password awal, grup) atau ubah nama / e-mail / grup; tombol Reset Password (password acak baru), Reset to Default (kembali ke default_password tersimpan), View Password (password bawaan yang tersimpan, untuk spot-check) dan Deactivate / Activate; kartu login tampil sekali. Hanya administrator.
  Sumber hulu  : tm2sys.sec_user + sec_user_group + sec_group; aturan di App\Services\Security\SecurityAccountService (reset dan aktif / nonaktif dari EmployeeAccountService, satu sumber dengan tab Account Master Employee).
  Input        : Query id (sec_user.id_user) atau new=1; session v2_flash, errors dan v2_login_card.
- Output       : POST v2.setup.account.save (action save, reset, reveal, toggle).
+ Output       : POST v2.setup.account.save (action save, reset, default, reveal, toggle).
  Dipakai oleh : Dibuka dari grid security-accounts (Open dan + New Record) dan tab Account hrm-employee-form (Open in Security).
  Status       : Aktif (T8 Setup).
 --}}
@@ -38,6 +38,7 @@
         <x-slot:special>
             <x-dl::button variant="secondary" icon="fa-key" label="Reset Password" type="submit" name="action" value="reset" formnovalidate data-dl-confirm="{{ tf('Reset the password of :login to a new password?', ['login' => $u->login]) }}" />
             @if ($u->default_password)
+                <x-dl::button variant="secondary" icon="fa-rotate-left" label="Reset to Default" type="submit" name="action" value="default" formnovalidate data-dl-confirm="{{ tf('Set the password of :login back to the stored default password?', ['login' => $u->login]) }}" />
                 <x-dl::button variant="secondary" icon="fa-eye" label="View Password" type="submit" name="action" value="reveal" formnovalidate />
             @endif
             @unless ($self)

@@ -7,7 +7,7 @@
  * Input        : akun (opsional), array isian, user admin yang bertindak.
  * Output       : tm2sys.sec_user dan sec_user_group berubah; ValidationException bila aturan dilanggar; kartu login (login, nama, password) untuk reset dan lihat ulang.
  * Dipakai oleh : routes/v2_setup.php (v2.setup.account.save), layar security-account-form, tes SecurityAccountServiceTest.
- * Status       : Aktif (T8 Setup, 2026-10-20).
+ * Status       : Aktif (T8 Setup, 2026-10-20). 2026-10-22 (Jo): akun baru ikut mengisi default_password (polos, tanpa enkripsi sampai UAT selesai) dan ada resetToDefault() untuk mengembalikan password akun ke default_password.
  */
 
 namespace App\Services\Security;
@@ -43,7 +43,7 @@ final class SecurityAccountService
 
         return DB::connection('tm2sys')->transaction(function () use ($u, $new, $d, $email, $actor) {
             if ($new) {
-                $u = SecUser::create(['login' => $d['login'], 'name' => $d['name'], 'email' => $email, 'pswd' => Hash::make($d['password']), 'active' => true, 'activate' => true, 'created_by' => $actor->login]);
+                $u = SecUser::create(['login' => $d['login'], 'name' => $d['name'], 'email' => $email, 'pswd' => Hash::make($d['password']), 'default_password' => $d['password'], 'active' => true, 'activate' => true, 'created_by' => $actor->login]);
                 $u->groups()->attach($d['group_id']);
 
                 return $u;
@@ -66,6 +66,16 @@ final class SecurityAccountService
     public function setActive(SecUser $u, bool $active, SecUser $actor): void
     {
         app(EmployeeAccountService::class)->setActive($u, $active, $actor);
+    }
+
+    /** @return array{login: string, name: string, password: string} kartu login: password akun dikembalikan ke default_password yang tersimpan (pengguna wajib menggantinya lagi saat masuk) */
+    public function resetToDefault(SecUser $u): array
+    {
+        if (! app(SecurityRecoveryService::class)->resetToDefaultPassword($u)) {
+            throw ValidationException::withMessages(['account' => 'This account has no stored default password.']);
+        }
+
+        return $this->reveal($u);
     }
 
     /** Lihat ulang password bawaan (BUKAN reset): spot-check akun hasil provisioning massal; null bila tidak ada. */

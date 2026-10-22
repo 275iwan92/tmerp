@@ -96,7 +96,21 @@ class SecurityAccountGroupServiceTest extends TestCase
         $svc->save($u, ['name' => 'ZZ Changed', 'email' => 'new@example.test', 'group_id' => $other->id_group], $admin);
         $this->assertFalse((bool) $u->fresh()->email_verified, 'e-mail berubah = verifikasi gugur');
 
+        // Jo 2026-10-22: akun baru menyimpan password awalnya sebagai default_password POLOS (terbaca langsung di tabel, tanpa enkripsi).
+        $this->assertSame('Secret123', DB::connection('tm2sys')->table('sec_user')->where('id_user', $u->id_user)->value('default_password'), 'tersimpan polos di tabel');
+        $this->assertSame('Secret123', $svc->reveal($u->fresh())['password']);
+        // Reset to Default: password akun kembali ke default_password, wajib diganti saat masuk.
+        $u->forceFill(['pswd' => bcrypt('Other12345'), 'must_change_password' => false])->save();
+        $back = $svc->resetToDefault($u->fresh());
+        $this->assertSame('Secret123', $back['password']);
+        $this->assertTrue(password_verify('Secret123', $u->fresh()->pswd));
+        $this->assertTrue((bool) $u->fresh()->must_change_password);
+        // Baris lama berbentuk ciphertext Crypt tetap terbaca (kompatibel sebelum migration data).
+        DB::connection('tm2sys')->table('sec_user')->where('id_user', $u->id_user)->update(['default_password' => \Illuminate\Support\Facades\Crypt::encryptString('Lama456789')]);
+        $this->assertSame('Lama456789', $u->fresh()->default_password);
+        $u->forceFill(['default_password' => null])->save();
         $this->refused(fn () => $svc->reveal($u->fresh()), 'account', 'belum ada password bawaan');
+        $this->refused(fn () => $svc->resetToDefault($u->fresh()), 'account', 'reset ke default tanpa default tersimpan');
         $card = $svc->resetPassword($u);
         $this->assertSame('zz.tester', $card['login']);
         $this->assertMatchesRegularExpression('/^Tmk-/', $card['password']);
@@ -164,7 +178,8 @@ class SecurityAccountGroupServiceTest extends TestCase
         $this->post(route('v2.setup.account.save'), $this->acct())->assertRedirect();
         $u = SecUser::where('login', 'zz.tester')->firstOrFail();
         $open = $acctForm.'?id='.$u->id_user;
-        $this->get($open)->assertOk()->assertSee('zz.tester')->assertSee('name="action" value="reset"', false)->assertDontSee('name="password"', false);
+        $this->get($open)->assertOk()->assertSee('zz.tester')->assertSee('name="action" value="reset"', false)->assertSee('name="action" value="default"', false)->assertSee('Reset to Default')->assertDontSee('name="password"', false);
+        $this->post(route('v2.setup.account.save'), ['id' => $u->id_user, 'action' => 'default'])->assertRedirect($open)->assertSessionHas('v2_login_card');
         $this->post(route('v2.setup.account.save'), ['id' => $u->id_user, 'action' => 'reset'])->assertRedirect($open)->assertSessionHas('v2_login_card');
         $this->get($open)->assertOk()->assertSee('name="action" value="reveal"', false);
         $this->post(route('v2.setup.account.save'), ['id' => $u->id_user, 'action' => 'toggle'])->assertRedirect($open);

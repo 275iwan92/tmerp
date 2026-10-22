@@ -1,5 +1,7 @@
 # SECURITY — `sec_user.default_password` + `must_change_password`
 
+> **2026-10-22 (perintah Jo): `default_password` disimpan POLOS, TIDAK dienkripsi, sampai Jo bilang UAT selesai.** Bagian "terenkripsi / Crypt" di bawah berlaku lagi hanya atas perintah Jo (rollback migration `2026_10_22_000300` + pulihkan accessor di `SecUser`). Admin kini juga punya tombol Reset to Default di layar Account.
+
 **Untuk:** Claude Code (Jo) — eksekusi langsung, spec self-contained, tanpa keputusan tersisa.
 **Ditulis oleh:** Telma (Chat) berdasarkan diskusi arsitektur dengan Jo.
 **Target DB:** `tm2sys` · tabel `sec_user` · Stack Laravel 13 + Livewire + MySQL 8.

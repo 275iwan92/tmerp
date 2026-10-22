@@ -90,14 +90,14 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         'email_verified_at' => 'datetime',
     ];
 
-    // security_defaultpassword_spec.md §4 — SET/GET plaintext, tersimpan
-    // ciphertext (Crypt::encryptString, key=APP_KEY). Admin baca lewat layar
-    // app (accessor auto-decrypt), bukan lewat SQL/serialisasi (lihat $hidden).
+    // Jo 2026-10-22: default_password disimpan POLOS (tanpa enkripsi) sampai UAT selesai, supaya terbaca langsung di tabel dan mudah dipakai reset.
+    // Baris lama berbentuk ciphertext Crypt (awalan eyJpdiI6) tetap terbaca. Kembali ke terenkripsi: rollback migration 2026_10_22_000300 + pulihkan
+    // accessor dari security_defaultpassword_spec.md §4 (hanya atas perintah Jo). Tidak masuk serialisasi (lihat $hidden).
     protected function defaultPassword(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $value) => $value ? Crypt::decryptString($value) : null,
-            set: fn (?string $value) => $value ? Crypt::encryptString($value) : null,
+            get: fn (?string $value) => $value ? (str_starts_with($value, 'eyJpdiI6') ? Crypt::decryptString($value) : $value) : null,
+            set: fn (?string $value) => $value ?: null,
         );
     }
 

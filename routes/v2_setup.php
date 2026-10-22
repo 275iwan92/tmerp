@@ -4,7 +4,7 @@
  * REMARK
  * Tujuan       : Route layar Setup v2 yang menggantikan halaman v1: akun login (security-account-form), grup akses (security-group-form) dan tiket Bantuan & dukungan (support-ticket-form). Semua di balik middleware admin (hanya administrator, SecUser::canSetup).
  * Sumber hulu  : App\Services\Security\SecurityAccountService, SecurityGroupService dan Support\SupportTicketService (reset password dan aktif / nonaktif akun memakai EmployeeAccountService).
- * Input        : POST form (id opsional, action save, reset, reveal, toggle).
+ * Input        : POST form (id opsional, action save, reset, default, reveal, toggle); default = kembalikan password akun ke default_password tersimpan.
  * Output       : Redirect ke form (id) dengan flash v2_flash / errors; reset dan reveal menitipkan kartu login (v2_login_card, sekali tampil).
  * Dipakai oleh : routes/web.php (dimuat di baris yang sama dengan v2_finance.php supaya nomor baris web.php yang dikutip kartu TG tidak bergeser); layar security-account-form, security-group-form dan support-ticket-form.
  * Status       : Aktif. Dibuat 2026-10-20 (T8 Setup, Jo): menggantikan halaman v1 pages::security.index (tab users dan groups; tab perms dan migration sudah v2) dan pages::setup.support-tickets.
@@ -26,7 +26,7 @@ Route::prefix('v2/setup/account')->name('v2.setup.account.')->middleware(['admin
         $actor = Auth::user();
         $u = $r->filled('id') ? SecUser::findOrFail((int) $r->input('id')) : null;
         $action = (string) $r->input('action', 'save');
-        abort_unless(in_array($action, ['save', 'reset', 'reveal', 'toggle'], true), 422);
+        abort_unless(in_array($action, ['save', 'reset', 'default', 'reveal', 'toggle'], true), 422);
         abort_if(! $u && $action !== 'save', 422);
         $card = null;
 
@@ -36,6 +36,9 @@ Route::prefix('v2/setup/account')->name('v2.setup.account.')->middleware(['admin
         } elseif ($action === 'reset') {
             $card = $svc->resetPassword($u) + ['title' => t('New password')];
             $msg = t('Password reset. Give the new password to the user by hand.');
+        } elseif ($action === 'default') {
+            $card = $svc->resetToDefault($u) + ['title' => t('Default password')];
+            $msg = t('Password set back to the default password. The user must change it at the next login.');
         } elseif ($action === 'reveal') {
             $card = $svc->reveal($u) + ['title' => t('Default password')];
             $msg = t('Default password shown once.');
