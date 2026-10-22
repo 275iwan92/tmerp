@@ -1,31 +1,20 @@
 ---
 name: tmerp-stack-rules
-description: Aturan proyek TMERP yang MENGALAHKAN saran generik skill Boost (livewire-development, tailwindcss-development, laravel-best-practices, testing-best-practices). Pakai bersamaan setiap kali menulis/mengubah kode Laravel 13, Livewire 4, Tailwind 4, Blade, model, migration, atau test di repo ini.
+description: Aturan proyek TMERP yang MENGALAHKAN saran generik skill Boost (laravel-best-practices, testing-best-practices). Pakai bersamaan setiap kali menulis/mengubah kode Laravel 13, Blade (objek DevLib / MockupParts), model, migration, atau test di repo ini.
 ---
 
 # TMERP — override untuk skill Boost
 
-**Urutan prioritas skill (user 2026-10-07):** 1) `devlib-oo` (utama: pewarisan / object oriented DevLib) → 2) skill TMERP (file ini, `tmerp-screen`, `tmerp-ui-mockup`) → 3) skill generik (Boost, plugin `superpowers-laravel`, dst). Bertentangan = yang bernomor lebih kecil menang.
+**Urutan prioritas skill (user 2026-10-07):** 1) `devlib-oo` (utama: pewarisan / object oriented DevLib) → 2) skill TMERP (file ini, `tmerp-ui-mockup`) → 3) skill generik (Boost, plugin `superpowers-laravel`, dst). Bertentangan = yang bernomor lebih kecil menang.
 
-Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 5, PHPUnit 12. Skill Boost benar untuk API versinya; bila bertentangan dengan daftar di bawah, **daftar ini yang dipakai** (sumber: CLAUDE.md).
+Versi terpasang: Laravel 13, PHPUnit 12. UI = objek DevLib (`x-dl::*`) dan MockupParts (`x-mp::*`); **tidak ada** Livewire, Filament, PowerGrid, Tailwind, Vite, atau npm (v1 dibuang 2026-10-22; arsip di `tmerp_unused/arsip_v1_*.zip`). Skill Boost benar untuk API versinya; bila bertentangan dengan daftar di bawah, **daftar ini yang dipakai** (sumber: CLAUDE.md).
 
-## Livewire 4
+## Layar v2 (Blade)
 
-- Nama file komponen **ASCII saja, TANPA prefix `⚡`** (Boost/`make:livewire` default memakai `⚡` — rename atau buat manual). Halaman = SFC di `resources/views/pages/<modul>/<nama>.blade.php`, route `Route::livewire('/uri', 'pages::modul.nama')` di grup `module:<KODE>`.
-- Layar baru: `php artisan make:tm-screen master|grid|form ...` (skill `tmerp-screen`), bukan `make:livewire` kosong.
-- Jangan `<select wire:model>` polos (bug morph) → `x-form.select liveSync`, `x-form.toggle-group`, atau `x-form.searchable-select`.
-- Jangan `@php` inline di dalam `@if/@foreach`; `@php(...)` inline wajib penutup. Jangan tulis tag komponen berkurung sudut di komentar.
-- Jangan gate konten yang diubah Livewire dengan `x-if`/`x-show` state lokal Alpine (stale content).
-- Pakai komponen `<x-*>` dari `resources/views/components/_manifest.yaml`, bukan markup input mentah.
-- **Tambahan user 2026-10-07 (Laravel 13 / Livewire 4):** pakai PHP Attributes (`#[Title]`, `#[Lazy]`, `#[Validate]`, `#[Middleware]`/`#[Authorize]` bila perlu); `wire:model` dengan modifier modern (`.live`, `.blur`, `.debounce`), `wire:navigate` untuk pindah halaman. Bagian spesifikasi itu yang **tidak dipakai di sini**: Pest dan Larastan tidak terpasang — test tetap **PHPUnit 12**, gaya kode **Pint** (`vendor/bin/pint --dirty`); file komponen tetap tanpa `⚡`; route tetap `Route::livewire('/uri', 'pages::modul.nama')`. Layar baru tetap wajib berupa turunan objek DevLib (`devlib-oo`).
-
-## Tailwind 4
-
-- **Wajib `npm run build`** setelah menambah class baru (bukan `npm run dev`).
-- `app.css` punya `.grid {grid-cols-4}` unlayered → `grid two`/`grid three`/flex, jangan `grid grid-cols-N`.
-- Token: `navy #2c3e69`, `accent #2c7be5`, `muted #8a94a6` (`@theme` di app.css). Tema/dark mode dikelola data `tm2sys.sys_theme` — jangan menambah varian `dark:` sendiri.
-- Jangan pakai class `container`.
-- **v4 CSS-first (user 2026-10-07):** tanpa `tailwind.config.js/ts` dan tanpa `@tailwind ...` (cukup `@import "tailwindcss"`); token lewat `@theme`. Sintaks v4 wajib: `bg-black/50` (bukan `bg-opacity-*`/`text-opacity-*`), `shrink-0`/`grow` (bukan `flex-shrink-0`/`flex-grow`), `text-ellipsis` (bukan `overflow-ellipsis`). Jarak antar elemen pakai `gap-*`; komponen baru = komponen `x-ui.*`/`x-dl::*`, bukan `@apply`. Warna baru = token `@theme` yang ada (`accent`, `navy`, `muted`, `--color-field-*`), bukan hex/OKLCH literal; tanpa `@custom-variant dark` (dark mode = `sys_theme`). Properti CSS biasa `flex-shrink: 0` tetap sah.
+- Halaman = deklarasi tipis objek `x-dl::*` / `x-mp::*` di `resources/views/v2/screens`, rute di `routes/v2*.php`, menu dari `sys_app_menu` (`target='v2:<slug>'`). Aturan simpan / hitung di `app/Services/*` atau kelas `App\Support\V2\Data\*`, bukan di Blade.
+- CSS dan JS datang dari objek: `devlib.css/js` (repo `../devlib`) dan `mockup-parts.css/js` (`packages/mockup-parts`). Tanpa build npm; warna lewat token objek (teks hitam atau terang, abu-abu hanya `--dl-disabled`), bukan hex atau class buatan sendiri.
+- Jangan `@php` inline di dalam `@if/@foreach`; `@php(...)` inline wajib penutup. Jangan tulis tag komponen berkurung sudut di komentar Blade.
+- Cari objek yang ada dulu (katalog devlib.test, `../devlib/src/Components`, `packages/mockup-parts`); perilaku baru dipakai >1 layar = tambahkan di induk objek (skill `devlib-oo`).
 
 ## Laravel 13 / database
 
@@ -59,5 +48,5 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
 
 ## Test
 
-- PHPUnit (bukan Pest). Test berjalan ke MySQL `tm2*` sungguhan, **tanpa `RefreshDatabase`** — bersihkan data sendiri di `tearDown()` dan cek ulang di DB. Jangan pernah pakai `employee_id=1` / `sec_user id=1` sebagai data uji yang diubah.
-- Verifikasi UI tanpa login browser: `Livewire::test('pages::modul.nama')` via tinker.
+- PHPUnit (bukan Pest). Test berjalan ke MySQL `tm2*` sungguhan (atau dummy `ddt*` lewat `tools/test-ddt.ps1`), **tanpa `RefreshDatabase`** — bersihkan data sendiri di `tearDown()` dan cek ulang di DB. Jangan pernah pakai `employee_id=1` / `sec_user id=1` sebagai data uji yang diubah.
+- Verifikasi UI: permintaan HTTP di test (`actingAs`) atau login admin di browser uji (CLAUDE.md butir 8); tangkapan layar sendiri.

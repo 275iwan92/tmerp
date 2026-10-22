@@ -1,5 +1,1821 @@
 [
     {
+        "at": "2026-10-22 11:05:09",
+        "items": [
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2sys",
+                "table": "sys_user_menu",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-19 09:25:05",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "prt_return",
+                "column": "i_notes",
+                "detail": "text"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-19 05:42:47",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock_d",
+                "column": "line_note",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock_d",
+                "column": "line_note",
+                "detail": "varchar(255)"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-18 10:43:09",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "emp_kpi_result",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-18 10:32:45",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2mnt",
+                "table": "mnt_document",
+                "column": "department_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mnt",
+                "table": "mnt_document",
+                "column": "purpose",
+                "detail": "text"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mnt",
+                "table": "mnt_document",
+                "column": "effective_date",
+                "detail": "date"
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2mst",
+                "table": "sop_document",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-18 00:51:44",
+        "items": [
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "prd_decision_feedback_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "prd_scheduling_rule",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-18 00:51:36",
+        "items": [
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2mst",
+                "table": "prod_crew",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-18 00:51:30",
+        "items": [
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2inv",
+                "table": "inv_tool",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-18 00:19:24",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sdi",
+                "table": "iqp_part",
+                "column": "cfg_ink",
+                "detail": "varchar(50) null -> varchar(200) null"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-17 22:00:10",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "emp_employee_position",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "org_position_kpi",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-17 21:27:57",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sup_corrugated_index",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sup_corrugated_rule",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sup_duplex_price",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-17 13:31:37",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sup_single_face_price",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-17 11:47:55",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "fin_tax_rate",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-17 11:18:13",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sup_paper_price",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-17 11:18:11",
+        "items": [
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2mst",
+                "table": "sup_paper_price",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-17 11:13:53",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sup_paper_price",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-16 11:45:02",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_material_alt",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "spc_change_request",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "spc_otp",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-16 11:02:16",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_part_template",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "iqp_costing_recommendation",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-16 10:53:25",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_item",
+                "column": "due_source",
+                "detail": "varchar(6)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_item",
+                "column": "due_note",
+                "detail": "varchar(200)"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-16 10:20:41",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_guide",
+                "column": "section",
+                "detail": "varchar(10)"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-16 10:01:07",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_guide",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-16 08:40:23",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sys_app_menu",
+                "column": "menu_type",
+                "detail": "enum('module','group','item') -> enum('module','group','item','heading')"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-16 07:50:07",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_md_library",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-16 07:50:05",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_md_review",
+                "column": "title",
+                "detail": "varchar(200)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_md_review",
+                "column": "summary",
+                "detail": "varchar(600)"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-14 15:04:18",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_machine_crew",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_machine_crew_member",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_machine_crew_period",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-14 11:12:27",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "prd_plan_trace",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "prd_sequence_model",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-14 10:27:56",
+        "items": [
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2acc",
+                "table": "v1_fin_trial_balance",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2inv",
+                "table": "v_rm_out_returnable",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "prd_mts_forecast",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "v_prd_customer_interruption_profile",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "v_prd_exception_dashboard",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-14 10:27:54",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "waste_engine_qty",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "spill_engine_qty",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "waste_override_qty",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "spill_override_qty",
+                "detail": "decimal(18,4)"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-13 18:26:46",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stock",
+                "column": "cancel_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stock",
+                "column": "cancelled_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stock",
+                "column": "cancelled_at",
+                "detail": "timestamp"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stock",
+                "column": "reverses_doc_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stock",
+                "column": "reversed_by_doc_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stock_d",
+                "column": "batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stock_d",
+                "column": "owner_type",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stock_d",
+                "column": "owner_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stockcard",
+                "column": "batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stockcard",
+                "column": "owner_type",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "fg_stockcard",
+                "column": "owner_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_pallet",
+                "column": "batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer",
+                "column": "transit_mode",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer",
+                "column": "shipped_at",
+                "detail": "timestamp"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer",
+                "column": "shipped_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer",
+                "column": "received_at",
+                "detail": "timestamp"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer",
+                "column": "received_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer",
+                "column": "transit_status",
+                "detail": "varchar(12)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer_line",
+                "column": "qty_received",
+                "detail": "decimal(20,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer_line",
+                "column": "qty_diff",
+                "detail": "decimal(20,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer_line",
+                "column": "batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer_line",
+                "column": "diff_resolution",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer_line",
+                "column": "diff_resolved_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer_line",
+                "column": "diff_resolved_at",
+                "detail": "timestamp"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "chain_key",
+                "detail": "varchar(40)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "stage",
+                "detail": "varchar(2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "hold_until",
+                "detail": "date"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "inquiry_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "costing_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "stale_warned_on",
+                "detail": "date"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "hold_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_booking",
+                "column": "hold_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock",
+                "column": "cancel_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock",
+                "column": "cancelled_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock",
+                "column": "cancelled_at",
+                "detail": "timestamp"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock",
+                "column": "reverses_doc_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock",
+                "column": "reversed_by_doc_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock_d",
+                "column": "batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock_d",
+                "column": "owner_type",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock_d",
+                "column": "owner_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stockcard",
+                "column": "batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stockcard",
+                "column": "owner_type",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stockcard",
+                "column": "owner_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock",
+                "column": "cancel_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock",
+                "column": "cancelled_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock",
+                "column": "cancelled_at",
+                "detail": "timestamp"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock",
+                "column": "reverses_doc_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock",
+                "column": "reversed_by_doc_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock_d",
+                "column": "batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock_d",
+                "column": "owner_type",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stock_d",
+                "column": "owner_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stockcard",
+                "column": "batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stockcard",
+                "column": "owner_type",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "sfg_stockcard",
+                "column": "owner_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_batch",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_item_avg_open",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_landed_cost",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_landed_cost_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_obsolete_provision",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_obsolete_provision_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_qc_decision",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_qc_first_article",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_qc_hold",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_qc_intensity_rule",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_qc_risk_class",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_qc_sampling_plan",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_reconcile_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_repost_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_shortage_request",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_subcon_issue",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_subcon_issue_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_supplier_claim",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_tool",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "wh_pick_list",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "wh_pick_list_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "wh_task",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_asset",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_asset_document",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_asset_part",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_code",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_daily_check",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_daily_check_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_document",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_document_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_meter_reading",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_order",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_order_labor",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_order_part",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_order_task",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_plan",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_plan_part",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_plan_task",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_request",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mnt",
+                "table": "mnt_watch_point",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "cust_customer",
+                "column": "customer_tier",
+                "detail": "tinyint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_machine_changeover",
+                "column": "value_status",
+                "detail": "varchar(12)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_machine_changeover",
+                "column": "sample_count",
+                "detail": "int unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_machine_changeover",
+                "column": "frozen",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_loc",
+                "column": "count_lock",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_loc",
+                "column": "count_lock_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_loc",
+                "column": "count_lock_at",
+                "detail": "timestamp"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "warehouse_type",
+                "detail": "enum('RM','SFG','FG','MIX','WASTE','TRANSIT') -> enum('RM','SFG','FG','MIX','WASTE','TRANSIT','VIRTUAL')"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_zone",
+                "column": "is_virtual",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_zone",
+                "column": "mix_rule",
+                "detail": "varchar(12)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_zone",
+                "column": "pick_order",
+                "detail": "varchar(5)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_zone",
+                "column": "count_every_days",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_tooling_asset",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_wait_rule",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_code",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_meter_reading",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_plan",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_plan_part",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_plan_task",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_request",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_wo",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_wo_labor",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_wo_part",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2prd",
+                "table": "mnt_wo_task",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "ups_per_sheet",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "sheet_length_mm",
+                "detail": "decimal(8,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "sheet_width_mm",
+                "detail": "decimal(8,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "board_gsm",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "colour_count",
+                "detail": "tinyint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "dieline_ref",
+                "detail": "varchar(60)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "customer_tier",
+                "detail": "tinyint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "layout_json",
+                "detail": "json"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "die_group_off",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "process_hash",
+                "detail": "varchar(40)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "processed_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "earliest_start",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo",
+                "column": "pending_header",
+                "detail": "json"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "qty_release",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "qty_purchase",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "override_reason",
+                "detail": "varchar(190)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "process_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "process_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "qty_uom",
+                "detail": "varchar(8)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "qty_out",
+                "detail": "decimal(14,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "setup_base_min",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "setup_change_min",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "setup_tool_min",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "run_minutes",
+                "detail": "int unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "plan_status",
+                "detail": "varchar(12)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "draft_machine_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "draft_start",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "draft_finish",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "draft_run_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "is_locked",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "lock_reason",
+                "detail": "varchar(80)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "planned_by",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "priority_note",
+                "detail": "varchar(120)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "gate_material",
+                "detail": "varchar(8)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "gate_tooling",
+                "detail": "varchar(8)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "gate_artwork",
+                "detail": "varchar(8)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "gate_note",
+                "detail": "varchar(190)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "material_ready_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "actual_setup_min",
+                "detail": "int unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "pending_move",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "pending_from",
+                "detail": "text"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "pending_reason",
+                "detail": "varchar(190)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "crew_work_center_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation",
+                "column": "subcon_supplier_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "prd_operation_time_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "prd_output_action_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "prd_plan_decision",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "prd_plan_run",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "prd_wo_operation_machine",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "is_urgent",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "urgent_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "urgent_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "urgent_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "urgent_wo_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "i_batch_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "urgent_approved_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "urgent_approved_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "urgent_approval_note",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "i_certification",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "i_food_grade",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2pur",
+                "table": "dn_debit_note",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_app_menu",
+                "column": "hide_in_menu",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_qc_review",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_quote_shown",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-13 15:00:25",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_md_review",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_review_request",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_story_review",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-07 15:11:28",
         "items": [
             {

@@ -219,11 +219,8 @@ Teks UI per bahasa. `lang_code` -> `sys_languages.code`; `trans_key`=kunci teks 
 - FK internal: `lang_code -> sys_languages`
 - Unique: (`lang_code`, `trans_key`)
 
-### `sys_user_menu`
-Menu profil (dropdown avatar): chat, notifikasi, AI, edit profil, ubah password, setup, bahasa, keluar. Item & urutan diatur dari tabel ini (data-driven, lihat memory `project_queue_item9_pending`).
-- PK: `id_umenu`
-- Kolom: `id_umenu`, `section`, `code` (unique), `label`, `icon`, `action_type` (drawer/modal/menu/url/lang/logout), `action_target`, `badge_source` (chat/notif/NULL), `is_danger`, `admin_only`, `visibility` (all/employee_linked/non_employee_linked/setup_non_admin), `sort_order`, `activate`, `created_at`, `updated_at`
-- FK internal: tidak ada
+### `sys_user_menu` (DIBUANG 2026-10-22)
+Menu avatar klasik v1. Tabel dibuang lewat migration `2026_10_22_000100_drop_sys_user_menu` (T10 tahap 7e); menu avatar v2 disusun dari kode `LayerShell`. DDL dan 11 baris terakhir (ddtsys + tm2sys) ada di `tmerp_unused/arsip_v1_2026-10-22.zip` (`sys_user_menu_dump_v1_2026-10-22.json`).
 
 ## Catatan
 - Ini koneksi DEFAULT Laravel (lihat memory `project_default_db_connection`) — semua tabel framework (`cache*`, `failed_jobs`, `job_batches`, `jobs`, `migrations`, `password_reset_tokens`, `sessions`) hidup di sini, bukan di tm2mst.

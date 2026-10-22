@@ -25,7 +25,7 @@ class DdtCopySys extends Command
     // Kelompok data yang disalin. Tabel lain (sesi, cache, antrean, chat, notifikasi, tiket, snapshot dummy)
     // hanya skemanya: isinya transaksi/runtime tmerp, bukan milik ddtsys.
     public const GROUPS = [
-        'menu' => ['sys_app_menu', 'sys_app_menu_color', 'sys_user_menu'],
+        'menu' => ['sys_app_menu', 'sys_app_menu_color'],
         'security' => ['sec_module', 'sec_group', 'sec_group_permission', 'sec_user', 'sec_user_group', 'sec_recovery_question'],
         'config' => ['migrations', 'sys_constant_category', 'sys_constant', 'sys_setting', 'sys_theme', 'sys_languages', 'sys_translations',
             'sys_login_hero', 'sys_quotes', 'sys_doc_reference', 'sys_data_origin_rule', 'sys_data_requirement'],
