@@ -175,3 +175,4 @@ Other schedules in `routes/console.php` without a registered engine: `recruitmen
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: key `single-face-price` (Procurement) was added after the lines cited here; nothing in this card changed.
 
 > Re-checked 2026-10-17 against `EngineRegistry.php` and `engines.json`: keys `duplex-price` and `corrugated-sheet-price` (Procurement) were added after the lines cited here; nothing in this card changed.
+- Re-checked 2026-10-22 after the v1 UI frame was removed (rule D.25, Master T10 stage 7d): `EngineRegistry.php` changed one line (the `dieline` entry now points at `packages/mockup-parts/resources/assets/tmdieline.js`, no line shifted), `engines.json` was regenerated (that file path plus current line counts), and `app/Support/V2/Grid/DbGrid.php` lost the unused v1 form hook so the cited line numbers here were remapped (`rows()` 351-364, `toggle()` 367-377); nothing else in this card changed.

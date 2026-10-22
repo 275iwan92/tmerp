@@ -4,8 +4,8 @@ namespace App\Models\Sys;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Preferensi tampilan grid per user (custom view/sort/group-by, keputusan
-// user 2026-08-27) -- lihat App\Livewire\Concerns\HasCustomizableGrid.
+// Preferensi tampilan per user (dulu custom view/sort/group-by grid v1, keputusan user 2026-08-27; kini dipakai papan Shift Roster
+// v2 untuk menyimpan shift yang disembunyikan: grid_key + visible_columns).
 class SysGridPreference extends Model
 {
     protected $connection = 'tm2sys';

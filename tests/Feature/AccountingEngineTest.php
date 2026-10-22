@@ -19,7 +19,6 @@ use App\Services\Acc\FinPeriodGuard;
 use App\Services\Acc\JournalPostingService;
 use App\Services\Acc\LedgerService;
 use Illuminate\Support\Facades\DB;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 // Regresi Accounting Process Engine (tm2acc). Test menulis ke MySQL sungguhan
@@ -309,15 +308,6 @@ class AccountingEngineTest extends TestCase
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
         $this->expectExceptionMessage($first->invoice_number);
         $svc->createCustomerInvoice($data, self::USER);
-    }
-
-    public function test_semua_layar_finance_bisa_dirender(): void
-    {
-        $this->actingAs(SecUser::where('is_admin', true)->firstOrFail());
-        // Layar finance v1 lain (engine, dashboard, bank, ledger, closing, tax, laporan) dibuang 13 Okt 2026; pengganti = layar v2 acc-*.
-        foreach (['payables', 'journals', 'assets', 'amortization'] as $page) {
-            Livewire::test('pages::finance.'.$page)->assertOk();
-        }
     }
 
     public function test_tidak_ada_faktur_uji_yang_tertinggal(): void

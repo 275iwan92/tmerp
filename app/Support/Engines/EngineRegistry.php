@@ -90,7 +90,7 @@ final class EngineRegistry
             [
                 'key' => 'dieline', 'name' => 'Dieline Engine (TMDieline)', 'group' => 'Inquiry Product', 'mode' => 'calc',
                 'purpose' => 'Draws the flat dieline of a product type from its dimensions, live while Sales types the size.',
-                'file' => 'resources/js/tmdieline.js',
+                'file' => 'packages/mockup-parts/resources/assets/tmdieline.js',
                 'calls' => [
                     ['TMDieline.render(el, spec, dims)', 'Draws the dieline into an element; shows a hint when the type has no spec or the size is incomplete.'],
                     ['TMDieline.svg(spec, dims): string|null', 'Returns the SVG text only.'],

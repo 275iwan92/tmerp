@@ -4,7 +4,7 @@ namespace App\Support\Dieline;
 
 use Throwable;
 
-// Port PHP 1:1 dari renderer JS resources/js/tmdieline.js (= packages/mockup-parts/resources/assets/tmdieline.js):
+// Port PHP 1:1 dari renderer JS packages/mockup-parts/resources/assets/tmdieline.js:
 // DSL prod_type.dieline_spec -> SVG & bentangan, supaya SVG dieline bisa dibuat di server (impor master card massal,
 // user 2026-10-01: "setiap inputan file master card HARUS MENAMBAH SVG DATA"). Ubah salah satu = ubah keduanya;
 // TmDielineTest menjaga hasil angka tetap sama.

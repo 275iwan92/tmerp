@@ -1,7 +1,7 @@
 [
     {
         "class": null,
-        "file": "resources/js/tmdieline.js",
+        "file": "packages/mockup-parts/resources/assets/tmdieline.js",
         "lines": 176,
         "entries": [
             {
@@ -2452,7 +2452,7 @@
     {
         "class": "App\\Services\\Inventory\\StockPostingService",
         "file": "app/Services/Inventory/StockPostingService.php",
-        "lines": 340,
+        "lines": 349,
         "entries": [
             {
                 "method": "postDocument",
@@ -5155,7 +5155,7 @@
     {
         "class": "App\\Services\\Inventory\\StockReversalService",
         "file": "app/Services/Inventory/StockReversalService.php",
-        "lines": 200,
+        "lines": 222,
         "entries": [
             {
                 "method": "refusal",

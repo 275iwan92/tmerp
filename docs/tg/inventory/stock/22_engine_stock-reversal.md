@@ -1,13 +1,13 @@
 # ENGINE card: Stock Reversal (cancel a posted stock document)
 
-> Written 2026-10-16 (group Inventory/Stock). Source read in full: `app/Services/Inventory/StockReversalService.php` (200 lines), screen side `app/Livewire/Concerns/HasStockReversal.php` and `resources/views/partials/inventory-reversal.blade.php`. Tables: card `10_card_stock-document.md`. No test was run (no DB writes allowed in this task).
+> Written 2026-10-16 (group Inventory/Stock). Source read in full: `app/Services/Inventory/StockReversalService.php` (200 lines), screen side `tmerp_unused/HasStockReversal_v1_2026-10-22.php` and `tmerp_unused/partial_inventory_reversal_v1_2026-10-22.blade.php`. Tables: card `10_card_stock-document.md`. No test was run (no DB writes allowed in this task).
 > Verified: 2026-10-16
 
 - **Canonical name**: Stock Reversal Service. **Class**: `App\Services\Inventory\StockReversalService` (methods `refusal`, `state`, `reverse`, `duplicate`, `defaultReason`). **Registry**: key `stock-reversal`. **Module/sub-module**: Inventory > Stock.
 - **Role**: enforces "a posted document is never edited or deleted". Cancel = a NEW document in the opposite direction, posted through the normal path, so the Stock Card stays chained. Decided by Jo 2026-10-08 with the mandatory reason text "Kesalahan transaksi no. XXX" (rule A.26 in `docs/globaluserrules.md`, FROM DOCUMENT; the default reason in code matches, `StockReversalService.php:47-50`).
 
 ## Trigger (no background / schedule)
-User action on a POSTED Stock In / Out / Return form: buttons Cancel (reason dialog) and Duplicate, shown by the partial `inventory-reversal.blade.php`. No schedule, no other caller (grep `StockReversalService`: only the trait, the registry and tests).
+User action on a POSTED Stock In / Out / Return form: buttons Cancel (reason dialog) and Duplicate, shown by the archived partial `tmerp_unused/partial_inventory_reversal_v1_2026-10-22.blade.php`. No schedule, no other caller (grep `StockReversalService`: only the trait, the registry and tests).
 
 ## Input / Output
 - **Input**: class (RM, SFG, FG), `docId`, reason (trimmed to 255 characters), login.

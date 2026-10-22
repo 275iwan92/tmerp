@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 
-// Menu akun Layer Menu v2 (laci Notifikasi, modal Edit profil & Ubah password) -> database. Aturannya = panel yang sama di
-// menu lama (App\Livewire\Shell\UserPanels): profil = sec_user name / email / phone, password lewat PasswordResetService,
+// Menu akun Layer Menu v2 (laci Notifikasi, modal Edit profil & Ubah password) -> database. Aturannya (dulu panel menu lama, diarsipkan T10 tahap 6c):
+// profil = sec_user name / email / phone, password lewat PasswordResetService,
 // notifikasi = sys_notifications milik user + siaran (user_id NULL).
 final class Account
 {

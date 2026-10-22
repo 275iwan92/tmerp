@@ -5,10 +5,7 @@ namespace App\Exports;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-// Export .xlsx generik dipakai HasCustomizableGrid::exportGridExcel() --
-// satu class dipakai ulang semua grid (headings + rows sudah disiapkan
-// trait sesuai kolom yang lagi tampil), bukan bikin Export class baru
-// per layar.
+// Export .xlsx generik (headings + rows sudah disiapkan pemanggil), satu class dipakai ulang oleh rute export v2, bukan Export class baru per layar.
 class GenericGridExport implements FromArray, WithHeadings
 {
     public function __construct(

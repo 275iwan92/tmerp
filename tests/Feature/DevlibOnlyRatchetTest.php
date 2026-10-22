@@ -4,7 +4,7 @@
  * REMARK
  * Tujuan       : Penjaga ratchet "layar v2 = objek DevLib": tes GAGAL bila layar baru / yang diubah memakai markup mentah, warna literal,
  *                inline style, atau kelas lokal di luar objek DevLib, atau bila CSS lokal menambah warna literal di luar token.
- * Sumber hulu  : berkas Blade di resources/views/v2, berkas CSS di folder packages dan resources/css, komponen paket DevLib / mockup-parts.
+ * Sumber hulu  : berkas Blade di resources/views/v2, berkas CSS di folder packages, komponen paket DevLib / mockup-parts.
  * Input        : -
  * Output       : Lulus bila tiap hitungan sama dengan BASELINE; naik = gagal (pakai / extends objek DevLib), turun = gagal sampai BASELINE diturunkan.
  * Dipakai oleh : php artisan test (CI lokal); aturan "CHECK DevLib dulu" di CLAUDE.md.
@@ -47,8 +47,6 @@ class DevlibOnlyRatchetTest extends TestCase
     private const CSS_BASELINE = [
         'packages/mockup-parts/resources/assets/css/mockup-parts.css' => 27,
         'packages/mockup-parts/resources/assets/css/prodev.css' => 214,
-        'resources/css/app.css' => 67,
-        'resources/css/ledger.css' => 42,
     ];
 
     private const PATTERNS = [
@@ -100,7 +98,7 @@ class DevlibOnlyRatchetTest extends TestCase
     public static function cssColorCounts(): array
     {
         $out = [];
-        $finder = (new Finder)->files()->in([base_path('packages'), resource_path('css')])->name('*.css')->notName('*.min.css')->notName('devlib.css')->notPath('vendor')->notPath('node_modules');
+        $finder = (new Finder)->files()->in(base_path('packages'))->name('*.css')->notName('*.min.css')->notName('devlib.css')->notPath('vendor')->notPath('node_modules');
         foreach ($finder as $file) {
             $css = preg_replace('!/\*.*?\*/!s', '', $file->getContents());
             $n = 0;

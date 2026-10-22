@@ -19,14 +19,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
-use Livewire\Component;
 use Throwable;
 
 // Grid mockup.test yang datanya SELALU dari database (user 2026-09-30: "pakai object oriented, semua grid ambil
 // datanya dari database"). Satu turunan = satu layar grid; turunan hanya mendeklarasikan query, kolom, dan pemetaan
 // baris. Tampilan & perilaku = DevLib x-dl::grid keluarga yang disepakati (Grid Master / Grid Transactional / Report).
-// Buka/Edit/New sementara ke form v1 lewat ?open={id} / ?new=1 (App\Livewire\Concerns\OpensFromQuery) sampai
-// Single Form v2 disetujui user.
+// Buka/Edit/New lewat v1Route() (rute pengalihan ke form v2 ?open={id} / ?new=1) bila grid menentukannya.
 abstract class DbGrid
 {
     public const MASTER = 'master';
@@ -293,12 +291,6 @@ abstract class DbGrid
         return null;
     }
 
-    // Komponen v1 yang aturannya dipakai ulang (toggle aktif, dsb) — satu sumber kebenaran dengan v1.
-    protected function v1Component(): ?string
-    {
-        return null;
-    }
-
     protected function canCreate(): bool
     {
         return $this->family() !== self::REPORT && $this->v1Route() !== null;
@@ -371,20 +363,15 @@ abstract class DbGrid
         })->all();
     }
 
-    // Aktif/Nonaktif Grid Master. Pakai aturan v1 bila ada (mis. nonaktif pegawai ikut mengunci akun), selain itu balik kolom.
+    // Aktif/Nonaktif Grid Master: balik kolom aktif (aturan khusus per master ada di service masing-masing).
     public function toggle(int $id): bool
     {
         $m = $this->query()->getModel()->newQuery()->findOrFail($id);
-        $v1 = $this->v1Component() ? app('livewire')->new($this->v1Component()) : null;
-        if ($v1 instanceof Component && method_exists($v1, 'toggleActive')) {
-            $v1->toggleActive($id);
-        } else {
-            $m->setAttribute($this->activeColumn, ! $m->getAttribute($this->activeColumn));
-            if ($m->getConnection()->getSchemaBuilder()->hasColumn($m->getTable(), 'updated_by')) {
-                $m->setAttribute('updated_by', auth()->user()?->login);
-            }
-            $m->save();
+        $m->setAttribute($this->activeColumn, ! $m->getAttribute($this->activeColumn));
+        if ($m->getConnection()->getSchemaBuilder()->hasColumn($m->getTable(), 'updated_by')) {
+            $m->setAttribute('updated_by', auth()->user()?->login);
         }
+        $m->save();
 
         return (bool) $m->newQuery()->whereKey($id)->value($this->activeColumn);
     }

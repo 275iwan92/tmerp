@@ -1,9 +1,9 @@
 # ENGINE card: Dieline Engine (TMDieline)
 
-> DRAFT GROUP C (2026-10-16), awaiting Jo's approval. Sources read: `resources/js/tmdieline.js` (176 lines) and `app/Support/Dieline/TmDieline.php` (332 lines, PHP port); test `TmDielineTest` was run (3 passed, 8 asserts). JS vs PHP parity was tested directly with node v24 against the 27 active product types (result below).
+> DRAFT GROUP C (2026-10-16), awaiting Jo's approval. Sources read: `packages/mockup-parts/resources/assets/tmdieline.js` (176 lines) and `app/Support/Dieline/TmDieline.php` (332 lines, PHP port); test `TmDielineTest` was run (3 passed, 8 asserts). JS vs PHP parity was tested directly with node v24 against the 27 active product types (result below).
 
-- **Canonical name**: Dieline Engine (TMDieline). **File (registry key `dieline`, mode `calc`, group Inquiry Product)**: `resources/js/tmdieline.js`. **Module/sub-module**: Sales > Inquiry & Quotation > Inquiry Product.
-- **Three copies of the same code** (FACT): `resources/js/tmdieline.js`; `packages/mockup-parts/resources/assets/tmdieline.js` (identical content, empty `diff`); PHP port `App\Support\Dieline\TmDieline`. The registry only lists the first.
+- **Canonical name**: Dieline Engine (TMDieline). **File (registry key `dieline`, mode `calc`, group Inquiry Product)**: `packages/mockup-parts/resources/assets/tmdieline.js`. **Module/sub-module**: Sales > Inquiry & Quotation > Inquiry Product.
+- **Two copies of the same code** (FACT; the third copy `packages/mockup-parts/resources/assets/tmdieline.js` went into the archive with the v1 bundle, T10 stage 7d, and was identical): `packages/mockup-parts/resources/assets/tmdieline.js` (the registry file) and the PHP port `App\Support\Dieline\TmDieline`.
 - **Frozen status**: the dieline render capability is LOCKED by Jo ("already exists & verified good, do not change"; `docs/claude_vital_flows.md`). Do not change the geometry without Jo's permission.
 - **Synonyms**: dieline, knife, flat layout, DSL `dieline_spec`, TMDieline.
 - **NOT the same as**: `ImpositionEngine` (arranges the flat layout on the plano); **NOT** the product type (`prod_type.type_code`, see `10_card_product-type.md`): the product type is recipe data, this engine reads it.
@@ -17,9 +17,9 @@ Not in `routes/console.php`, Jobs, Observers. Everything is triggered by the dis
 | Master Card Collection | same | `resources/views/v2/screens/master-card-collection.blade.php:144` |
 | Inquiry v1 Form/Recalc/Nota/Hub, Quotation print | `svg`, `render` | `tmerp_unused/inquiry_form_v1_2026-10-21.blade.php:272`, `tmerp_unused/inquiry_recalc_v1_2026-10-20.blade.php:302`, `tmerp_unused/inquiry_nota_v1_2026-10-20.blade.php:472`, `tmerp_unused/inquiry_hub_v1_2026-10-20.blade.php:33`, `tmerp_unused/quotation_print_v1_2026-10-20.blade.php:80`, `tmerp_unused/component_inquiry_readonly_summary_v1_2026-10-21.blade.php:224` |
 | ProDev (nesting draws the blank) | `svg` | `production/prodev.blade.php:1593`, `:3695` |
-| 3D box | `STROKE` | `resources/js/tm-box3d.js:17` |
+| 3D box | `STROKE` | `tmerp_unused/tm_box3d_v1_2026-10-22.js:17` |
 | Bulk Master Card import (server) | `TmDieline::flat`, `::svg` | `app/Services/MasterCard/MasterCardShape.php:98`, `:133`, `:142` (called by `MasterCardService`, `MasterCardDummyEngine`) |
-`resources/js/app.js:1` loads the engine for v1 pages. Livewire bridge: `resources/js/dieline-part.js:65,85`.
+(Archived v1 bundle, T10 stage 7d: `tmerp_unused/app_v1_2026-10-22.js:1` loaded the engine for v1 pages; Livewire bridge `tmerp_unused/dieline_part_v1_2026-10-22.js:65`.)
 
 ## Flow (text twin, no diagram: one straight path)
 1. The screen sends `spec` (product type recipe, JSON `prod_type.dieline_spec`) and `dims` (the typed/chosen sizes).

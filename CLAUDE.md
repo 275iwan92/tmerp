@@ -33,20 +33,18 @@
 - Alur vital Inquiry/ProDev/ProCost/Quotation/CO/CPDEL: baca `docs/claude_vital_flows.md` sebelum menyentuhnya.
 
 ## 4. Stack dan perintah
-PHP ^8.3, Laravel 13, Livewire 4 (SFC), Filament 5, PowerGrid, Tailwind 4 + Vite 8. Tiga situs: **devlib.test** (situs acuan objek `x-dl::*`, DB `devlib`; kodenya di repo devlib, `../devlib/site`, bukan di repo tmerp), **mockup.test** (UAT, DB dummy `ddt*` via `.env.mockup`) dan **tmerp.test** (live, `tm2*`; Herd) = satu kode tmerp.
+PHP ^8.3, Laravel 13; UI = objek DevLib (`x-dl::*`) dan MockupParts (`x-mp::*`) dengan CSS/JS siap pakai, tanpa Livewire, Filament, PowerGrid, Tailwind, Vite, atau npm (v1 dibuang 2026-10-22, arsip di `tmerp_unused/arsip_v1_*.zip`). Tiga situs: **devlib.test** (situs acuan objek `x-dl::*`, DB `devlib`; kodenya di repo devlib, `../devlib/site`, bukan di repo tmerp), **mockup.test** (UAT, DB dummy `ddt*` via `.env.mockup`) dan **tmerp.test** (live, `tm2*`; Herd) = satu kode tmerp.
 
 ```bash
-composer setup                       # install + .env + key + migrate + build
-npm run build                        # WAJIB setelah ubah class Tailwind
+composer setup                       # install + .env + key + migrate
 php artisan test --filter=NamaTest   # test (MySQL lokal sungguhan, bersihkan sendiri di tearDown)
 vendor/bin/pint --dirty              # format PHP
-php artisan make:tm-screen master|grid|form modul.nama --model="Master\X"
 php artisan build:catalog --env=mockup   # setelah ubah layar/fitur; commit build.json
 php artisan engine:catalog               # setelah daftar engine berubah
 ```
 
-- Layar/komponen baru: skill `tmerp-screen` + `resources/views/components/_manifest.yaml`; mockup JPEG: `tmerp-ui-mockup`. Prioritas skill: `devlib-oo` + `devlib-inheritance` > `tmerp-stack-rules`/`tmerp-screen`/`tmerp-ui-mockup` > skill komunitas > skill generik.
-- Test tanpa `RefreshDatabase`; test yang menyisipkan data wajib cleanup sendiri lalu diverifikasi ke DB. `CareersPortalTest` skip bila Firebase Emulator mati (normal).
+- Layar/komponen baru: deklarasi objek `x-dl::*` / `x-mp::*` (skill `devlib-oo`; aturan entri di service `app/Services/*`); mockup JPEG: `tmerp-ui-mockup`. Prioritas skill: `devlib-oo` + `devlib-inheritance` > `tmerp-stack-rules`/`tmerp-ui-mockup` > skill komunitas > skill generik.
+- Test tanpa `RefreshDatabase`; test yang menyisipkan data wajib cleanup sendiri lalu diverifikasi ke DB. `CareersPortalV2Test` skip bila Firebase Emulator mati (normal).
 - Artisan situs dummy: `php artisan ... --env=mockup`. Mode Developer = F10.
 
 ## 5. Database (LOCKED)
@@ -68,7 +66,7 @@ php artisan engine:catalog               # setelah daftar engine berubah
 - Payroll: baca lewat model (cast `PayrollEncrypted`), jangan SQL mentah.
 
 ## 6. Peta kode
-- Halaman v2: `routes/v2*.php`, `resources/views/v2`, menu dari `sys_app_menu` lewat `App\Support\V2\AppMenu` (`target='v2:<slug>'`). Layar v1 (Livewire SFC di `resources/views/pages/<modul>`) diganti v2 satu per satu, tidak dipoles.
+- Halaman v2: `routes/v2*.php`, `resources/views/v2`, menu dari `sys_app_menu` lewat `App\Support\V2\AppMenu` (`target='v2:<slug>'`). Layar v1 (Livewire SFC) sudah seluruhnya dibuang (D.25/D.26); yang tersisa hanya layar v2.
 - Logika bisnis di `app/Services/*` (`Costing`, `Imposition`, `Sales`, `Scheduling`, `Payroll`, ...), bukan di komponen. Engine terdaftar di `App\Support\Engines\EngineRegistry`.
 - Grid: `DbGrid` + kelas turunan di `App\Support\V2\Grid`; objek DevLib di `../devlib` (repo git sendiri `Herd\devlib`, setara tmerp, dipasang lewat Composer path repository `jo/devlib` (tautan `vendor/jo/devlib`); dipindah dari `packages/devlib` 2026-10-19; situs acuan devlib.test = `../devlib/site`; **perubahan DevLib di-commit di repo itu, bukan di git tmerp**), bagian khusus di `packages/mockup-parts`.
 - `DataOriginScope` (web) menyembunyikan DUMMY/LEGACY sesuai setelan admin; console/test melihat semua.
