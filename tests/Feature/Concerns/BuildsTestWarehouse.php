@@ -77,19 +77,22 @@ trait BuildsTestWarehouse
     protected function cleanFixture(): void
     {
         $inv = DB::connection('tm2inv');
+        // Uji yang memanggil route (actingAs admin) menulis tugas / dokumen / kartu stok atas nama admin, bukan BY; ikat lewat bin uji supaya ikut bersih.
+        $binIds = WhLoc::query()->where('created_by', self::BY)->pluck('location_id')->all() ?: [0];
+        $taskNos = WhTask::query()->whereIn('from_location_id', $binIds)->pluck('task_no')->all() ?: [''];
         $issueIds = $inv->table('inv_subcon_issue')->where('created_by', self::BY)->pluck('id_subcon_issue')->all();
         $inv->table('inv_subcon_issue_line')->whereIn('issue_id', $issueIds ?: [0])->delete();
         $inv->table('inv_subcon_issue')->whereIn('id_subcon_issue', $issueIds ?: [0])->delete();
         $palletIds = $inv->table('inv_pallet')->where('created_by', self::BY)->pluck('id_pallet')->all();
-        WhTask::query()->where('created_by', self::BY)->orWhereIn('pallet_id', $palletIds ?: [0])->delete();
+        WhTask::query()->where('created_by', self::BY)->orWhereIn('pallet_id', $palletIds ?: [0])->orWhereIn('from_location_id', $binIds)->delete();
         $inv->table('inv_pallet_log')->whereIn('pallet_id', $palletIds ?: [0])->delete();
         $inv->table('inv_pallet')->whereIn('id_pallet', $palletIds ?: [0])->delete();
         $transferIds = $inv->table('inv_transfer')->where('created_by', self::BY)->pluck('id_transfer')->all();
         $inv->table('inv_transfer_line')->whereIn('transfer_id', $transferIds ?: [0])->delete();
         $inv->table('inv_transfer')->whereIn('id_transfer', $transferIds ?: [0])->delete();
-        $docIds = $inv->table('rm_stock')->where('create_by', self::BY)->pluck('doc_id')->all();
+        $docIds = $inv->table('rm_stock')->where('create_by', self::BY)->orWhere(fn ($q) => $q->where('ref_doc_type', 'COUNT_TASK')->whereIn('ref_doc_no', $taskNos))->pluck('doc_id')->all();
         $inv->table('rm_stock_d')->whereIn('doc_id', $docIds ?: [0])->delete();
-        $inv->table('rm_stockcard')->where('create_by', self::BY)->delete();
+        $inv->table('rm_stockcard')->where('create_by', self::BY)->orWhereIn('location_id', $binIds)->delete();
         $inv->table('rm_stock')->whereIn('doc_id', $docIds ?: [0])->delete();
         foreach ($this->curStock as $id => $value) {
             DB::connection('tm2mst')->table('mat_raw')->where('material_id', $id)->update(['cur_stock' => $value]);
