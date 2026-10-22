@@ -28,7 +28,8 @@ class ForcePasswordChange
             return $next($request);
         }
 
-        if ($user->must_change_password && ! $request->routeIs('password.change', 'security.setup')) {
+        // Jo 2026-10-22: belum UAT, user tidak dipaksa ganti password (config uat.password_change_skip, bawaan '*'; kosongkan untuk menyalakan paksaan lagi).
+        if ($user->must_change_password && ! self::skips('password_change_skip', $user->login) && ! $request->routeIs('password.change', 'security.setup')) {
             return redirect()->route('password.change');
         }
 
@@ -47,7 +48,13 @@ class ForcePasswordChange
     // .env.mockup; di tmerp.test kosong -> gerbang tetap penuh.
     public static function skipsSecuritySetup(string $login): bool
     {
-        $list = array_filter(array_map('trim', explode(',', strtolower((string) config('uat.security_setup_skip')))));
+        return self::skips('security_setup_skip', $login);
+    }
+
+    // Kunci config/uat.php berisi '*' (semua) atau daftar login dipisah koma.
+    private static function skips(string $key, string $login): bool
+    {
+        $list = array_filter(array_map('trim', explode(',', strtolower((string) config('uat.'.$key)))));
 
         return in_array('*', $list, true) || in_array(strtolower($login), $list, true);
     }
