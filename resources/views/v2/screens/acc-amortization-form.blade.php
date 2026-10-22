@@ -59,7 +59,7 @@
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="1">
-                <x-dl::field.text name="asset_name" label="Schedule name" required placeholder="Asuransi pabrik dan kendaraan 2027" :value="$val('asset_name', $a?->asset_name)" :source="$s('asset_name')" />
+                <x-dl::field.text name="asset_name" label="Schedule name" required placeholder="Factory and vehicle insurance 2027" :value="$val('asset_name', $a?->asset_name)" :source="$s('asset_name')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
                 <x-dl::field.select name="category_id" label="Category" required :options="$svc->categoryOptions($a?->category_id)" :value="$val('category_id', $a?->category_id ?? $cat?->category_id)" :source="$s('category_id')" />

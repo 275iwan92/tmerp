@@ -32,13 +32,17 @@ class SalesMenuNoReportGroupTest extends TestCase
 
         $this->assertNull($reportGroup, 'Grup "Laporan" terpisah tidak boleh ada lagi di modul Sales.');
 
+        // Aturan C.35 (2026-10-16): laporan ada di baris heading Report di dalam grupnya; id baris itu beda di ddtsys dan tm2sys, jadi dicari lewat kode.
+        $orderReport = $db->table('sys_app_menu')->where('code', 'SALES_ORDGRP_RPT')->first(['id', 'parent_id']);
+        $this->assertSame(939, $orderReport->parent_id, 'Heading Report pesanan tetap di dalam grup Sales Order (939).');
+
         $expectedParents = [
             // Inquiry & Quotation = modul menu sendiri (PREORDER) sejak 2026-10-02, bukan lagi grup 938 di dalam Sales;
             // laporannya di grup Report modul itu (sama dengan menu v2 di ddtsys).
             'SALES_WINRATE' => $db->table('sys_app_menu')->where('code', 'SALES_INQGRP_RPT')->value('id'),
-            'SALES_GRID_SO' => 939,  // Sales Order
-            'SALES_MON_ORD' => 939,
-            'SALES_RPT' => 939,
+            'SALES_GRID_SO' => $orderReport->id,
+            'SALES_MON_ORD' => $orderReport->id,
+            'SALES_RPT' => $orderReport->id,
         ];
 
         foreach ($expectedParents as $code => $expectedParent) {

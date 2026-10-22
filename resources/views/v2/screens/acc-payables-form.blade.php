@@ -77,7 +77,7 @@
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="1">
-                <x-dl::field.text name="description" label="Description" required placeholder="Kertas Ivory 310 gsm, September" :value="$val('description', $b?->description)" :source="$s('description')" />
+                <x-dl::field.text name="description" label="Description" required placeholder="Ivory paper 310 gsm supply" :value="$val('description', $b?->description)" :source="$s('description')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="2">
                 @if ($new)

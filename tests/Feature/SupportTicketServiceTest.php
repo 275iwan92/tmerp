@@ -122,6 +122,7 @@ class SupportTicketServiceTest extends TestCase
         $this->post($save, ['id' => 999999999, 'action' => 'done'])->assertNotFound();
 
         $uid = DB::connection('tm2sys')->table('sec_user')->insertGetId(['login' => 'tst_tick_plain', 'name' => 'Test plain', 'active' => 1, 'activate' => 1, 'is_admin' => 0]);
+        config(['uat.security_setup_skip' => 'tst_tick_plain']); // tanpa ini gerbang force.password mengalihkan (302) akun tanpa setup keamanan sebelum middleware admin menolak
         $this->actingAs(SecUser::findOrFail($uid));
         $this->post($save, ['id' => $t->id_ticket, 'action' => 'reopen'])->assertForbidden();
         $this->actingAs($this->admin());

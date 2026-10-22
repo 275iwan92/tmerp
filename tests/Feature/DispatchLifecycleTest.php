@@ -182,11 +182,12 @@ class DispatchLifecycleTest extends TestCase
 
         $doHtml = $this->get('/v2/print/delivery-order/'.$this->do->id_delivery)->assertOk()->getContent();
         $this->assertStringContainsString('ITEM-RAHASIA-HARGA', $doHtml);
-        $this->assertStringContainsString('777.777', $doHtml);
+        $price = \Devlib\Locale::number(777777); // format mengikuti bahasa akun (en: 777,777), bukan titik ribuan tetap
+        $this->assertStringContainsString($price, $doHtml);
 
         $sjHtml = $this->get('/v2/print/delivery-note/'.$this->do->id_delivery)->assertOk()->getContent();
         $this->assertStringContainsString('ITEM-RAHASIA-HARGA', $sjHtml);
-        $this->assertStringNotContainsString('777.777', $sjHtml);
+        $this->assertStringNotContainsString($price, $sjHtml);
         $this->assertStringNotContainsString('777777', $sjHtml);
     }
 }

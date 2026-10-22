@@ -21,7 +21,8 @@ class EmployeeSalaryExportTest extends TestCase
     public function test_download_is_limited_to_gm_and_direksi(): void
     {
         $url = route('v2.payroll.employee-salary-xlsx');
-        $plain = SecUser::query()->get()->first(fn (SecUser $u) => ! $u->canExportPayrollAmounts() && $u->canAccessModule('HRM'));
+        // Akun yang wajib ganti password dialihkan ke /password/change (302), bukan ditolak: hanya akun siap pakai yang dihitung.
+        $plain = SecUser::query()->where('must_change_password', false)->get()->first(fn (SecUser $u) => ! $u->canExportPayrollAmounts() && $u->canAccessModule('HRM'));
         if ($plain) {
             $this->actingAs($plain)->get($url)->assertForbidden();
         }

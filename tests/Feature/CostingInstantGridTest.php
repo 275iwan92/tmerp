@@ -26,7 +26,8 @@ class CostingInstantGridTest extends TestCase
 
         $first = $this->actingAs($admin)->get(route('v2.procost-instant.new'));
         $first->assertRedirect();
-        $id = (int) basename(parse_url($first->headers->get('Location'), PHP_URL_PATH));
+        parse_str((string) parse_url($first->headers->get('Location'), PHP_URL_QUERY), $query);
+        $id = (int) ($query['id'] ?? 0);
         if (! in_array($id, $before, true)) {
             $this->created[] = $id;
         }

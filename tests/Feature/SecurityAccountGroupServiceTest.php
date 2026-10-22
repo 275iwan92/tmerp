@@ -181,6 +181,7 @@ class SecurityAccountGroupServiceTest extends TestCase
 
         // Bukan administrator: ditolak oleh middleware admin.
         $id = DB::connection('tm2sys')->table('sec_user')->insertGetId(['login' => 'tst_sec_plain', 'name' => 'Test plain', 'active' => 1, 'activate' => 1, 'is_admin' => 0]);
+        config(['uat.security_setup_skip' => 'tst_sec_plain']); // tanpa ini gerbang force.password mengalihkan (302) akun tanpa setup keamanan sebelum middleware admin menolak
         $this->actingAs(SecUser::findOrFail($id));
         $this->post(route('v2.setup.account.save'), $this->acct(['login' => 'zz.other']))->assertForbidden();
         $this->post(route('v2.setup.group.save'), ['group_code' => 'ZZ_X', 'group_name' => 'ZZ X', 'mgmt_level' => 1])->assertForbidden();

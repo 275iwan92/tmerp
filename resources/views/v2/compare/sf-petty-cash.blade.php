@@ -25,8 +25,8 @@ Status       : Aktif (bahan pembanding).
         'back' => '#', 'advance' => null,
         'settle' => ['action' => '#', 'reimburse' => false,
             'description' => 'Advance PCA2600007 IDR 750.000 to Budi. Enter the receipt amount per line; change or shortfall is calculated automatically.',
-            'lines' => [['name' => 'nota[1]', 'label' => 'Receipt: Lakban bening 2 inch (24,00 ROLL)', 'value' => 360000],
-                ['name' => 'nota[2]', 'label' => 'Receipt: Cutter besar (10,00 PCS)', 'value' => 390000]],
+            'lines' => [['name' => 'nota[1]', 'label' => raw('Receipt: Lakban bening 2 inch (24,00 ROLL)'), 'value' => 360000],
+                ['name' => 'nota[2]', 'label' => raw('Receipt: Cutter besar (10,00 PCS)'), 'value' => 390000]],
             'receiver' => null, 'confirm' => 'Post this receipt to petty cash?'],
     ]] + $head" />
 

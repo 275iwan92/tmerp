@@ -66,6 +66,7 @@ class HireProvisionServiceTest extends TestCase
     private function plain(): SecUser
     {
         $id = DB::connection('tm2sys')->table('sec_user')->insertGetId(['login' => 'tst_prov_plain', 'name' => 'Test plain', 'active' => 1, 'activate' => 1, 'is_admin' => 1]);
+        config(['uat.security_setup_skip' => 'tst_prov_plain']); // tanpa ini gerbang force.password mengalihkan (302) akun tanpa setup keamanan
         PayrollAccess::forget();
 
         return SecUser::findOrFail($id);

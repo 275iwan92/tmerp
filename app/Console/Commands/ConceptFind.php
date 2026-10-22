@@ -7,7 +7,7 @@
  * Input        : argumen kata atau frasa (Indonesia atau Inggris), --limit= per sumber (bawaan 8).
  * Output       : Per sumber: jumlah dan contoh temuan; baris akhir menyatakan sumber mana yang kosong. Baca saja.
  * Dipakai oleh : Agen/developer sebelum mengusulkan sesuatu yang baru (protokol TG, Fase 5).
- * Status       : BARU 2026-10-16, tahap 1. Belum: md:library, pencocokan kata dasar (stemming).
+ * Status       : BARU 2026-10-16, tahap 1. 2026-10-22: temuan tabel/kolom tanpa duplikat tm2*/ddt* dan kecocokan persis dulu (urutan tetap). Belum: md:library, pencocokan kata dasar (stemming).
  */
 
 namespace App\Console\Commands;
@@ -113,7 +113,8 @@ class ConceptFind extends Command
     {
         $hits = [];
         foreach ($snake as $s) {
-            $rows = DB::connection('tm2mst')->select("select table_schema d, table_name t, column_name c from information_schema.columns where (table_schema like 'ddt%' or table_schema like 'tm2%') and (table_name like ? or column_name like ?) limit 80", ["%$s%", "%$s%"]);
+            // DISTINCT (tm2* dan ddt* kembar) + kecocokan persis dulu, supaya 8 baris teratas tidak bergantung urutan information_schema.
+            $rows = DB::connection('tm2mst')->select("select distinct table_name t, column_name c from information_schema.columns where (table_schema like 'ddt%' or table_schema like 'tm2%') and (table_name like ? or column_name like ?) order by (column_name = ? or table_name = ?) desc, table_name, column_name limit 200", ["%$s%", "%$s%", $s, $s]);
             foreach ($rows as $r) {
                 $hits[$r->t.'.'.$r->c] = "{$r->t}.{$r->c}";
             }

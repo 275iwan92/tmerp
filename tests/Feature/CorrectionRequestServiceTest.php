@@ -64,6 +64,7 @@ class CorrectionRequestServiceTest extends TestCase
         foreach ($groups as $code) {
             DB::connection('tm2sys')->table('sec_user_group')->insert(['user_id' => $id, 'group_id' => DB::connection('tm2sys')->table('sec_group')->where('group_code', $code)->value('id_group')]);
         }
+        config(['uat.security_setup_skip' => '*']); // tanpa ini gerbang force.password mengalihkan (302) akun uji tanpa setup keamanan
         PayrollAccess::forget();
 
         return SecUser::findOrFail($id);

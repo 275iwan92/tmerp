@@ -13,7 +13,7 @@ Status       : Aktif (bahan pembanding).
 @endphp
 <x-dl::box class="dl-demo">
     <x-mp::sales.customer-card :card="[
-        'home' => '#', 'price' => true, 'title' => 'PT Contoh Kosmetika', 'description' => 'C0042 · Contoh Group · Cosmetics · Active',
+        'home' => '#', 'price' => true, 'title' => raw('PT Contoh Kosmetika'), 'description' => raw('C0042 · Contoh Group · Cosmetics · Active'),
         'buttons' => [['fa-phone-volume', '+ Activity', '#'], ['fa-triangle-exclamation', '+ Complaint', '#'], ['fa-building', 'Master Customer', '#'], ['back', 'Back', '#']],
         'facts' => [
             [['First Order', '14-Mar-2021', []], ['Last Order', '28-Sep-2026', []], ['Orders (all time)', '86', []], ['Order Value (all time)', 'IDR 4.250.000.000', []], ['Last Contact', '01-Oct-2026', []]],

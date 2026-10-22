@@ -121,7 +121,7 @@ return [
     'peta', 'petanya', 'petugas', 'petunjuk', 'pewawancara', 'pihak', 'pilihan', 'pilihannya', 'pindah', 'pindahkan', 'pindai', 'pintas', 'pintasan', 'pisahkan',
     'pisau', 'pita', 'piutang', 'plafon', 'plat', 'pohon', 'poin', 'pojok', 'pola', 'polisi', 'polos', 'ponds', 'ponya', 'porsi',
     'posisinya', 'potongan', 'potongannya', 'potret', 'prabayar', 'pracetak', 'pratinjau', 'preferensi', 'presiden', 'prestasi', 'preventif', 'pria', 'pribadinya', 'prioritas',
-    'procedure', 'produsen', 'profesional', 'progres', 'progresnya', 'proklamasi', 'proofing', 'properti', 'prosesnya', 'provinsi', 'provisi', 'proyeksi', 'psikotes', 'pukul',
+    'procedure', 'produsen', 'profesional', 'progres', 'progresnya', 'proklamasi', 'properti', 'prosesnya', 'provinsi', 'provisi', 'proyeksi', 'psikotes', 'pukul',
     'pun', 'puncak', 'punya', 'pusat', 'putar', 'putaran', 'putih', 'putus', 'putuskan', 'rab', 'rabu', 'ragu', 'rahasia', 'rakitan',
     'ramah', 'rasio', 'rata', 'ratanya', 'rawat', 'raya', 'realisasi', 'realistis', 'redup', 'referensi', 'registrasi', 'reguler', 'rekalkulasi', 'rekap',
     'rekonsiliasi', 'rekrutmen', 'rekrutmennya', 'rencana', 'rendah', 'renovasi', 'rentang', 'resmi', 'returnya', 'rinci', 'rincian', 'rinciannya', 'ringan', 'ringkas',

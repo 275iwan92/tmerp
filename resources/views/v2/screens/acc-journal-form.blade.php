@@ -72,7 +72,7 @@
     </x-slot:strip>
     <x-slot:general>
         <x-dl::form.row :cols="3">
-            <x-dl::field.text name="description" label="Description" required placeholder="Factory electricity accrual, September 2026" :value="$val('description', $src->description)" :source="$s('description')" />
+            <x-dl::field.text name="description" label="Description" required placeholder="Factory electricity accrual, current month" :value="$val('description', $src->description)" :source="$s('description')" />
             <x-dl::field.text name="reference_no" label="Reference" placeholder="REF-2026-0001" :case-toggle="false" :value="$val('reference_no', $v->reference_no)" :source="$s('reference_no')" />
             <x-dl::field.date name="auto_reverse_date" label="Auto-reverse date" hint="Accrual journals only: the reversing journal is posted on this date." :value="$val('auto_reverse_date', $v->auto_reverse_date?->toDateString())" :source="$s('auto_reverse_date')" />
         </x-dl::form.row>

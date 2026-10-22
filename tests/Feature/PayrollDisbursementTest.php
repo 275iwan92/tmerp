@@ -99,15 +99,16 @@ class PayrollDisbursementTest extends TestCase
     {
         $admin = SecUser::where('is_admin', true)->firstOrFail();
         $q = '?run='.$this->run->id_run;
-        $this->actingAs($admin)->get(route('v2.screen', 'hrm-bank-transfer').$q)->assertOk()->assertSee('1.234.000');
-        $this->actingAs($admin)->get(route('v2.screen', 'hrm-cash-roster').$q)->assertOk()->assertSee('987.500');
+        // Format angka mengikuti bahasa akun (en: 1,234,000), bukan titik ribuan tetap.
+        $this->actingAs($admin)->get(route('v2.screen', 'hrm-bank-transfer').$q)->assertOk()->assertSee(\Devlib\Locale::number(1234000));
+        $this->actingAs($admin)->get(route('v2.screen', 'hrm-cash-roster').$q)->assertOk()->assertSee(\Devlib\Locale::number(987500));
 
         $csv = $this->actingAs($admin)->get(route('v2.payroll.bank-csv', $this->run->id_run));
         $csv->assertOk();
         $this->assertStringContainsString('Kode Pegawai', $csv->streamedContent());
         $this->assertStringContainsString('1234000', $csv->streamedContent());
 
-        $this->actingAs($admin)->get(PrintDocs::url('cash-roster', $this->run->id_run))->assertOk()->assertSee('987.500');
+        $this->actingAs($admin)->get(PrintDocs::url('cash-roster', $this->run->id_run))->assertOk()->assertSee(\Devlib\Locale::number(987500));
         $this->actingAs($admin)->get(route('v2.payroll.bank-csv', 999999999))->assertNotFound();
     }
 }

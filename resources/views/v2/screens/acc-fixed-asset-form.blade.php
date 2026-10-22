@@ -66,12 +66,12 @@
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="1">
-                <x-dl::field.text name="asset_name" label="Asset name" required placeholder="Mesin Cetak Offset Komori 4 warna" :value="$val('asset_name', $a?->asset_name)" :source="$s('asset_name')" />
+                <x-dl::field.text name="asset_name" label="Asset name" required placeholder="Komori 4-colour offset press" :value="$val('asset_name', $a?->asset_name)" :source="$s('asset_name')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
                 <x-dl::field.select name="category_id" label="Category" required :options="$svc->categoryOptions($a?->category_id)" :value="$val('category_id', $a?->category_id ?? $cat?->category_id)" :source="$s('category_id')" />
                 <x-dl::field.select name="cc_id" label="Cost center" placeholder="None" :options="$svc->costCenterOptions()" :value="$val('cc_id', $a?->cc_id)" :source="$s('cc_id')" />
-                <x-dl::field.text name="location" label="Location" placeholder="Pabrik, Ruang Cetak" :value="$val('location', $a?->location)" :source="$s('location')" />
+                <x-dl::field.text name="location" label="Location" placeholder="Factory, printing room" :value="$val('location', $a?->location)" :source="$s('location')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
                 <x-dl::field.date name="acq_date" label="Acquisition date" required :value="$val('acq_date', $a?->acquisition_date?->toDateString() ?? ($def['acq_date'] ?? null))" :source="$s('acquisition_date')" />
