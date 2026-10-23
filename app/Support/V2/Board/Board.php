@@ -273,8 +273,8 @@ final class Board
             'brief' => $brief,
             'attendance' => null,
             'weather' => self::weather(),
-            // Baris kecil IP client / host client / IP server di kepala dashboard: hanya yang boleh Setup (IP server info internal).
-            'network' => $user->canSetup() ? NetworkInfo::of(request()) : null,
+            // Baris kecil host client / IP client - Server: IP server di kepala dashboard untuk SEMUA pengguna (keputusan Jo 2026-10-23): saat ada keluhan, Jo bisa melihat dari komputer/area mana pengguna mengakses.
+            'network' => NetworkInfo::of(request()),
             'jobdesc' => $position && trim((string) $position->job_description) !== ''
                 ? ['title' => $position->position_name, 'updated' => Locale::d($position->job_description_updated_at) ?? '—', 'html' => $position->job_description] : null,
             'sops' => $position?->department_id ? MntDocument::company()->inForce()->with('lines')->where('department_id', $position->department_id)->orderBy('doc_no')->get()
