@@ -22,6 +22,9 @@ return [
     'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
     'timezone_label' => 'WIB',
 
+    // Tahap aplikasi (Jo 2026-10-23): alpha | beta | rc | kosong (rilis). Tampil `ver 0.<jumlah commit git> A` di judul logo dan halaman login (Devlib\AppVersion); mockup = alpha (UAT belum dimulai).
+    'stage' => env('APP_STAGE', 'alpha'),
+
     // Folder media (gambar latar bg/<kelompok>/*.jpg, teks text/*.txt).
     'media_path' => public_path('media'),
     'media_url' => '/media',

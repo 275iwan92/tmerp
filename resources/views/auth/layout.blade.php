@@ -13,6 +13,6 @@
     <x-dl::frame :image-list="$images" :quote-list="$quotes" :box="$box ?? 'right'" color="light" :resizable="($box ?? 'right') === 'right'"
         :brand="\App\Support\Branding\Brand::name().($envTitle !== '' ? ' '.$envTitle : '')" widgets="brand@top-left, clock@top-right, quote@bottom-left">
         @yield('box')
-        <x-dl::env-badge part="where" variant="login" />
+        <x-dl::env-badge part="version" variant="loginver" />
     </x-dl::frame>
 @endsection

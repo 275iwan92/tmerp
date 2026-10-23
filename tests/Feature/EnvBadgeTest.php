@@ -20,8 +20,7 @@ class EnvBadgeTest extends TestCase
 {
     public function test_texts_on_mockup_host(): void
     {
-        $this->assertSame(' - mockup ver '.trim(file_get_contents(base_path('VERSION'))), EnvBadge::title('mockup.test'));
-        $this->assertSame(trim(file_get_contents(base_path('VERSION'))), EnvBadge::versionNumber());
+        $this->assertSame(' - mockup', EnvBadge::title('mockup.test'));
 
         $where = EnvBadge::where('mockup.test', '192.168.1.20', '10.0.0.7');
         $this->assertStringContainsString('Host: '.gethostname().' / 192.168.1.20', $where);

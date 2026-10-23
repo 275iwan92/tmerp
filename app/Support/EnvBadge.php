@@ -2,7 +2,7 @@
 
 /*
  * REMARK
- * Tujuan       : Teks lingkungan untuk x-dl::env-badge: akhiran judul logo (" - mockup ver 0.20") dan host/IP; kosong di situs live.
+ * Tujuan       : Teks lingkungan untuk x-dl::env-badge: akhiran judul logo (" - mockup"; versinya = Devlib\AppVersion lewat x-dl::env-badge part=version) dan host/IP; kosong di situs live.
  * Sumber hulu  : host permintaan (sama dengan bootstrap/app.php: mockup.test), berkas VERSION di akar repo, gethostname / SERVER_ADDR / request ip.
  * Input        : host (opsional, untuk tes), server addr, client ip.
  * Output       : string; '' bila bukan mockup.test.
@@ -16,10 +16,10 @@ final class EnvBadge
 {
     private const HOSTS = ['mockup.test', 'www.mockup.test'];
 
-    /** " - mockup ver 0.20" appended to the logo title (ERP TM); '' when the site is not mockup.test. */
+    /** " - mockup" appended to the logo title (ERP TM); '' when the site is not mockup.test. The version (ver 0.NNN A) is drawn by x-dl::env-badge part=version. */
     public static function title(?string $host = null): string
     {
-        return self::isMockup($host) ? ' - mockup ver '.self::versionNumber() : '';
+        return self::isMockup($host) ? ' - mockup' : '';
     }
 
     /** "Host: NAME / IP · Client: IP" (under the user name); '' when the site is not mockup.test. */
