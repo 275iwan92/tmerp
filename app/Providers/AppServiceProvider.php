@@ -49,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
         // x-dl::env-badge texts (empty on the live site): title suffix of the logo (ERP TM - mockup ver 0.20), host / IP under the user name.
         $this->app->bind('devlib.env_title', fn () => \App\Support\EnvBadge::title());
         $this->app->bind('devlib.env_where', fn () => \App\Support\EnvBadge::where());
+        // x-dl::net-line under the user name for ALL users (Jo 2026-10-23): client IP -> server IP + connection status, so a complaint can be traced to an area. Replaces the env_where text in the Layer Menu.
+        $this->app->bind('devlib.net', fn () => \Devlib\NetworkInfo::of(request()));
         // Identitas aplikasi (nama / tagline / logo) dibaca DevLib dari tabel konstanta saat tampil, bukan ditulis di config.
         $this->app->bind('devlib.brand', fn () => ['name' => \App\Support\Branding\Brand::name(), 'tagline' => \App\Support\Branding\Brand::tagline(), 'logo' => \App\Support\Branding\Brand::logoUrl()]);
         Lookups::register();
