@@ -25,6 +25,7 @@ use App\Support\V2\Data\ApprovalCenter;
 use Devlib\Components\Dashboard;
 use Devlib\Components\WidgetBoard;
 use Devlib\Locale;
+use Devlib\NetworkInfo;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -272,6 +273,8 @@ final class Board
             'brief' => $brief,
             'attendance' => null,
             'weather' => self::weather(),
+            // Baris kecil IP client / host client / IP server di kepala dashboard: hanya yang boleh Setup (IP server info internal).
+            'network' => $user->canSetup() ? NetworkInfo::of(request()) : null,
             'jobdesc' => $position && trim((string) $position->job_description) !== ''
                 ? ['title' => $position->position_name, 'updated' => Locale::d($position->job_description_updated_at) ?? '—', 'html' => $position->job_description] : null,
             'sops' => $position?->department_id ? MntDocument::company()->inForce()->with('lines')->where('department_id', $position->department_id)->orderBy('doc_no')->get()
