@@ -101,6 +101,8 @@ class DispatchService
                 $line->recalcSubtotal();
                 $line->save();
 
+                $this->copyShipAddress($do, (int) $row->co_order_id);
+
                 $existing[] = (int) $coDeliveryId;
             }
         });
@@ -186,28 +188,28 @@ class DispatchService
         return ['ok' => true, 'message' => null];
     }
 
-    // Tier2 §C.2: 4 syarat, SEMUA re-validasi server-side (jangan percaya state client).
+    // Tier2 §C.2: 4 syarat, SEMUA re-validasi server-side (jangan percaya state client). Penolakan di dalam transaksi =
+    // DomainException (rollback); pesannya dikembalikan sebagai hasil, bukan halaman 500 (spesifikasi D.3).
     public function confirm(DoDelivery $do, string $actingUser): array
     {
-        if ($do->status !== 'DRAFT') {
-            return ['ok' => false, 'message' => t('The document no longer has status DRAFT.')];
-        }
+        return $this->guarded($do, 'DRAFT', t('The document no longer has status DRAFT.'), function (DoDelivery $do) use ($actingUser) {
+            $lines = $do->lines()->get();
 
-        $lines = $do->lines()->get();
-
-        if ($lines->isEmpty()) {
-            return ['ok' => false, 'message' => t('At least 1 line is required before Confirm.')];
-        }
-
-        foreach ($lines as $line) {
-            if ((float) $line->qty_do <= 0) {
-                return ['ok' => false, 'message' => tf('Line :item: the qty must be more than 0.', ['item' => $line->item_description])];
+            if ($lines->isEmpty()) {
+                throw new \DomainException(t('At least 1 line is required before Confirm.'));
             }
-        }
 
-        $result = ['ok' => true, 'message' => null];
+            foreach ($lines as $line) {
+                if ((float) $line->qty_do <= 0) {
+                    throw new \DomainException(tf('Line :item: the qty must be more than 0.', ['item' => $line->item_description]));
+                }
+            }
 
-        DB::connection('tm2sdi')->transaction(function () use ($do, $lines, $actingUser, &$result) {
+            // Surat jalan subkon (do_type SUBCON) tujuannya pemasok, bukan alamat kirim CO.
+            if (! $do->isSubcon() && trim((string) $do->ship_address_label) === '' && trim((string) $do->ship_address_detail) === '') {
+                throw new \DomainException(t('The ship-to address is required before Confirm (Delivery tab).'));
+            }
+
             foreach ($lines as $line) {
                 if ($line->co_delivery_id) {
                     $qtyAvailable = (float) (DB::connection('tm2sdi')->table('v_co_delivery_outstanding')
@@ -222,9 +224,7 @@ class DispatchService
                     $ceiling = $qtyAvailable + (float) $line->qty_do;
 
                     if ((float) $line->qty_do > $ceiling) {
-                        $result = ['ok' => false, 'message' => tf('Race condition: the qty of line :item has already been taken by another document. Delete/reduce this line.', ['item' => $line->item_description])];
-
-                        throw new \RuntimeException('rollback');
+                        throw new \DomainException(tf('Race condition: the qty of line :item has already been taken by another document. Delete/reduce this line.', ['item' => $line->item_description]));
                     }
                 }
 
@@ -236,32 +236,22 @@ class DispatchService
                 $coStatus = DB::connection('tm2sdi')->table('co_order')->where('id_order', $line->co_order_id)->value('doc_status');
 
                 if ($coStatus !== 'CONFIRMED') {
-                    $result = ['ok' => false, 'message' => tf('The source CO of line :item is no longer CONFIRMED.', ['item' => $line->item_description])];
-
-                    throw new \RuntimeException('rollback');
+                    throw new \DomainException(tf('The source CO of line :item is no longer CONFIRMED.', ['item' => $line->item_description]));
                 }
             }
 
-            $doNo = $this->nextDoNo();
-
             $do->update([
-                'do_no' => $doNo,
+                'do_no' => $this->nextDoNo(),
                 'status' => 'CONFIRMED',
                 'updated_by' => $actingUser,
             ]);
-        });
-
-        return $result;
+        }, numbered: true);
     }
 
     // Tier2 §C.3: satu aksi tunggal, seluruh baris DO sekaligus, satu transaction.
     public function markShipped(DoDelivery $do, string $actingUser): array
     {
-        if ($do->status !== 'CONFIRMED') {
-            return ['ok' => false, 'message' => t('The document must have status CONFIRMED.')];
-        }
-
-        DB::connection('tm2sdi')->transaction(function () use ($do, $actingUser) {
+        return $this->guarded($do, 'CONFIRMED', t('The document must have status CONFIRMED.'), function (DoDelivery $do) use ($actingUser) {
             $lines = $do->lines()->where('status', 'PLANNED')->get();
 
             DoLine::where('delivery_id', $do->id_delivery)->where('status', 'PLANNED')
@@ -282,8 +272,6 @@ class DispatchService
                 }
             }
         });
-
-        return ['ok' => true, 'message' => null];
     }
 
     // Tier2 §C.4: dari DRAFT atau CONFIRMED saja, wajib alasan. qty_available
@@ -291,15 +279,11 @@ class DispatchService
     // aksi manual ke co_order_delivery.
     public function cancel(DoDelivery $do, string $reason, string $actingUser): array
     {
-        if (! in_array($do->status, ['DRAFT', 'CONFIRMED'], true)) {
-            return ['ok' => false, 'message' => t('A SHIPPED/CANCELLED document cannot be cancelled.')];
-        }
-
         if (trim($reason) === '') {
             return ['ok' => false, 'message' => t('The cancellation reason is required.')];
         }
 
-        DB::connection('tm2sdi')->transaction(function () use ($do, $reason, $actingUser) {
+        return $this->guarded($do, ['DRAFT', 'CONFIRMED'], t('A SHIPPED/CANCELLED document cannot be cancelled.'), function (DoDelivery $do) use ($reason, $actingUser) {
             DoLine::where('delivery_id', $do->id_delivery)->update(['status' => 'CANCELLED', 'updated_by' => $actingUser]);
 
             $do->update([
@@ -308,19 +292,68 @@ class DispatchService
                 'updated_by' => $actingUser,
             ]);
         });
+    }
+
+    // Satu transaksi: baris DO dikunci, status dicek pada baris TERKUNCI (bukan objek lama di luar transaksi: klik ganda /
+    // dua pengguna, yang kedua melihat status baru dan ditolak), lalu $work. $numbered = butuh nomor DO baru: kunci bernama
+    // dipegang sampai commit supaya dua Confirm tidak berebut nomor (lockForUpdate pada nol baris tidak mengunci).
+    private function guarded(DoDelivery $do, string|array $allowed, string $deniedMessage, \Closure $work, bool $numbered = false): array
+    {
+        $db = DB::connection('tm2sdi');
+        $lock = 'dl_do_no_'.now()->format('y');
+        $held = false;
+
+        try {
+            if ($numbered) {
+                $held = (bool) ($db->selectOne('select get_lock(?, 10) as got', [$lock])->got ?? 0);
+                if (! $held) {
+                    return ['ok' => false, 'message' => t('The DO number is being issued by another user. Try again in a moment.')];
+                }
+            }
+
+            $db->transaction(function () use ($do, $allowed, $deniedMessage, $work) {
+                $locked = DoDelivery::whereKey($do->id_delivery)->lockForUpdate()->firstOrFail();
+
+                if (! in_array($locked->status, (array) $allowed, true)) {
+                    throw new \DomainException($deniedMessage);
+                }
+
+                $work($locked);
+            });
+        } catch (\DomainException $e) {
+            return ['ok' => false, 'message' => $e->getMessage()];
+        } finally {
+            if ($held) {
+                $db->selectOne('select release_lock(?) as freed', [$lock]);
+            }
+        }
+
+        $do->refresh();
 
         return ['ok' => true, 'message' => null];
     }
 
+    // Alamat kirim DO = alamat kirim CO sumber baris pertama; hanya bila DO belum punya alamat (pilihan pengguna tidak ditimpa).
+    private function copyShipAddress(DoDelivery $do, int $coOrderId): void
+    {
+        if ($do->ship_area_id || trim((string) $do->ship_address_label) !== '' || trim((string) $do->ship_address_detail) !== '') {
+            return;
+        }
+
+        $co = CoOrder::find($coOrderId);
+        if ($co) {
+            $do->update($co->only(['ship_area_id', 'ship_area_level', 'ship_address_label', 'ship_address_detail', 'ship_postal_code']));
+        }
+    }
+
     // dispatch_tier3.md §5: pola manual MAX+1/tahun (sys_sequence TIDAK ada
     // di codebase ini, dicek dulu -- sama pola PoOrder::nextDocNo()/
-    // PvReceipt::nextDocNo()).
+    // PvReceipt::nextDocNo()). Dipanggil hanya dari confirm() yang memegang kunci bernama.
     protected function nextDoNo(): string
     {
         $prefix = 'DO/'.now()->format('y').'/';
 
         $last = DoDelivery::where('do_no', 'like', "{$prefix}%")
-            ->lockForUpdate()
             ->orderByDesc('do_no')
             ->value('do_no');
 

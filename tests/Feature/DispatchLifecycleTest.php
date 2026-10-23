@@ -66,7 +66,7 @@ class DispatchLifecycleTest extends TestCase
         ]);
 
         $this->coId = DB::connection('tm2sdi')->table('co_order')->insertGetId([
-            'co_no' => 'CO-TEST-LC', 'co_date' => now()->toDateString(), 'quotation_id' => $this->quotationId,
+            'co_no' => 'CO-TEST-LC', 'ship_address_detail' => 'ZZ-TEST Jl. Uji 1', 'co_date' => now()->toDateString(), 'quotation_id' => $this->quotationId,
             'doc_status' => 'CONFIRMED', 'created_by' => 'test', 'updated_by' => 'test',
         ]);
 

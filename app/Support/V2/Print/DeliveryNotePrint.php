@@ -44,6 +44,7 @@ final class DeliveryNotePrint extends Document
     {
         $do = DoDelivery::with(['customer', 'supplier', 'lines' => fn ($q) => $q->where('status', '<>', 'CANCELLED')->orderBy('line_no'),
             'lines.order:id_order,co_no,customer_po_no'])->findOrFail($id);
+        abort_unless(in_array($do->status, ['CONFIRMED', 'SHIPPED'], true), 422, t('The Delivery Note can be printed once the DO is Confirmed.'));
         $party = $do->customer ?? $do->supplier;
         $orders = $do->lines->pluck('order')->filter()->unique('id_order');
 

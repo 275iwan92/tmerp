@@ -47,7 +47,7 @@ class DeliveryOrderEntryTest extends TestCase
             'issued_date' => now()->toDateString(), 'valid_until' => now()->addDays(30)->toDateString(), 'currency_code' => 'IDR', 'created_by' => 'test', 'updated_by' => 'test',
         ]);
         $this->coId = DB::connection('tm2sdi')->table('co_order')->insertGetId([
-            'co_no' => 'ZZ-TEST-DOE', 'co_date' => now()->toDateString(), 'quotation_id' => $this->quotationId, 'customer_id' => $this->customerId,
+            'co_no' => 'ZZ-TEST-DOE', 'ship_address_detail' => 'ZZ-TEST Jl. Uji 1', 'co_date' => now()->toDateString(), 'quotation_id' => $this->quotationId, 'customer_id' => $this->customerId,
             'doc_status' => 'CONFIRMED', 'created_by' => 'test', 'updated_by' => 'test',
         ]);
         foreach ([[100, 5000, 'ZZ-TEST item A'], [40, 2000, 'ZZ-TEST item B']] as $i => [$qty, $price, $name]) {
@@ -264,5 +264,115 @@ class DeliveryOrderEntryTest extends TestCase
         $this->assertTrue($ok);
         $this->assertSame('CANCELLED', $this->do()->status);
         $this->assertNull($this->do()->do_no);
+    }
+    public function test_confirm_refused_after_the_source_co_is_cancelled_returns_a_message_not_an_exception(): void
+    {
+        $this->pullBoth();
+        DB::connection('tm2sdi')->table('co_order')->where('id_order', $this->coId)->update(['doc_status' => 'CANCELLED']);
+
+        [$ok, $msg] = Data::act($this->do(), 'confirm');
+        $this->assertFalse($ok);
+        $this->assertStringContainsString('ZZ-TEST item A', $msg);
+        $this->assertSame(tf('The source CO of line :item is no longer CONFIRMED.', ['item' => 'ZZ-TEST item A']), $msg);
+        $this->assertSame('DRAFT', $this->do()->status);
+        $this->assertNull($this->do()->do_no, 'Rollback: nomor DO tidak terbit.');
+    }
+
+    public function test_pull_copies_the_co_ship_address_and_confirm_requires_a_ship_to_address(): void
+    {
+        $this->pullBoth();
+        $this->assertSame('ZZ-TEST Jl. Uji 1', $this->do()->ship_address_detail, 'Alamat kirim CO disalin ke DO saat baris ditarik.');
+
+        // Alamat yang sudah dipilih pengguna tidak ditimpa tarik berikutnya.
+        Data::save($this->do(), ['ship_address_detail' => 'ZZ-TEST Jl. Pilihan 2']);
+        DoLine::where('delivery_id', $this->doId)->delete();
+        $this->pullBoth();
+        $this->assertSame('ZZ-TEST Jl. Pilihan 2', $this->do()->ship_address_detail);
+
+        DoDelivery::whereKey($this->doId)->update(['ship_address_detail' => null, 'ship_address_label' => null]);
+        [$ok, $msg] = Data::act($this->do(), 'confirm');
+        $this->assertFalse($ok);
+        $this->assertSame(t('The ship-to address is required before Confirm (Delivery tab).'), $msg);
+        $this->assertSame('DRAFT', $this->do()->status);
+
+        Data::save($this->do(), ['ship_address_detail' => 'ZZ-TEST Jl. Uji 3']);
+        [$ok] = Data::act($this->do(), 'confirm');
+        $this->assertTrue($ok);
+    }
+
+    public function test_delivery_note_cannot_be_printed_from_a_draft_or_cancelled_do(): void
+    {
+        $this->pullBoth();
+        foreach (['DRAFT', 'CANCELLED'] as $status) {
+            DoDelivery::whereKey($this->doId)->update(['status' => $status]);
+            try {
+                \App\Support\V2\Print\DeliveryNotePrint::load($this->doId);
+                $this->fail('Surat Jalan dari DO '.$status.' harus ditolak.');
+            } catch (HttpException $e) {
+                $this->assertSame(422, $e->getStatusCode());
+            }
+        }
+
+        DoDelivery::whereKey($this->doId)->update(['status' => 'CONFIRMED']);
+        $this->assertInstanceOf(\App\Support\V2\Print\DeliveryNotePrint::class, \App\Support\V2\Print\DeliveryNotePrint::load($this->doId));
+    }
+
+    public function test_confirm_ship_and_cancel_on_a_stale_object_are_judged_on_the_locked_row(): void
+    {
+        $this->pullBoth();
+        $stale = $this->do(); // objek lama: masih DRAFT di memori
+        [$ok] = Data::act($this->do(), 'confirm');
+        $this->assertTrue($ok);
+        $no = $this->do()->do_no;
+
+        // Klik ganda Confirm: objek lama masih DRAFT, tetapi baris terkunci sudah CONFIRMED -> ditolak, nomor tidak berubah.
+        $result = app(\App\Services\Dispatch\DispatchService::class)->confirm($stale, 'test');
+        $this->assertFalse($result['ok']);
+        $this->assertSame(t('The document no longer has status DRAFT.'), $result['message']);
+        $this->assertSame($no, $this->do()->do_no);
+
+        // Klik ganda Ship: objek lama CONFIRMED, baris terkunci sudah SHIPPED -> ditolak.
+        $stale = $this->do();
+        Data::act($this->do(), 'ship');
+        $result = app(\App\Services\Dispatch\DispatchService::class)->markShipped($stale, 'test');
+        $this->assertFalse($result['ok']);
+
+        // Batal dari objek lama tidak boleh membatalkan DO yang sudah Shipped.
+        $result = app(\App\Services\Dispatch\DispatchService::class)->cancel($stale, 'ZZ-TEST', 'test');
+        $this->assertFalse($result['ok']);
+        $this->assertSame('SHIPPED', $this->do()->status);
+    }
+
+    public function test_do_numbers_are_sequential_and_unique_per_year(): void
+    {
+        $this->pullBoth();
+        Data::act($this->do(), 'confirm');
+        $second = Data::create($this->customerId);
+        try {
+            DoDelivery::whereKey($second->id_delivery)->update(['ship_address_detail' => 'ZZ-TEST Jl. Uji 4']);
+            DoLine::create(['delivery_id' => $second->id_delivery, 'line_no' => 1, 'item_description' => 'ZZ-TEST subkon', 'qty_do' => 1, 'qty_unit' => 'PCS', 'unit_price' => 0, 'status' => 'PLANNED', 'created_by' => 'test', 'updated_by' => 'test']);
+            [$ok] = Data::act($second->refresh(), 'confirm');
+            $this->assertTrue($ok);
+            $first = (int) substr($this->do()->do_no, -5);
+            $this->assertSame($first + 1, (int) substr($second->refresh()->do_no, -5));
+        } finally {
+            DoLine::where('delivery_id', $second->id_delivery)->delete();
+            DoDelivery::whereKey($second->id_delivery)->delete();
+        }
+    }
+
+    public function test_a_user_without_the_sales_price_right_cannot_change_line_prices(): void
+    {
+        $user = SecUser::where('is_admin', false)->get()->first(fn ($u) => ! $u->canViewSalesPrice());
+        if (! $user) {
+            $this->markTestSkipped('Tidak ada pengguna tanpa hak harga jual di database ini.');
+        }
+
+        $this->pullBoth();
+        $line = $this->lines()[0];
+        $this->actingAs($user);
+        $this->assertSame('', Data::save($this->do(), ['lines' => [$line->id_line => ['unit_price' => '1']]]));
+        $this->assertEqualsWithDelta(5000.0, (float) DoLine::find($line->id_line)->unit_price, 0.001);
+        $this->assertFalse((bool) DoLine::find($line->id_line)->price_overridden);
     }
 }

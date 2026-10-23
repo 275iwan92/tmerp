@@ -37,6 +37,7 @@
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30). --}}
     @php
         $draft = $do->status === 'DRAFT';
+        $price = (bool) auth()->user()?->canViewSalesPrice(); // harga jual hanya untuk yang berhak (rulebook A.9)
         $money = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
         $area = $do->ship_area_id ? $do->ship_area_level.':'.$do->ship_area_id : null;
         $value = (float) $do->lines->sum('subtotal');
@@ -61,13 +62,13 @@
             <x-dl::strip-kv kind="doc" label="DO No." :value="$do->do_no ?: t('(on Confirm)')" />
             <x-dl::field.date name="do_date" label="DO Date" :value="$do->do_date?->toDateString()" :source="Src::of('tm2sdi.do_delivery.do_date')" />
             <x-dl::field.display label="Customer" :value="($do->customer?->customer_name ?? '—').' ('.($do->customer?->customer_code ?? '—').')'" :source="Src::of('tm2mst.cust_customer')" />
-            <x-dl::strip-kv kind="grand" label="Shipment Value" :value="$money($value)" :value-attrs="['data-l-val' => 'lines:grand']" />
+            @if ($price)<x-dl::strip-kv kind="grand" label="Shipment Value" :value="$money($value)" :value-attrs="['data-l-val' => 'lines:grand']" />@endif
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
                 <x-dl::field.display label="DO Type" :value="($do->do_type ?? 'CUSTOMER').($do->subcon_process ? ' · '.$do->subcon_process : '')" :source="Src::of('tm2sdi.do_delivery.do_type')" />
                 <x-dl::field.display label="Tax" :value="$do->is_ppn ? t('VAT (follows the CO)') : t('Non VAT')" :source="Src::of('tm2sdi.do_delivery.is_ppn')" />
-                <x-dl::field.display label="Price changes" :value="$do->price_change_flag ? t('Yes').' ('.($do->price_change_approval_status ?? 'pending').')' : t('No')" :source="Src::of('tm2sdi.do_delivery.price_change_flag')" />
+                @if ($price)<x-dl::field.display label="Price changes" :value="$do->price_change_flag ? t('Yes').' ('.($do->price_change_approval_status ?? 'pending').')' : t('No')" :source="Src::of('tm2sdi.do_delivery.price_change_flag')" />@endif
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:delivery>
@@ -88,15 +89,17 @@
         </x-slot:notes>
         <x-slot:detail>
             <x-dl::lines name="lines" title="Details" key-field="id_line" remove-field="remove" :addable="false" :duplicable="false" :min-rows="0" :rows="$lines" :readonly="! $draft"
-                :totals="['of' => 'subtotal']" source="{{ Src::of('tm2sdi.do_line') }}"
+                :totals="$price ? ['of' => 'subtotal'] : []" source="{{ Src::of('tm2sdi.do_line') }}"
                 :columns="[
                     ['key' => 'item_description', 'label' => 'Item', 'type' => 'display', 'width' => '340px'],
                     ['key' => 'qty_do', 'label' => t('Ship Qty'), 'type' => 'number', 'sum' => true, 'width' => '110px'],
                     ['key' => 'qty_unit', 'label' => t('Unit'), 'type' => 'display', 'width' => '80px'],
-                    ['key' => 'unit_price', 'label' => t('Price'), 'type' => 'money', 'width' => '130px'],
-                    ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty_do * unit_price', 'sum' => true, 'width' => '140px'],
+                    ...($price ? [
+                        ['key' => 'unit_price', 'label' => t('Price'), 'type' => 'money', 'width' => '130px'],
+                        ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty_do * unit_price', 'sum' => true, 'width' => '140px'],
+                    ] : []),
                     ['key' => 'co', 'label' => 'Customer Order', 'type' => 'display', 'more' => true],
-                    ['key' => 'price_note', 'label' => t('Price Source'), 'type' => 'display', 'more' => true],
+                    ...($price ? [['key' => 'price_note', 'label' => t('Price Source'), 'type' => 'display', 'more' => true]] : []),
                     ['key' => 'invoiced', 'label' => t('Invoiced'), 'type' => 'display', 'more' => true],
                 ]">
                 @if ($draft)

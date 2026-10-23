@@ -69,6 +69,11 @@ final class DeliveryOrderEntryService
 
     public static function updateLinePrice(int $doId, int $lineId, mixed $value): string
     {
+        // Harga jual hanya boleh diubah yang berhak (rulebook A.9); yang tidak berhak diabaikan tanpa pesan (kolom harga tidak tampil di layar).
+        if (! Auth::user()->canViewSalesPrice()) {
+            return '';
+        }
+
         $result = app(DispatchService::class)->updateLinePrice(self::line($doId, $lineId), (float) $value, self::login());
 
         return $result['ok'] ? '' : $result['message'];
