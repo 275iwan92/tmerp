@@ -241,6 +241,7 @@ final class AppMenu
 
         return ['name' => $u->name, 'email' => (string) $u->email, // Kartu profil = nama lengkap saja (user 2026-09-28: layar dilihat pemiliknya sendiri).
             'role' => null,
+            'foot_role' => $u->jobTitle(),   // baris jabatan di bawah nama pada footer menu kiri saja (Jo 2026-10-23); kartu Profile tetap nama + e-mail
             'email_url' => route('v2.account.email'), 'email_verified' => (bool) $u->email_verified,
             'developer' => (bool) $u->is_admin || $groups->contains('group_code', self::DEVELOPER_GROUP)];
     }
