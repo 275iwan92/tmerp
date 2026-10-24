@@ -134,7 +134,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         require __DIR__.'/v2_ppic.php';
         require __DIR__.'/v2_account.php';
         require __DIR__.'/v2_finance.php'; require __DIR__.'/v2_master.php'; require __DIR__.'/v2_stockdocs.php'; require __DIR__.'/v2_purchase_return.php'; require __DIR__.'/v2_production.php'; require __DIR__.'/v2_hrm.php'; require __DIR__.'/v2_setup.php'; require __DIR__.'/v2_procost.php'; require __DIR__.'/v2_inquiry.php';
-        require __DIR__.'/v2_warehouse.php';
+        require __DIR__.'/v2_warehouse.php'; require __DIR__.'/v2_ready_to_ship.php';
         require __DIR__.'/v2_picklist.php';
         require __DIR__.'/v2_stockflow.php';
         require __DIR__.'/v2_valuation.php';

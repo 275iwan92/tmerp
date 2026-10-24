@@ -375,4 +375,14 @@ class DeliveryOrderEntryTest extends TestCase
         $this->assertEqualsWithDelta(5000.0, (float) DoLine::find($line->id_line)->unit_price, 0.001);
         $this->assertFalse((bool) DoLine::find($line->id_line)->price_overridden);
     }
+
+    public function test_confirm_does_not_require_a_ship_to_address_when_every_source_co_is_pickup(): void
+    {
+        DB::connection('tm2sdi')->table('co_order')->where('id_order', $this->coId)->update(['shipment_method' => 'PICKUP']);
+        $this->pullBoth();
+        DoDelivery::whereKey($this->doId)->update(['ship_address_detail' => null, 'ship_address_label' => null]);
+
+        [$ok] = Data::act($this->do(), 'confirm');
+        $this->assertTrue($ok, 'CO Pickup (diambil sendiri) tidak butuh alamat kirim (sementara, menunggu keputusan Jo).');
+    }
 }

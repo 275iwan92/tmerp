@@ -47,7 +47,7 @@ final class Screens
                     $it('approval-co', ['CO Approval Center', 'fa-solid fa-stamp', 'v2 baru: DevLib Form Approval + flow engine CO (F&A SPV -> Operational Manager)', null]),
                 ]],
                 ['label' => 'Delivery', 'items' => [
-                    $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'v2: App\Support\V2\Data\DeliveryOrder (aturan: DeliveryOrderEntryService)', null]),
+                    $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'v2: App\Support\V2\Data\DeliveryOrder (aturan: DeliveryOrderEntryService)', null]), $it('ready-to-ship', ['Ready to Ship', 'fa-solid fa-boxes-packing', 'v2 baru: App\Support\V2\Data\ReadyToShip (antrean pilih CO -> DO Draft lewat Pull Lines)', null]),
                     $it('delivery-notes', ['Delivery Notes', 'fa-solid fa-file-lines', 'v2: cetak delivery-note (DeliveryNotePrint)', null]),
                     $it('proof-of-delivery', ['Proof of Delivery', 'fa-solid fa-clipboard-check', 'v2 baru: tm2sdi.do_delivery_pod (KPI janji kirim)', null]),
                     $it('subcon-delivery-note', ['Subcontract Delivery Note', 'fa-solid fa-dolly', 'v2 baru: tm2sdi.do_delivery do_type SUBCON (backlog02 19.1)', null]),

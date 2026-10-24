@@ -205,8 +205,10 @@ class DispatchService
                 }
             }
 
-            // Surat jalan subkon (do_type SUBCON) tujuannya pemasok, bukan alamat kirim CO.
-            if (! $do->isSubcon() && trim((string) $do->ship_address_label) === '' && trim((string) $do->ship_address_detail) === '') {
+            // Surat jalan subkon (do_type SUBCON) tujuannya pemasok, bukan alamat kirim CO; CO Pickup (diambil sendiri) tidak punya alamat tujuan (sementara, menunggu keputusan Jo).
+            $methods = CoOrder::whereIn('id_order', $lines->pluck('co_order_id')->filter())->pluck('shipment_method');
+            $pickupOnly = $methods->isNotEmpty() && $methods->every(fn ($m) => $m === 'PICKUP');
+            if (! $do->isSubcon() && ! $pickupOnly && trim((string) $do->ship_address_label) === '' && trim((string) $do->ship_address_detail) === '') {
                 throw new \DomainException(t('The ship-to address is required before Confirm (Delivery tab).'));
             }
 
