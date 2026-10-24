@@ -65,6 +65,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Jejak audit layar Default Passwords (siapa, kapan, akun mana; tanpa password), disimpan 1 tahun.
+        'password_audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/password-audit.log'),
+            'level' => 'info',
+            'days' => 365,
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

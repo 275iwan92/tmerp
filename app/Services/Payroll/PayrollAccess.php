@@ -5,6 +5,7 @@ namespace App\Services\Payroll;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\OrgPosition;
 use App\Models\Sys\SecUser;
+use App\Services\Security\DefaultPasswordViewer;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 
@@ -84,6 +85,7 @@ final class PayrollAccess
         return match (true) {
             in_array($code, self::PROCESS_MENU, true) => self::canProcess($user),
             in_array($code, self::PAYSLIP_MENU, true) => self::canViewPayslips($user),
+            $code === DefaultPasswordViewer::MENU_CODE => DefaultPasswordViewer::allows($user), // SEMENTARA UAT: menu hanya untuk login password_viewers
             default => true,
         };
     }

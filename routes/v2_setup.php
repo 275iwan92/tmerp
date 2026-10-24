@@ -13,6 +13,7 @@
 use App\Models\Sys\SecGroup;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysSupportTicket;
+use App\Services\Security\DefaultPasswordViewer;
 use App\Services\Security\SecurityAccountService;
 use App\Services\Security\SecurityGroupService;
 use App\Services\Support\SupportTicketService;
@@ -92,4 +93,38 @@ Route::prefix('v2/setup/ticket')->name('v2.setup.ticket.')->middleware(['admin']
 
         return redirect(route('v2.screen', 'support-ticket-form').'?id='.$t->id_ticket)->with('v2_flash', $msg);
     })->name('save');
+});
+
+// Default Passwords (SEMENTARA, UAT, Jo 2026-10-24): daftar semua pengguna + password bawaan + Reset to Default per baris, HANYA login di config uat.password_viewers (bawaan johiwan).
+// Dijaga di SERVER di tiap rute (403 untuk selain itu); tiap buka, tampil password dan reset tercatat di saluran log password_audit; respons no-store. Aturan: DefaultPasswordViewer (REMARK-nya memuat langkah penghapusan setelah UAT).
+Route::prefix('v2/setup/default-passwords')->name('v2.setup.default-passwords.')->middleware(['admin'])->group(function () {
+    $guard = function (Request $r): SecUser {
+        $me = Auth::user();
+        abort_unless(DefaultPasswordViewer::allows($me), 403, t('This page is not available for your account.'));
+
+        return $me;
+    };
+    $noStore = fn ($response) => $response->header('Cache-Control', 'no-store, no-cache, must-revalidate, private')->header('Pragma', 'no-cache');
+
+    Route::get('/', function (Request $r, DefaultPasswordViewer $svc) use ($guard, $noStore) {
+        $svc->audit('open', $guard($r));
+
+        return $noStore(response()->view('v2.default-passwords', ['rows' => $svc->rows()]));
+    })->name('index');
+
+    // Password hanya keluar lewat sini (bukan di HTML daftar), jadi tiap tampil (mata, salin, tampilkan semua) tercatat.
+    Route::post('/reveal', function (Request $r, DefaultPasswordViewer $svc) use ($guard, $noStore) {
+        $me = $guard($r);
+        $ids = $r->validate(['ids' => ['required', 'array', 'max:2000'], 'ids.*' => ['integer']])['ids'];
+
+        return $noStore(response()->json(['passwords' => $svc->reveal($ids, $me)]));
+    })->name('reveal');
+
+    Route::post('/{id}/reset', function (Request $r, int $id, DefaultPasswordViewer $svc) use ($guard, $noStore) {
+        $me = $guard($r);
+        $card = $svc->reset(SecUser::findOrFail($id), $me) + ['title' => t('Default password')];
+
+        return $noStore(redirect()->route('v2.setup.default-passwords.index')
+            ->with('v2_flash', t('Password set back to the default password. The user must change it at the next login.'))->with('v2_login_card', $card));
+    })->whereNumber('id')->name('reset');
 });

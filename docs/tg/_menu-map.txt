@@ -17,3 +17,4 @@ procurement/order = Procurement > Order
 procurement/receive = Procurement > Receive
 procurement/return = Procurement > Return
 setup/dummy-data = Setup > Dummy Data & Migration
+setup/security = Setup > Security

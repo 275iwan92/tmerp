@@ -16,4 +16,8 @@ return [
 
     // Bilah QC cepat (Approved / Need improvement) di tiap layar v2: hanya situs UAT (UAT_QC=true di .env.mockup), mati di live.
     'qc' => (bool) env('UAT_QC', false),
+
+    // SEMENTARA (Jo 2026-10-24): login yang boleh membuka Setup > Security > Default Passwords (daftar semua password bawaan + Reset to Default). "johiwan,nisa"; kosong = tak seorang pun.
+    // SETELAH UAT SELESAI: kosongkan (UAT_PASSWORD_VIEWERS=) dan hapus layar itu (lihat REMARK App\Services\Security\DefaultPasswordViewer).
+    'password_viewers' => env('UAT_PASSWORD_VIEWERS', 'johiwan'),
 ];

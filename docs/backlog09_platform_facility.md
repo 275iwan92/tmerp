@@ -133,3 +133,14 @@ Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga t
   BUKAN default `sec_user.lang_code` (independen, sudah `'id'` di level
   DB). Bisa dibetulkan lewat UI Setup > Language sendiri kapan saja.
 
+
+---
+
+## PASCA-UAT: KEMBALIKAN PASSWORD BAWAAN KE TERENKRIPSI DAN HAPUS LAYAR DEFAULT PASSWORDS (Jo 2026-10-24)
+
+Selama UAT, `sec_user.default_password` disimpan polos (keputusan Jo 2026-10-22) dan layar Setup > Security > Default Passwords
+(hanya login `UAT_PASSWORD_VIEWERS`, bawaan `johiwan`; kartu `docs/tg/setup/security/10_card_default-passwords.md`) menampilkan semuanya.
+Begitu Jo menyatakan UAT selesai:
+- [ ] Kembalikan `default_password` ke terenkripsi: rollback migration `2026_10_22_000300_default_password_plain.php` dan pulihkan accessor `SecUser` (hanya atas perintah Jo).
+- [ ] Kosongkan `UAT_PASSWORD_VIEWERS=` di `.env`, lalu hapus layar: `app/Services/Security/DefaultPasswordViewer.php`, `resources/views/v2/default-passwords.blade.php`, rute `v2.setup.default-passwords.*` (`routes/v2_setup.php`), baris `DefaultPasswordViewer::MENU_CODE` di `PayrollAccess::menuAllowed`, migration `2026_10_24_000100_menu_default_passwords.php` (rollback menghapus barisnya), tes `DefaultPasswordViewerGateTest` dan `DefaultPasswordsScreenTest`, kartu TG-nya.
+- [ ] Arsipkan dulu `storage/logs/password-audit-*.log`, baru hapus saluran `password_audit` di `config/logging.php`.

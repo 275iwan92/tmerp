@@ -13,7 +13,7 @@
 | Human Resources (HRM) | Organization (5), Employee (4), Time Attendance (6), Payroll (8), Recruitment (11) | not yet |
 | Finance & Accounting (FINACC) | Control Center (2), Transaction Flows (8), Accounting (5), Controls & Tax (2), Financial Reports (7) | not yet |
 | Master Data (MDATA) | 21 items (Customer, Sales Person, Product, Raw Material, Supplier, UoM, Warehouse, Shift, Currency, etc.) | partial: Customer and Sales PIC cards |
-| Setup (SETUP) | Security, Support & Ticket, Help and Support, Language, Dummy Data, Constants, Dashboard, Menu, Identification, Others | partly: [setup/dummy-data/](./setup/dummy-data/) |
+| Setup (SETUP) | Security, Support & Ticket, Help and Support, Language, Dummy Data, Constants, Dashboard, Menu, Identification, Others | partly: [setup/dummy-data/](./setup/dummy-data/), [setup/security/](./setup/security/) |
 
 Note: the Sales sub-modules in TG use the folders `inquiry-product`, `product-costing`, `prodev`, `quotation`, `order`, `delivery`, `crm`, `master-data`. The menu Sales > Inquiry & Quotation puts Pro-Dev and Pro-Cost as groups inside it; the TG folders separate them so that the engine cards sit near their users. Remapping exactly to the menu tree is postponed to Phase 4 (checker).
 
