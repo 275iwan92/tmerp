@@ -4,7 +4,7 @@
  * REMARK
  * Tujuan       : SEMENTARA UAT. Menyalin password lama pegawai (tm2old.tm3sec_users.pswd, teks biasa) menjadi password bawaan di ddtsys.sec_user, dicocokkan lewat NAMA (keputusan Jo 2026-10-24). Hanya kecocokan persis dan tunggal diterapkan; yang meragukan hanya didaftar.
  * Sumber hulu  : tm2old.tm3sec_users (HANYA SELECT), ddtsys.sec_user (via koneksi tm2sys, wajib berawalan ddt).
- * Input        : --apply (tanpa itu = dry-run: hanya hitung dan daftar); --approve=berkas (pasangan "nama target|nama sumber" yang disetujui Jo secara eksplisit, hanya dari yang meragukan, nama kembar ditolak). Selalu dengan --env=mockup.
+ * Input        : --target=tm2sys (bawaan ddt; menulis ke tm2sys hanya dengan --apply --confirm-live, dry-run tanpa itu); --apply (tanpa itu = dry-run: hanya hitung dan daftar); --approve=berkas (pasangan "nama target|nama sumber" yang disetujui Jo secara eksplisit, hanya dari yang meragukan, nama kembar ditolak). Selalu dengan --env=mockup.
  * Output       : Angka, daftar NAMA (tanpa password) yang ragu / tanpa pasangan / sumber kosong / default_password NULL; saat --apply: sec_user.default_password := password lama (polos), pswd := Hash::make(itu), must_change_password := 0, pswd_last_updated := now. Aman dijalankan ulang (baris yang sudah sesuai dilewati). Jejak (siapa, kapan, berapa baris) ke saluran log password_audit.
  * Dipakai oleh : php artisan security:import-old-passwords [--apply] --env=mockup
  * Status       : Aktif, SEMENTARA UAT. Password lama pegawai kini tersimpan POLOS sebagai default: pasca-UAT enkripsi ulang, hapus layar Default Passwords, dan minta semua pegawai membuat password baru (docs/backlog09_platform_facility.md). Perintah ini dibuang bersama layar itu.
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 
 class ImportOldPasswords extends Command
 {
-    protected $signature = 'security:import-old-passwords {--apply : tulis ke ddtsys.sec_user (tanpa ini: dry-run)} {--approve= : berkas persetujuan Jo: satu baris per pasangan "nama target|nama sumber" (hanya untuk yang meragukan, bukan nama kembar)}';
+    protected $signature = 'security:import-old-passwords {--apply : tulis (tanpa ini: dry-run)} {--target=ddt : ddt (bawaan, database ddt*) atau tm2sys (situs tmerp.test, izin Jo 2026-10-24)} {--confirm-live : wajib bersama --apply --target=tm2sys} {--approve= : berkas persetujuan Jo: satu baris per pasangan "nama target|nama sumber" (hanya untuk yang meragukan, bukan nama kembar)}';
 
     protected $description = 'UAT: salin password lama (tm2old.tm3sec_users) ke password bawaan ddtsys.sec_user, cocok lewat nama';
 
@@ -28,8 +28,19 @@ class ImportOldPasswords extends Command
     {
         $db = DB::connection('tm2sys');
         $dbName = $db->getDatabaseName();
-        if (! str_starts_with((string) $dbName, 'ddt')) {
-            $this->error("Ditolak: koneksi tm2sys memakai database '$dbName', bukan ddt*. Jalankan dengan --env=mockup.");
+        $live = $this->option('target') === 'tm2sys';
+        if (! $live && $this->option('target') !== 'ddt') {
+            $this->error('Ditolak: --target hanya ddt atau tm2sys.');
+
+            return self::FAILURE;
+        }
+        if ($live ? $dbName !== 'tm2sys' : ! str_starts_with((string) $dbName, 'ddt')) {
+            $this->error("Ditolak: koneksi tm2sys memakai database '$dbName', bukan ".($live ? 'tm2sys (jalankan tanpa --env=mockup)' : 'ddt* (jalankan dengan --env=mockup)').'.');
+
+            return self::FAILURE;
+        }
+        if ($live && $this->option('apply') && ! $this->option('confirm-live')) {
+            $this->error('Ditolak: menulis ke tm2sys butuh --confirm-live.');
 
             return self::FAILURE;
         }
