@@ -25,7 +25,8 @@ class ReadyToShipTest extends TestCase
 {
     private int $customerId;
 
-    private int $quotationId;
+    /** @var int[] id quotation buatan test (satu CO = satu quotation, unik) */
+    private array $quotations = [];
 
     /** @var int[] id CO buatan test */
     private array $cos = [];
@@ -40,10 +41,6 @@ class ReadyToShipTest extends TestCase
         parent::setUp();
         $this->actingAs(SecUser::where('is_admin', true)->firstOrFail());
         $this->customerId = (int) DB::connection('tm2mst')->table('cust_customer')->value('id_customer');
-        $this->quotationId = DB::connection('tm2sdi')->table('quo_quotation')->insertGetId([
-            'quotation_no' => 'ZZ-TEST-'.substr(md5(microtime().rand()), 0, 8), 'customer_id' => $this->customerId, 'doc_status' => 'PUBLISHED',
-            'issued_date' => now()->toDateString(), 'valid_until' => now()->addDays(30)->toDateString(), 'currency_code' => 'IDR', 'created_by' => 'test', 'updated_by' => 'test',
-        ]);
     }
 
     protected function tearDown(): void
@@ -57,15 +54,20 @@ class ReadyToShipTest extends TestCase
             CoOrderItem::where('order_id', $coId)->delete();
             DB::connection('tm2sdi')->table('co_order')->where('id_order', $coId)->delete();
         }
-        DB::connection('tm2sdi')->table('quo_quotation')->where('id_quotation', $this->quotationId)->delete();
+        DB::connection('tm2sdi')->table('quo_quotation')->whereIn('id_quotation', $this->quotations)->delete();
         parent::tearDown();
     }
 
     /** CO CONFIRMED dengan dua baris jadwal kirim (100 dan 40 PCS), keduanya Posted to Production. */
     private function makeCo(string $no, string $address): int
     {
+        $quotationId = DB::connection('tm2sdi')->table('quo_quotation')->insertGetId([
+            'quotation_no' => 'ZZ-TEST-'.substr(md5(microtime().rand()), 0, 8), 'customer_id' => $this->customerId, 'doc_status' => 'PUBLISHED',
+            'issued_date' => now()->toDateString(), 'valid_until' => now()->addDays(30)->toDateString(), 'currency_code' => 'IDR', 'created_by' => 'test', 'updated_by' => 'test',
+        ]);
+        $this->quotations[] = $quotationId;
         $coId = DB::connection('tm2sdi')->table('co_order')->insertGetId([
-            'co_no' => $no, 'co_date' => now()->toDateString(), 'quotation_id' => $this->quotationId, 'customer_id' => $this->customerId,
+            'co_no' => $no, 'co_date' => now()->toDateString(), 'quotation_id' => $quotationId, 'customer_id' => $this->customerId,
             'doc_status' => 'CONFIRMED', 'ship_address_detail' => $address, 'created_by' => 'test', 'updated_by' => 'test',
         ]);
         $this->cos[] = $coId;
