@@ -60,16 +60,20 @@ final class DeliveryOrderPrint extends Document
         $do = DoDelivery::with(['customer', 'supplier', 'lines' => fn ($q) => $q->where('status', '<>', 'CANCELLED')->orderBy('line_no'), 'lines.order:id_order,co_no'])->findOrFail($id);
         $party = $do->customer ?? $do->supplier;
 
-        return new self([
+        $doc = new self([
             'number' => $do->do_no ?: 'Draft #'.$do->id_delivery, 'date' => $do->do_date?->toDateString(), 'status' => $do->status, 'printedBy' => $opt['printedBy'] ?? null,
             'ppn' => $do->is_ppn ? TaxRate::ppn($do->do_date) : 0, 'email' => $party?->email,
             'do_type' => $do->do_type, 'planned_date' => $do->scheduled_ship_date?->toDateString(), 'actual_date' => $do->actual_ship_date?->toDateString(),
             'tax' => $do->is_ppn ? 'PPN' : 'Non PPN', 'region' => $do->ship_address_label,
             'contact' => implode(' · ', array_filter([$party?->contact_name, $party?->phone])),
-            'party' => ['name' => $party?->customer_name ?? $party?->supplier_name ?? '', 'lines' => PrintDocs::address($do->ship_address_detail, $do->ship_address_label, $do->ship_postal_code)],
+            'party' => ['name' => $party?->customer_name ?? $party?->supplier_name ?? '', 'lines' => array_values(array_filter([...PrintDocs::address($do->ship_address_detail, $do->ship_address_label, $do->ship_postal_code), $do->pickupNote()]))],
             'notes' => $do->notes ? [['Notes', $do->notes]] : [],
             'rows' => $do->lines->map(fn ($l) => ['name' => $l->item_description, 'qty' => (float) $l->qty_do, 'unit' => $l->qty_unit, 'co_no' => $l->order?->co_no,
                 'price_source' => $l->price_overridden ? 'Override' : 'CO', 'price' => (float) $l->unit_price, 'subtotal' => (float) $l->subtotal])->all(),
         ]);
+        // Satu baris alamat tambahan untuk keterangan Pickup, supaya alamat customer tidak terpotong.
+        $doc->infoRows += $do->pickupNote() ? 1 : 0;
+
+        return $doc;
     }
 }

@@ -205,11 +205,21 @@ class DispatchService
                 }
             }
 
-            // Surat jalan subkon (do_type SUBCON) tujuannya pemasok, bukan alamat kirim CO; CO Pickup (diambil sendiri) tidak punya alamat tujuan (sementara, menunggu keputusan Jo).
-            $methods = CoOrder::whereIn('id_order', $lines->pluck('co_order_id')->filter())->pluck('shipment_method');
-            $pickupOnly = $methods->isNotEmpty() && $methods->every(fn ($m) => $m === 'PICKUP');
-            if (! $do->isSubcon() && ! $pickupOnly && trim((string) $do->ship_address_label) === '' && trim((string) $do->ship_address_detail) === '') {
+            // Alamat kirim WAJIB untuk semua DO, termasuk Pickup (Jo 2026-10-24); surat jalan subkon tujuannya pemasok, bukan alamat kirim CO.
+            if (! $do->isSubcon() && trim((string) $do->ship_address_label) === '' && trim((string) $do->ship_address_detail) === '') {
                 throw new \DomainException(t('The ship-to address is required before Confirm (Delivery tab).'));
+            }
+            // DO dari CO Pickup: nama pengambil, jenis kendaraan, dan nomor polisi wajib (tercetak: PICKUP by <nama> by <kendaraan> No. Polisi <nopol>).
+            if (! $do->isSubcon() && $do->isPickup()) {
+                foreach (['pickup_name' => t('Pickup: fill in who picks up the goods (Delivery tab), for example Mr. XYZ.'), 'pickup_vehicle' => t('Pickup: fill in the vehicle type (Delivery tab), for example truck.'),
+                    'pickup_plate' => t('Pickup: fill in the vehicle plate number (Delivery tab), for example N 12345 SAMPLE.')] as $field => $message) {
+                    if (trim((string) $do->{$field}) === '') {
+                        throw new \DomainException($message);
+                    }
+                }
+                if (! preg_match('/^[A-Z0-9][A-Z0-9 ]*$/', (string) $do->pickup_plate)) {
+                    throw new \DomainException(t('Pickup: the plate number may only contain letters, numbers and spaces.'));
+                }
             }
 
             foreach ($lines as $line) {
@@ -336,16 +346,21 @@ class DispatchService
     }
 
     // Alamat kirim DO = alamat kirim CO sumber baris pertama; hanya bila DO belum punya alamat (pilihan pengguna tidak ditimpa).
+    // CO Pickup: alamat tetap alamat customer dan jenis kendaraan bawaan 'truck' (nama pengambil dan nomor polisi diisi pengguna).
     private function copyShipAddress(DoDelivery $do, int $coOrderId): void
     {
+        $co = CoOrder::find($coOrderId);
+        if (! $co) {
+            return;
+        }
+        if ($co->shipment_method === 'PICKUP' && trim((string) $do->pickup_vehicle) === '') {
+            $do->update(['pickup_vehicle' => 'truck']);
+        }
         if ($do->ship_area_id || trim((string) $do->ship_address_label) !== '' || trim((string) $do->ship_address_detail) !== '') {
             return;
         }
 
-        $co = CoOrder::find($coOrderId);
-        if ($co) {
-            $do->update($co->only(['ship_area_id', 'ship_area_level', 'ship_address_label', 'ship_address_detail', 'ship_postal_code']));
-        }
+        $do->update($co->only(['ship_area_id', 'ship_area_level', 'ship_address_label', 'ship_address_detail', 'ship_postal_code']));
     }
 
     // dispatch_tier3.md §5: pola manual MAX+1/tahun (sys_sequence TIDAK ada

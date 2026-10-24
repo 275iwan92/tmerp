@@ -376,13 +376,52 @@ class DeliveryOrderEntryTest extends TestCase
         $this->assertFalse((bool) DoLine::find($line->id_line)->price_overridden);
     }
 
-    public function test_confirm_does_not_require_a_ship_to_address_when_every_source_co_is_pickup(): void
+    public function test_pickup_do_keeps_the_customer_address_and_needs_who_vehicle_and_plate_before_confirm(): void
     {
         DB::connection('tm2sdi')->table('co_order')->where('id_order', $this->coId)->update(['shipment_method' => 'PICKUP']);
         $this->pullBoth();
-        DoDelivery::whereKey($this->doId)->update(['ship_address_detail' => null, 'ship_address_label' => null]);
+        $this->assertSame('truck', $this->do()->pickup_vehicle, 'Jenis kendaraan bawaan truck');
+        $this->assertSame('ZZ-TEST Jl. Uji 1', $this->do()->ship_address_detail, 'Alamat customer tetap disalin dari CO');
+        $this->assertTrue($this->do()->isPickup());
 
+        // Alamat tetap wajib, juga untuk Pickup.
+        DoDelivery::whereKey($this->doId)->update(['ship_address_detail' => null, 'ship_address_label' => null]);
+        [$ok, $msg] = Data::act($this->do(), 'confirm');
+        $this->assertFalse($ok);
+        $this->assertSame(t('The ship-to address is required before Confirm (Delivery tab).'), $msg);
+        Data::save($this->do(), ['ship_address_detail' => 'ZZ-TEST Jl. Uji 1']);
+
+        [$ok, $msg] = Data::act($this->do(), 'confirm');
+        $this->assertFalse($ok);
+        $this->assertSame(t('Pickup: fill in who picks up the goods (Delivery tab), for example Mr. XYZ.'), $msg);
+
+        Data::save($this->do(), ['pickup_name' => 'Mr. XYZ', 'pickup_plate' => '']);
+        [, $msg] = Data::act($this->do(), 'confirm');
+        $this->assertSame(t('Pickup: fill in the vehicle plate number (Delivery tab), for example N 12345 SAMPLE.'), $msg);
+
+        Data::save($this->do(), ['pickup_plate' => 'n  12345 sample']);
+        $this->assertSame('N 12345 SAMPLE', $this->do()->pickup_plate, 'Huruf besar, satu spasi');
+        Data::save($this->do(), ['pickup_plate' => 'N-12345']);
+        [, $msg] = Data::act($this->do(), 'confirm');
+        $this->assertSame(t('Pickup: the plate number may only contain letters, numbers and spaces.'), $msg);
+
+        Data::save($this->do(), ['pickup_plate' => 'n 12345 sample']);
+        $this->assertSame('PICKUP by Mr. XYZ by truck No. Polisi N 12345 SAMPLE', $this->do()->pickupNote());
         [$ok] = Data::act($this->do(), 'confirm');
-        $this->assertTrue($ok, 'CO Pickup (diambil sendiri) tidak butuh alamat kirim (sementara, menunggu keputusan Jo).');
+        $this->assertTrue($ok);
+
+        $lines = \App\Support\V2\Print\DeliveryNotePrint::load($this->doId)->data['party']['lines'];
+        $this->assertSame('PICKUP by Mr. XYZ by truck No. Polisi N 12345 SAMPLE', end($lines));
+        $this->assertContains('ZZ-TEST Jl. Uji 1', $lines, 'Alamat customer tidak dihapus');
+    }
+
+    public function test_a_delivery_do_has_no_pickup_fields_or_note(): void
+    {
+        $this->pullBoth();
+        $this->assertFalse($this->do()->isPickup());
+        $this->assertNull($this->do()->pickup_vehicle);
+        $this->assertNull($this->do()->pickupNote());
+        [$ok] = Data::act($this->do(), 'confirm');
+        $this->assertTrue($ok, 'DO pengiriman biasa tidak butuh keterangan Pickup');
     }
 }

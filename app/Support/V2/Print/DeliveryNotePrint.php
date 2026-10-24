@@ -48,13 +48,17 @@ final class DeliveryNotePrint extends Document
         $party = $do->customer ?? $do->supplier;
         $orders = $do->lines->pluck('order')->filter()->unique('id_order');
 
-        return new self([
+        $doc = new self([
             'number' => $do->do_no, 'date' => $do->do_date?->toDateString(), 'status' => $do->status, 'printedBy' => $opt['printedBy'] ?? null,
             'customer_po_no' => $orders->pluck('customer_po_no')->filter()->unique()->implode(', '),
             'co_no' => $orders->pluck('co_no')->filter()->implode(', '),
             'contact' => implode(' · ', array_filter([$party?->contact_name, $party?->phone])),
-            'party' => ['name' => $party?->customer_name ?? $party?->supplier_name ?? '', 'lines' => PrintDocs::address($do->ship_address_detail, $do->ship_address_label, $do->ship_postal_code)],
+            'party' => ['name' => $party?->customer_name ?? $party?->supplier_name ?? '', 'lines' => array_values(array_filter([...PrintDocs::address($do->ship_address_detail, $do->ship_address_label, $do->ship_postal_code), $do->pickupNote()]))],
             'rows' => $do->lines->map(fn ($l) => ['name' => $l->item_description, 'qty' => (float) $l->qty_do, 'unit' => $l->qty_unit])->all(),
         ]);
+        // Satu baris alamat tambahan untuk keterangan Pickup, supaya alamat customer tidak terpotong.
+        $doc->infoRows += $do->pickupNote() ? 1 : 0;
+
+        return $doc;
     }
 }

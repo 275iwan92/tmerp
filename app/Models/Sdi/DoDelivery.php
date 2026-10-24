@@ -21,6 +21,7 @@ class DoDelivery extends Model
     protected $fillable = [
         'do_no', 'do_type', 'is_ppn', 'do_date',
         'customer_id', 'supplier_id', 'pr_id', 'ref_part_id', 'subcon_process', 'ship_area_id', 'ship_area_level', 'ship_address_label', 'ship_address_detail', 'ship_postal_code',
+        'pickup_name', 'pickup_vehicle', 'pickup_plate',
         'scheduled_ship_date', 'actual_ship_date',
         'status',
         'price_change_flag', 'price_change_approval_status',
@@ -51,6 +52,22 @@ class DoDelivery extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(SupSupplier::class, 'supplier_id', 'id_supplier');
+    }
+
+    // DO dari CO berjenis Pickup (diambil sendiri): butuh keterangan pengambilan (nama, kendaraan, nomor polisi).
+    public function isPickup(): bool
+    {
+        return CoOrder::whereIn('id_order', $this->lines()->where('status', '<>', 'CANCELLED')->pluck('co_order_id')->filter())->where('shipment_method', 'PICKUP')->exists();
+    }
+
+    // Baris keterangan di blok alamat kirim cetakan DO / Delivery Note (format Jo 2026-10-24); null bila belum diisi.
+    public function pickupNote(): ?string
+    {
+        if (trim((string) $this->pickup_name) === '' && trim((string) $this->pickup_plate) === '') {
+            return null;
+        }
+
+        return 'PICKUP by '.$this->pickup_name.' by '.($this->pickup_vehicle ?: 'truck').' No. Polisi '.$this->pickup_plate;
     }
 
     public function isSubcon(): bool

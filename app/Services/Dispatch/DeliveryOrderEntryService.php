@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 
 final class DeliveryOrderEntryService
 {
-    public const HEADER_FIELDS = ['do_date', 'scheduled_ship_date', 'ship_address_detail'];
+    public const HEADER_FIELDS = ['do_date', 'scheduled_ship_date', 'ship_address_detail', 'pickup_name', 'pickup_vehicle', 'pickup_plate'];
 
     public static function onAddressPicked(int $doId, string $fieldName, ?int $areaId, ?string $areaLevel, ?string $label, ?string $postalCode): void
     {
@@ -43,6 +43,12 @@ final class DeliveryOrderEntryService
 
         if ($do->status !== 'DRAFT' || ! in_array($field, self::HEADER_FIELDS, true)) {
             return;
+        }
+
+        $value = is_string($value) ? trim($value) : $value;
+        // Nomor polisi selalu huruf besar dengan satu spasi antar bagian (N 12345 SAMPLE).
+        if ($field === 'pickup_plate' && is_string($value)) {
+            $value = mb_strtoupper((string) preg_replace('/\s+/', ' ', $value));
         }
 
         $do->update([$field => $value === '' ? null : $value, 'updated_by' => self::login()]);

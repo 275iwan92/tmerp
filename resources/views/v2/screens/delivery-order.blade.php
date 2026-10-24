@@ -37,6 +37,7 @@
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30). --}}
     @php
         $draft = $do->status === 'DRAFT';
+        $pickup = $do->isPickup(); // CO Pickup: keterangan pengambilan wajib sebelum Confirm
         $price = (bool) auth()->user()?->canViewSalesPrice(); // harga jual hanya untuk yang berhak (rulebook A.9)
         $money = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
         $area = $do->ship_area_id ? $do->ship_area_level.':'.$do->ship_area_id : null;
@@ -83,6 +84,13 @@
                 <x-dl::field.text name="ship_address_detail" label="Address Details (street, no., RT/RW, landmark)" :value="$do->ship_address_detail" :source="Src::of('tm2sdi.do_delivery.ship_address_detail')" />
                 <x-dl::field.display label="Postcode" :value="$do->ship_postal_code ?? '—'" :source="Src::of('tm2sdi.do_delivery.ship_postal_code')" />
             </x-dl::form.row>
+            @if ($pickup)
+                <x-dl::form.row :cols="3">
+                    <x-dl::field.text name="pickup_name" label="Picked up by" placeholder="Mr. XYZ" :value="$do->pickup_name" hint="Pickup: required before Confirm" :source="Src::of('tm2sdi.do_delivery.pickup_name')" />
+                    <x-dl::field.text name="pickup_vehicle" label="Vehicle" placeholder="truck" :value="$do->pickup_vehicle ?: 'truck'" :source="Src::of('tm2sdi.do_delivery.pickup_vehicle')" />
+                    <x-dl::field.text name="pickup_plate" label="Plate No." placeholder="N 12345 SAMPLE" :value="$do->pickup_plate" :source="Src::of('tm2sdi.do_delivery.pickup_plate')" />
+                </x-dl::form.row>
+            @endif
         </x-slot:delivery>
         <x-slot:notes>
             <x-dl::field.display label="Notes" :value="$do->notes ?? '—'" :source="Src::of('tm2sdi.do_delivery.notes')" />
