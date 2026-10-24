@@ -15,6 +15,7 @@ namespace App\Support\V2;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysAppMenu;
 use App\Services\Payroll\PayrollAccess;
+use App\Services\Security\MenuScope;
 use App\Support\Localization\Dictionary;
 use App\Support\Localization\Translator;
 use App\Support\Menu\MenuRoutes;
@@ -48,10 +49,12 @@ final class AppMenu
         // its branches marked GENERAL (groups without a right of their own pass so the GENERAL items inside are reachable).
         $okPublic = fn (SysAppMenu $n) => $n->required_object === SecUser::PUBLIC_MODULE || (in_array($n->menu_type, ['group', 'heading'], true) && $n->required_object === null);
         $routes = MenuRoutes::map();
+        $scope = MenuScope::codes($user, $rows); // grup bercakupan (PRODEV_STAFF dst.): hanya cabang yang disebut + item GENERAL
 
         $modules = [];
         foreach ($rows->where('menu_type', 'module') as $m) {
-            $pass = $visible->contains($m->code) ? $ok : $okPublic;
+            $base = $visible->contains($m->code) ? $ok : $okPublic;
+            $pass = $scope === null ? $base : fn (SysAppMenu $n) => isset($scope[$n->code]) && $base($n);
             $out = [];
             foreach ($children->get($m->id, collect())->filter($pass) as $c) {
                 if ($c->menu_type === 'group') {
