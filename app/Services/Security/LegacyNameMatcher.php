@@ -110,4 +110,42 @@ class LegacyNameMatcher
 
         return compact('exact', 'doubtful', 'none');
     }
+
+    /**
+     * Persetujuan eksplisit Jo per pasangan [nama target, nama sumber]. Hanya untuk target yang tercatat MERAGUKAN
+     * dengan nama target tunggal, dan sumber yang ada di kandidatnya (nama sumber tunggal). Nama kembar tidak bisa
+     * disetujui lewat sini. Aturan pencocokan otomatis tidak berubah.
+     *
+     * @return array{result: array, rejected: array} rejected = [[nama target, nama sumber, alasan]]
+     */
+    public static function approve(array $result, array $targets, array $sources, array $pairs): array
+    {
+        $tcount = array_count_values(array_map([self::class, 'normalize'], $targets));
+        $scount = array_count_values(array_map([self::class, 'normalize'], $sources));
+        $rejected = [];
+        foreach ($pairs as [$tn, $sn]) {
+            $tk = self::normalize($tn);
+            $sk = self::normalize($sn);
+            $tid = array_search($tk, array_map([self::class, 'normalize'], $targets), true);
+            $sid = array_search($sk, array_map([self::class, 'normalize'], $sources), true);
+            $why = match (true) {
+                $tid === false => 'target tidak ditemukan',
+                $sid === false => 'sumber tidak ditemukan',
+                ($tcount[$tk] ?? 0) > 1 || ($scount[$sk] ?? 0) > 1 => 'nama kembar tidak boleh disetujui lewat daftar',
+                ! isset($result['doubtful'][$tid]) => 'target tidak berstatus meragukan',
+                ! in_array($sid, $result['doubtful'][$tid][0], true) => 'sumber bukan kandidat target',
+                in_array($sid, $result['exact'], true) => 'sumber sudah dipakai pasangan lain',
+                default => null,
+            };
+            if ($why) {
+                $rejected[] = [$tn, $sn, $why];
+
+                continue;
+            }
+            unset($result['doubtful'][$tid]);
+            $result['exact'][$tid] = $sid;
+        }
+
+        return ['result' => $result, 'rejected' => $rejected];
+    }
 }

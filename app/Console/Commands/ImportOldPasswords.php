@@ -4,7 +4,7 @@
  * REMARK
  * Tujuan       : SEMENTARA UAT. Menyalin password lama pegawai (tm2old.tm3sec_users.pswd, teks biasa) menjadi password bawaan di ddtsys.sec_user, dicocokkan lewat NAMA (keputusan Jo 2026-10-24). Hanya kecocokan persis dan tunggal diterapkan; yang meragukan hanya didaftar.
  * Sumber hulu  : tm2old.tm3sec_users (HANYA SELECT), ddtsys.sec_user (via koneksi tm2sys, wajib berawalan ddt).
- * Input        : --apply (tanpa itu = dry-run: hanya hitung dan daftar). Selalu dengan --env=mockup.
+ * Input        : --apply (tanpa itu = dry-run: hanya hitung dan daftar); --approve=berkas (pasangan "nama target|nama sumber" yang disetujui Jo secara eksplisit, hanya dari yang meragukan, nama kembar ditolak). Selalu dengan --env=mockup.
  * Output       : Angka, daftar NAMA (tanpa password) yang ragu / tanpa pasangan / sumber kosong / default_password NULL; saat --apply: sec_user.default_password := password lama (polos), pswd := Hash::make(itu), must_change_password := 0, pswd_last_updated := now. Aman dijalankan ulang (baris yang sudah sesuai dilewati). Jejak (siapa, kapan, berapa baris) ke saluran log password_audit.
  * Dipakai oleh : php artisan security:import-old-passwords [--apply] --env=mockup
  * Status       : Aktif, SEMENTARA UAT. Password lama pegawai kini tersimpan POLOS sebagai default: pasca-UAT enkripsi ulang, hapus layar Default Passwords, dan minta semua pegawai membuat password baru (docs/backlog09_platform_facility.md). Perintah ini dibuang bersama layar itu.
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 
 class ImportOldPasswords extends Command
 {
-    protected $signature = 'security:import-old-passwords {--apply : tulis ke ddtsys.sec_user (tanpa ini: dry-run)}';
+    protected $signature = 'security:import-old-passwords {--apply : tulis ke ddtsys.sec_user (tanpa ini: dry-run)} {--approve= : berkas persetujuan Jo: satu baris per pasangan "nama target|nama sumber" (hanya untuk yang meragukan, bukan nama kembar)}';
 
     protected $description = 'UAT: salin password lama (tm2old.tm3sec_users) ke password bawaan ddtsys.sec_user, cocok lewat nama';
 
@@ -38,6 +38,21 @@ class ImportOldPasswords extends Command
         $tgt = $db->table('sec_user')->get(['id_user', 'login', 'name', 'default_password', 'pswd', 'must_change_password'])->keyBy('id_user');
 
         $r = LegacyNameMatcher::match($tgt->pluck('name', 'id_user')->all(), $src->pluck('name')->all());
+        if ($file = $this->option('approve')) {
+            if (! is_file($file)) {
+                $this->error("Berkas persetujuan tidak ada: $file");
+
+                return self::FAILURE;
+            }
+            $pairs = collect(file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
+                ->map(fn ($l) => array_map('trim', explode('|', $l, 2)))->filter(fn ($p) => count($p) === 2 && $p[0] !== '' && $p[1] !== '')->values()->all();
+            $a = LegacyNameMatcher::approve($r, $tgt->pluck('name', 'id_user')->all(), $src->pluck('name')->all(), $pairs);
+            $r = $a['result'];
+            $this->line(sprintf('persetujuan eksplisit: %d pasangan diterima, %d ditolak', count($pairs) - count($a['rejected']), count($a['rejected'])));
+            foreach ($a['rejected'] as [$tn, $sn, $why]) {
+                $this->warn("  ditolak: $tn <- $sn ($why)");
+            }
+        }
         $nameOf = fn ($tid) => $tgt[$tid]->name;
         $srcName = fn ($sid) => $src[$sid]->name;
 

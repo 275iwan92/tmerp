@@ -62,4 +62,16 @@ class LegacyNameMatcherTest extends TestCase
         $this->assertSame([1 => 10], $r['exact']);
         $this->assertSame([2], $r['none']);
     }
+
+    public function test_approve_only_non_twin_doubtful_pairs(): void
+    {
+        $t = [1 => 'Rina Fiktif Sari', 2 => 'Andi Fiktif', 3 => 'andi fiktif', 4 => 'Tidak Ada'];
+        $s = [10 => 'Rina Fiktif', 11 => 'Andi Fiktif'];
+        $r = M::match($t, $s);
+        $a = M::approve($r, $t, $s, [['rina fiktif sari', 'Rina  Fiktif'], ['Andi Fiktif', 'Andi Fiktif'], ['Tidak Ada', 'Rina Fiktif'], ['Orang Asing', 'Rina Fiktif']]);
+        $this->assertSame([1 => 10], $a['result']['exact']);
+        $this->assertArrayNotHasKey(1, $a['result']['doubtful']);
+        $this->assertArrayHasKey(2, $a['result']['doubtful'], 'kembar tetap ragu');
+        $this->assertSame(['nama kembar tidak boleh disetujui lewat daftar', 'target tidak berstatus meragukan', 'target tidak ditemukan'], array_column($a['rejected'], 2));
+    }
 }

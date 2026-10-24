@@ -17,7 +17,8 @@
 | Write (per matched row, one transaction) | `default_password` := old password (plain), `pswd` := `Hash::make(old)`, `must_change_password` := 0 (Jo, "for now"), `pswd_last_updated` and `updated_at` := now. Rows already equal are skipped, so a re-run changes nothing. A matched row whose source is NULL/empty is left unchanged and listed. | FACT, command |
 | Verify | After writing it re-reads the changed rows and checks plain value equal, `Hash::check` true, `must_change_password` = 0; exit code fails otherwise. | FACT, command |
 | Audit | One line to log channel `password_audit` (counts only, actor `artisan`, never a password). | FACT, command; `config/logging.php:69` |
-| Result 2026-10-24 | targets 159, sources 108, exact 35 (34 changed + 1 already equal), doubtful 22, no partner 102, source NULL 0. Backup before: `C:\Users\iwanp\Backups\ddtsys_sebelum-import-password-lama_2026-10-24.sql`. | FACT, run |
+| Approval | `--approve=file`, one line per pair `target name|source name`, accepted only for pairs listed DOUBTFUL; twin names (two targets or two sources with the same normalized name) are always rejected (`LegacyNameMatcher::approve`). The automatic rule is unchanged. | FACT, `LegacyNameMatcher.php`, `ImportOldPasswords.php` |
+| Result 2026-10-24 | stage 1: targets 159, sources 108, exact 35 (34 changed + 1 already equal), doubtful 22, no partner 102, source NULL 0. Stage 2 (Jo approved 18 non-twin pairs): 18 changed and verified; now exact 53, doubtful 4 (the twins Annisa Kusumaningtyas and Wiwik Ardiatno, undecided). Backups before each stage: `C:SERSIWANPBACKUPSDDTSYS_SEBELUM-IMPORT-PASSWORD-LAMA_2026-10-24.SQL` AND `..._TAHAP2_2026-10-24.SQL`. | FACT, RUNS |
 | Tests | `tests/Unit/LegacyNameMatcherTest.php` (pure, no DB, fictional names). | FACT, file |
 
 ## Relations
